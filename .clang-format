@@ -1,0 +1,34 @@
+# PufferUI formatting.
+#
+# Applies to the new core only:
+#   include/pufferui/pufferui.h, src/pufferui_impl.cpp,
+#   examples/pui_demo.cpp, examples/pui_counter.cpp, tests/*.cpp
+# The legacy library (src/pufferui/pufferui.h, src/main.cpp) is frozen and is not
+# formatted. CI checks the listed files with clang-format 22.1.3.
+---
+Language: Cpp
+BasedOnStyle: LLVM
+Standard: c++20
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+BreakBeforeBraces: Allman
+ContinuationIndentWidth: 4
+NamespaceIndentation: None
+AccessModifierOffset: -4
+PointerAlignment: Right
+SortIncludes: Never
+AlignAfterOpenBracket: Align
+AlignOperands: Align
+AllowShortBlocksOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: true
+BinPackArguments: true
+BinPackParameters: true
+KeepEmptyLinesAtTheStartOfBlocks: false
+SpaceAfterCStyleCast: false
+SpaceBeforeParens: ControlStatements

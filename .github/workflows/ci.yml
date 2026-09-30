@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install clang-format
+        run: pip install clang-format==22.1.3
+
+      - name: Format check (new core)
+        shell: bash
+        run: |
+          clang-format --dry-run --Werror \
+            include/pufferui/pufferui.h \
+            src/pufferui_impl.cpp \
+            tests/test_core.cpp \
+            tests/golden/test_golden.cpp \
+            examples/example_common.h \
+            examples/dock_helpers.h \
+            examples/atomic/*.cpp \
+            examples/pui_tour.cpp \
+            examples/pui_demo.cpp \
+            examples/pui_counter.cpp
+
+      - name: Configure (debug)
+        run: cmake --preset x64-debug
+
+      - name: Build (debug)
+        run: cmake --build out/build/x64-debug
+
+      - name: Core tests
+        run: out/build/x64-debug/Debug/pui_core_tests.exe
+
+      - name: Pump tests
+        run: out/build/x64-debug/Debug/pui_pump_tests.exe
+
+      - name: Golden-image tests
+        run: out/build/x64-debug/Debug/pui_golden_tests.exe
+
+      - name: Example selftests (offscreen)
+        run: cmake --build out/build/x64-debug --target examples_selftest
+
+      - name: Configure (release)
+        run: cmake --preset x64-release
+
+      - name: Build (release)
+        run: cmake --build out/build/x64-release
+
+      - name: Core tests (release)
+        run: out/build/x64-release/Release/pui_core_tests.exe
+
+      - name: Pump tests (release)
+        run: out/build/x64-release/Release/pui_pump_tests.exe
+
+      - name: Golden-image tests (release)
+        run: out/build/x64-release/Release/pui_golden_tests.exe
+
+      - name: Upload golden dumps on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-dumps
+          path: tests/golden/dump
