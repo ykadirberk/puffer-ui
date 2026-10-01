@@ -75,6 +75,20 @@ by a handler, shown by a dev overlay, and (debug builds, unhandled) a
 debugger break at the violating call. `PUFFERUI_ASSERT` marks invariants:
 fatal, stops in every build.
 
+## Structure notes (r94)
+
+- The overlay stacks (popups, panels, panel layers) **grow on demand**: the
+  old `MAX_POPUPS` / `MAX_PANELS` are initial capacities, so deep nesting
+  never refuses a layer (`VIOL_POPUP_OVERFLOW` is no longer reachable).
+- A panel's dock name is **interned** into context-owned storage when a drag
+  starts: the drag ghost draws across frames, so the caller's string need
+  not outlive the gesture.
+- The header/implementation file split (with a generated single-header
+  amalgamation) and the `slot_pool` keyed-store consolidation are deferred
+  to a dedicated structural pass: both are behavior-neutral, large, and
+  mechanical, and `docs/perf.md` shows the keyed stores are not hot. The
+  single-header + one-TU distribution stays as-is until then.
+
 ## Threads
 
 One context per thread. The current-context slot is `thread_local`; cross-

@@ -1510,7 +1510,8 @@ struct context
     // dock drag state (panel dragged by its tab)
     uiid dock_panel = 0;
     dock_node *dock_source = nullptr;
-    const char *dock_panel_name = nullptr;
+    const char *dock_panel_name = nullptr; // points into the owned buffer below
+    char dock_panel_name_buf[128]{};       // owned: the drag ghost outlives the caller
     bool dock_dragging = false;
     f32 dock_press_x = 0.0f, dock_press_y = 0.0f;
 
@@ -1587,9 +1588,13 @@ struct context
     button_override button_scopes[MAX_STYLE_SCOPES]{};
     i32 button_scope_depth = 0;
 
-    popup_entry popups[MAX_POPUPS]{};
+    // Growth-on-demand stacks (same pattern as the window list): the old
+    // fixed caps (MAX_POPUPS/MAX_PANELS) are the INITIAL capacity; the arrays
+    // double when full, so deep nesting never silently refuses a layer.
+    popup_entry *popups = nullptr;
     i32 popup_depth = 0;
-    popup_entry prev_popups[MAX_POPUPS]{};
+    i32 popup_capacity = 0;
+    popup_entry *prev_popups = nullptr;
     i32 prev_popup_depth = 0;
 
     // combo/context_menu state (keyed by uiid, per window via the popup table).
@@ -1622,12 +1627,14 @@ struct context
     bool in_popup = false; // currently drawing popup content
     i32 popup_layer_depth = 0;
 
-    panel_entry panels[MAX_PANELS]{};
+    panel_entry *panels = nullptr;
     i32 panel_depth = 0;
-    panel_entry prev_panels[MAX_PANELS]{};
+    i32 panel_capacity = 0;
+    panel_entry *prev_panels = nullptr;
     i32 prev_panel_depth = 0;
-    uiid panel_stack[MAX_PANELS]{};
+    uiid *panel_stack = nullptr;
     i32 panel_stack_depth = 0;
+    i32 panel_stack_capacity = 0;
 
     i32 violations = 0;
     violation_handler vhandler = nullptr;
@@ -2673,6 +2680,65 @@ inline defer_store *ensure_defers(context *c)
     if (!c->defers) c->defers = new defer_store();
     return static_cast<defer_store *>(c->defers);
 }
+
+// Copies a panel dock name into context-owned storage: the drag ghost draws
+// across frames, so the caller string need not outlive the gesture.
+inline const char *intern_dock_name(context *c, const char *name)
+{
+    if (!name)
+    {
+        c->dock_panel_name_buf[0] = '\0';
+        return c->dock_panel_name_buf;
+    }
+    std::snprintf(c->dock_panel_name_buf, sizeof(c->dock_panel_name_buf), "%s", name);
+    return c->dock_panel_name_buf;
+}
+// Growth-on-demand for the overlay stacks: the fixed caps are initial
+// capacities, so deep popup/panel nesting never refuses a layer (and the
+// VIOL_POPUP_OVERFLOW guard is no longer reachable).
+inline void ensure_popup_capacity(context *c, i32 need)
+{
+    if (need <= c->popup_capacity) return;
+    i32 cap = c->popup_capacity > 0 ? c->popup_capacity : MAX_POPUPS;
+    while (cap < need) cap *= 2;
+    popup_entry *fresh = new popup_entry[cap];
+    for (i32 i = 0; i < c->popup_depth; ++i) fresh[i] = c->popups[i];
+    popup_entry *fresh_prev = new popup_entry[cap];
+    for (i32 i = 0; i < c->prev_popup_depth; ++i) fresh_prev[i] = c->prev_popups[i];
+    delete[] c->popups;
+    delete[] c->prev_popups;
+    c->popups = fresh;
+    c->prev_popups = fresh_prev;
+    c->popup_capacity = cap;
+}
+
+inline void ensure_panel_capacity(context *c, i32 need)
+{
+    if (need <= c->panel_capacity) return;
+    i32 cap = c->panel_capacity > 0 ? c->panel_capacity : MAX_PANELS;
+    while (cap < need) cap *= 2;
+    panel_entry *fresh = new panel_entry[cap];
+    for (i32 i = 0; i < c->panel_depth; ++i) fresh[i] = c->panels[i];
+    panel_entry *fresh_prev = new panel_entry[cap];
+    for (i32 i = 0; i < c->prev_panel_depth; ++i) fresh_prev[i] = c->prev_panels[i];
+    delete[] c->panels;
+    delete[] c->prev_panels;
+    c->panels = fresh;
+    c->prev_panels = fresh_prev;
+    c->panel_capacity = cap;
+}
+
+inline void ensure_panel_stack_capacity(context *c, i32 need)
+{
+    if (need <= c->panel_stack_capacity) return;
+    i32 cap = c->panel_stack_capacity > 0 ? c->panel_stack_capacity : MAX_PANELS;
+    while (cap < need) cap *= 2;
+    uiid *fresh = new uiid[cap];
+    for (i32 i = 0; i < c->panel_stack_depth; ++i) fresh[i] = c->panel_stack[i];
+    delete[] c->panel_stack;
+    c->panel_stack = fresh;
+    c->panel_stack_capacity = cap;
+}
 } // namespace detail
 
 // Records a deferred menu's labels into context-owned storage. All strings
@@ -3160,6 +3226,14 @@ context *create_context(render_device *device, render_surface *surface)
     c->device = device;
     c->surface = surface;
     c->frame_id_set = new flat_map<u8>();
+    c->popups = new popup_entry[MAX_POPUPS];
+    c->prev_popups = new popup_entry[MAX_POPUPS];
+    c->popup_capacity = MAX_POPUPS;
+    c->panels = new panel_entry[MAX_PANELS];
+    c->prev_panels = new panel_entry[MAX_PANELS];
+    c->panel_capacity = MAX_PANELS;
+    c->panel_stack = new uiid[MAX_PANELS];
+    c->panel_stack_capacity = MAX_PANELS;
     c->widget_id_set = new flat_map<rect>();
     c->dl = new draw_list();
     set_current_context(c);
@@ -3208,6 +3282,11 @@ void destroy_context(context *c)
     if (c->scrolls) delete static_cast<scroll_store *>(c->scrolls);
     if (c->frame_id_set) delete static_cast<flat_map<u8> *>(c->frame_id_set);
     if (c->widget_id_set) delete static_cast<flat_map<rect> *>(c->widget_id_set);
+    delete[] c->popups;
+    delete[] c->prev_popups;
+    delete[] c->panels;
+    delete[] c->prev_panels;
+    delete[] c->panel_stack;
     if (c->defers) delete static_cast<defer_store *>(c->defers);
     if (c->focus_store)
     {
@@ -3502,8 +3581,8 @@ void begin_frame(context *c, window &w, f64 now, f64 dt)
         {
             if (c->popups[i].win == wi)
             {
-                if (c->prev_popup_depth < MAX_POPUPS)
-                    c->prev_popups[c->prev_popup_depth++] = c->popups[i];
+                detail::ensure_popup_capacity(c, c->prev_popup_depth + 1);
+                c->prev_popups[c->prev_popup_depth++] = c->popups[i];
             }
             else
             {
@@ -3518,8 +3597,8 @@ void begin_frame(context *c, window &w, f64 now, f64 dt)
         {
             if (c->panels[i].win == wi)
             {
-                if (c->prev_panel_depth < MAX_PANELS)
-                    c->prev_panels[c->prev_panel_depth++] = c->panels[i];
+                detail::ensure_panel_capacity(c, c->prev_panel_depth + 1);
+                c->prev_panels[c->prev_panel_depth++] = c->panels[i];
             }
             else
             {
@@ -5517,11 +5596,9 @@ popup_scope::popup_scope(ui &u, uiid id, rect area, popup_flags flags)
     {
         if (c->key_pressed[static_cast<i32>(key::ESCAPE)]) close_requested = true;
     }
-    if (c->popup_depth < MAX_POPUPS)
-        c->popups[c->popup_depth++] =
-            popup_entry{id, area, c->current_window ? c->current_window->index : 0};
-    else
-        PUFFERUI_CHECK(VIOL_POPUP_OVERFLOW, false, "popup stack overflow");
+    detail::ensure_popup_capacity(c, c->popup_depth + 1);
+    c->popups[c->popup_depth++] =
+        popup_entry{id, area, c->current_window ? c->current_window->index : 0};
 
     c->popup_layer_depth += 1;
     c->in_popup = true;
@@ -6907,11 +6984,9 @@ panel_scope ui::panel(std::string_view title, rect &bounds, u32 flags, uiid dock
     // Enter this panel's input layer *before* any of its own widgets (titlebar,
     // close) are tested, so the panel does not block itself.
     bool layer_pushed = false;
-    if (ctx->panel_stack_depth < MAX_PANELS)
-    {
-        ctx->panel_stack[ctx->panel_stack_depth++] = id;
-        layer_pushed = true;
-    }
+    detail::ensure_panel_stack_capacity(ctx, ctx->panel_stack_depth + 1);
+    ctx->panel_stack[ctx->panel_stack_depth++] = id;
+    layer_pushed = true;
 
     // Control hit rect (hit-testing only) so the titlebar drag does not steal a
     // press that landed on the close dot. The titlebar keeps its full width.
@@ -6954,7 +7029,7 @@ panel_scope ui::panel(std::string_view title, rect &bounds, u32 flags, uiid dock
                     if (ctx->dock_panel == 0)
                     {
                         ctx->dock_panel = dock_panel;
-                        ctx->dock_panel_name = dock_name;
+                        ctx->dock_panel_name = detail::intern_dock_name(ctx, dock_name);
                         ctx->dock_press_x = ctx->mouse_x;
                         ctx->dock_press_y = ctx->mouse_y;
                         ctx->dock_dragging = false;
@@ -6980,7 +7055,7 @@ panel_scope ui::panel(std::string_view title, rect &bounds, u32 flags, uiid dock
             if (dock_panel != 0)
             {
                 ctx->dock_panel = dock_panel;
-                ctx->dock_panel_name = dock_name;
+                ctx->dock_panel_name = detail::intern_dock_name(ctx, dock_name);
                 ctx->dock_press_x = ctx->mouse_x;
                 ctx->dock_press_y = ctx->mouse_y;
                 ctx->dock_dragging = false;
@@ -6990,9 +7065,9 @@ panel_scope ui::panel(std::string_view title, rect &bounds, u32 flags, uiid dock
 
     // Register this panel with the final bounds: next frame these rects block
     // interaction with base UI underneath (one-frame model, like popups).
-    if (ctx->panel_depth < MAX_PANELS)
-        ctx->panels[ctx->panel_depth++] =
-            panel_entry{id, bounds, ctx->current_window ? ctx->current_window->index : 0};
+    detail::ensure_panel_capacity(ctx, ctx->panel_depth + 1);
+    ctx->panels[ctx->panel_depth++] =
+        panel_entry{id, bounds, ctx->current_window ? ctx->current_window->index : 0};
 
     // Opaque backgrounds keep the classic two-rect outline; translucent ones use
     // the ring path so the backdrop shows through (frosted glass). A filled

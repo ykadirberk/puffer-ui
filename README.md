@@ -1440,6 +1440,9 @@ cmake --build out/build/x64-debug --target examples_selftest # every example, of
   all suites and the example selftests, and checks formatting.
 - See `CONTRIBUTING.md` for the house rules, and `docs/design.md` /
   `docs/limitations.md` for the architecture and what is genuinely deferred.
+- `docs/api.md` is generated from the header by `tools/gen_api.ps1` (CI
+  checks it does not drift); `docs/components.md` is the component
+  catalogue; `docs/seams.md` lists the designed-but-unbuilt interfaces.
 
 ## Status and roadmap
 

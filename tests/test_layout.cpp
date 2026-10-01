@@ -165,24 +165,22 @@ void test_limit_overflows()
         for (i32 i = MAX_STYLE_SCOPES; i >= 0; --i) scopes[i].reset();
     }
     end_frame(c);
-    // One popup too many is reported; the depth still unwinds cleanly.
+    // Popups grow on demand now (the cap is just the initial capacity): one
+    // beyond the old MAX_POPUPS is fine, and no violation is reported.
     begin_frame(c, 0.016, 0.016, rect::make(0, 0, 100, 100));
 
     {
         ui u(c);
         std::optional<popup_scope> popups[MAX_POPUPS + 1];
-        for (i32 i = 0; i < MAX_POPUPS; ++i)
+        for (i32 i = 0; i < MAX_POPUPS + 1; ++i)
             popups[i].emplace(u, id_child("p"_id, static_cast<uiid>(i)), rect::make(0, 0, 10, 10),
                               popup_flags::NONE);
-        g_last_violation = nullptr;
-        popups[MAX_POPUPS].emplace(u, id_child("p"_id, static_cast<uiid>(MAX_POPUPS)),
-                                   rect::make(0, 0, 10, 10), popup_flags::NONE);
-        CHECK(violation_was("popup stack overflow"));
+        CHECK(c->popup_depth == MAX_POPUPS + 1); // grew past the old cap
+        CHECK(g_last_violation != nullptr);      // still the style-scope one, unchanged
         for (i32 i = MAX_POPUPS; i >= 0; --i) popups[i].reset();
     }
     end_frame(c);
-    CHECK(violation_count(c) == 2);
-    CHECK(g_violation_events == 2);
+    CHECK(violation_count(c) == 1); // only the style-scope overflow above
     destroy_context(c);
 }
 
@@ -504,4 +502,3 @@ void test_row_cut_right_no_overlap()
     CHECK(r.remaining().right() <= right.x + 0.001f);
     // leftover sits between them }
 }
-
