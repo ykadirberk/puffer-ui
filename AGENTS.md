@@ -93,6 +93,13 @@ Rules:
 - **Control metrics come from the theme** (`u.control_h()`, `u.spacing()`,
   `u.button_size(label)`, `u.text_size(s)`): examples and components never
   hard-code 26–30px row heights.
+- **Reusable widgets are components** (`namespace pui::comp`, one convention
+  — see `docs/components.md`): free functions taking
+  `(ui&, rect area, ..., const props&)`; props/result structs; **explicit
+  `props.id`** (never label-derived); theme → override styles; no file-scope
+  statics; keyboard-operable with cursor feedback; a headless test, an atomic
+  example and a catalogue row each. Improve the shared components instead of
+  copying widget code between examples.
 - Examples lay out from `example_app::width/height`, which `example_common.h`
   keeps in sync with the real window on resize (and at startup), so they re-flow
   instead of keeping their startup size. `--resize WxH` exercises that path

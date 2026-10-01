@@ -586,6 +586,57 @@ struct button_override
     opt<transition> transition;
 };
 
+// ---- toggle controls (the pui::comp library) --------------------------------
+// Style structs + per-instance overrides for the built-in toggles. The theme
+// carries one slot each (`theme::switch_ctrl` / `radio` / `segmented`);
+// components resolve theme -> override.
+struct switch_style
+{
+    color track_off = {40, 46, 56, 255};
+    color track_on = {86, 156, 255, 255};
+    color knob = {235, 240, 245, 255};
+    f32 width = 38.0f;
+    f32 height = 22.0f;
+    f32 knob_pad = 3.0f;
+    transition anim{0.12f, easing::EASE_OUT};
+    bool animate = true;
+};
+struct switch_override
+{
+    opt<color> track_off, track_on, knob;
+    opt<f32> width, height, knob_pad;
+};
+
+struct radio_style
+{
+    color ring = {70, 80, 94, 255};
+    color fill = {86, 156, 255, 255};
+    f32 size = 16.0f;
+    f32 gap = 10.0f;   // dot-to-label gap
+    f32 ring_w = 1.5f; // outline thickness
+};
+struct radio_override
+{
+    opt<color> ring, fill;
+    opt<f32> size, gap, ring_w;
+};
+
+struct segmented_style
+{
+    color bg = {26, 30, 38, 255};
+    color selected = {86, 156, 255, 255};
+    color text = {236, 240, 246, 255};
+    color text_selected = {14, 18, 24, 255};
+    f32 radius = 6.0f;
+    f32 pad = 2.0f;
+    transition anim{0.10f, easing::EASE_OUT};
+};
+struct segmented_override
+{
+    opt<color> bg, selected, text, text_selected;
+    opt<f32> radius, pad;
+};
+
 // The options form for buttons: named, order-independent, extensible.
 struct button_opts
 {
@@ -800,6 +851,9 @@ struct theme
     cursor text_cursor = CURSOR_IBEAM;
 
     button_style button;
+    switch_style switch_ctrl;  // pui::comp::switch_toggle
+    radio_style radio;         // pui::comp::radio_group
+    segmented_style segmented; // pui::comp::segmented
     button_role button_roles[MAX_BUTTON_ROLES]{};
     i32 button_role_count = 0;
 
@@ -846,6 +900,16 @@ inline theme default_dark()
     t.scrollbar.thickness = 7.0f;
     t.scrollbar.thumb = {70, 78, 92, 220};
     t.scrollbar.thumb_hover = {96, 106, 122, 235};
+    // toggle controls: the accent ramp
+    t.switch_ctrl.track_off = {40, 46, 56, 255};
+    t.switch_ctrl.track_on = t.accent;
+    t.switch_ctrl.knob = {236, 240, 246, 255};
+    t.radio.ring = {70, 80, 94, 255};
+    t.radio.fill = t.accent;
+    t.segmented.bg = {24, 28, 35, 255};
+    t.segmented.selected = t.accent;
+    t.segmented.text = {236, 240, 246, 255};
+    t.segmented.text_selected = {12, 16, 22, 255};
     return t;
 }
 
@@ -1697,6 +1761,70 @@ struct ui
     void draw_sector(vec2 center, f32 r_in, f32 r_out, f32 a0, f32 a1, color c);
     void draw_arc(vec2 center, f32 radius, f32 thickness, f32 a0, f32 a1, color c);
 };
+
+// ---------------------------------------------------------------- components
+// The built-in component library (`pui::comp`): reusable, themeable widgets
+// built ONLY on the public API, following the component convention — explicit
+// ids (never label-derived), props/result structs, theme-driven styles, no
+// file-scope statics, keyboard operable, cursor feedback included. The
+// implementations live in the implementation section.
+namespace comp
+{
+struct switch_props
+{
+    uiid id = 0; // required: identity is explicit
+    bool enabled = true;
+    switch_override style{};
+};
+struct switch_result
+{
+    bool changed = false;
+    interaction in{};
+    explicit operator bool() const { return changed; }
+};
+// The track width + gap + label width: `row.next(comp::switch_size(u, "Wi-Fi").x)`.
+vec2 switch_size(ui &u, std::string_view label);
+// An animated toggle: click, or Space/Enter when focused. Writes `value`.
+switch_result switch_toggle(ui &u, rect area, std::string_view label, bool &value,
+                            const switch_props &p = {});
+
+struct radio_props
+{
+    uiid id = 0; // required
+    bool enabled = true;
+    f32 row_h = 0.0f; // 0 = the theme's control height
+    radio_override style{};
+};
+struct radio_result
+{
+    bool changed = false;
+    i32 selected = -1;
+    interaction in{};
+    explicit operator bool() const { return changed; }
+};
+// A vertical radio group, one row per label. Every row joins the Tab ring;
+// Space/Enter selects the focused row.
+radio_result radio_group(ui &u, rect area, std::span<const char *const> labels, i32 &selected,
+                         const radio_props &p = {});
+
+struct segmented_props
+{
+    uiid id = 0; // required
+    bool enabled = true;
+    segmented_override style{};
+};
+struct segmented_result
+{
+    bool changed = false;
+    i32 selected = -1;
+    interaction in{};
+    explicit operator bool() const { return changed; }
+};
+// A horizontal segmented control, one segment per label: the selected
+// segment is filled; clicks and Space/Enter select.
+segmented_result segmented(ui &u, rect area, std::span<const char *const> labels, i32 &selected,
+                           const segmented_props &p = {});
+} // namespace comp
 
 // A top input-capturing layer. Construct it (as a prvalue) after the base UI so
 // it draws on top; it pops on destruction.
@@ -5178,6 +5306,174 @@ bool ui::button(rect r, std::string_view label, uiid id, const button_opts &opts
 {
     return button(r, label, id, opts.role, opts.style);
 }
+
+// ---- component library (pui::comp) ------------------------------------------
+
+namespace comp
+{
+
+switch_result switch_toggle(ui &u, rect area, std::string_view label, bool &value,
+                            const switch_props &p)
+{
+    switch_result out{};
+    switch_style s = u.th().switch_ctrl;
+    if (p.style.track_off.set) s.track_off = p.style.track_off.value;
+    if (p.style.track_on.set) s.track_on = p.style.track_on.value;
+    if (p.style.knob.set) s.knob = p.style.knob.value;
+    if (p.style.width.set) s.width = p.style.width.value;
+    if (p.style.height.set) s.height = p.style.height.value;
+    if (p.style.knob_pad.set) s.knob_pad = p.style.knob_pad.value;
+
+    out.in = u.interact(p.id, area, p.enabled);
+    if (out.in.hovered && p.enabled) u.set_cursor(u.th().button_cursor);
+    if (out.in.focused && p.enabled && (u.key_pressed(key::ENTER) || u.key_pressed(key::SPACE)))
+    {
+        u.ctx->key_pressed[static_cast<i32>(key::ENTER)] = false;
+        u.ctx->key_pressed[static_cast<i32>(key::SPACE)] = false;
+        value = !value;
+        out.changed = true;
+    }
+    if (out.in.clicked && p.enabled)
+    {
+        value = !value;
+        out.changed = true;
+    }
+
+    const rect track{area.x, area.y + (area.h - s.height) * 0.5f, s.width, s.height};
+    const tween tw{s.anim.duration, s.anim.curve};
+    const color bg = s.animate ? u.animate_color(id_child(p.id, "track"_id),
+                                                 value ? s.track_on : s.track_off, tw)
+                               : (value ? s.track_on : s.track_off);
+    const f32 t = s.animate ? u.animate(id_child(p.id, "knob"_id), value ? 1.0f : 0.0f, tw)
+                            : (value ? 1.0f : 0.0f);
+    u.draw_rounded_rect(track, bg, s.height * 0.5f);
+    const f32 knob_d = s.height - s.knob_pad * 2.0f;
+    const f32 travel = max2(0.0f, s.width - knob_d - s.knob_pad * 2.0f);
+    const rect knob{track.x + s.knob_pad + travel * t, track.y + s.knob_pad, knob_d, knob_d};
+    u.draw_rounded_rect(knob, s.knob, knob_d * 0.5f);
+    if (out.in.focused) detail::focus_ring(u, track, s.height * 0.5f);
+    if (!label.empty())
+        u.text(rect::make(track.right() + u.spacing(), area.y,
+                          max2(0.0f, area.right() - track.right() - u.spacing()), area.h),
+               label, u.th().text, ALIGN_LEFT);
+    return out;
+}
+
+vec2 switch_size(ui &u, std::string_view label)
+{
+    const switch_style &s = u.th().switch_ctrl;
+    const f32 label_w = label.empty() ? 0.0f : u.text_size(label).x + u.spacing();
+    return vec2{s.width + label_w, s.height};
+}
+
+radio_result radio_group(ui &u, rect area, std::span<const char *const> labels, i32 &selected,
+                         const radio_props &p)
+{
+    radio_result out{};
+    radio_style st = u.th().radio;
+    if (p.style.ring.set) st.ring = p.style.ring.value;
+    if (p.style.fill.set) st.fill = p.style.fill.value;
+    if (p.style.size.set) st.size = p.style.size.value;
+    if (p.style.gap.set) st.gap = p.style.gap.value;
+    if (p.style.ring_w.set) st.ring_w = p.style.ring_w.value;
+
+    const f32 row_h = p.row_h > 0.0f ? p.row_h : u.control_h();
+    const i32 n = static_cast<i32>(labels.size());
+    column col(area, 0.0f);
+    for (i32 i = 0; i < n; ++i)
+    {
+        const rect row = col.next(row_h);
+        if (row.h <= 0.0f) break;
+        const uiid item_id = id_child(p.id, static_cast<uiid>(i));
+        const interaction in = u.interact(item_id, row, p.enabled);
+        if (in.hovered && p.enabled) u.set_cursor(u.th().button_cursor);
+
+        bool keyboard = false;
+        if (in.focused && p.enabled && (u.key_pressed(key::ENTER) || u.key_pressed(key::SPACE)))
+        {
+            u.ctx->key_pressed[static_cast<i32>(key::ENTER)] = false;
+            u.ctx->key_pressed[static_cast<i32>(key::SPACE)] = false;
+            keyboard = true;
+        }
+        if ((in.clicked || keyboard) && p.enabled)
+        {
+            if (selected != i)
+            {
+                selected = i;
+                out.changed = true;
+            }
+        }
+        out.selected = selected;
+
+        const f32 d = st.size;
+        const rect dot{row.x, row.y + (row.h - d) * 0.5f, d, d};
+        const f32 radius = d * 0.5f;
+        const bool on = (selected == i);
+        // A ring, not a fill-then-inset (translucent backgrounds stay real).
+        detail::rounded_ring(u, dot, on ? st.fill : st.ring, radius, st.ring_w);
+        if (on) u.draw_rounded_rect(dot.pad(st.ring_w + 2.0f), st.fill, radius - st.ring_w - 2.0f);
+        if (in.focused) detail::focus_ring(u, dot.pad(-2.0f), radius + 2.0f);
+        u.text(rect::make(dot.right() + st.gap, row.y, max2(0.0f, row.w - d - st.gap), row.h),
+               labels[i] ? labels[i] : "", u.th().text, ALIGN_LEFT);
+    }
+    return out;
+}
+
+segmented_result segmented(ui &u, rect area, std::span<const char *const> labels, i32 &selected,
+                           const segmented_props &p)
+{
+    segmented_result out{};
+    segmented_style st = u.th().segmented;
+    if (p.style.bg.set) st.bg = p.style.bg.value;
+    if (p.style.selected.set) st.selected = p.style.selected.value;
+    if (p.style.text.set) st.text = p.style.text.value;
+    if (p.style.text_selected.set) st.text_selected = p.style.text_selected.value;
+    if (p.style.radius.set) st.radius = p.style.radius.value;
+    if (p.style.pad.set) st.pad = p.style.pad.value;
+
+    const i32 n = static_cast<i32>(labels.size());
+    if (n <= 0) return out;
+    u.draw_rounded_rect(area, st.bg, st.radius);
+    const rect inner = area.pad(st.pad);
+    const f32 seg_w = inner.w / static_cast<f32>(n);
+    for (i32 i = 0; i < n; ++i)
+    {
+        const f32 x = inner.x + seg_w * static_cast<f32>(i);
+        const f32 w = (i == n - 1) ? (inner.right() - x) : seg_w;
+        const rect seg = rect::make(x, inner.y, w, inner.h);
+        const uiid item_id = id_child(p.id, static_cast<uiid>(i));
+        const interaction in = u.interact(item_id, seg, p.enabled);
+        if (in.hovered && p.enabled) u.set_cursor(u.th().button_cursor);
+
+        bool keyboard = false;
+        if (in.focused && p.enabled && (u.key_pressed(key::ENTER) || u.key_pressed(key::SPACE)))
+        {
+            u.ctx->key_pressed[static_cast<i32>(key::ENTER)] = false;
+            u.ctx->key_pressed[static_cast<i32>(key::SPACE)] = false;
+            keyboard = true;
+        }
+        if ((in.clicked || keyboard) && p.enabled)
+        {
+            if (selected != i)
+            {
+                selected = i;
+                out.changed = true;
+            }
+        }
+        out.selected = selected;
+
+        const bool on = (selected == i);
+        const color fill = on ? u.animate_color(id_child(item_id, "bg"_id), st.selected,
+                                                tween{st.anim.duration, st.anim.curve})
+                              : color{0, 0, 0, 0};
+        if (on) u.draw_rounded_rect(seg, fill, max2(0.0f, st.radius - st.pad));
+        if (in.focused) detail::focus_ring(u, seg, max2(0.0f, st.radius - st.pad));
+        u.text(seg, labels[i] ? labels[i] : "", on ? st.text_selected : st.text, ALIGN_CENTER);
+    }
+    return out;
+}
+
+} // namespace comp
 
 void ui::card(rect r, card_override ov)
 {

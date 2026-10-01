@@ -413,6 +413,33 @@ static void ch_keyboard(ui &u, example_app &app, rect body)
     u.text(col.next(16.0f), line, th.text_dim, ALIGN_LEFT);
 }
 
+static void ch_components(ui &u, example_app &app, rect body)
+{
+    const theme &th = u.th();
+    (void)app;
+    column col(body, 8.0f);
+    u.text(col.next(16.0f),
+           "comp::switch_toggle / radio_group / segmented: theme-styled, explicit ids,",
+           th.text_dim, ALIGN_LEFT);
+    u.text(col.next(14.0f), "keyboard operable (Tab, then Space/Enter).", th.text_dim, ALIGN_LEFT);
+    col.space(4.0f);
+    static bool on = true;
+    static bool bt = false;
+    static i32 quality = 1;
+    static i32 range = 0;
+    (void)comp::switch_toggle(u, col.next(u.control_h()), "Wi-Fi", on, {.id = "tr_comp_wifi"_id});
+    (void)comp::switch_toggle(u, col.next(u.control_h()), "Bluetooth", bt, {.id = "tr_comp_bt"_id});
+    static const char *const q_items[] = {"Draft", "Balanced", "Best"};
+    (void)comp::radio_group(u, col.next(70.0f), q_items, quality, {.id = "tr_comp_q"_id});
+    static const char *const r_items[] = {"Day", "Week", "Month"};
+    rect seg = col.next(u.control_h());
+    (void)comp::segmented(u, seg, r_items, range, {.id = "tr_comp_range"_id});
+    char line[96];
+    std::snprintf(line, sizeof(line), "wifi %s | quality %d | range %d", on ? "on" : "off", quality,
+                  range);
+    u.text(col.next(16.0f), line, th.text_dim, ALIGN_LEFT);
+}
+
 static bool g_show_panel = true;
 static rect g_panel_bounds = rect::make(320.0f, 150.0f, 260.0f, 150.0f);
 
@@ -1119,6 +1146,8 @@ static const tour_chapter CHAPTERS[] = {
      ch_scroll},
     {"Widgets", "Virtual list", "visible-slice submission, derived content height", "pui_ex_vlist",
      ch_vlist},
+    {"Widgets", "Components", "pui::comp toggles: switch, radio, segmented", "pui_ex_components",
+     ch_components},
     {"Layers", "Popups & menus", "flags, close requests, modal, focus trap", "pui_ex_popups",
      ch_popups},
     {"Layers", "Combo & context menus", "combo, delayed tooltips, right-press menu", "pui_ex_combo",

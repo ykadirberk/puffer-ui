@@ -103,3 +103,6 @@ void test_device_contract();
 void test_animation_tween();
 void test_animation_spring_smooth();
 void test_animation_scope_color_appear();
+void test_switch_toggle();
+void test_radio_group();
+void test_segmented();

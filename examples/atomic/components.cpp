@@ -1,0 +1,64 @@
+// components — the pui::comp toggle library: switch, radio, segmented.
+//
+// Shows: `comp::switch_toggle`, `comp::radio_group`, `comp::segmented` —
+// reusable toggles built on the public API: theme-driven styles, explicit
+// ids, props/result structs, keyboard operable (Tab + Space/Enter), and
+// zero pollution of app state.
+//
+//   pui_ex_components
+#include "../example_common.h"
+
+static bool g_wifi = true;
+static bool g_bluetooth = false;
+static bool g_animations = true;
+static i32 g_quality = 1;
+static i32 g_range = 1;
+static i32 g_mode = 0;
+
+static void components_frame(ui &u, example_app &app)
+{
+    const theme &th = u.th();
+    example_page page =
+        example_begin_page(u, app, "Components", "the pui::comp toggles: switch, radio, segmented");
+    column col(page.content, example_ui::SECTION_GAP);
+
+    {
+        const rect body = example_section(
+            u, col.next(160.0f), "Switches",
+            "comp::switch_toggle(ui, rect, label, bool&, {.id}) - click or Space toggles",
+            app.font_bold);
+        column c(body, u.spacing());
+        (void)comp::switch_toggle(u, c.next(u.control_h()), "Wi-Fi", g_wifi, {.id = "ex_wifi"_id});
+        (void)comp::switch_toggle(u, c.next(u.control_h()), "Bluetooth", g_bluetooth,
+                                  {.id = "ex_bt"_id});
+        (void)comp::switch_toggle(u, c.next(u.control_h()), "Animations", g_animations,
+                                  {.id = "ex_anim"_id});
+    }
+
+    {
+        const rect body = example_section(
+            u, col.next(160.0f), "Radio group",
+            "comp::radio_group(ui, rect, labels, i32&, {.id}) - one row per label, Space selects",
+            app.font_bold);
+        static const char *const items[] = {"Draft", "Balanced", "Best quality"};
+        (void)comp::radio_group(u, body, items, g_quality, {.id = "ex_quality"_id});
+    }
+
+    {
+        rect body = example_section(
+            u, col.next(140.0f), "Segmented control",
+            "comp::segmented(ui, rect, labels, i32&, {.id}) - Day/Week/Month", app.font_bold);
+        static const char *const items[] = {"Day", "Week", "Month"};
+        (void)comp::segmented(u, body.cut_top(u.control_h()), items, g_range,
+                              {.id = "ex_range"_id});
+        char line[128];
+        std::snprintf(line, sizeof(line), "wifi %s | quality %d | range %d | mode %d",
+                      g_wifi ? "on" : "off", g_quality, g_range, g_mode);
+        u.text(rect::make(body.x, body.y + 4.0f, body.w, 18.0f), line, th.text_dim, ALIGN_LEFT);
+    }
+}
+
+int main(int argc, char **argv)
+{
+    return example_run("components", 640, 520, argc, argv, components_frame);
+}

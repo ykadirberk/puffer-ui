@@ -84,6 +84,7 @@ set(PUFFERUI_CORE_TEST_SOURCES
     tests/test_widgets.cpp
     tests/test_dock.cpp
     tests/test_render.cpp
+    tests/test_components.cpp
 )
 add_executable(pui_core_tests ${PUFFERUI_CORE_TEST_SOURCES})
 target_link_libraries(pui_core_tests PRIVATE pufferui pufferui_warnings)
@@ -198,6 +199,7 @@ set(PUFFERUI_EXAMPLE_NAMES
     expander
     combo
     keyboard
+    components
     vlist
 overflow
 )

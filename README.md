@@ -979,6 +979,35 @@ sv.virtual_list(5000, 26.0f, [](ui &u, i32 index, rect row) {
 
 Run: `pui_ex_vlist`. Full source: `examples/atomic/vlist.cpp`.
 
+### 28. Components: switch, radio, segmented
+
+`namespace pui::comp` is the built-in component library: reusable toggles built
+only on the public API, following one convention (see `docs/components.md`) —
+**explicit ids** (never label-derived), props/result structs, theme → override
+styles, keyboard operable, and zero app-state pollution.
+
+```cpp
+column c(body, u.spacing());
+(void)comp::switch_toggle(u, c.next(u.control_h()), "Wi-Fi", g_wifi, {.id = "wifi"_id});
+
+static const char *const items[] = {"Draft", "Balanced", "Best quality"};
+(void)comp::radio_group(u, body, items, g_quality, {.id = "quality"_id});
+
+static const char *const ranges[] = {"Day", "Week", "Month"};
+(void)comp::segmented(u, body.cut_top(u.control_h()), ranges, g_range, {.id = "range"_id});
+```
+
+- **Styles come from the theme** (`theme::switch_ctrl`, `theme::radio`,
+  `theme::segmented`) with a per-instance `style` override in the props —
+  literals exist only as the style structs' defaults.
+- **Keyboard**: every part joins the Tab ring; Enter/Space toggles a switch
+  or selects a radio row / segment; the focused part draws the focus ring.
+- **Results are structs** (`{changed, selected, in}`) with
+  `explicit operator bool`, so `if (comp::segmented(...))` reads naturally.
+- `comp::switch_size(u, label)` gives the natural size for row layout.
+
+Run: `pui_ex_components`. Full source: `examples/atomic/components.cpp`.
+
 
 ---
 
@@ -1015,6 +1044,7 @@ Run: `pui_ex_vlist`. Full source: `examples/atomic/vlist.cpp`.
 | `pui_ex_combo` | `examples/atomic/combo.cpp` | `combo` dropdown, delayed tooltips, right-press context menu |
 | `pui_ex_keyboard` | `examples/atomic/keyboard.cpp` | the focus ring: Tab/Shift+Tab, Enter/Space activation, arrow keys |
 | `pui_ex_vlist` | `examples/atomic/vlist.cpp` | `virtual_list`: 5,000-row scroll, only the visible slice submitted |
+| `pui_ex_components` | `examples/atomic/components.cpp` | the `pui::comp` toggles: switch, radio group, segmented control |
 | `pui_ex_headless` | `examples/atomic/headless.cpp` | `null_device`, violations, caps, no display |
 | `pui_ex_renderer` | `examples/atomic/renderer.cpp` | a CPU `render_device` writing a PPM |
 
