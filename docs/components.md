@@ -107,6 +107,46 @@ A sliding side drawer over a host rect.
 | Edges | `drawer_edge::LEFT` / `RIGHT` (slides from that edge) |
 | Notes | The scrim captures clicks but never joins the Tab ring (`interact(..., focusable = false)`); a scrim click closes when `close_on_scrim_click` |
 
+## Theme tokens (r93)
+
+`theme::tokens` is the semantic layer — `surface`, `surface_alt`, `on_surface`,
+`on_surface_dim`, `primary`, `primary_hover`, `danger`, `success`, `warning`,
+`outline` — separated from per-component styles. Component styles default from
+these, so setting tokens once rethemes everything that opted in.
+`theme_lerp(a, b, t)` interpolates two themes (colors + radius/spacing/padding/
+control height), so an app can ease between a dark and a light theme.
+
+## `comp::toast_draw`
+
+Transient notifications from an app-owned queue.
+
+| | |
+| --- | --- |
+| `toast_host h; h.push("Saved", 1);` | Queue a toast (kind 0 info / 1 success / 2 danger); oldest is dropped at 8 |
+| `comp::toast_draw(u, anchor, h, toast_props{.id, .enabled, .style})` | Stacks the live toasts under `anchor`'s top-right corner, slides/fades them, ages them out |
+| Theme slot | `theme::toast` (`bg`, `info`, `success`, `danger`, `text`, `width`, `height`, `gap`, `radius`, `lifetime`, `fade`) |
+
+## `comp::table`
+
+A uniform-column table with a pinned header and a virtualized body.
+
+| | |
+| --- | --- |
+| `comp::table(u, area, span<const char *const> headers, i32 rows, function_ref<void(ui&, rect, i32 row, i32 col)> cell_draw, table_props{.id, .enabled, .row_h, .header_h, .style})` | Returns `{clicked_row, clicked_col, focused_row}`; `if (res)` = a row was activated |
+| Theme slot | `theme::table` (`header_bg`, `row_bg`, `row_alt`, `row_hover`, `header_text`, `text`, `border`, `row_h`, `header_h`) |
+| Notes | The body is a `scroll_view` + `virtual_list`: only visible rows are submitted; clicking resolves the column from the pointer; Enter/Space activates the focused row |
+
+## `comp::command_palette`
+
+A modal filter-and-run overlay (Ctrl+K style).
+
+| | |
+| --- | --- |
+| `comp::command_palette(u, screen, bool &open, palette_state{.query, .active}, span<const palette_command>, palette_props{.id, .style})` | Returns `{chosen, active, shown}`; `chosen` is the ORIGINAL command index |
+| Theme slot | `theme::palette` (`scrim`, `bg`, `border`, `text`, `hint`, `selected`, `accent`, `width`, `item_h`, `radius`) |
+| Keys | Up/Down move the highlight, Enter chooses, Escape closes; typing filters (case-insensitive substring) |
+| Notes | The query field takes focus while open; the scrim captures clicks and never joins the Tab ring |
+
 ## Roadmap
 
 The next batches (r92–r93): tabs, accordion, drawer → toast host, table,

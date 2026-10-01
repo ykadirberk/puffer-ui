@@ -15,6 +15,9 @@ static i32 g_quality = 1;
 static i32 g_range = 1;
 static i32 g_mode = 0;
 static bool g_drawer_open = false;
+static bool g_palette_open = false;
+static comp::palette_state g_palette;
+static comp::toast_host g_toasts;
 
 static void components_frame(ui &u, example_app &app)
 {
@@ -91,6 +94,52 @@ static void components_frame(ui &u, example_app &app)
             u.text(dc.next(18.0f), "the content clips and slides.", th.text_dim, ALIGN_LEFT);
         }
     }
+
+    // table: uniform columns, virtualized body
+    {
+        const rect body = example_section(
+            u, col.next(170.0f), "Table",
+            "comp::table(ui, area, headers, rows, cell_fn, {.id}) - only visible rows submit",
+            app.font_bold);
+        static const char *const headers[] = {"Name", "Size", "Kind"};
+        (void)comp::table(u, body, headers, 500,
+                          [](ui &uu, rect cell, i32 row, i32 col)
+                          {
+                              char label[48];
+                              if (col == 0)
+                                  std::snprintf(label, sizeof(label), "file_%03d.bin", row);
+                              else if (col == 1)
+                                  std::snprintf(label, sizeof(label), "%d KB", (row * 7) % 900 + 1);
+                              else
+                                  std::snprintf(label, sizeof(label), "%s",
+                                                (row % 2) ? "image" : "text");
+                              uu.text(cell, label, uu.th().text, ALIGN_LEFT);
+                          },
+                          {.id = "ex_table"_id});
+    }
+
+    // command palette + toast host
+    {
+        const rect body =
+            example_section(u, col.next(110.0f), "Palette and toasts",
+                            "Ctrl+K style filter-and-run; transient notifications", app.font_bold);
+        column c(body, u.spacing());
+        if (u.button(c.next(u.control_h()), "Open palette", "ex_pal_btn"_id,
+                     button_opts{.role = "primary"_id}))
+            g_palette_open = true;
+        if (u.button(c.next(u.control_h()), "Show a toast", "ex_toast_btn"_id))
+            g_toasts.push("Saved to disk", 1);
+        static const comp::palette_command cmds[] = {{"Open file", "Ctrl+O"},
+                                                     {"Save file", "Ctrl+S"},
+                                                     {"Toggle theme", ""},
+                                                     {"Close window", "Esc"}};
+        comp::palette_result pr = comp::command_palette(
+            u, page.content, g_palette_open, g_palette,
+            std::span<const comp::palette_command>(cmds), {.id = "ex_pal"_id});
+        if (pr.chosen >= 0) g_toasts.push(cmds[pr.chosen].name, 0);
+    }
+
+    comp::toast_draw(u, page.content, g_toasts, {.id = "ex_toasts"_id});
 }
 
 int main(int argc, char **argv)

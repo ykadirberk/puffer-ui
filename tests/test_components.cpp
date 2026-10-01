@@ -327,3 +327,192 @@ void test_drawer()
     CHECK(violation_count(c) == 0);
     destroy_context(c);
 }
+
+void test_toast_host()
+{
+    null_device nd;
+    context *c = create_context(&nd, nd.create_surface());
+    set_violation_handler(c, capture_violation, nullptr);
+    g_violation_events = 0;
+
+    comp::toast_host host;
+    const rect anchor = rect::make(0, 0, 300, 200);
+
+    auto frame = [&](f64 t)
+    {
+        begin_frame(c, t, 0.016, anchor);
+        {
+            ui u(c);
+            comp::toast_draw(u, anchor, host, {.id = "toasts"_id});
+        }
+        end_frame(c);
+    };
+
+    host.push("Saved", 1);
+    host.push("Disconnected", 2);
+    CHECK(host.alive() == 2);
+    frame(0.0); // stamps `born`
+    frame(0.5);
+    CHECK(host.alive() == 2); // still within the lifetime
+    frame(4.0);               // past the 3.5 s lifetime
+    CHECK(host.alive() == 0); // aged out
+
+    // the ring overflows by dropping the oldest
+    for (i32 i = 0; i < comp::toast_host::MAX_TOASTS + 3; ++i) host.push("t", 0);
+    CHECK(host.alive() == comp::toast_host::MAX_TOASTS);
+
+    CHECK(violation_count(c) == 0);
+    destroy_context(c);
+}
+
+void test_table()
+{
+    null_device nd;
+    context *c = create_context(&nd, nd.create_surface());
+    set_violation_handler(c, capture_violation, nullptr);
+    g_violation_events = 0;
+
+    static const char *const headers[] = {"Name", "Size", "Kind"};
+    const rect area = rect::make(10, 10, 240, 100);
+
+    struct env
+    {
+        context *c;
+        i32 last_row = -1, last_col = -1;
+    } e{c, -1, -1};
+    auto frame = [&](f64 t)
+    {
+        begin_frame(c, t, 0.016, rect::make(0, 0, 300, 200));
+        {
+            ui u(c);
+            comp::table_result res =
+                comp::table(u, area, headers, 100,
+                            [](ui &uu, rect cell, i32 row, i32 col)
+                            {
+                                char label[32];
+                                std::snprintf(label, sizeof(label), "r%d c%d", row, col);
+                                uu.text(cell, label, uu.th().text, ALIGN_LEFT);
+                            },
+                            {.id = "table"_id});
+            if (res.clicked_row >= 0)
+            {
+                e.last_row = res.clicked_row;
+                e.last_col = res.clicked_col;
+            }
+        }
+        end_frame(c);
+    };
+
+    frame(0.0);
+    // click the first row, third column (header 28 tall; row 0 at ~38; col width = 80)
+    mouse_move(c, 10.0f + 200.0f, 42.0f); // x within col 2 (160..240)
+    mouse_button(c, true);
+    frame(0.016);
+    mouse_button(c, false);
+    frame(0.032);
+    CHECK(e.last_row == 0);
+    CHECK(e.last_col == 2);
+
+    // keyboard: Tab reaches row 0, Enter activates it
+    key_event(c, key::TAB, true);
+    frame(0.048);
+    key_event(c, key::TAB, false);
+    key_event(c, key::ENTER, true);
+    frame(0.064);
+    key_event(c, key::ENTER, false);
+    CHECK(e.last_row == 0);
+
+    CHECK(violation_count(c) == 0);
+    destroy_context(c);
+}
+
+void test_command_palette()
+{
+    null_device nd;
+    context *c = create_context(&nd, nd.create_surface());
+    set_violation_handler(c, capture_violation, nullptr);
+    g_violation_events = 0;
+    if (tf_needs_font(c))
+    {
+        destroy_context(c);
+        return;
+    }
+
+    static const comp::palette_command cmds[] = {
+        {"Open file", "Ctrl+O"}, {"Save file", "Ctrl+S"}, {"Close window", ""}};
+    bool open = true;
+    comp::palette_state st;
+    const rect screen = rect::make(0, 0, 300, 200);
+    i32 chosen = -1;
+    i32 shown = -1;
+
+    auto frame = [&](f64 t)
+    {
+        begin_frame(c, t, 0.016, screen);
+        {
+            ui u(c);
+            comp::palette_result r = comp::command_palette(
+                u, screen, open, st, std::span<const comp::palette_command>(cmds),
+                {.id = "pal"_id});
+            if (r.chosen >= 0) chosen = r.chosen;
+            shown = r.shown;
+        }
+        end_frame(c);
+    };
+
+    frame(0.0);
+    frame(0.016); // the query field takes focus
+    CHECK(shown == 3);
+    CHECK(c->focus == id_child("pal"_id, "query"_id)); // the field owns focus
+
+    // Down moves the highlight; Enter chooses that command
+    key_event(c, key::DOWN, true);
+    frame(0.032);
+    key_event(c, key::DOWN, false);
+    CHECK(st.active == 1);
+    key_event(c, key::ENTER, true);
+    frame(0.048);
+    key_event(c, key::ENTER, false);
+    CHECK(chosen == 1); // "Save file"
+    CHECK(!open);
+
+    // filtering: reopen, type "win" -> "Close window" is the only match
+    open = true;
+    st.query.clear();
+    st.active = 0;
+    frame(0.064);
+    frame(0.080);
+    text_input_event(c, "win");
+    frame(0.096);
+    CHECK(shown == 1);
+    key_event(c, key::ENTER, true);
+    frame(0.112);
+    key_event(c, key::ENTER, false);
+    CHECK(chosen == 2); // "Close window"
+
+    // Escape closes
+    open = true;
+    st.query.clear();
+    frame(0.128);
+    key_event(c, key::ESCAPE, true);
+    frame(0.144);
+    key_event(c, key::ESCAPE, false);
+    CHECK(!open);
+
+    CHECK(violation_count(c) == 0);
+    destroy_context(c);
+}
+
+void test_theme_tokens()
+{
+    // tokens ride along the theme and interpolate
+    theme a = default_dark();
+    theme b = a;
+    b.bg = {255, 255, 255, 255};
+    b.tokens.primary = {255, 0, 0, 255};
+    const theme mid = theme_lerp(a, b, 0.5f);
+    CHECK(mid.bg.r > a.bg.r && mid.bg.r < b.bg.r);
+    CHECK(mid.tokens.primary.r > a.tokens.primary.r);
+    CHECK(mid.tokens.primary.b < a.tokens.primary.b);
+    CHECK(a.tokens.primary.r == a.accent.r); // default_dark wires them
+}

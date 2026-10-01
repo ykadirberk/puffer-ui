@@ -684,6 +684,65 @@ struct drawer_override
     opt<f32> radius;
 };
 
+struct toast_style
+{
+    color bg = {30, 34, 42, 246};
+    color info = {86, 156, 255, 255};
+    color success = {92, 190, 120, 255};
+    color danger = {232, 90, 90, 255};
+    color text = {236, 240, 246, 255};
+    f32 width = 260.0f;
+    f32 height = 44.0f;
+    f32 gap = 8.0f;
+    f32 radius = 8.0f;
+    f32 lifetime = 3.5f;
+    f32 fade = 0.25f;
+    transition anim{0.18f, easing::EASE_OUT};
+};
+struct toast_override
+{
+    opt<color> bg, info, success, danger, text;
+    opt<f32> width, height, gap, radius, lifetime, fade;
+};
+
+struct table_style
+{
+    color header_bg = {26, 30, 38, 255};
+    color row_bg = {22, 25, 32, 255};
+    color row_alt = {26, 30, 38, 255};
+    color row_hover = {40, 46, 56, 255};
+    color header_text = {140, 150, 165, 255};
+    color text = {236, 240, 246, 255};
+    color border = {44, 50, 61, 255};
+    f32 row_h = 26.0f;
+    f32 header_h = 28.0f;
+    f32 radius = 0.0f;
+};
+struct table_override
+{
+    opt<color> header_bg, row_bg, row_alt, row_hover, header_text, text, border;
+    opt<f32> row_h, header_h, radius;
+};
+
+struct palette_style
+{
+    color scrim = {0, 0, 0, 120};
+    color bg = {26, 30, 38, 252};
+    color border = {48, 56, 68, 255};
+    color text = {236, 240, 246, 255};
+    color hint = {140, 150, 165, 255};
+    color selected = {44, 52, 64, 255};
+    color accent = {86, 156, 255, 255};
+    f32 width = 420.0f;
+    f32 item_h = 30.0f;
+    f32 radius = 10.0f;
+};
+struct palette_override
+{
+    opt<color> scrim, bg, border, text, hint, selected, accent;
+    opt<f32> width, item_h, radius;
+};
+
 // The options form for buttons: named, order-independent, extensible.
 struct button_opts
 {
@@ -892,6 +951,22 @@ struct theme
     f32 text_size = 15.0f;
 
     color selection = {60, 120, 200, 140};
+    // Semantic tokens (r93): the palette components read for surfaces, text
+    // and actions — separated from per-component styles, so retheming means
+    // setting tokens once. Component styles default FROM these.
+    struct tokens_t
+    {
+        color surface = {22, 25, 32, 255};           // panels, popups
+        color surface_alt = {30, 34, 42, 255};       // controls, headers
+        color on_surface = {236, 240, 246, 255};     // primary text
+        color on_surface_dim = {140, 150, 165, 255}; // secondary text
+        color primary = {86, 156, 255, 255};         // actions, selection
+        color primary_hover = {122, 180, 255, 255};
+        color danger = {232, 90, 90, 255};
+        color success = {92, 190, 120, 255};
+        color warning = {230, 170, 70, 255};
+        color outline = {44, 50, 61, 255};
+    } tokens;
     color caret = {235, 240, 245, 255};
     char decimal_separator = '.';
     cursor button_cursor = CURSOR_HAND;
@@ -904,6 +979,9 @@ struct theme
     tabs_style tabs;           // pui::comp::tab_bar
     accordion_style accordion; // pui::comp::accordion_scope
     drawer_style drawer;       // pui::comp::drawer_scope
+    toast_style toast;         // pui::comp::toast_draw
+    table_style table;         // pui::comp::table
+    palette_style palette;     // pui::comp::command_palette
     button_role button_roles[MAX_BUTTON_ROLES]{};
     i32 button_role_count = 0;
 
@@ -934,6 +1012,14 @@ inline theme default_dark()
     t.spacing = 8.0f;
     t.padding = 14.0f;
     t.selection = {86, 156, 255, 110};
+    // tokens (the semantic layer the values above also feed)
+    t.tokens.surface = t.panel_bg;
+    t.tokens.surface_alt = t.widget_bg;
+    t.tokens.on_surface = t.text;
+    t.tokens.on_surface_dim = t.text_dim;
+    t.tokens.primary = t.accent;
+    t.tokens.primary_hover = t.accent_hover;
+    t.tokens.outline = t.border;
     t.button.bg = {32, 37, 46, 255};
     t.button.hover_bg = {43, 49, 60, 255};
     t.button.active_bg = {26, 30, 38, 255};
@@ -968,7 +1054,61 @@ inline theme default_dark()
     t.accordion.text = {236, 240, 246, 255};
     t.drawer.bg = {22, 25, 32, 252};
     t.drawer.border = {44, 50, 61, 255};
+    t.toast.info = t.accent;
+    t.toast.success = t.tokens.success;
+    t.toast.danger = t.tokens.danger;
+    t.toast.text = t.text;
+    t.table.border = t.border;
+    t.table.text = t.text;
+    t.palette.accent = t.accent;
+    t.palette.text = t.text;
+    t.palette.hint = t.text_dim;
     return t;
+}
+
+// Interpolates two themes (colors and the layout metrics): the app can ease
+// between a dark and a light theme over a few frames. Respects reduced
+// motion by simply being driven by the app's own t.
+inline color theme_lerp_color(color a, color b, f32 t)
+{
+    const auto mix = [&](u8 x, u8 y)
+    {
+        return static_cast<u8>(clampf(
+            static_cast<f32>(x) + (static_cast<f32>(y) - static_cast<f32>(x)) * t, 0.0f, 255.0f));
+    };
+    return color{mix(a.r, b.r), mix(a.g, b.g), mix(a.b, b.b), mix(a.a, b.a)};
+}
+
+inline theme theme_lerp(const theme &a, const theme &b, f32 t)
+{
+    theme r = a;
+    r.bg = theme_lerp_color(a.bg, b.bg, t);
+    r.panel_bg = theme_lerp_color(a.panel_bg, b.panel_bg, t);
+    r.border = theme_lerp_color(a.border, b.border, t);
+    r.focus_border = theme_lerp_color(a.focus_border, b.focus_border, t);
+    r.text = theme_lerp_color(a.text, b.text, t);
+    r.text_dim = theme_lerp_color(a.text_dim, b.text_dim, t);
+    r.accent = theme_lerp_color(a.accent, b.accent, t);
+    r.accent_hover = theme_lerp_color(a.accent_hover, b.accent_hover, t);
+    r.widget_bg = theme_lerp_color(a.widget_bg, b.widget_bg, t);
+    r.widget_hover = theme_lerp_color(a.widget_hover, b.widget_hover, t);
+    r.widget_active = theme_lerp_color(a.widget_active, b.widget_active, t);
+    r.selection = theme_lerp_color(a.selection, b.selection, t);
+    r.tokens.surface = theme_lerp_color(a.tokens.surface, b.tokens.surface, t);
+    r.tokens.surface_alt = theme_lerp_color(a.tokens.surface_alt, b.tokens.surface_alt, t);
+    r.tokens.on_surface = theme_lerp_color(a.tokens.on_surface, b.tokens.on_surface, t);
+    r.tokens.on_surface_dim = theme_lerp_color(a.tokens.on_surface_dim, b.tokens.on_surface_dim, t);
+    r.tokens.primary = theme_lerp_color(a.tokens.primary, b.tokens.primary, t);
+    r.tokens.primary_hover = theme_lerp_color(a.tokens.primary_hover, b.tokens.primary_hover, t);
+    r.tokens.danger = theme_lerp_color(a.tokens.danger, b.tokens.danger, t);
+    r.tokens.success = theme_lerp_color(a.tokens.success, b.tokens.success, t);
+    r.tokens.warning = theme_lerp_color(a.tokens.warning, b.tokens.warning, t);
+    r.tokens.outline = theme_lerp_color(a.tokens.outline, b.tokens.outline, t);
+    r.radius = a.radius + (b.radius - a.radius) * t;
+    r.spacing = a.spacing + (b.spacing - a.spacing) * t;
+    r.padding = a.padding + (b.padding - a.padding) * t;
+    r.control_h = a.control_h + (b.control_h - a.control_h) * t;
+    return r;
 }
 
 inline void set_button_role(theme &t, uiid id, button_override ov)
@@ -1978,6 +2118,91 @@ struct drawer_scope
     explicit operator bool() const { return open_; }
     bool toggled() const { return toggled_; }
 };
+
+// ---- toast host -------------------------------------------------------------
+// An app-owned queue of transient notifications. `push` from anywhere (any
+// frame); `toast_draw` renders the stack, ages it out and is a no-op while
+// empty. Kind: 0 info, 1 success, 2 danger.
+struct toast_item
+{
+    char text[160]{};
+    u32 kind = 0;
+    u64 serial = 0;
+    f64 born = 0.0; // stamped on the first draw
+    bool stamped = false;
+    bool used = false;
+};
+struct toast_host
+{
+    static constexpr i32 MAX_TOASTS = 8;
+    toast_item items[MAX_TOASTS]{};
+    u64 next_serial = 1;
+
+    void push(const char *text, u32 kind = 0);
+    i32 alive() const;
+};
+
+struct toast_props
+{
+    uiid id = 0;
+    bool enabled = true;
+    toast_override style{};
+};
+// Stacks the live toasts downward from `anchor`'s top-right corner.
+void toast_draw(ui &u, rect anchor, toast_host &host, const toast_props &p = {});
+
+// ---- table ------------------------------------------------------------------
+struct table_props
+{
+    uiid id = 0;
+    bool enabled = true;
+    f32 row_h = 0.0f;    // 0 = the theme's
+    f32 header_h = 0.0f; // 0 = the theme's
+    table_override style{};
+};
+struct table_result
+{
+    i32 clicked_row = -1;
+    i32 clicked_col = -1;
+    i32 focused_row = -1;
+    explicit operator bool() const { return clicked_row >= 0; }
+};
+// A uniform-column table over `area` (headers pinned, body scrolls with
+// virtual_list: only visible rows are submitted). `cell_draw` paints one
+// cell — the component owns the chrome, hit-testing and scrolling.
+table_result table(ui &u, rect area, std::span<const char *const> headers, i32 row_count,
+                   function_ref<void(ui &, rect, i32 row, i32 col)> cell_draw,
+                   const table_props &p = {});
+
+// ---- command palette --------------------------------------------------------
+struct palette_command
+{
+    const char *name = "";
+    const char *hint = "";
+};
+struct palette_state
+{
+    std::string query;
+    i32 active = 0;
+};
+struct palette_props
+{
+    uiid id = 0;
+    palette_override style{};
+};
+struct palette_result
+{
+    i32 chosen = -1; // the ORIGINAL command index, or -1
+    i32 active = -1; // the highlighted entry this frame (filtered order)
+    i32 shown = 0;   // how many entries passed the filter
+    explicit operator bool() const { return chosen >= 0; }
+};
+// A modal filter-and-run overlay (Ctrl+K style). While `open`: the scrim
+// captures clicks, the query field takes focus, Up/Down move, Enter chooses,
+// Escape closes. Returns the chosen command index (or -1).
+palette_result command_palette(ui &u, rect screen, bool &open, palette_state &st,
+                               std::span<const palette_command> commands,
+                               const palette_props &p = {});
 } // namespace comp
 
 // A top input-capturing layer. Construct it (as a prvalue) after the base UI so
@@ -5787,6 +6012,336 @@ drawer_scope::drawer_scope(ui &u, rect host, bool &open, const drawer_props &p)
 drawer_scope::~drawer_scope()
 {
     if (pushed_clip_ && u_ && u_->ctx) detail::clip_pop(u_->ctx);
+}
+
+// ---- toast host -------------------------------------------------------------
+
+void toast_host::push(const char *text, u32 kind)
+{
+    // Reuse a free slot; if full, drop the OLDEST (smallest serial).
+    toast_item *slot = nullptr;
+    for (toast_item &it : items)
+        if (!it.used)
+        {
+            slot = &it;
+            break;
+        }
+    if (!slot)
+    {
+        slot = &items[0];
+        for (toast_item &it : items)
+            if (it.serial < slot->serial) slot = &it;
+    }
+    std::snprintf(slot->text, sizeof(slot->text), "%s", text ? text : "");
+    slot->kind = kind;
+    slot->serial = next_serial++;
+    slot->born = 0.0;
+    slot->stamped = false;
+    slot->used = true;
+}
+
+i32 toast_host::alive() const
+{
+    i32 n = 0;
+    for (const toast_item &it : items)
+        if (it.used) ++n;
+    return n;
+}
+
+void toast_draw(ui &u, rect anchor, toast_host &host, const toast_props &p)
+{
+    toast_style st = u.th().toast;
+    if (p.style.bg.set) st.bg = p.style.bg.value;
+    if (p.style.info.set) st.info = p.style.info.value;
+    if (p.style.success.set) st.success = p.style.success.value;
+    if (p.style.danger.set) st.danger = p.style.danger.value;
+    if (p.style.text.set) st.text = p.style.text.value;
+    if (p.style.width.set) st.width = p.style.width.value;
+    if (p.style.height.set) st.height = p.style.height.value;
+    if (p.style.gap.set) st.gap = p.style.gap.value;
+    if (p.style.radius.set) st.radius = p.style.radius.value;
+    if (p.style.lifetime.set) st.lifetime = p.style.lifetime.value;
+    if (p.style.fade.set) st.fade = p.style.fade.value;
+
+    const f64 now = u.ctx->now;
+    f32 y = anchor.y;
+    // newest first: walk descending serials, each item once
+    u64 after = ~static_cast<u64>(0);
+    for (i32 n = 0; n < toast_host::MAX_TOASTS; ++n)
+    {
+        toast_item *newest = nullptr;
+        for (toast_item &it : host.items)
+            if (it.used && it.serial < after && (newest == nullptr || it.serial > newest->serial))
+                newest = &it;
+        if (!newest) break;
+        after = newest->serial;
+        if (!newest->stamped)
+        {
+            newest->born = now;
+            newest->stamped = true;
+        }
+        const f64 age = now - newest->born;
+        if (age > static_cast<f64>(st.lifetime))
+        {
+            newest->used = false;
+            continue;
+        }
+        const f32 t_in = clampf(static_cast<f32>(age) / st.anim.duration, 0.0f, 1.0f);
+        const f32 remaining = static_cast<f32>(static_cast<f64>(st.lifetime) - age);
+        const f32 t_out = clampf(remaining / max2(0.01f, st.fade), 0.0f, 1.0f);
+        const f32 vis = min2(t_in, t_out);
+
+        const rect box =
+            rect::make(anchor.right() - st.width + (1.0f - t_in) * 24.0f, y, st.width, st.height);
+        const f32 a = vis;
+        u.draw_rounded_rect(box, color{st.bg.r, st.bg.g, st.bg.b, static_cast<u8>(st.bg.a * a)},
+                            st.radius);
+        const color stripe = newest->kind == 1   ? st.success
+                             : newest->kind == 2 ? st.danger
+                                                 : st.info;
+        u.draw_rounded_rect(rect::make(box.x, box.y, 3.0f, box.h),
+                            color{stripe.r, stripe.g, stripe.b, static_cast<u8>(stripe.a * a)},
+                            st.radius);
+        u.text(
+            rect::make(box.x + u.padding(), box.y, max2(0.0f, box.w - u.padding() * 2.0f), box.h),
+            newest->text, color{st.text.r, st.text.g, st.text.b, static_cast<u8>(st.text.a * a)},
+            ALIGN_LEFT);
+        y += st.height + st.gap;
+    }
+}
+
+// ---- table ------------------------------------------------------------------
+
+table_result table(ui &u, rect area, std::span<const char *const> headers, i32 row_count,
+                   function_ref<void(ui &, rect, i32, i32)> cell_draw, const table_props &p)
+{
+    table_result out{};
+    table_style st = u.th().table;
+    if (p.style.header_bg.set) st.header_bg = p.style.header_bg.value;
+    if (p.style.row_bg.set) st.row_bg = p.style.row_bg.value;
+    if (p.style.row_alt.set) st.row_alt = p.style.row_alt.value;
+    if (p.style.row_hover.set) st.row_hover = p.style.row_hover.value;
+    if (p.style.header_text.set) st.header_text = p.style.header_text.value;
+    if (p.style.text.set) st.text = p.style.text.value;
+    if (p.style.border.set) st.border = p.style.border.value;
+    if (p.style.row_h.set) st.row_h = p.style.row_h.value;
+    if (p.style.header_h.set) st.header_h = p.style.header_h.value;
+    if (p.style.radius.set) st.radius = p.style.radius.value;
+
+    const f32 row_h = p.row_h > 0.0f ? p.row_h : st.row_h;
+    const f32 header_h = p.header_h > 0.0f ? p.header_h : st.header_h;
+    const i32 cols = static_cast<i32>(headers.size());
+    const f32 col_w = cols > 0 ? area.w / static_cast<f32>(cols) : area.w;
+
+    rect body = area;
+    const rect head = body.cut_top(header_h);
+    u.draw_rect(head, st.header_bg);
+    for (i32 c = 0; c < cols; ++c)
+    {
+        const rect cell = rect::make(head.x + col_w * static_cast<f32>(c), head.y, col_w, head.h);
+        u.text(rect::make(cell.x + 8.0f, cell.y, max2(0.0f, cell.w - 12.0f), cell.h),
+               headers[c] ? headers[c] : "", st.header_text, ALIGN_LEFT);
+    }
+    if (st.border.a > 0)
+        u.draw_rect(rect::make(head.x, head.bottom() - 1.0f, head.w, 1.0f), st.border);
+
+    scroll_view sv =
+        u.scroll(body, id_child(p.id, "body"_id), scroll_options{0.0f, SCROLL_OVERLAY});
+    sv.virtual_list(
+        row_count, row_h,
+        [&](ui &uu, i32 row, rect row_rect)
+        {
+            const uiid row_id = id_child(p.id, static_cast<uiid>(row));
+            const interaction in = uu.interact(row_id, row_rect, p.enabled);
+            if (in.hovered && p.enabled) uu.set_cursor(uu.th().button_cursor);
+            bool keyboard = false;
+            if (in.focused && p.enabled &&
+                (uu.key_pressed(key::ENTER) || uu.key_pressed(key::SPACE)))
+            {
+                uu.ctx->key_pressed[static_cast<i32>(key::ENTER)] = false;
+                uu.ctx->key_pressed[static_cast<i32>(key::SPACE)] = false;
+                keyboard = true;
+            }
+            if ((in.clicked || keyboard) && p.enabled)
+            {
+                out.clicked_row = row;
+                // the column comes from the click position (keyboard: the first)
+                out.clicked_col =
+                    in.clicked
+                        ? static_cast<i32>((uu.ctx->mouse_x - row_rect.x) / max2(1.0f, col_w))
+                        : 0;
+                out.clicked_col = out.clicked_col < 0       ? 0
+                                  : out.clicked_col >= cols ? cols - 1
+                                                            : out.clicked_col;
+            }
+            if (in.focused) out.focused_row = row;
+
+            const color bg = in.hovered ? st.row_hover : (row % 2 ? st.row_alt : st.row_bg);
+            uu.draw_rect(row_rect, bg);
+            for (i32 c = 0; c < cols; ++c)
+            {
+                const rect cell = rect::make(row_rect.x + col_w * static_cast<f32>(c), row_rect.y,
+                                             col_w, row_rect.h);
+                if (cell_draw)
+                    cell_draw(uu,
+                              rect::make(cell.x + 8.0f, cell.y, max2(0.0f, cell.w - 12.0f), cell.h),
+                              row, c);
+            }
+        });
+    sv.set_content_height(static_cast<f32>(row_count) * row_h);
+    return out;
+}
+
+// ---- command palette --------------------------------------------------------
+
+static inline bool palette_match(const std::string &query, const char *name)
+{
+    if (query.empty() || !name) return true;
+    // case-insensitive substring
+    const usize n = query.size();
+    if (n == 0) return true;
+    for (const char *p = name; *p; ++p)
+    {
+        usize i = 0;
+        while (i < n && p[i])
+        {
+            const char a =
+                query[i] >= 'A' && query[i] <= 'Z' ? static_cast<char>(query[i] + 32) : query[i];
+            const char b = p[i] >= 'A' && p[i] <= 'Z' ? static_cast<char>(p[i] + 32) : p[i];
+            if (a != b) break;
+            ++i;
+        }
+        if (i == n) return true;
+    }
+    return false;
+}
+
+palette_result command_palette(ui &u, rect screen, bool &open, palette_state &st,
+                               std::span<const palette_command> commands, const palette_props &p)
+{
+    palette_result out{};
+    if (!open) return out;
+    palette_style sty = u.th().palette;
+    if (p.style.scrim.set) sty.scrim = p.style.scrim.value;
+    if (p.style.bg.set) sty.bg = p.style.bg.value;
+    if (p.style.border.set) sty.border = p.style.border.value;
+    if (p.style.text.set) sty.text = p.style.text.value;
+    if (p.style.hint.set) sty.hint = p.style.hint.value;
+    if (p.style.selected.set) sty.selected = p.style.selected.value;
+    if (p.style.accent.set) sty.accent = p.style.accent.value;
+    if (p.style.width.set) sty.width = p.style.width.value;
+    if (p.style.item_h.set) sty.item_h = p.style.item_h.value;
+    if (p.style.radius.set) sty.radius = p.style.radius.value;
+
+    // the scrim (never in the Tab ring) + the panel
+    const interaction scrim = u.interact(id_child(p.id, "scrim"_id), screen, true, false);
+    u.draw_rect(screen, sty.scrim);
+    if (scrim.clicked) open = false;
+
+    const i32 shown_max = 8;
+    const f32 panel_h = 52.0f + sty.item_h * static_cast<f32>(shown_max) + 8.0f;
+    const rect panel = rect::make(screen.center_x() - sty.width * 0.5f, screen.y + screen.h * 0.18f,
+                                  sty.width, min2(panel_h, screen.h * 0.7f));
+    u.draw_rounded_rect(panel, sty.bg, sty.radius);
+    u.draw_rounded_rect(rect::make(panel.x, panel.y, 3.0f, panel.h), sty.accent, sty.radius);
+    if (sty.border.a > 0) detail::rounded_ring(u, panel, sty.border, sty.radius, 1.0f);
+
+    rect body = panel.pad(u.padding() * 0.75f);
+    const rect field = body.cut_top(u.control_h());
+    body.cut_top(6.0f);
+
+    const uiid field_id = id_child(p.id, "query"_id);
+    // keep the query field focused while the palette is open
+    if (u.ctx->focus != field_id) u.ctx->focus_request = field_id;
+    if (u.text_field(field, st.query, field_id))
+    {
+        st.active = 0; // typing resets the highlight
+    }
+
+    // Escape closes, Up/Down move, Enter chooses
+    if (u.key_pressed(key::ESCAPE))
+    {
+        u.ctx->key_pressed[static_cast<i32>(key::ESCAPE)] = false;
+        open = false;
+    }
+    const i32 total = static_cast<i32>(commands.size());
+    i32 shown = 0;
+    for (i32 i = 0; i < total; ++i)
+        if (palette_match(st.query, commands[static_cast<usize>(i)].name)) ++shown;
+    out.shown = shown;
+    if (shown > 0)
+    {
+        if (u.key_pressed(key::DOWN))
+        {
+            u.ctx->key_pressed[static_cast<i32>(key::DOWN)] = false;
+            st.active = (st.active + 1) % shown;
+        }
+        if (u.key_pressed(key::UP))
+        {
+            u.ctx->key_pressed[static_cast<i32>(key::UP)] = false;
+            st.active = (st.active + shown - 1) % shown;
+        }
+    }
+    else
+    {
+        st.active = 0;
+    }
+
+    // window of `shown_max` entries around the highlight
+    i32 first = 0;
+    if (shown > shown_max)
+    {
+        first = st.active - shown_max / 2;
+        first = first < 0 ? 0 : first;
+        if (first + shown_max > shown) first = shown - shown_max;
+    }
+
+    i32 rank = -1;
+    i32 drawn = 0;
+    for (i32 i = 0; i < total && drawn < shown_max; ++i)
+    {
+        const palette_command &cmd = commands[static_cast<usize>(i)];
+        if (!palette_match(st.query, cmd.name)) continue;
+        ++rank;
+        if (rank < first) continue;
+        const rect item = body.cut_top(sty.item_h);
+        const uiid item_id = id_child(p.id, static_cast<uiid>(i));
+        const interaction in = u.interact(item_id, item, true, false);
+        if (in.hovered)
+        {
+            st.active = rank;
+            u.set_cursor(u.th().button_cursor);
+        }
+        const bool hl = (rank == st.active);
+        if (hl) u.draw_rounded_rect(item.pad(0.0f, 1.0f), sty.selected, sty.radius * 0.6f);
+        u.text(item.pad(10.0f, 0.0f), cmd.name ? cmd.name : "", sty.text, ALIGN_LEFT);
+        if (cmd.hint && cmd.hint[0]) u.text(item.pad(10.0f, 0.0f), cmd.hint, sty.hint, ALIGN_RIGHT);
+        if (in.clicked)
+        {
+            out.chosen = i;
+            open = false;
+        }
+        ++drawn;
+    }
+    if (u.key_pressed(key::ENTER) && shown > 0)
+    {
+        u.ctx->key_pressed[static_cast<i32>(key::ENTER)] = false;
+        // the active entry's ORIGINAL index
+        i32 rank2 = -1;
+        for (i32 i = 0; i < total; ++i)
+        {
+            if (!palette_match(st.query, commands[static_cast<usize>(i)].name)) continue;
+            ++rank2;
+            if (rank2 == st.active)
+            {
+                out.chosen = i;
+                open = false;
+                break;
+            }
+        }
+    }
+    out.active = shown > 0 ? st.active : -1;
+    return out;
 }
 
 } // namespace comp

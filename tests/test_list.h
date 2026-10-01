@@ -109,3 +109,7 @@ void test_segmented();
 void test_tab_bar();
 void test_accordion();
 void test_drawer();
+void test_toast_host();
+void test_table();
+void test_command_palette();
+void test_theme_tokens();
