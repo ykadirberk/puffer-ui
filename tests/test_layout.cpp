@@ -457,10 +457,10 @@ void test_region_corner()
 
 void test_region_id_overflow()
 {
-    // Over MAX_FRAME_IDS regions the duplicate-id list stops growing, and
-    // that degradation is never silent: every rejected registration reports
-    // VIOL_FRAME_IDS_OVERFLOW. The first MAX_FRAME_IDS regions keep full
-    // duplicate checking.
+    // Region-id duplicate checking is a per-frame hash set: complete at any
+    // frame scale. A frame with far more regions than the old 2048 cap
+    // reports nothing, AND a duplicate among them is still caught (the old
+    // linear list silently stopped checking past the cap).
     null_device nd;
     context *c = create_context(&nd, nd.create_surface());
     set_violation_handler(c, capture_violation, nullptr);
@@ -469,25 +469,25 @@ void test_region_id_overflow()
     begin_frame(c, 0.0, 0.016, rect::make(0, 0, 200, 200));
     {
         ui u(c);
-        constexpr i32 kRegions = MAX_FRAME_IDS + 52;
+        constexpr i32 kRegions = 2100;
         for (i32 i = 0; i < kRegions; ++i)
-            (void)u.region(rect::make(0, 0, 50, 50), id_child("r"_id, i));
+            (void)u.region(rect::make(0, 0, 50, 50), id_child("r"_id, static_cast<uiid>(i)));
     }
     end_frame(c);
-    CHECK(g_violation_events == 52);
-    CHECK(violation_was(
-        "more than MAX_FRAME_IDS regions in one frame; duplicate-id checking is incomplete"));
+    CHECK(g_violation_events == 0); // no cap to outgrow anymore
 
-    // Within the cap nothing is reported.
+    // a duplicate among many regions is still caught
     g_violation_events = 0;
     begin_frame(c, 0.016, 0.016, rect::make(0, 0, 200, 200));
     {
         ui u(c);
-        for (i32 i = 0; i < MAX_FRAME_IDS; ++i)
-            (void)u.region(rect::make(0, 0, 50, 50), id_child("q"_id, i));
+        for (i32 i = 0; i < 2100; ++i)
+            (void)u.region(rect::make(0, 0, 50, 50), id_child("q"_id, static_cast<uiid>(i)));
+        (void)u.region(rect::make(0, 0, 50, 50), id_child("q"_id, 7)); // dup!
     }
     end_frame(c);
-    CHECK(g_violation_events == 0);
+    CHECK(g_violation_events == 1);
+    CHECK(violation_was("duplicate region id among siblings"));
 
     destroy_context(c);
 }

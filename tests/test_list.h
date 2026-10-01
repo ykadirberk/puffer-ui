@@ -85,6 +85,8 @@ void test_titlebar();
 void test_titlebar_maximize_restore();
 void test_titlebar_close_paths();
 void test_draw_list_snapshot();
+void test_culling_and_visibility();
+void test_needs_redraw();
 void test_draw_batching();
 void test_theme();
 void test_rounded_rect();

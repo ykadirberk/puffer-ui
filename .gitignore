@@ -20,3 +20,7 @@ cmake-build-*/
 # OS junk
 Thumbs.db
 .DS_Store
+
+# golden test failure dumps
+tests/golden/dump/
+

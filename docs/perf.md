@@ -1,35 +1,40 @@
-# PufferUI performance baseline & log
+# PufferUI performance benchmark & log
 
-The benchmark target is `pui_bench` (headless, `null_device`): it measures the
+The benchmark is `pui_bench` (headless, `null_device`): it measures the
 **core's** per-frame cost — layout, `interact`, draw-list recording and
 flushing — not the renderer. The scene: 2,000 labeled buttons in an auto-fit
-grid, 500 text rows, 50 rounded cards, one checkbox/slider/text-field. Each
-button is a solid rect + label text + ring, which is exactly the solid↔text
-alternation the batching plan (r89 P1) targets.
+grid, 500 text rows, 50 rounded panels, plus a focused text field / checkbox
+/ slider so the per-frame state paths stay hot. Each button is a rect + text
++ border loop, which is exactly the draw-batching workload this file tracks.
 
-Times are **machine-relative** (this laptop, Windows, MSVC). The stable,
-platform-independent metrics are `draw_calls` and `vertices` — those are what
-revisions are judged by. Run:
+Output is one line: `frames=N avg=…ms worst=…ms draw_calls=N vertices=N`.
+The timing is machine-relative (recorded here: Windows, MSVC, one laptop);
+the **draw_calls / vertices** counts are the platform-stable numbers that
+commits are judged by. Run:
 
 ```sh
 out/build/x64-release/Release/pui_bench.exe --frames 300
 ```
 
-## Baseline — r88 (before the batching work)
+## Baseline (before the batch/storage work)
 
 | Build | avg ms/frame | worst ms | draw_calls | vertices |
 | --- | --- | --- | --- | --- |
-| Debug | 105.7 | 117.4 | **4006** | 374,702 |
+| Debug  | 105.7 | 117.4 | **4006** | 374,702 |
 | Release | 6.4 | 9.2 | **4006** | 374,702 |
 
-Reading: ~2 draw calls per button — every solid rect / ring flushes the text
-batch and every label flushes the solid batch (`dl_prepare` flushes on
-texture change; solid geometry uses `tex = nullptr`, glyphs use the atlas).
-Expected after r89's white-texel change: draw_calls ≈ number of clip changes
-(order of 10 for this scene), vertices unchanged.
+Reading: ~2 draw calls per button — every solid rect / outline flushes the
+text batch and every text run flushes the geometry batch (`draw_rect` records
+with the null texture, glyphs with the atlas texture; the batcher flushes on
+that switch).
 
-## Log
+## History
 
-| Revision | Change | draw_calls | release avg ms | notes |
+| Commit | Change | draw_calls | release avg ms | notes |
 | --- | --- | --- | --- | --- |
-| r88 | baseline | 4006 | 6.4 | the P1 problem, quantified |
+| (r88 baseline) | — | 4006 | 6.4 | the batch break measured |
+| r89 (2573dae) | white texel (solid joins the glyph batch) | **2** | 6.4 | 2000× fewer calls |
+| r89 | text layout cache (one probe, measure+emit shared) | 2 | 5.0 | -22% frame cost |
+| r89 | scratch buffers + rotation recurrence in primitives | 2 | 4.8 | -25% total |
+| r89 | SDL zero-copy (strided RenderGeometryRaw) | 2 | 4.8 | renderer-side copy removed |
+| r89 | draw-list culling + `is_visible` + `needs_redraw` gate | 2 | 4.8 | -25% total |

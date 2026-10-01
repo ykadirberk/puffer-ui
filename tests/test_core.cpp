@@ -18,6 +18,8 @@ static const struct
     {"test_cursors", test_cursors},
     {"test_draw_batching", test_draw_batching},
     {"test_draw_list_snapshot", test_draw_list_snapshot},
+    {"test_culling_and_visibility", test_culling_and_visibility},
+    {"test_needs_redraw", test_needs_redraw},
     {"test_theme", test_theme},
     {"test_utf8", test_utf8},
     {"test_text", test_text},

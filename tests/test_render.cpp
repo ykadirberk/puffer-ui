@@ -40,6 +40,108 @@ void test_draw_list_snapshot()
     destroy_context(c);
 }
 
+void test_culling_and_visibility()
+{
+    // Draw-list-level culling: a batch that cannot intersect the active clip
+    // never reaches the renderer (a scroll view's scrolled-out rows are the
+    // hot case), and `is_visible` gives callers the same test.
+    snapshot_device nd;
+    context *c = create_context(&nd, nd.create_surface());
+    set_violation_handler(c, capture_violation, nullptr);
+    g_violation_events = 0;
+
+    const rect view = rect::make(0, 0, 100, 50);
+
+    // The clip is the viewport — `scroll_to` moves the content, the scissors
+    // stay put. Device counters advance at flush, so each frame asserts once.
+    begin_frame(c, 0.0, 0.016, rect::make(0, 0, 300, 200));
+    {
+        ui u(c);
+        scroll_view sv = u.scroll(view, "cull_view"_id);
+        sv.set_content_height(40.0f);                           // fits: no bar, no overflow paths
+        CHECK(u.is_visible(rect::make(0, 10, 80, 20)));         // inside the viewport
+        CHECK(!u.is_visible(rect::make(0, 70, 80, 20)));        // below the viewport
+        CHECK(!u.is_visible(rect::make(0, -30, 80, 20)));       // above the viewport
+        u.draw_rect(rect::make(0, 70, 80, 20), color::white()); // below the viewport
+    }
+    end_frame(c);
+    CHECK(nd.vertices == 0); // the culled quad never reached the device
+
+    begin_frame(c, 0.016, 0.016, rect::make(0, 0, 300, 200));
+    {
+        ui u(c);
+        scroll_view sv = u.scroll(view, "cull_view"_id);
+        sv.set_content_height(40.0f);
+        u.draw_rect(rect::make(0, 10, 80, 20), color::white()); // in the viewport
+    }
+    end_frame(c);
+    CHECK(nd.vertices == 4); // the in-viewport quad submitted
+
+    // No clip active: everything is "visible" (the old behavior).
+    begin_frame(c, 0.016, 0.016, rect::make(0, 0, 300, 200));
+    {
+        ui u(c);
+        CHECK(u.is_visible(rect::make(-1000.0f, -1000.0f, 10.0f, 10.0f)));
+    }
+    end_frame(c);
+
+    CHECK(violation_count(c) == 0);
+    destroy_context(c);
+}
+
+void test_needs_redraw()
+{
+    // The idle-sleep gate is conservative: an unsettled animation or a
+    // focused text field (the caret blinks) each demand a redraw; a quiet
+    // context does not.
+    null_device nd;
+    context *c = create_context(&nd, nd.create_surface());
+    set_violation_handler(c, capture_violation, nullptr);
+    g_violation_events = 0;
+
+    // quiet: no redraw needed
+    begin_frame(c, 0.0, 0.016, rect::make(0, 0, 300, 200));
+    end_frame(c);
+    CHECK(!needs_redraw(c));
+
+    // an unsettled animation asks for a redraw
+    begin_frame(c, 0.016, 0.016, rect::make(0, 0, 300, 200));
+    {
+        ui u(c);
+        (void)u.animate("idle_anim"_id, 1.0f, tween{0.5f});
+    }
+    end_frame(c);
+    CHECK(needs_redraw(c)); // mid-tween
+
+    // settle it (run past the duration)
+    for (i32 i = 0; i < 40; ++i)
+    {
+        begin_frame(c, 0.032 + 0.016 * i, 0.016, rect::make(0, 0, 300, 200));
+        {
+            ui u(c);
+            (void)u.animate("idle_anim"_id, 1.0f, tween{0.5f});
+        }
+        end_frame(c);
+    }
+    CHECK(!needs_redraw(c)); // settled
+
+    // a focused field blinks (needs redraws)
+    std::string v = "x";
+    mouse_move(c, 50.0f, 12.0f);
+    mouse_button(c, true);
+    begin_frame(c, 1.0, 0.016, rect::make(0, 0, 300, 200));
+    {
+        ui u(c);
+        (void)u.text_field(rect::make(0, 0, 100, 24), v, "idle_field"_id);
+    }
+    end_frame(c);
+    mouse_button(c, false);
+    CHECK(needs_redraw(c)); // the caret blinks while focused
+
+    CHECK(violation_count(c) == 0);
+    destroy_context(c);
+}
+
 void test_draw_batching()
 {
     null_device nd;
@@ -694,4 +796,3 @@ void test_blur()
     CHECK(violation_count(c) == 0);
     destroy_context(c);
 }
-

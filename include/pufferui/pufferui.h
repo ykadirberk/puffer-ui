@@ -54,7 +54,9 @@ inline constexpr u32 UTF8_REPLACEMENT = 0xFFFDu;
 
 inline constexpr i32 MAX_ID_DEPTH = 64;
 inline constexpr i32 MAX_CLIP_DEPTH = 64;
-inline constexpr i32 MAX_FRAME_IDS = 2048;
+// MAX_FRAME_IDS was removed (r89): region-id duplicate checking is a per-frame
+// hash set, complete at any scale. VIOL_FRAME_IDS_OVERFLOW stays in the enum
+// for code stability but is no longer reachable.
 inline constexpr i32 MAX_STYLE_SCOPES = 16;
 inline constexpr i32 MAX_POPUPS = 8;
 inline constexpr i32 MAX_PANELS = 16;
@@ -1064,6 +1066,11 @@ struct sdl3_app
     bool hidden = false;                 // create the window hidden (offscreen tests)
     const char *renderer_name = nullptr; // "software" pins the software renderer
     const char *asset_dir = nullptr;     // font root; defaults to PUFFERUI_ASSET_DIR
+    // Opt-in idle sleep: when true and the library has nothing animating, the
+    // pump waits for events instead of spinning at vsync (tools/editors on
+    // laptops). Apps that animate OUTSIDE the library (their own clocks,
+    // video, ...) must keep this false or drive their own wake-ups.
+    bool wait_when_idle = false;
 
     // the app's clock
     f64 freq = 0.0;
@@ -1226,8 +1233,7 @@ struct context
     uiid parent_stack[MAX_ID_DEPTH]{};
     i32 parent_depth = 0;
     uiid current_region = 0;
-    uiid frame_ids[MAX_FRAME_IDS]{};
-    i32 frame_id_count = 0;
+    void *frame_id_set = nullptr; // detail::flat_map<u8> — per-frame region ids
     u64 seq = 0;
 
     rect clip_stack[MAX_CLIP_DEPTH]{};
@@ -1524,6 +1530,10 @@ struct ui
     // used (a single line, or the wrapped block's height).
     f32 text_fit(rect r, std::string_view s, color c, align a = ALIGN_LEFT);
     f32 line_height() const { return ctx->active_theme.text_size * 1.2f; }
+
+    // True when `r` can paint: it intersects the active clip (always true
+    // with no clip active). Widgets and custom drawing can skip work early.
+    bool is_visible(rect r) const;
 
     // built-in widget (uses only the public API above)
     button_style resolve_button_style(uiid role_id = 0, const button_override &ov = {}) const;
@@ -1988,6 +1998,10 @@ void set_global_mouse(context *c, f32 x, f32 y);
 void begin_frame(context *c, window &w, f64 now, f64 dt);
 void begin_frame(context *c, f64 now, f64 dt, rect screen); // primary window
 void end_frame(context *c);
+// Conservative "needs redraw" gate for idle sleeping: true when an animation
+// is unsettled, a text field is focused (the caret blinks), or a text drag is
+// in flight. The bootstrap's `wait_when_idle` uses it per pump.
+bool needs_redraw(const context *c);
 
 // ---- input ----
 // Per-window: mouse edges and text go to the window that received the event;
@@ -2212,6 +2226,120 @@ struct font_data
     bool ok = false;
 };
 
+template <class V> struct flat_map
+{
+    struct slot
+    {
+        u64 hash = 0; // 0 = empty (real hashes are mixed to never be 0)
+        uiid key = 0;
+        V value{};
+    };
+    std::vector<slot> slots;
+    usize used = 0;
+
+    static u64 mix(u64 h)
+    {
+        h *= 0x9E3779B97F4A7C15ull;
+        h ^= h >> 32;
+        h *= 0xff51afd7ed558ccdull;
+        h ^= h >> 31;
+        return h ? h : 1;
+    }
+
+    void rehash(usize new_cap)
+    {
+        std::vector<slot> old;
+        old.swap(slots);
+        slots.assign(new_cap, slot{});
+        for (const slot &s : old)
+        {
+            if (!s.hash) continue;
+            usize i = s.hash & (new_cap - 1);
+            while (slots[i].hash) i = (i + 1) & (new_cap - 1);
+            slots[i] = s;
+        }
+    }
+
+    V *find(uiid key)
+    {
+        if (used == 0 || slots.empty()) return nullptr;
+        const u64 h = mix(key);
+        const usize mask = slots.size() - 1;
+        usize i = static_cast<usize>(h) & mask;
+        while (slots[i].hash)
+        {
+            if (slots[i].hash == h && slots[i].key == key) return &slots[i].value;
+            i = (i + 1) & mask;
+        }
+        return nullptr;
+    }
+
+    V &at(uiid key) // find-or-insert
+    {
+        if (slots.empty() || used * 4 >= slots.size() * 3) // load factor 0.75
+        {
+            const usize cap = slots.empty() ? 64 : slots.size() * 2;
+            rehash(cap);
+        }
+        const u64 h = mix(key);
+        const usize mask = slots.size() - 1;
+        usize i = static_cast<usize>(h) & mask;
+        while (slots[i].hash)
+        {
+            if (slots[i].hash == h && slots[i].key == key) return slots[i].value;
+            i = (i + 1) & mask;
+        }
+        slots[i].hash = h;
+        slots[i].key = key;
+        used += 1;
+        return slots[i].value;
+    }
+
+    // Wholesale clear (per frame); capacity is kept.
+    void clear()
+    {
+        for (slot &s : slots) s.hash = 0;
+        used = 0;
+    }
+};
+
+// Direct-mapped cache: a fixed array of {tag, value}; lookup is one probe.
+// Collision = overwrite + recompute, so only use it for data whose
+// recomputation is cheap and side-effect-free (the purge disappears).
+template <class T, usize N> struct direct_cache
+{
+    static_assert((N & (N - 1)) == 0, "N must be a power of two");
+    struct slot
+    {
+        u64 tag = 0;
+        T value{};
+    };
+    slot slots[N];
+
+    static u64 mix(u64 h)
+    {
+        h *= 0x9E3779B97F4A7C15ull;
+        h ^= h >> 32;
+        h *= 0xff51afd7ed558ccdull;
+        h ^= h >> 31;
+        return h ? h : 1;
+    }
+
+    T *find(u64 h)
+    {
+        const u64 m = mix(h);
+        slot &s = slots[static_cast<usize>(m) & (N - 1)];
+        return (s.tag == m) ? &s.value : nullptr;
+    }
+    void put(u64 h, const T &v)
+    {
+        const u64 m = mix(h);
+        slot &s = slots[static_cast<usize>(m) & (N - 1)];
+        s.tag = m;
+        s.value = v;
+    }
+};
+
 struct text_store
 {
     std::vector<font_data> fonts;
@@ -2239,6 +2367,22 @@ struct text_store
         }
     };
     std::unordered_map<glyph_key, glyph, glyph_key_hash> glyphs;
+
+    // Text layout cache (direct-mapped, one probe; collisions rebuild —
+    // side-effect-free): (font, size, string hash) -> width + the per-glyph
+    // run (kern-in + glyph copy). text_width reads the width; ui::text emits
+    // from the run — one cache, no decode and no glyph-map lookups on hit.
+    struct cached_glyph
+    {
+        f32 kern_in = 0.0f;
+        glyph g{};
+    };
+    struct text_layout
+    {
+        f32 width = 0.0f;
+        std::vector<cached_glyph> gs;
+    };
+    direct_cache<text_layout, 4096> layout_cache;
 
     // Glyph atlases. One 1024x1024 page holds a full UI set; pages spill when
     // it fills, so non-Latin vocabularies scale (each glyph carries its own
@@ -2356,7 +2500,18 @@ struct draw_list
     bool clip_active = false;
     rect clip{};
     bool clip_known = false;
+    bool solid_uv_remap = false; // the in-flight draw_triangles call is solid
+    // Reusable scratch for primitives that build local geometry before the
+    // batch copy (draw_sector / draw_polygon): no per-call heap allocation
+    // after warm-up.
+    std::vector<vertex> scratch_v;
+    std::vector<i32> scratch_i;
 };
+
+// Open-addressing map with inline values: power-of-two capacity, linear
+// probing, no tombstones (wholesale clears or rebuilds only). Keys are uiid
+// hashes (u64); the value type must be trivially relocatable enough for the
+// growth re-insert. O(1) expected; two cache lines worst case.
 
 namespace detail
 {
@@ -2407,6 +2562,22 @@ inline void dl_add(context *c, const vertex *verts, i32 vcount, const i32 *idx, 
     draw_list &dl = *c->dl;
     i32 base = static_cast<i32>(dl.verts.size());
     dl.verts.insert(dl.verts.end(), verts, verts + vcount);
+    if (dl.solid_uv_remap)
+    {
+        // Solid geometry rides in the glyph batch: remap the copied verts' UVs
+        // to the atlas's reserved white texel at (0,0) (its center, so any
+        // sampler/filtering returns exactly that texel). The copy already
+        // happened, so this is arithmetic on the way in — no extra pass cost
+        // beyond the uv writes.
+        const f32 wx = 0.5f / static_cast<f32>(c->ts->atlas_w);
+        const f32 wy = 0.5f / static_cast<f32>(c->ts->atlas_h);
+        const usize first = dl.verts.size() - static_cast<usize>(vcount);
+        for (usize i = first; i < dl.verts.size(); ++i)
+        {
+            dl.verts[i].u = wx;
+            dl.verts[i].v = wy;
+        }
+    }
     dl.idx.reserve(dl.idx.size() + static_cast<usize>(icount));
     for (i32 i = 0; i < icount; ++i) dl.idx.push_back(idx[i] + base);
 }
@@ -2419,6 +2590,7 @@ context *create_context(render_device *device, render_surface *surface)
     context *c = new context();
     c->device = device;
     c->surface = surface;
+    c->frame_id_set = new flat_map<u8>();
     c->dl = new draw_list();
     set_current_context(c);
     return c;
@@ -2464,6 +2636,7 @@ void destroy_context(context *c)
     if (c->edits) delete static_cast<edit_store *>(c->edits);
     if (c->anim) delete static_cast<anim_store *>(c->anim);
     if (c->scrolls) delete static_cast<scroll_store *>(c->scrolls);
+    if (c->frame_id_set) delete static_cast<flat_map<u8> *>(c->frame_id_set);
     if (c->defers) delete static_cast<defer_store *>(c->defers);
     if (c->focus_store)
     {
@@ -2739,7 +2912,7 @@ void begin_frame(context *c, window &w, f64 now, f64 dt)
     c->last_click_id = w.last_click_id;
     c->last_click_time = w.last_click_time;
 
-    c->frame_id_count = 0;
+    if (c->frame_id_set) static_cast<flat_map<u8> *>(c->frame_id_set)->clear();
     c->press_claim = 0;
     c->press_claim_rect = rect{};
     c->current_region = 0;
@@ -3033,6 +3206,24 @@ void end_frame(context *c)
 
     c->current_region = 0;
     c->current_window = nullptr;
+}
+bool needs_redraw(const context *c)
+{
+    if (!c) return true;
+    if (c->text_drag.active) return true;
+    if (c->anim)
+    {
+        const anim_store *as = static_cast<const anim_store *>(c->anim);
+        for (const auto &kv : as->map)
+            if (kv.second.initialized && !kv.second.settled) return true;
+    }
+    if (c->edits)
+    {
+        const edit_store *es = static_cast<const edit_store *>(c->edits);
+        for (const auto &kv : es->map)
+            if (kv.second.focused) return true;
+    }
+    return false;
 }
 
 // ---- input ----
@@ -3511,25 +3702,19 @@ region::region(ui &u, uiid key, rect area, bool push_clip)
         pushed_clip_ = true;
     }
 
-    for (i32 i = 0; i < c->frame_id_count; ++i)
+    // Duplicate region ids are an O(1) set membership test (per-frame
+    // flat_map, cleared in begin_frame) — complete at any frame scale, no
+    // cap to silently outgrow.
+    if (flat_map<u8> *ids = static_cast<flat_map<u8> *>(c->frame_id_set))
     {
-        if (c->frame_ids[i] == id_)
+        if (ids->find(id_))
         {
             PUFFERUI_CHECK(VIOL_DUP_REGION_ID, false, "duplicate region id among siblings");
-            break;
         }
-    }
-    if (c->frame_id_count < MAX_FRAME_IDS)
-    {
-        c->frame_ids[c->frame_id_count++] = id_;
-    }
-    else
-    {
-        // Never silent: past the cap the duplicate check is incomplete, and a
-        // quietly-degraded contract is exactly what the violation sink is for.
-        PUFFERUI_CHECK(
-            VIOL_FRAME_IDS_OVERFLOW, false,
-            "more than MAX_FRAME_IDS regions in one frame; duplicate-id checking is incomplete");
+        else
+        {
+            ids->at(id_) = 1;
+        }
     }
 }
 
@@ -4026,6 +4211,13 @@ inline bool ensure_atlas(context *c, text_store *ts)
     ts->atlases.push_back(page);
     ts->atlas_w = 1024;
     ts->atlas_h = 1024;
+    // Reserve the (0,0) texel as pure white: solid geometry samples it (see
+    // draw_triangles' UV remap), so glyph packing starts at (1,1) and never
+    // touches it.
+    const u8 white[4] = {255, 255, 255, 255};
+    c->device->update_texture(page.tex, 0, 0, 1, 1, white);
+    ts->atlases.back().shelf_x = 1;
+    ts->atlases.back().shelf_y = 1;
     return true;
 }
 
@@ -4121,6 +4313,13 @@ bool ui::has_glyph(u32 cp)
     return stbtt_FindGlyphIndex(&fd.info, static_cast<i32>(cp)) != 0;
 }
 
+bool ui::is_visible(rect r) const
+{
+    if (ctx->clip_depth == 0) return true;
+    const rect x = rect::intersect(r, ctx->clip_stack[ctx->clip_depth - 1]);
+    return x.w > 0.0f && x.h > 0.0f;
+}
+
 f32 ui::text_width(std::string_view s)
 {
     context *c = ctx;
@@ -4129,19 +4328,40 @@ f32 ui::text_width(std::string_view s)
     if (fh < 0 || fh >= static_cast<i32>(c->ts->fonts.size()) ||
         !c->ts->fonts[static_cast<usize>(fh)].ok)
         return 0.0f;
+    if (s.empty()) return 0.0f;
 
-    f32 width = 0.0f;
+    // The layout cache keys on (font, size, string hash); advances never
+    // change for a loaded font, so entries cannot go stale. Building the
+    // layout here is fine: a measure almost always precedes a draw of the
+    // same string, and the built glyphs serve the emit path next call.
+    const u64 key = (static_cast<u64>(static_cast<u32>(fh)) << 48) ^
+                    (static_cast<u64>(static_cast<u32>(
+                         static_cast<i32>(c->active_theme.text_size * 4.0f) & 0xFFFF))
+                     << 32) ^
+                    hash(s);
+    if (text_store::text_layout *lay = c->ts->layout_cache.find(key)) return lay->width;
+
+    text_store::text_layout built;
     usize i = 0;
     u32 prev = 0;
     while (i < s.size())
     {
         u32 cp = utf8_decode(s, i);
         if (cp == UTF8_END) break;
-        width += detail::kern_advance(c, fh, c->active_theme.text_size, prev, cp);
-        width += detail::get_glyph(c, fh, c->active_theme.text_size, cp).advance;
+        text_store::cached_glyph e;
+        e.kern_in = detail::kern_advance(c, fh, c->active_theme.text_size, prev, cp);
+        e.g = detail::get_glyph(c, fh, c->active_theme.text_size, cp);
+        // Two separate additions: bit-identical to the old accumulation order
+        // (float associativity would drift the pen by ULPs — visible as edge
+        // coverage changes in the golden scenes).
+        built.width += e.kern_in;
+        built.width += e.g.advance;
+        built.gs.push_back(e);
         prev = cp;
     }
-    return width;
+    c->ts->layout_cache.put(key, built);
+    if (text_store::text_layout *lay = c->ts->layout_cache.find(key)) return lay->width;
+    return 0.0f;
 }
 
 void ui::text(rect r, std::string_view s, color c, align a)
@@ -4162,7 +4382,37 @@ void ui::text(rect r, std::string_view s, color c, align a)
     }
 
     const f32 size = cc->active_theme.text_size;
-    const f32 width = text_width(s);
+    // The layout cache is shared with text_width (same key): a hit emits
+    // from cached glyph copies — no decode, no glyph-map lookups, no stb
+    // calls.
+    const u64 key =
+        (static_cast<u64>(static_cast<u32>(fh)) << 48) ^
+        (static_cast<u64>(static_cast<u32>(static_cast<i32>(size * 4.0f) & 0xFFFF)) << 32) ^
+        hash(s);
+    text_store::text_layout *lay = cc->ts->layout_cache.find(key);
+    if (!lay)
+    {
+        text_store::text_layout built;
+        usize i = 0;
+        u32 prev = 0;
+        while (i < s.size())
+        {
+            u32 cp = utf8_decode(s, i);
+            if (cp == UTF8_END) break;
+            text_store::cached_glyph e;
+            e.kern_in = detail::kern_advance(cc, fh, size, prev, cp);
+            e.g = detail::get_glyph(cc, fh, size, cp);
+            built.width += e.kern_in; // two additions: same order as before
+            built.width += e.g.advance;
+            built.gs.push_back(e);
+            prev = cp;
+        }
+        cc->ts->layout_cache.put(key, built);
+        lay = cc->ts->layout_cache.find(key);
+        if (!lay) return; // cache full? rebuild path guarantees a hit; paranoia
+    }
+
+    const f32 width = lay->width;
     f32 pen = (a == ALIGN_CENTER)  ? r.x + (r.w - width) * 0.5f
               : (a == ALIGN_RIGHT) ? r.right() - width
                                    : r.x;
@@ -4175,13 +4425,9 @@ void ui::text(rect r, std::string_view s, color c, align a)
 
     const rect *clip = (cc->clip_depth > 0) ? &cc->clip_stack[cc->clip_depth - 1] : nullptr;
 
-    usize i = 0;
-    u32 prev = 0;
-    while (i < s.size())
+    for (const text_store::cached_glyph &e : lay->gs)
     {
-        u32 cp = utf8_decode(s, i);
-        if (cp == UTF8_END) break;
-        glyph g = detail::get_glyph(cc, fh, size, cp);
+        const glyph &g = e.g;
         if (g.tex)
         {
             detail::dl_prepare(cc, g.tex, clip);
@@ -4198,9 +4444,8 @@ void ui::text(rect r, std::string_view s, color c, align a)
             i32 idx[6] = {0, 1, 2, 0, 2, 3};
             detail::dl_add(cc, v, 4, idx, 6);
         }
-        pen += detail::kern_advance(cc, fh, size, prev, cp);
+        pen += e.kern_in; // two additions, exactly the old accumulation order
         pen += g.advance;
-        prev = cp;
     }
 }
 
@@ -6859,9 +7104,44 @@ void ui::draw_triangles(texture_handle tex, const vertex *vertices, i32 vertex_c
                         const i32 *indices, i32 index_count)
 {
     if (vertex_count <= 0 || index_count <= 0) return;
+    // Cull whole batches that cannot paint: when a clip is active, a batch
+    // whose bounding box misses the clip is dropped here — the renderer never
+    // sees it (this is what keeps clipped-out scroll/panel content cheap).
+    if (ctx->clip_depth > 0)
+    {
+        // Cull only against a real clip: a degenerate one (w/h 0 — possible
+        // when a sibling clipped scope is still alive) renders "nothing" on
+        // GPU scissors but passes through on the software renderer's quirk;
+        // either way that behavior belongs to the renderer, not to us.
+        const rect clip = ctx->clip_stack[ctx->clip_depth - 1];
+        if (clip.w > 0.0f && clip.h > 0.0f)
+        {
+            f32 minx = vertices[0].x, maxx = minx, miny = vertices[0].y, maxy = miny;
+            for (i32 i = 1; i < vertex_count; ++i)
+            {
+                minx = min2(minx, vertices[i].x);
+                maxx = max2(maxx, vertices[i].x);
+                miny = min2(miny, vertices[i].y);
+                maxy = max2(maxy, vertices[i].y);
+            }
+            const rect aabb{minx, miny, maxx - minx, maxy - miny};
+            const rect isect = rect::intersect(aabb, clip);
+            if (isect.w <= 0.0f || isect.h <= 0.0f) return;
+        }
+    }
+    // Solid geometry (tex == nullptr) joins the glyph batch when an atlas
+    // exists: the atlas's reserved (0,0) texel is pure white, and dl_add
+    // remaps the copied verts' UVs to it. Without an atlas (no font loaded)
+    // the old nullptr-batch behavior stands.
+    if (ctx->dl && tex == nullptr && ctx->ts && !ctx->ts->atlases.empty())
+    {
+        tex = ctx->ts->atlases.front().tex;
+        ctx->dl->solid_uv_remap = true;
+    }
     const rect *clip = (ctx->clip_depth > 0) ? &ctx->clip_stack[ctx->clip_depth - 1] : nullptr;
     detail::dl_prepare(ctx, tex, clip);
     detail::dl_add(ctx, vertices, vertex_count, indices, index_count);
+    if (ctx->dl) ctx->dl->solid_uv_remap = false;
 }
 
 void ui::draw_rect(rect r, color c)
@@ -7106,7 +7386,11 @@ void ui::draw_polygon(std::span<const vec2> points, color c)
     c_out.a = 0;
 
     // center + inner ring (the polygon) + a 1px feathered outer ring
-    std::vector<vertex> verts;
+    if (!ctx->dl) return;
+    std::vector<vertex> &verts = ctx->dl->scratch_v;
+    std::vector<i32> &idx = ctx->dl->scratch_i;
+    verts.clear();
+    idx.clear();
     verts.reserve(2 * n + 1);
     verts.push_back({ctr.x, ctr.y, 0.0f, 0.0f, c});
     for (const vec2 &p : points) verts.push_back({p.x, p.y, 0.0f, 0.0f, c});
@@ -7132,7 +7416,6 @@ void ui::draw_polygon(std::span<const vec2> points, color c)
         verts.push_back({b.x + nrm.x, b.y + nrm.y, 0.0f, 0.0f, c_out});
     }
 
-    std::vector<i32> idx;
     idx.reserve(n * 6 + n * 6);
     const i32 inner0 = 1, outer0 = 1 + static_cast<i32>(n);
     for (usize i = 0; i < n; ++i)
@@ -7188,19 +7471,29 @@ void ui::draw_sector(vec2 center, f32 r_in, f32 r_out, f32 a0, f32 a1, color c)
     rings[rc++] = {r_out, c};
     rings[rc++] = {r_out + 1.0f, c_out};
 
-    std::vector<vertex> verts;
+    std::vector<vertex> &verts = ctx->dl->scratch_v;
+    std::vector<i32> &idx = ctx->dl->scratch_i;
+    verts.clear();
+    idx.clear();
     verts.reserve(static_cast<usize>(rc) * static_cast<usize>(seg + 1));
+
+    // Rotation recurrence: two trig evaluations per CALL instead of two per
+    // vertex — each step rotates the radius vector by the fixed step angle.
+    // Accumulated drift for UI-sized arcs is ~1e-4 px (subpixel).
+    const f32 step = (a1 - a0) / static_cast<f32>(seg);
+    const f32 cs = std::cos(step), sn = std::sin(step);
     for (i32 ri = 0; ri < rc; ++ri)
     {
+        f32 x = std::cos(a0) * rings[ri].r, y = std::sin(a0) * rings[ri].r;
         for (i32 s = 0; s <= seg; ++s)
         {
-            const f32 a = a0 + (a1 - a0) * static_cast<f32>(s) / static_cast<f32>(seg);
-            verts.push_back({center.x + std::cos(a) * rings[ri].r,
-                             center.y + std::sin(a) * rings[ri].r, 0.0f, 0.0f, rings[ri].col});
+            verts.push_back({center.x + x, center.y + y, 0.0f, 0.0f, rings[ri].col});
+            const f32 nx = x * cs - y * sn;
+            y = x * sn + y * cs;
+            x = nx;
         }
     }
 
-    std::vector<i32> idx;
     idx.reserve(static_cast<usize>(rc - 1) * static_cast<usize>(seg) * 6);
     for (i32 ri = 0; ri < rc - 1; ++ri)
     {
@@ -7510,7 +7803,17 @@ struct sdl3_device : render_device
     bool vsync_enabled = true;
     i32 current_slot = -1;
     texture_handle current_target_ = nullptr;
-    std::vector<SDL_Vertex> scratch;
+    // draw(): the only converted part (u8 -> float colors). The slots are
+    // padded to sizeof(vertex) because SDL's software geometry path reads UVs
+    // with the color stride (SDL_SW_RenderGeometryRaw) — heterogeneous
+    // strides feed it garbage, so all three strides must be equal.
+    struct padded_color
+    {
+        SDL_FColor col{};
+        f32 pad_ = 0.0f;
+    };
+    static_assert(sizeof(padded_color) == sizeof(vertex), "strides must match");
+    std::vector<padded_color> colors_scratch;
     SDL_Cursor *cursors[5] = {nullptr, nullptr, nullptr, nullptr, nullptr};
 
     ~sdl3_device() override
@@ -7799,18 +8102,24 @@ struct sdl3_device : render_device
         SDL_Renderer *ren = renderer();
         if (!ren || vertex_count <= 0 || index_count <= 0) return;
         SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
-        scratch.resize(static_cast<usize>(vertex_count));
+        colors_scratch.resize(static_cast<usize>(vertex_count));
         for (i32 i = 0; i < vertex_count; ++i)
         {
-            SDL_Vertex &out = scratch[static_cast<usize>(i)];
-            out.position = SDL_FPoint{vertices[i].x, vertices[i].y};
-            out.color = SDL_FColor{vertices[i].c.r / 255.0f, vertices[i].c.g / 255.0f,
-                                   vertices[i].c.b / 255.0f, vertices[i].c.a / 255.0f};
-            out.tex_coord = SDL_FPoint{vertices[i].u, vertices[i].v};
+            colors_scratch[static_cast<usize>(i)].col =
+                SDL_FColor{vertices[i].c.r / 255.0f, vertices[i].c.g / 255.0f,
+                           vertices[i].c.b / 255.0f, vertices[i].c.a / 255.0f};
         }
-        SDL_RenderGeometry(ren,
-                           handle ? resolve(reinterpret_cast<sdl3_texture *>(handle)) : nullptr,
-                           scratch.data(), vertex_count, indices, index_count);
+        // Zero-copy positions and UVs: RenderGeometryRaw strides straight over
+        // the core's interleaved vertex buffer. All three strides are
+        // sizeof(vertex): SDL's software geometry path reads UVs with the
+        // color stride (SDL_SW_RenderGeometryRaw's quad detection), so the
+        // strides must be equal — the color slots are padded accordingly.
+        constexpr int stride = static_cast<int>(sizeof(vertex));
+        SDL_RenderGeometryRaw(
+            ren, handle ? resolve(reinterpret_cast<sdl3_texture *>(handle)) : nullptr,
+            &vertices[0].x, stride, reinterpret_cast<const SDL_FColor *>(colors_scratch.data()),
+            stride, &vertices[0].u, stride, vertex_count, indices, index_count,
+            static_cast<int>(sizeof(i32)));
     }
 };
 
@@ -8247,6 +8556,20 @@ bool sdl3_app_init(sdl3_app &a, const char *title, i32 w, i32 h, int argc, char 
 bool sdl3_app_pump(sdl3_app &a)
 {
     if (!a.inited) return false;
+    if (a.wait_when_idle && a.ctx && !needs_redraw(a.ctx))
+    {
+        // Idle: sleep until something happens (bounded, so housekeeping —
+        // keyed-state sweeps, the caret — stays alive), then drain the burst.
+        SDL_Event e;
+        if (SDL_WaitEventTimeout(&e, 120))
+        {
+            if (sdl3_route(a.ctx, &e)) return false;
+        }
+        while (SDL_PollEvent(&e))
+        {
+            if (sdl3_route(a.ctx, &e)) return false;
+        }
+    }
     if (sdl3_pump(a.ctx)) return false; // the app should stop
     if (a.win)
     {

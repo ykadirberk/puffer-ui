@@ -60,8 +60,7 @@ struct snapshot_device : null_device
                       static_cast<int>(v0.c.a), static_cast<int>(v0.c.r),
                       static_cast<int>(v0.c.g), static_cast<int>(v0.c.b));
         calls.push_back(line);
-        (void)idx;
-        (void)icount;
+        null_device::draw(tex, verts, vcount, idx, icount); // keep the counters hot
     }
 };
 

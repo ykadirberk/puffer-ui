@@ -105,6 +105,13 @@ set_property(TARGET pui_bench PROPERTY CXX_STANDARD_REQUIRED ON)
 target_compile_definitions(pui_bench PRIVATE
     PUFFERUI_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
 
+# TEMP probe (delete after the r89 P7 bisection)
+add_executable(pui_gprobe "out/probe/gprobe2.cpp")
+target_compile_definitions(pui_gprobe PRIVATE PUFFERUI_ENABLE_SDL3)
+target_link_libraries(pui_gprobe PRIVATE pufferui_sdl3)
+set_property(TARGET pui_gprobe PROPERTY CXX_STANDARD 20)
+set_property(TARGET pui_gprobe PROPERTY CXX_STANDARD_REQUIRED ON)
+
 # SDL event-pump tests: SDL_PushEvent-driven routing through the offscreen
 # driver. Same exit contract as the core tests (exit 0 = all passed).
 add_executable(pui_pump_tests
