@@ -224,9 +224,9 @@ the current region, and `u.auto_id()` is a draw-order id for unlabeled widgets.
 static void card(ui &u, rect r, const char *title, i32 &value)
 {
     region reg(u, title, r);              // scopes ids and clips content
-    column c(reg.content().pad(8), 6);
-    u.text(c.next(18), title, u.th().text, ALIGN_LEFT);
-    if (u.button(c.next(26), "increment", u.local("inc")))
+    column c(reg.content().pad(8), u.spacing());
+    u.text(c.next(u.text_size(title).y), title, u.th().text, ALIGN_LEFT);
+    if (u.button(c.next(u.control_h()), "increment", u.local("inc")))
         value += 1;
 }
 ```
@@ -238,6 +238,25 @@ is identical. IDs matter:
   draw the one that must yield with `interact(id, r, false)`;
 - **sibling regions with the same key** trip the duplicate-id assert;
 - use `interaction.activated` (press edge) for drag anchors, never `pressed`.
+
+**Pure identity scopes** (`u.scope(key)`) scope ids without an area or a clip —
+the sugar for loops and reusable components:
+
+```cpp
+for (i32 i = 0; i < 3; ++i)
+{
+    id_scope s = u.scope(id_child("row"_id, i));
+    const rect row = c.next(u.control_h());
+    const vec2 open_sz = u.button_size("open");
+    // widgets inside derive with u.local("part") — one "open" per row
+    if (u.button(rect::make(row.x, row.y, open_sz.x, open_sz.y), "open", u.local("open")))
+        open(i);
+}
+```
+
+Duplicate scope keys report exactly like duplicate regions. (Debug builds also
+report the same id interacted at two different rects — the silent shared-state
+bug — as `VIOL_DUP_WIDGET_ID`.)
 
 Run: `pui_ex_ids`. Full source: `examples/atomic/ids.cpp`.
 
@@ -1261,6 +1280,7 @@ retail builds keep the cheap detection but never stop.
 | `VIOL_NO_FONT` | "text drawn while the theme has no loaded font (load_font + set_theme)" | Text drawn while the theme has no working font: it renders nothing. The bootstrap handles this for you. |
 | `VIOL_FRAME_IDS_OVERFLOW` | "more than MAX_FRAME_IDS regions in one frame; duplicate-id checking is incomplete" | More than 2048 regions in one frame; duplicate detection stops there. Virtualize long lists (`scroll_view::virtual_list`). |
 | `VIOL_INPUT_OVERFLOW` | "text input did not fit the per-frame input buffer (IME commit or paste too long)" | A text event did not fit the per-frame input buffer; the part that fits is kept, the rest is dropped loudly. |
+| `VIOL_DUP_WIDGET_ID` | "duplicate widget id among siblings (the same id interacted at a different rect)" | Debug builds only: the same widget id was interacted twice at different rects in one frame — the widgets would silently share press/focus state. |
 
 ---
 

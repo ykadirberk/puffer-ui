@@ -82,6 +82,17 @@ Rules:
   (offscreen, scripted input, asserts `violation_count == 0` and exits non-zero
   on failure). `cmake --build <dir> --target examples_selftest` builds and runs
   them all; CI runs it after the golden tests.
+- **Identity stays explicit** (standing decision): `_id` literals,
+  `id_child`, `u.local`, `u.auto_id`. No label-derived IDs, ever. Loops and
+  reusable components scope with `u.scope(key)` (RAII, no area/clip); debug
+  builds report the same id interacted at two different rects
+  (`VIOL_DUP_WIDGET_ID`).
+- **New multi-parameter APIs take options structs** (designated initializers):
+  `u.button(r, "Save", id, {.role = "primary"_id})`. Positional overloads
+  remain as thin wrappers; never grow a positional parameter list.
+- **Control metrics come from the theme** (`u.control_h()`, `u.spacing()`,
+  `u.button_size(label)`, `u.text_size(s)`): examples and components never
+  hard-code 26–30px row heights.
 - Examples lay out from `example_app::width/height`, which `example_common.h`
   keeps in sync with the real window on resize (and at startup), so they re-flow
   instead of keeping their startup size. `--resize WxH` exercises that path

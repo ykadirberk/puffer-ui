@@ -9,12 +9,13 @@
 // The same widget function, instantiated twice. The region key scopes every id
 // inside it (`u.local("inc")` = id_child(region, "inc")), so the two instances
 // keep independent hover/press/focus state even though the code is identical.
+// Row metrics come from the theme (`u.control_h()`), never magic numbers.
 static void id_counter(ui &u, const theme &th, rect r, const char *label, uiid key, i32 &value)
 {
     region reg(u, key, r);
-    column c(reg.content().pad(10.0f), 6.0f);
-    u.text(c.next(18.0f), label, th.text, ALIGN_LEFT);
-    if (u.button(c.next(26.0f), "increment", u.local("inc"))) value += 1;
+    column c(reg.content().pad(10.0f), u.spacing());
+    u.text(c.next(u.text_size(label).y), label, th.text, ALIGN_LEFT);
+    if (u.button(c.next(u.control_h()), "increment", u.local("inc"))) value += 1;
     char buf[48];
     std::snprintf(buf, sizeof(buf), "value: %d", value);
     u.text(c.next(18.0f), buf, th.text_dim, ALIGN_LEFT);
@@ -36,6 +37,33 @@ static void ids_frame(ui &u, example_app &app)
         row r(body, 10.0f);
         id_counter(u, th, r.next(200.0f), "left", "left"_id, left_value);
         id_counter(u, th, r.next(200.0f), "right", "right"_id, right_value);
+    }
+
+    // `u.scope(key)` — pure identity scopes: the sugar for loops and reusable
+    // components. Widgets inside derive with `local("part")`; two instances
+    // never collide.
+    {
+        const rect body = example_section(
+            u, col.next(220.0f), "Identity scopes",
+            "u.scope(key) scopes ids without an area or clip; rows derive with local()",
+            app.font_bold);
+        column c(body, u.spacing());
+        for (i32 i = 0; i < 3; ++i)
+        {
+            id_scope s = u.scope(id_child("row"_id, static_cast<uiid>(i)));
+            const rect row = c.next(u.control_h());
+            const vec2 open_sz = u.button_size("open");
+            if (u.button(rect::make(row.x, row.y, open_sz.x, open_sz.y), "open", u.local("open")))
+            {
+            }
+            char label[64];
+            std::snprintf(label, sizeof(label),
+                          "row %d's open button: u.local(\"open\") = 0x%016llX", i,
+                          static_cast<unsigned long long>(u.local("open")));
+            u.text(rect::make(row.right() + u.spacing(), row.y,
+                              max2(0.0f, c.bounds_.right() - row.right() - u.spacing()), row.h),
+                   label, th.text_dim, ALIGN_LEFT);
+        }
     }
 
     // `u.auto_id()` is a draw-order id: stable while the order is stable, ideal

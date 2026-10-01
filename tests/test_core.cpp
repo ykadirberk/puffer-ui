@@ -1,4 +1,4 @@
-// test_core.cpp â€” the runner (r88 split): registers every test from the
+// test_core.cpp - the runner (r88 split): registers every test from the
 // per-area files, supports `--list` and `--filter NAME` (substring), and
 // keeps the suite contract: unfiltered + zero failures prints
 // "all core tests passed" and exits 0.
@@ -19,6 +19,8 @@ static const struct
     {"test_draw_batching", test_draw_batching},
     {"test_draw_list_snapshot", test_draw_list_snapshot},
     {"test_culling_and_visibility", test_culling_and_visibility},
+    {"test_identity_scope", test_identity_scope},
+    {"test_dup_widget_id_and_sizes", test_dup_widget_id_and_sizes},
     {"test_needs_redraw", test_needs_redraw},
     {"test_theme", test_theme},
     {"test_utf8", test_utf8},

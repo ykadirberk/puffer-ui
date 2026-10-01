@@ -1,3 +1,5 @@
+void test_dup_widget_id_and_sizes();
+void test_identity_scope();
 // Test declarations (r88 split) â€” one per area file.
 #pragma once
 

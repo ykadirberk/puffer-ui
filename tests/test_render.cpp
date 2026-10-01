@@ -89,6 +89,129 @@ void test_culling_and_visibility()
     destroy_context(c);
 }
 
+void test_identity_scope()
+{
+    // `ui::scope(key)` — pure identity sugar: widgets inside derive with
+    // `local("part")`, two instances of the same component shape never
+    // collide, nesting composes, and duplicate keys report like regions.
+    null_device nd;
+    context *c = create_context(&nd, nd.create_surface());
+    set_violation_handler(c, capture_violation, nullptr);
+    g_violation_events = 0;
+
+    begin_frame(c, 0.0, 0.016, rect::make(0, 0, 300, 200));
+    {
+        ui u(c);
+        uiid first_item = 0, second_item = 0;
+        {
+            id_scope s = u.scope("list"_id);
+            first_item = u.local("item");
+        }
+        {
+            id_scope s = u.scope("list2"_id); // a second instance
+            second_item = u.local("item");
+        }
+        CHECK(first_item != second_item);        // same component shape, different ids
+        CHECK(u.local("outside") != first_item); // unscooped derivation differs
+
+        // nesting composes: an inner scope derives from the outer one, and
+        // leaving it restores the outer derivation
+        {
+            id_scope outer = u.scope("panel"_id);
+            const uiid in_panel = u.local("header");
+            {
+                id_scope inner = u.scope("tools"_id);
+                CHECK(u.local("btn") != in_panel);
+            }
+            CHECK(u.local("header") == in_panel);
+        }
+    }
+    end_frame(c);
+    CHECK(g_violation_events == 0);
+
+    // duplicate scope keys report (same set as regions) — sequential scopes
+    // at the same level share the key
+    g_violation_events = 0;
+    begin_frame(c, 0.016, 0.016, rect::make(0, 0, 300, 200));
+    {
+        ui u(c);
+        {
+            id_scope a = u.scope("dup"_id);
+        }
+        {
+            id_scope b = u.scope("dup"_id);
+        } // same key, same level, again
+    }
+    end_frame(c);
+    CHECK(g_violation_events == 1);
+    CHECK(violation_was("duplicate region id among siblings"));
+    const i32 violations_here = violation_count(c);
+
+    destroy_context(c);
+}
+
+void test_dup_widget_id_and_sizes()
+{
+    // Debug duplicate-widget detection: the same id interacted at two
+    // different rects in one frame reports (the old failure was silent
+    // shared state); identical rects stay tolerated. Also: the natural-size
+    // helpers (`button_size` / `text_size`) and the options-struct forms.
+    null_device nd;
+    context *c = create_context(&nd, nd.create_surface());
+    set_violation_handler(c, capture_violation, nullptr);
+    g_violation_events = 0;
+
+    begin_frame(c, 0.0, 0.016, rect::make(0, 0, 300, 200));
+    {
+        ui u(c);
+        (void)u.interact("twice"_id, rect::make(0, 0, 40, 20));
+        (void)u.interact("twice"_id, rect::make(100, 0, 40, 20)); // different rect: the bug
+    }
+    end_frame(c);
+#if !defined(NDEBUG)
+    CHECK(g_violation_events == 1);
+    CHECK(violation_was(
+        "duplicate widget id among siblings (the same id interacted at a different rect)"));
+#else
+    // Release builds skip the check (the detection is debug-only by design);
+    // the same frame must simply not report anything.
+    CHECK(g_violation_events == 0);
+#endif
+
+    // identical rects are tolerated (a widget re-submitting in place)
+    g_violation_events = 0;
+    begin_frame(c, 0.016, 0.016, rect::make(0, 0, 300, 200));
+    {
+        ui u(c);
+        (void)u.interact("inplace"_id, rect::make(0, 0, 40, 20));
+        (void)u.interact("inplace"_id, rect::make(0, 0, 40, 20));
+    }
+    end_frame(c);
+    CHECK(g_violation_events == 0);
+
+    // natural sizes + options-struct forms (a delta check: the frames above
+    // reported one duplicate)
+    const i32 violations_before_sizes = violation_count(c);
+    begin_frame(c, 0.032, 0.016, rect::make(0, 0, 300, 200));
+    {
+        ui u(c);
+        const vec2 bs = u.button_size("OK");
+        CHECK(bs.y == u.control_h());
+        CHECK(bs.x > u.text_size("OK").x); // label + padding
+        const vec2 ts = u.text_size("hello world");
+        CHECK(ts.x == u.text_width("hello world"));
+        CHECK(ts.y == u.line_height());
+
+        bool clicked = u.button(rect::make(0, 40, static_cast<f32>(bs.x), bs.y), "OK", "opt_btn"_id,
+                                button_opts{.role = "primary"_id});
+        (void)clicked;
+        CHECK(violation_count(c) == violations_before_sizes); // the opts form adds none
+    }
+    end_frame(c);
+
+    destroy_context(c);
+}
+
 void test_needs_redraw()
 {
     // The idle-sleep gate is conservative: an unsettled animation or a

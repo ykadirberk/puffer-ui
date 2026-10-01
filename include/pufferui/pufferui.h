@@ -97,6 +97,7 @@ enum violation_code : u32
     VIOL_LAYOUT_CLAMPED,        // a requested slice was clamped (off by default)
     VIOL_NO_FONT,               // text drawn while the theme has no font
     VIOL_INPUT_OVERFLOW,        // text input did not fit the per-frame buffer
+    VIOL_DUP_WIDGET_ID,         // the same widget id interacted twice in a frame
     VIOL_FRAME_IDS_OVERFLOW,    // over MAX_FRAME_IDS regions; dup checking incomplete
     VIOL_COUNT
 };
@@ -585,6 +586,13 @@ struct button_override
     opt<transition> transition;
 };
 
+// The options form for buttons: named, order-independent, extensible.
+struct button_opts
+{
+    uiid role = 0;           // theme role id ("primary"_id, "danger"_id, ...)
+    button_override style{}; // per-instance style override
+};
+
 inline button_style merge_style(button_style s, const button_override &o)
 {
     if (o.bg.set) s.bg = o.bg.value;
@@ -669,6 +677,15 @@ struct panel_override
     opt<color> bg, titlebar_bg, titlebar_text, border, close;
     opt<f32> radius, border_thickness, titlebar_h, padding;
     opt<bool> shadow;
+};
+
+// The options form for panels: named, order-independent, extensible.
+struct panel_opts
+{
+    u32 flags = PANEL_NONE;
+    uiid dock_panel = 0;             // dock into a leaf/tab node of the app-owned tree
+    const char *dock_name = nullptr; // the tab title when docked
+    panel_override style{};          // per-instance style override
 };
 inline panel_style merge_style(panel_style s, const panel_override &o)
 {
@@ -766,6 +783,13 @@ struct theme
     f32 focus_border_thickness = 1.0f; // focused field outline
     f32 spacing = 6.0f;
     f32 padding = 12.0f;
+    // Control metrics (the layout rhythm): interactive rows use `control_h`,
+    // dense rows `control_h_small`, glyphs `icon_size`. The size helpers
+    // (`u.button_size` / `u.text_size`) read them, so examples and components
+    // never hard-code 26–30px magic numbers.
+    f32 control_h = 28.0f;
+    f32 control_h_small = 22.0f;
+    f32 icon_size = 16.0f;
     font_handle font = FONT_INVALID;
     f32 text_size = 15.0f;
 
@@ -1233,7 +1257,8 @@ struct context
     uiid parent_stack[MAX_ID_DEPTH]{};
     i32 parent_depth = 0;
     uiid current_region = 0;
-    void *frame_id_set = nullptr; // detail::flat_map<u8> — per-frame region ids
+    void *frame_id_set = nullptr;  // detail::flat_map<u8> — per-frame region ids
+    void *widget_id_set = nullptr; // debug: interacted widget ids -> first rect
     u64 seq = 0;
 
     rect clip_stack[MAX_CLIP_DEPTH]{};
@@ -1402,6 +1427,24 @@ struct style_scope
     style_scope &operator=(style_scope &&) = delete;
 };
 
+// Scoped identity (RAII): pushes an id scope for loops and reusable
+// components — widgets inside derive their ids with `u.local("part")`, so two
+// instances of the same component never collide. Pure identity: no area, no
+// clip. Duplicate scope keys are reported like duplicate regions.
+struct id_scope
+{
+    ui *u_ = nullptr;
+    uiid parent_ = 0;
+
+    id_scope(ui &u, uiid key);
+    ~id_scope();
+
+    id_scope(const id_scope &) = delete;
+    id_scope &operator=(const id_scope &) = delete;
+    id_scope(id_scope &&) = delete;
+    id_scope &operator=(id_scope &&) = delete;
+};
+
 // Scroll view flags
 inline constexpr u32 SCROLL_NONE = 0;
 inline constexpr u32 SCROLL_ALWAYS_RESERVE_BAR = 1 << 0; // stable gutter, no layout shift
@@ -1496,9 +1539,24 @@ struct ui
     explicit ui(context *c) : ctx(c) {}
 
     region region(rect area, uiid key, bool push_clip = true);
+    // Scoped identity for loops and reusable components: widgets inside
+    // derive with `local("part")`. RAII — destroy before end_frame.
+    id_scope scope(uiid key) { return id_scope(*this, key); }
 
     uiid local(std::string_view key) const { return id_child(ctx->current_region, key); }
     uiid auto_id() { return id_child(0x5055494155544F00ull, ++ctx->seq); }
+
+    // Layout metrics from the theme — the control rhythm (no magic numbers).
+    f32 control_h() const { return ctx->active_theme.control_h; }
+    f32 control_h_small() const { return ctx->active_theme.control_h_small; }
+    f32 spacing() const { return ctx->active_theme.spacing; }
+    f32 padding() const { return ctx->active_theme.padding; }
+    // A button's natural size: label width + the theme's horizontal padding,
+    // at the control height. `row::next(u.button_size("OK").x)` sizes rows.
+    // (Non-const: first call may rasterize glyphs.)
+    vec2 button_size(std::string_view label);
+    // A single-line text's natural size (its drawn extent).
+    vec2 text_size(std::string_view s);
     uiid hot_id() const { return ctx->hot; } // widget hovered this frame (tooltips)
 
     const theme &th() const { return ctx->active_theme; }
@@ -1538,7 +1596,9 @@ struct ui
     // built-in widget (uses only the public API above)
     button_style resolve_button_style(uiid role_id = 0, const button_override &ov = {}) const;
     bool button(rect r, std::string_view label, uiid id, uiid role_id = 0, button_override ov = {});
-
+    // Options-struct form: `u.button(r, "Save", "save"_id, {.role = "primary"_id})`.
+    // The positional form stays as a thin wrapper.
+    bool button(rect r, std::string_view label, uiid id, const button_opts &opts);
     void card(rect r, card_override ov = {});
 
     // common widgets
@@ -1554,6 +1614,8 @@ struct ui
 
     panel_scope panel(std::string_view title, rect &bounds, u32 flags = PANEL_NONE,
                       uiid dock_panel = 0, const char *dock_name = nullptr, panel_override ov = {});
+    // Options form: `u.panel("Find", bounds, {.dock_panel = "left"_id})`.
+    panel_scope panel(std::string_view title, rect &bounds, const panel_opts &opts);
 
     // splitters + docking
     std::pair<rect, rect> split_horizontal_interactive(uiid id, rect bounds, f32 *position,
@@ -2591,6 +2653,7 @@ context *create_context(render_device *device, render_surface *surface)
     c->device = device;
     c->surface = surface;
     c->frame_id_set = new flat_map<u8>();
+    c->widget_id_set = new flat_map<rect>();
     c->dl = new draw_list();
     set_current_context(c);
     return c;
@@ -2637,6 +2700,7 @@ void destroy_context(context *c)
     if (c->anim) delete static_cast<anim_store *>(c->anim);
     if (c->scrolls) delete static_cast<scroll_store *>(c->scrolls);
     if (c->frame_id_set) delete static_cast<flat_map<u8> *>(c->frame_id_set);
+    if (c->widget_id_set) delete static_cast<flat_map<rect> *>(c->widget_id_set);
     if (c->defers) delete static_cast<defer_store *>(c->defers);
     if (c->focus_store)
     {
@@ -2912,6 +2976,7 @@ void begin_frame(context *c, window &w, f64 now, f64 dt)
     c->last_click_id = w.last_click_id;
     c->last_click_time = w.last_click_time;
 
+    if (c->widget_id_set) static_cast<flat_map<rect> *>(c->widget_id_set)->clear();
     if (c->frame_id_set) static_cast<flat_map<u8> *>(c->frame_id_set)->clear();
     c->press_claim = 0;
     c->press_claim_rect = rect{};
@@ -3497,6 +3562,7 @@ const char *violation_code_name(violation_code code)
         "layout_clamped",
         "no_font",
         "input_overflow",
+        "dup_widget_id",
         "frame_ids_overflow",
     };
     return (code >= 0 && code < VIOL_COUNT) ? names[code] : "unknown";
@@ -3731,6 +3797,29 @@ region ui::region(rect area, uiid key, bool push_clip)
     return pui::region(*this, key, area, push_clip);
 }
 
+id_scope::id_scope(ui &u, uiid key)
+{
+    u_ = &u;
+    context *c = u.ctx;
+    parent_ = c->current_region;
+    c->current_region = id_child(parent_, key);
+    // Two scopes with the same key in one frame is the same bug the region
+    // check catches — same set, same report.
+    if (flat_map<u8> *ids = static_cast<flat_map<u8> *>(c->frame_id_set))
+    {
+        if (ids->find(c->current_region))
+            PUFFERUI_CHECK(VIOL_DUP_REGION_ID, false, "duplicate region id among siblings");
+        else
+            ids->at(c->current_region) = 1;
+    }
+}
+
+id_scope::~id_scope()
+{
+    if (!u_ || !u_->ctx) return;
+    u_->ctx->current_region = parent_;
+}
+
 rect region::corner(i32 n, f32 w, f32 h, f32 margin) const
 {
     n = (n % 4 + 4) % 4; // tolerate any winding; -1 -> BL, 4 -> TL, ...
@@ -3873,6 +3962,26 @@ interaction ui::interact(uiid id, rect area, bool enabled)
         if (!c->focus_store) c->focus_store = new focus_store();
         focus_store *fs = static_cast<focus_store *>(c->focus_store);
         if (fs->current.empty() || fs->current.back() != id) fs->current.push_back(id);
+#if !defined(NDEBUG)
+        // Debug duplicate-widget detection: the same id interacted twice in
+        // one frame silently shares press/focus/animation state (only region
+        // ids are dup-checked). Identical rects are tolerated (a widget
+        // re-submitting itself in place); different rects are the bug.
+        if (flat_map<rect> *seen = static_cast<flat_map<rect> *>(c->widget_id_set))
+        {
+            if (rect *first = seen->find(id))
+            {
+                if (!(first->x == area.x && first->y == area.y))
+                    PUFFERUI_CHECK(VIOL_DUP_WIDGET_ID, false,
+                                   "duplicate widget id among siblings (the same id interacted at "
+                                   "a different rect)");
+            }
+            else
+            {
+                seen->at(id) = area;
+            }
+        }
+#endif
     }
     return in;
 }
@@ -4318,6 +4427,17 @@ bool ui::is_visible(rect r) const
     if (ctx->clip_depth == 0) return true;
     const rect x = rect::intersect(r, ctx->clip_stack[ctx->clip_depth - 1]);
     return x.w > 0.0f && x.h > 0.0f;
+}
+
+vec2 ui::button_size(std::string_view label)
+{
+    const button_style &s = ctx->active_theme.button;
+    return vec2{text_width(label) + s.pad_x * 2.0f, ctx->active_theme.control_h};
+}
+
+vec2 ui::text_size(std::string_view s)
+{
+    return vec2{text_width(s), line_height()};
 }
 
 f32 ui::text_width(std::string_view s)
@@ -5054,6 +5174,11 @@ bool ui::button(rect r, std::string_view label, uiid id, uiid role_id, button_ov
     return in.clicked;
 }
 
+bool ui::button(rect r, std::string_view label, uiid id, const button_opts &opts)
+{
+    return button(r, label, id, opts.role, opts.style);
+}
+
 void ui::card(rect r, card_override ov)
 {
     const card_style s = merge_style(ctx->active_theme.card, ov);
@@ -5594,6 +5719,11 @@ i32 ui::context_menu(uiid id, rect anchor, const char *const *item_labels, i32 i
         c->defer_fresh = fresh_open;
     }
     return picked;
+}
+
+panel_scope ui::panel(std::string_view title, rect &bounds, const panel_opts &opts)
+{
+    return panel(title, bounds, opts.flags, opts.dock_panel, opts.dock_name, opts.style);
 }
 
 panel_scope ui::panel(std::string_view title, rect &bounds, u32 flags, uiid dock_panel,
