@@ -106,3 +106,6 @@ void test_animation_scope_color_appear();
 void test_switch_toggle();
 void test_radio_group();
 void test_segmented();
+void test_tab_bar();
+void test_accordion();
+void test_drawer();

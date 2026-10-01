@@ -170,3 +170,160 @@ void test_segmented()
     CHECK(g_violation_events == 0);
     destroy_context(c);
 }
+
+void test_tab_bar()
+{
+    null_device nd;
+    context *c = create_context(&nd, nd.create_surface());
+    set_violation_handler(c, capture_violation, nullptr);
+    g_violation_events = 0;
+    if (tf_needs_font(c)) // tab widths need a font; skip without the bundled one
+    {
+        destroy_context(c);
+        return;
+    }
+
+    static const char *const items[] = {"Files", "Search", "Settings"};
+    i32 active = 0;
+    rect bar = rect::make(10, 10, 240, 30);
+
+    auto frame = [&](f64 t)
+    {
+        begin_frame(c, t, 0.016, rect::make(0, 0, 300, 200));
+        {
+            ui u(c);
+            (void)comp::tab_bar(u, bar, items, active, {.id = "tabs"_id});
+        }
+        end_frame(c);
+    };
+
+    frame(0.0);
+    // click the second tab (with the font loaded, widths are real)
+    mouse_move(c, 90.0f, 25.0f);
+    mouse_button(c, true);
+    frame(0.016);
+    mouse_button(c, false);
+    frame(0.032);
+    CHECK(active == 1);
+
+    // keyboard: Tab reaches tab 0, Enter activates it
+    key_event(c, key::TAB, true);
+    frame(0.048);
+    key_event(c, key::TAB, false);
+    begin_frame(c, 0.064, 0.016, rect::make(0, 0, 300, 200));
+    {
+        ui u(c);
+        (void)comp::tab_bar(u, bar, items, active, {.id = "tabs"_id});
+    }
+    end_frame(c);
+    key_event(c, key::ENTER, true);
+    frame(0.080);
+    key_event(c, key::ENTER, false);
+    CHECK(active == 0);
+
+    CHECK(violation_count(c) == 0);
+    destroy_context(c);
+}
+
+void test_accordion()
+{
+    null_device nd;
+    context *c = create_context(&nd, nd.create_surface());
+    set_violation_handler(c, capture_violation, nullptr);
+    g_violation_events = 0;
+
+    bool open = false;
+    const rect area = rect::make(10, 10, 200, 100);
+    f32 last_content_h = -1.0f;
+
+    auto frame = [&](f64 t)
+    {
+        begin_frame(c, t, 0.016, rect::make(0, 0, 300, 200));
+        {
+            ui u(c);
+            comp::accordion_scope acc(u, area, "Advanced", open,
+                                      {.id = "acc"_id, .content_h = 60.0f});
+            if (acc) u.draw_rect(acc.content(), color{40, 80, 60, 255});
+            last_content_h = acc.content().h;
+        }
+        end_frame(c);
+    };
+
+    frame(0.0);
+    CHECK(!open);
+    CHECK(last_content_h == 0.0f);
+
+    // click the header toggles it open; the content height animates up
+    mouse_move(c, 60.0f, 22.0f);
+    mouse_button(c, true);
+    frame(0.016);
+    mouse_button(c, false);
+    frame(0.032);
+    CHECK(open);
+    frame(0.048);                   // one frame for the tween to advance
+    CHECK(last_content_h > 0.0f);   // mid-animation
+    CHECK(last_content_h <= 60.0f); // never overshoots
+
+    for (i32 i = 0; i < 20; ++i) frame(0.064 + 0.016 * i);
+    CHECK(last_content_h > 59.0f); // settled at the content height
+
+    // keyboard: the header is in the ring; Space closes
+    key_event(c, key::TAB, true);
+    frame(0.4);
+    key_event(c, key::TAB, false);
+    key_event(c, key::SPACE, true);
+    frame(0.416);
+    key_event(c, key::SPACE, false);
+    CHECK(!open);
+
+    CHECK(violation_count(c) == 0);
+    destroy_context(c);
+}
+
+void test_drawer()
+{
+    null_device nd;
+    context *c = create_context(&nd, nd.create_surface());
+    set_violation_handler(c, capture_violation, nullptr);
+    g_violation_events = 0;
+
+    bool open = true;
+    const rect host = rect::make(0, 0, 300, 200);
+
+    auto frame = [&](f64 t)
+    {
+        begin_frame(c, t, 0.016, host);
+        {
+            ui u(c);
+            comp::drawer_scope dr(u, host, open, {.id = "drw"_id, .width = 200.0f});
+            if (dr) u.text(dr.content(), "drawer body", u.th().text, ALIGN_LEFT);
+        }
+        end_frame(c);
+    };
+
+    begin_frame(c, 0.0, 0.016, host);
+    {
+        ui u(c);
+        comp::drawer_scope dr(u, host, open, {.id = "drw"_id, .width = 200.0f});
+        CHECK(dr.content().right() <= host.right());
+    }
+    end_frame(c);
+
+    mouse_move(c, 280.0f, 100.0f); // right of the drawer: on the scrim
+    mouse_button(c, true);
+    frame(0.016);
+    mouse_button(c, false);
+    frame(0.032);
+    CHECK(!open); // the scrim click closed it
+
+    // the scrim is never in the Tab ring
+    open = true;
+    frame(0.048);
+    key_event(c, key::TAB, true);
+    frame(0.064);
+    key_event(c, key::TAB, false);
+    CHECK(c->focus != id_child("drw"_id, "scrim"_id));
+
+    CHECK(violation_count(c) == 0);
+    destroy_context(c);
+}

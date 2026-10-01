@@ -73,6 +73,40 @@ A horizontal segmented control (Day / Week / Month style).
 | Keys | Every segment joins the Tab ring; Enter/Space selects the focused segment |
 | Notes | The selected fill animates (`animate_color`), honors `reduced_motion` via the animation scopes |
 
+## `comp::tab_bar`
+
+A horizontal tab bar (the app draws the content below it).
+
+| | |
+| --- | --- |
+| `comp::tab_bar(u, area, span<const char *const> labels, i32 &active, tabs_props{.id, .enabled, .style})` | Returns `{changed, active, in}` |
+| Theme slot | `theme::tabs` (`text`, `text_active`, `underline`, `hover_bg`, `radius`, `underline_h`, `gap`, `anim`) |
+| Keys | Every tab joins the Tab ring; Enter/Space activates |
+| Notes | The active underline fades via `animate_color` |
+
+## `comp::accordion_scope`
+
+A collapsible section: the header toggles `open`, the content area animates
+its height and clips.
+
+| | |
+| --- | --- |
+| `comp::accordion_scope acc(u, area, title, bool &open, accordion_props{.id, .enabled, .header_h, .content_h, .style})` | RAII: draw into `acc.content()` while alive; `acc.toggled()` reports; `if (acc)` = open |
+| Theme slot | `theme::accordion` (`header_bg`, `header_hover`, `text`, `chevron`, `radius`, `header_h`, `anim`) |
+| Keys | The header joins the Tab ring; Enter/Space toggles |
+| Notes | `content_h` is the app-declared natural content height (drives the animation); the clip balances on scope exit |
+
+## `comp::drawer_scope`
+
+A sliding side drawer over a host rect.
+
+| | |
+| --- | --- |
+| `comp::drawer_scope dr(u, host, bool &open, drawer_props{.id, .enabled, .width, .edge, .scrim, .close_on_scrim_click, .style})` | RAII: draw into `dr.content()`; `dr.toggled()`; `if (dr)` = open |
+| Theme slot | `theme::drawer` (`bg`, `border`, `scrim`, `radius`, `anim`) |
+| Edges | `drawer_edge::LEFT` / `RIGHT` (slides from that edge) |
+| Notes | The scrim captures clicks but never joins the Tab ring (`interact(..., focusable = false)`); a scrim click closes when `close_on_scrim_click` |
+
 ## Roadmap
 
 The next batches (r92–r93): tabs, accordion, drawer → toast host, table,

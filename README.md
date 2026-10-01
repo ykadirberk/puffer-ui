@@ -1006,6 +1006,23 @@ static const char *const ranges[] = {"Day", "Week", "Month"};
   `explicit operator bool`, so `if (comp::segmented(...))` reads naturally.
 - `comp::switch_size(u, label)` gives the natural size for row layout.
 
+**Batch 2** (r92) adds containers:
+
+```cpp
+(void)comp::tab_bar(u, body.cut_top(u.control_h()), tabs, tab, {.id = "tabs"_id});
+comp::accordion_scope acc(u, body.cut_top(96.0f), "Advanced", open,
+                          {.id = "acc"_id, .content_h = 60.0f});
+if (acc) u.text(acc.content(), "...", th.text_dim, ALIGN_LEFT);
+
+if (u.button(..., "Open drawer", "drawer_btn"_id)) drawer_open = true;
+comp::drawer_scope dr(u, page.content, drawer_open, {.id = "drawer"_id, .width = 220.0f});
+if (dr) draw_drawer_body(u, dr.content());
+```
+
+`tab_bar` returns `{changed, active, in}`; `accordion_scope` / `drawer_scope`
+are RAII (draw into `content()` while alive; both clip and animate, and the
+drawer's scrim captures clicks without joining the Tab ring).
+
 Run: `pui_ex_components`. Full source: `examples/atomic/components.cpp`.
 
 

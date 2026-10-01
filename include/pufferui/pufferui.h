@@ -637,6 +637,53 @@ struct segmented_override
     opt<f32> radius, pad;
 };
 
+struct tabs_style
+{
+    color text = {140, 150, 165, 255};
+    color text_active = {236, 240, 246, 255};
+    color underline = {86, 156, 255, 255};
+    color hover_bg = {44, 50, 62, 200};
+    f32 radius = 6.0f;
+    f32 underline_h = 2.0f;
+    f32 gap = 4.0f;
+    transition anim{0.10f, easing::EASE_OUT};
+};
+struct tabs_override
+{
+    opt<color> text, text_active, underline, hover_bg;
+    opt<f32> radius, underline_h, gap;
+};
+
+struct accordion_style
+{
+    color header_bg = {30, 34, 42, 255};
+    color header_hover = {42, 48, 58, 255};
+    color text = {236, 240, 246, 255};
+    color chevron = {140, 150, 165, 255};
+    f32 radius = 8.0f;
+    f32 header_h = 30.0f;
+    transition anim{0.14f, easing::EASE_OUT};
+};
+struct accordion_override
+{
+    opt<color> header_bg, header_hover, text, chevron;
+    opt<f32> radius, header_h;
+};
+
+struct drawer_style
+{
+    color bg = {22, 25, 32, 252};
+    color border = {44, 50, 61, 255};
+    color scrim = {0, 0, 0, 110};
+    f32 radius = 0.0f;
+    transition anim{0.16f, easing::EASE_OUT};
+};
+struct drawer_override
+{
+    opt<color> bg, border, scrim;
+    opt<f32> radius;
+};
+
 // The options form for buttons: named, order-independent, extensible.
 struct button_opts
 {
@@ -854,6 +901,9 @@ struct theme
     switch_style switch_ctrl;  // pui::comp::switch_toggle
     radio_style radio;         // pui::comp::radio_group
     segmented_style segmented; // pui::comp::segmented
+    tabs_style tabs;           // pui::comp::tab_bar
+    accordion_style accordion; // pui::comp::accordion_scope
+    drawer_style drawer;       // pui::comp::drawer_scope
     button_role button_roles[MAX_BUTTON_ROLES]{};
     i32 button_role_count = 0;
 
@@ -910,6 +960,14 @@ inline theme default_dark()
     t.segmented.selected = t.accent;
     t.segmented.text = {236, 240, 246, 255};
     t.segmented.text_selected = {12, 16, 22, 255};
+    t.tabs.text = {140, 150, 165, 255};
+    t.tabs.text_active = {236, 240, 246, 255};
+    t.tabs.underline = t.accent;
+    t.accordion.header_bg = {30, 34, 42, 255};
+    t.accordion.header_hover = {42, 48, 58, 255};
+    t.accordion.text = {236, 240, 246, 255};
+    t.drawer.bg = {22, 25, 32, 252};
+    t.drawer.border = {44, 50, 61, 255};
     return t;
 }
 
@@ -1628,7 +1686,10 @@ struct ui
     bool key_pressed(key k) const { return ctx->key_pressed[static_cast<i32>(k)]; }
     bool key_down(key k) const { return ctx->key_down[static_cast<i32>(k)]; }
 
-    interaction interact(uiid id, rect area, bool enabled = true);
+    // Pointer state for a rect. `focusable = false` keeps the widget out of
+    // the Tab ring (a click-capturing scrim, a passive hit area) while it
+    // still interacts normally.
+    interaction interact(uiid id, rect area, bool enabled = true, bool focusable = true);
 
     // text
     f32 text_width(std::string_view s);
@@ -1824,6 +1885,99 @@ struct segmented_result
 // segment is filled; clicks and Space/Enter select.
 segmented_result segmented(ui &u, rect area, std::span<const char *const> labels, i32 &selected,
                            const segmented_props &p = {});
+
+struct tabs_props
+{
+    uiid id = 0; // required
+    bool enabled = true;
+    tabs_override style{};
+};
+struct tabs_result
+{
+    bool changed = false;
+    i32 active = -1;
+    interaction in{};
+    explicit operator bool() const { return changed; }
+};
+// A horizontal tab bar (the app draws the content below): the active tab is
+// highlighted with an underline; clicks and Space/Enter activate.
+tabs_result tab_bar(ui &u, rect area, std::span<const char *const> labels, i32 &active,
+                    const tabs_props &p = {});
+
+struct accordion_props
+{
+    uiid id = 0; // required
+    bool enabled = true;
+    f32 header_h = 0.0f;  // 0 = the theme's
+    f32 content_h = 0.0f; // the content's natural height (drives the animation)
+    accordion_override style{};
+};
+// A collapsible section: the header toggles `open`, the content area animates
+// its height and clips. Draw the content into `content()` while the scope is
+// alive. `toggled()` reports the header interaction.
+struct accordion_scope
+{
+    ui *u_ = nullptr;
+    uiid id_ = 0;
+    bool open_ = false;
+    bool toggled_ = false;
+    bool pushed_clip_ = false;
+    rect content_{};
+
+    accordion_scope(ui &u, rect area, std::string_view title, bool &open,
+                    const accordion_props &p = {});
+    ~accordion_scope();
+
+    accordion_scope(const accordion_scope &) = delete;
+    accordion_scope &operator=(const accordion_scope &) = delete;
+    accordion_scope(accordion_scope &&) = delete;
+    accordion_scope &operator=(accordion_scope &&) = delete;
+
+    [[nodiscard]] rect content() const { return content_; }
+    explicit operator bool() const { return open_; }
+    bool toggled() const { return toggled_; }
+};
+
+enum class drawer_edge : u8
+{
+    LEFT,
+    RIGHT
+};
+
+struct drawer_props
+{
+    uiid id = 0; // required
+    bool enabled = true;
+    f32 width = 280.0f;
+    drawer_edge edge = drawer_edge::LEFT;
+    bool scrim = true; // dim + click-to-close behind the drawer
+    bool close_on_scrim_click = true;
+    drawer_override style{};
+};
+// A sliding side drawer over `host`: dims (optionally), clips and slides its
+// content in from an edge. The scrim captures clicks (and closes when
+// `close_on_scrim_click`); the content widgets interact above it.
+struct drawer_scope
+{
+    ui *u_ = nullptr;
+    uiid id_ = 0;
+    bool open_ = false;
+    bool toggled_ = false;
+    bool pushed_clip_ = false;
+    rect content_{};
+
+    drawer_scope(ui &u, rect host, bool &open, const drawer_props &p = {});
+    ~drawer_scope();
+
+    drawer_scope(const drawer_scope &) = delete;
+    drawer_scope &operator=(const drawer_scope &) = delete;
+    drawer_scope(drawer_scope &&) = delete;
+    drawer_scope &operator=(drawer_scope &&) = delete;
+
+    [[nodiscard]] rect content() const { return content_; }
+    explicit operator bool() const { return open_; }
+    bool toggled() const { return toggled_; }
+};
 } // namespace comp
 
 // A top input-capturing layer. Construct it (as a prvalue) after the base UI so
@@ -3974,7 +4128,7 @@ rect region::corner(i32 n, f32 w, f32 h, f32 margin) const
 }
 
 // ---- interaction ----
-interaction ui::interact(uiid id, rect area, bool enabled)
+interaction ui::interact(uiid id, rect area, bool enabled, bool focusable)
 {
     context *c = ctx;
     interaction in;
@@ -4085,7 +4239,7 @@ interaction ui::interact(uiid id, rect area, bool enabled)
     // Every enabled interact joins the keyboard focus ring, in submission
     // order — the same order widgets paint. Disabled widgets yield early and
     // never take focus; blocked widgets return before this point.
-    if (enabled)
+    if (enabled && focusable)
     {
         if (!c->focus_store) c->focus_store = new focus_store();
         focus_store *fs = static_cast<focus_store *>(c->focus_store);
@@ -5309,6 +5463,13 @@ bool ui::button(rect r, std::string_view label, uiid id, const button_opts &opts
 
 // ---- component library (pui::comp) ------------------------------------------
 
+namespace detail
+{
+// defined later with the clip helpers (RAII scopes in the components below)
+bool clip_push(context *c, rect r);
+void clip_pop(context *c);
+} // namespace detail
+
 namespace comp
 {
 
@@ -5471,6 +5632,161 @@ segmented_result segmented(ui &u, rect area, std::span<const char *const> labels
         u.text(seg, labels[i] ? labels[i] : "", on ? st.text_selected : st.text, ALIGN_CENTER);
     }
     return out;
+}
+
+tabs_result tab_bar(ui &u, rect area, std::span<const char *const> labels, i32 &active,
+                    const tabs_props &p)
+{
+    tabs_result out{};
+    tabs_style st = u.th().tabs;
+    if (p.style.text.set) st.text = p.style.text.value;
+    if (p.style.text_active.set) st.text_active = p.style.text_active.value;
+    if (p.style.underline.set) st.underline = p.style.underline.value;
+    if (p.style.hover_bg.set) st.hover_bg = p.style.hover_bg.value;
+    if (p.style.radius.set) st.radius = p.style.radius.value;
+    if (p.style.underline_h.set) st.underline_h = p.style.underline_h.value;
+    if (p.style.gap.set) st.gap = p.style.gap.value;
+
+    const i32 n = static_cast<i32>(labels.size());
+    row tabs(area, st.gap);
+    for (i32 i = 0; i < n; ++i)
+    {
+        const uiid item_id = id_child(p.id, static_cast<uiid>(i));
+        const f32 w = u.text_size(labels[i] ? labels[i] : "").x + u.padding();
+        const rect tab = tabs.next(w);
+        if (tab.w <= 0.0f) break;
+        const interaction in = u.interact(item_id, tab, p.enabled);
+        if (in.hovered && p.enabled) u.set_cursor(u.th().button_cursor);
+        bool keyboard = false;
+        if (in.focused && p.enabled && (u.key_pressed(key::ENTER) || u.key_pressed(key::SPACE)))
+        {
+            u.ctx->key_pressed[static_cast<i32>(key::ENTER)] = false;
+            u.ctx->key_pressed[static_cast<i32>(key::SPACE)] = false;
+            keyboard = true;
+        }
+        if ((in.clicked || keyboard) && p.enabled && active != i)
+        {
+            active = i;
+            out.changed = true;
+        }
+        out.active = active;
+        out.in = in;
+
+        const bool on = (active == i);
+        if (in.hovered && !on) u.draw_rounded_rect(tab, st.hover_bg, st.radius);
+        u.text(tab, labels[i] ? labels[i] : "", on ? st.text_active : st.text, ALIGN_CENTER);
+        const color ul =
+            u.animate_color(id_child(item_id, "ul"_id), on ? st.underline : color{0, 0, 0, 0},
+                            tween{st.anim.duration, st.anim.curve});
+        u.draw_rect(rect::make(tab.x, tab.bottom() - st.underline_h, tab.w, st.underline_h), ul);
+        if (in.focused) detail::focus_ring(u, tab, st.radius);
+    }
+    return out;
+}
+
+accordion_scope::accordion_scope(ui &u, rect area, std::string_view title, bool &open,
+                                 const accordion_props &p)
+{
+    u_ = &u;
+    id_ = p.id;
+    open_ = open;
+    context *c = u.ctx;
+    accordion_style st = c->active_theme.accordion;
+    if (p.style.header_bg.set) st.header_bg = p.style.header_bg.value;
+    if (p.style.header_hover.set) st.header_hover = p.style.header_hover.value;
+    if (p.style.text.set) st.text = p.style.text.value;
+    if (p.style.chevron.set) st.chevron = p.style.chevron.value;
+    if (p.style.radius.set) st.radius = p.style.radius.value;
+    if (p.style.header_h.set) st.header_h = p.style.header_h.value;
+    const f32 header_h = p.header_h > 0.0f ? p.header_h : st.header_h;
+
+    rect body = area;
+    const rect header = body.cut_top(header_h);
+    const interaction in = u.interact(id_, header, p.enabled);
+    if (in.hovered && p.enabled) u.set_cursor(c->active_theme.button_cursor);
+    bool keyboard = false;
+    if (in.focused && p.enabled && (u.key_pressed(key::ENTER) || u.key_pressed(key::SPACE)))
+    {
+        c->key_pressed[static_cast<i32>(key::ENTER)] = false;
+        c->key_pressed[static_cast<i32>(key::SPACE)] = false;
+        keyboard = true;
+    }
+    if ((in.clicked || keyboard) && p.enabled)
+    {
+        open = !open;
+        open_ = open;
+        toggled_ = true;
+    }
+    u.draw_rounded_rect(header, in.hovered ? st.header_hover : st.header_bg, st.radius);
+    u.text(rect::make(header.x + u.padding(), header.y, max2(0.0f, header.w - u.padding() * 2.0f),
+                      header.h),
+           title, st.text, ALIGN_LEFT);
+    // chevron: down when open, right when closed (rotates with the animation)
+    const f32 t = u.animate(id_child(p.id, "t"_id), open ? 1.0f : 0.0f,
+                            tween{st.anim.duration, st.anim.curve});
+    {
+        const f32 cx = header.right() - u.padding();
+        const f32 cy = header.center_y();
+        const vec2 a{cx - 5.0f, cy - 2.0f + 3.0f * t};
+        const vec2 b{cx, cy + 3.0f - 3.0f * t};
+        const vec2 dd{cx + 5.0f, cy - 2.0f + 3.0f * t};
+        const vec2 tri[3] = {a, b, dd};
+        u.draw_polygon(std::span<const vec2>(tri, 3), st.chevron);
+    }
+    if (in.focused) detail::focus_ring(u, header, st.radius);
+
+    // the content area animates its height and clips
+    const f32 ch = p.content_h * t;
+    content_ = rect::make(body.x, header.bottom(), body.w, ch);
+    if (ch > 0.0f && detail::clip_push(c, rect::intersect(content_, header))) pushed_clip_ = true;
+}
+
+accordion_scope::~accordion_scope()
+{
+    if (pushed_clip_ && u_ && u_->ctx) detail::clip_pop(u_->ctx);
+}
+
+drawer_scope::drawer_scope(ui &u, rect host, bool &open, const drawer_props &p)
+{
+    u_ = &u;
+    id_ = p.id;
+    open_ = open;
+    context *c = u.ctx;
+    drawer_style st = c->active_theme.drawer;
+    if (p.style.bg.set) st.bg = p.style.bg.value;
+    if (p.style.border.set) st.border = p.style.border.value;
+    if (p.style.scrim.set) st.scrim = p.style.scrim.value;
+    if (p.style.radius.set) st.radius = p.style.radius.value;
+
+    const f32 t = u.animate(id_child(p.id, "t"_id), open ? 1.0f : 0.0f,
+                            tween{st.anim.duration, st.anim.curve});
+    // the scrim captures clicks behind the drawer (never in the Tab ring)
+    if (t > 0.0f && p.scrim)
+    {
+        const interaction scrim = u.interact(id_child(p.id, "scrim"_id), host, true, false);
+        u.draw_rect(host,
+                    color{st.scrim.r, st.scrim.g, st.scrim.b, static_cast<u8>(st.scrim.a * t)});
+        if (scrim.clicked && p.close_on_scrim_click && open)
+        {
+            open = false;
+            open_ = false;
+            toggled_ = true;
+        }
+    }
+
+    const f32 w = p.width;
+    const f32 slide = (p.edge == drawer_edge::LEFT) ? -w * (1.0f - t) : w * (1.0f - t);
+    const f32 x = (p.edge == drawer_edge::LEFT) ? host.x + slide : host.right() - w + slide;
+    const rect panel = rect::make(x, host.y, w, host.h);
+    u.draw_rounded_rect(panel, st.bg, st.radius);
+    if (st.border.a > 0) detail::rounded_ring(u, panel, st.border, st.radius, 1.0f);
+    content_ = panel.pad(c->active_theme.padding);
+    if (t > 0.0f && detail::clip_push(c, rect::intersect(content_, host))) pushed_clip_ = true;
+}
+
+drawer_scope::~drawer_scope()
+{
+    if (pushed_clip_ && u_ && u_->ctx) detail::clip_pop(u_->ctx);
 }
 
 } // namespace comp
