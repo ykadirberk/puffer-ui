@@ -108,6 +108,10 @@ Rules:
 - Naming: types/functions/variables `lower_snake_case`; macros and
   constants/enumerators `UPPER_SNAKE_CASE` (e.g. `backend_caps::RENDER_TARGETS`,
   `SCROLL_ALWAYS_RESERVE_BAR`, `ALIGN_LEFT`, `PUFFERUI_CHECK`).
+- One context per thread: the current-context slot is `thread_local`, so a
+  thread that draws must create its own context (or serialize access to a
+  shared one around whole frames). Two threads with two contexts never
+  cross-report violations (`test_thread_isolation` pins this).
 - No smart pointers (`unique_ptr` / `shared_ptr` / `weak_ptr`) anywhere. Raw
   pointers are non-owning; ownership is explicit (`context`, `render_device`,
   the draw list, and scope objects own storage).
@@ -219,24 +223,15 @@ existing suite unchanged**:
 - Do not report work as done until the suite passes. A fix without a regression
   test is considered incomplete.
 
-## Design plan & status (outside the repo)
+## Design plan & status
 
-The design and phased plan live outside the repository:
+The single plan and roadmap lives at `~/.opencode/plan/pufferui-roadmap.md`
+(from-scratch plan, adopted r86 → supersedes the two legacy plan files, which
+remain only as history). It defines the phase sequence r87–r95 (foundations,
+test infrastructure + measurement, performance, ergonomics, the component
+layer, structure, reach), the standing decisions (notably: **no label-derived
+widget IDs, ever**), and the per-phase AGENTS.md/README deliverables.
 
-- `~/.opencode/plan/pufferui-component-migration.md` — design + phased plan
-  (currently r72), with §21 "Implementation status".
-- `~/.opencode/plan/pufferui-implementation-status-and-remaining.md` — what is
-  done, remaining items (R1–R4 done; R5 skins **dropped**; R6 state/view
-  **done**; R6.5 animation **done**; R7 polish **done**; legacy **retired**;
-  R8 examples + README **done**; R9–R12 blur fixes; R13 text input **done**;
-  R14 patterns gallery **done**; R15 resize/theme/cursors **done**; R16 design
-  language across examples **done**; R17 expander + first-frame fix **done**;
-  R18 review fixes **done**; R19 review fixes round 2 **done**; R20 overflow
-  reporting + `region::corner` **done**; R21 combo/tooltip/context menu
-  **done**; R22 borderless chrome + SDL event pump **done**), and known
-  limitations.
-
-When a feature or fix lands: add/extend tests, then update **both** files (bump
-the migration revision and adjust §21 / the remaining list). Check the status
-file's "Not yet implemented" list before starting new work so nothing is
-forgotten.
+When a feature or fix lands: add/extend tests, then update
+`pufferui-roadmap.md` (tick the phase items, record the revision). Read the
+plan before starting new work so nothing is forgotten.

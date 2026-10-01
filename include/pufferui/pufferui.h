@@ -67,6 +67,9 @@ struct context;
 
 context *current_context();
 void set_current_context(context *);
+// The current-context slot is thread-local: one context per thread. Threads
+// that draw must create their own context (or serialize access to a shared
+// one around whole frames).
 
 // Every contract guard in the library, enumerated. `violation_last_code`
 // hands the last one back (VIOL_NONE when clean); the codes are stable, and
@@ -91,6 +94,7 @@ enum violation_code : u32
     VIOL_COMBO_EMPTY,           // combo needs at least one item
     VIOL_LAYOUT_CLAMPED,        // a requested slice was clamped (off by default)
     VIOL_NO_FONT,               // text drawn while the theme has no font
+    VIOL_INPUT_OVERFLOW,        // text input did not fit the per-frame buffer
     VIOL_FRAME_IDS_OVERFLOW,    // over MAX_FRAME_IDS regions; dup checking incomplete
     VIOL_COUNT
 };
@@ -255,7 +259,11 @@ struct rect
         return {x0, y0, max2(0.0f, x1 - x0), max2(0.0f, y1 - y0)};
     }
 
-    rect cut_top(f32 amount)
+    // The four mutating cuts. Ref-qualified `&` with the rvalue overload
+    // deleted: `r.content().cut_top(h)` (cutting a temporary) is the classic
+    // silent-overlap bug, and the compiler now rejects it outright. Chaining
+    // on `rect::make(...)` stays legal via a named local.
+    [[nodiscard]] rect cut_top(f32 amount) &
     {
         f32 a = clampf(amount, 0.0f, max2(0.0f, h));
         rect out{x, y, w, a};
@@ -264,7 +272,8 @@ struct rect
         PUFFERUI_CHECK(VIOL_INVALID_SLICE, out.is_valid(), "cut_top produced an invalid slice");
         return out;
     }
-    rect cut_bottom(f32 amount)
+    rect cut_top(f32 amount) && = delete;
+    [[nodiscard]] rect cut_bottom(f32 amount) &
     {
         f32 a = clampf(amount, 0.0f, max2(0.0f, h));
         rect out{x, y + h - a, w, a};
@@ -272,7 +281,8 @@ struct rect
         PUFFERUI_CHECK(VIOL_INVALID_SLICE, out.is_valid(), "cut_bottom produced an invalid slice");
         return out;
     }
-    rect cut_left(f32 amount)
+    rect cut_bottom(f32 amount) && = delete;
+    [[nodiscard]] rect cut_left(f32 amount) &
     {
         f32 a = clampf(amount, 0.0f, max2(0.0f, w));
         rect out{x, y, a, h};
@@ -281,7 +291,8 @@ struct rect
         PUFFERUI_CHECK(VIOL_INVALID_SLICE, out.is_valid(), "cut_left produced an invalid slice");
         return out;
     }
-    rect cut_right(f32 amount)
+    rect cut_left(f32 amount) && = delete;
+    [[nodiscard]] rect cut_right(f32 amount) &
     {
         f32 a = clampf(amount, 0.0f, max2(0.0f, w));
         rect out{x + w - a, y, a, h};
@@ -289,12 +300,26 @@ struct rect
         PUFFERUI_CHECK(VIOL_INVALID_SLICE, out.is_valid(), "cut_right produced an invalid slice");
         return out;
     }
+    rect cut_right(f32 amount) && = delete;
 
     // Ratio cuts and non-mutating slices (pure rect algebra helpers).
-    rect cut_top_ratio(f32 ratio) { return cut_top(h * clampf(ratio, 0.0f, 1.0f)); }
-    rect cut_bottom_ratio(f32 ratio) { return cut_bottom(h * clampf(ratio, 0.0f, 1.0f)); }
-    rect cut_left_ratio(f32 ratio) { return cut_left(w * clampf(ratio, 0.0f, 1.0f)); }
-    rect cut_right_ratio(f32 ratio) { return cut_right(w * clampf(ratio, 0.0f, 1.0f)); }
+    [[nodiscard]] rect cut_top_ratio(f32 ratio) & { return cut_top(h * clampf(ratio, 0.0f, 1.0f)); }
+    rect cut_top_ratio(f32 ratio) && = delete;
+    [[nodiscard]] rect cut_bottom_ratio(f32 ratio) &
+    {
+        return cut_bottom(h * clampf(ratio, 0.0f, 1.0f));
+    }
+    rect cut_bottom_ratio(f32 ratio) && = delete;
+    [[nodiscard]] rect cut_left_ratio(f32 ratio) &
+    {
+        return cut_left(w * clampf(ratio, 0.0f, 1.0f));
+    }
+    rect cut_left_ratio(f32 ratio) && = delete;
+    [[nodiscard]] rect cut_right_ratio(f32 ratio) &
+    {
+        return cut_right(w * clampf(ratio, 0.0f, 1.0f));
+    }
+    rect cut_right_ratio(f32 ratio) && = delete;
 
     rect top_slice(f32 amount) const
     {
@@ -1090,7 +1115,7 @@ struct window_input
     bool key_down[KEY_COUNT]{};
     bool key_pressed[KEY_COUNT]{};
     bool key_released[KEY_COUNT]{};
-    char text_input[128]{};
+    char text_input[512]{};
     i32 text_len = 0;
     char ime_preedit[128]{};
     i32 ime_preedit_len = 0;
@@ -1251,7 +1276,7 @@ struct context
     bool key_pressed[KEY_COUNT]{};
     bool key_released[KEY_COUNT]{};
 
-    char text_input[128]{};
+    char text_input[512]{};
     i32 text_len = 0;
 
     u64 frame = 0;
@@ -1285,14 +1310,15 @@ struct context
     // Deferred overlays (see combo / context_menu / tooltip): the open menu and
     // the visible tooltip are drawn once at the end of the frame, so widgets
     // painted after their anchor can never cover them. One menu surface and
-    // one tooltip at a time; the recorded pointers must outlive the frame
-    // (model fields do). A pick writes back through the pointers and reports
-    // through `defer_result_id`, which the widget's next call consumes.
+    // one tooltip at a time. The menu's labels are COPIED into context-owned
+    // storage (reached via the `defers` handle; the caller's array may be a
+    // stack local that dies before end_frame); the pick reports through
+    // `defer_result_id`/`defer_result_pick`, which the widget's next call
+    // consumes and applies to its model.
     uiid defer_menu_id = 0;
     rect defer_menu{};
-    const char *const *defer_labels = nullptr;
+    void *defers = nullptr; // detail::defer_store (owned label copies)
     i32 defer_count = 0;
-    i32 *defer_selected = nullptr; // combo: write-back on pick
     bool defer_fresh = false;
     uiid defer_result_id = 0; // pick result awaiting the next widget call
     i32 defer_result_pick = -1;
@@ -1346,7 +1372,7 @@ struct region
 
     uiid id() const { return id_; }
     rect area() const { return area_; }
-    rect content() const { return content_; }
+    [[nodiscard]] rect content() const { return content_; }
     rect clip() const { return clip_; }
 
     // A badge-sized rect pinned to one of this region's content corners, inset by
@@ -1618,7 +1644,7 @@ struct popup_scope
     popup_scope(popup_scope &&) = delete;
     popup_scope &operator=(popup_scope &&) = delete;
 
-    rect content() const { return area_; }
+    [[nodiscard]] rect content() const { return area_; }
     explicit operator bool() const { return open; }
 };
 
@@ -1648,7 +1674,7 @@ struct panel_scope
     panel_scope(panel_scope &&) = delete;
     panel_scope &operator=(panel_scope &&) = delete;
 
-    rect content() const { return content_; }
+    [[nodiscard]] rect content() const { return content_; }
     explicit operator bool() const { return open; }
 };
 
@@ -1705,7 +1731,7 @@ struct scroll_view
     scroll_view(scroll_view &&) = delete;
     scroll_view &operator=(scroll_view &&) = delete;
 
-    rect content() const { return content_; }
+    [[nodiscard]] rect content() const { return content_; }
     f32 offset() const;
     f32 content_height() const { return content_h_; }
     bool overflows() const { return overflows_; }
@@ -1728,8 +1754,10 @@ struct column
     f32 gap_ = 6.0f;
     explicit column(rect area, f32 gap = 6.0f) : bounds_(area), gap_(gap) {}
     rect next(f32 height = 0.0f);
-    rect cut_top(f32 height);
-    rect cut_bottom(f32 height);
+    [[nodiscard]] rect cut_top(f32 height) &;
+    rect cut_top(f32 height) && = delete;
+    [[nodiscard]] rect cut_bottom(f32 height) &;
+    rect cut_bottom(f32 height) && = delete;
     void space(f32 amount = 6.0f);
     rect remaining() const { return bounds_; }
     column(const column &) = delete;
@@ -1742,8 +1770,10 @@ struct row
     f32 gap_ = 6.0f;
     explicit row(rect area, f32 gap = 6.0f) : bounds_(area), gap_(gap) {}
     rect next(f32 width = 0.0f);
-    rect cut_left(f32 width);
-    rect cut_right(f32 width);
+    [[nodiscard]] rect cut_left(f32 width) &;
+    rect cut_left(f32 width) && = delete;
+    [[nodiscard]] rect cut_right(f32 width) &;
+    rect cut_right(f32 width) && = delete;
     void space(f32 amount = 6.0f);
     rect remaining() const { return bounds_; }
     row(const row &) = delete;
@@ -2021,14 +2051,18 @@ namespace detail
 {
 inline context **current_slot()
 {
-    static context *slot = nullptr;
+    // One context per thread: the slot is genuinely thread-local, so two
+    // threads (or an editor with an embedded preview on a worker thread)
+    // never cross-report violations or layout clamps.
+    thread_local context *slot = nullptr;
     return &slot;
 }
 
 // Non-fatal truncation note (see set_report_layout_overflow). Called only when
 // the requested slice does not fit the remaining space. column/row carry no
-// context pointer, so this uses the thread-local current context (a cursor is
-// only ever used inside its frame, where the slot is set).
+// context pointer, so this uses the current context of the calling thread
+// (a cursor is only ever used inside its frame, where the slot is set — and
+// the slot is thread-local: one context per thread).
 inline void report_slice_clamp(const char *what, f32 requested, f32 granted)
 {
     context *c = *current_slot();
@@ -2041,6 +2075,48 @@ inline void report_slice_clamp(const char *what, f32 requested, f32 granted)
     report_violation(VIOL_LAYOUT_CLAMPED, "clamped", message, "", 0, false);
 }
 } // namespace detail
+
+// Deferred-menu label storage (owned copies; see context::defers).
+struct defer_store
+{
+    std::vector<char> buf;          // packed label strings
+    std::vector<const char *> ptrs; // one per label, into buf
+};
+
+namespace detail
+{
+inline defer_store *ensure_defers(context *c)
+{
+    if (!c->defers) c->defers = new defer_store();
+    return static_cast<defer_store *>(c->defers);
+}
+} // namespace detail
+
+// Records a deferred menu's labels into context-owned storage. All strings
+// are appended first, then the pointers are built, so no pointer can dangle
+// behind a later reallocation.
+inline void defer_set_labels(context *c, const char *const *items, i32 count)
+{
+    defer_store *ds = detail::ensure_defers(c);
+    ds->buf.clear();
+    ds->ptrs.clear();
+    for (i32 i = 0; i < count; ++i)
+    {
+        const char *src = items[i] ? items[i] : "";
+        usize n = 0;
+        while (src[n] != '\0') ++n;
+        const usize at = ds->buf.size();
+        ds->buf.resize(at + n + 1);
+        std::memcpy(ds->buf.data() + at, src, n + 1);
+    }
+    usize off = 0;
+    for (i32 i = 0; i < count; ++i)
+    {
+        ds->ptrs.push_back(ds->buf.data() + off);
+        off += std::strlen(ds->buf.data() + off) + 1;
+    }
+    c->defer_count = count;
+}
 
 void set_window_host(context *c, window_host *host)
 {
@@ -2076,17 +2152,29 @@ void set_current_context(context *c)
 #endif
 
 void report_violation(violation_code code, const char *condition, const char *message,
-                      const char *file, int line, bool /*fatal*/)
+                      const char *file, int line, bool fatal)
 {
     if (context *c = current_context())
     {
         ++c->violations;
         c->vlast_code = code;
         std::snprintf(c->vlast, sizeof(c->vlast), "%s", message ? message : "");
-        if (c->vhandler)
+        if (c->vhandler && !fatal)
         {
+            // A handler captures contract violations; a fatal one is a broken
+            // invariant and stops immediately below without consulting it.
             c->vhandler(c->vhandler_user, condition, message, file, line);
             return;
+        }
+        if (fatal)
+        {
+            // PUFFERUI_ASSERT is a broken invariant, not a contract nudge:
+            // report loudly and stop, in every build, handled or not.
+            std::fprintf(stderr, "[pufferui] fatal assertion failed: %s (%s) at %s:%d\n",
+                         message ? message : "", condition ? condition : "", file, line);
+            std::fflush(stderr);
+            PUFFERUI_BREAK();
+            std::abort();
         }
 #if !defined(NDEBUG)
         // Debug builds stop the debugger at the violating call: a violation
@@ -2127,7 +2215,30 @@ struct font_data
 struct text_store
 {
     std::vector<font_data> fonts;
-    std::unordered_map<u64, glyph> glyphs;
+
+    // (font, size, codepoint) as a struct key: no aliasing between (size, cp)
+    // pairs, unlike the old packed u64 (cp can exceed the packing multiplier).
+    struct glyph_key
+    {
+        i32 font;
+        i32 size_q; // size quantized to quarter pixels
+        u32 cp;
+        bool operator==(const glyph_key &) const = default;
+    };
+    struct glyph_key_hash
+    {
+        usize operator()(const glyph_key &k) const
+        {
+            u64 h = static_cast<u64>(static_cast<u32>(k.font));
+            h = h * 0x9E3779B97F4A7C15ull + static_cast<u64>(k.size_q);
+            h = h * 0x9E3779B97F4A7C15ull + static_cast<u64>(k.cp);
+            h ^= h >> 33;
+            h *= 0xff51afd7ed558ccdull;
+            h ^= h >> 33;
+            return static_cast<usize>(h);
+        }
+    };
+    std::unordered_map<glyph_key, glyph, glyph_key_hash> glyphs;
 
     // Glyph atlases. One 1024x1024 page holds a full UI set; pages spill when
     // it fills, so non-Latin vocabularies scale (each glyph carries its own
@@ -2353,6 +2464,7 @@ void destroy_context(context *c)
     if (c->edits) delete static_cast<edit_store *>(c->edits);
     if (c->anim) delete static_cast<anim_store *>(c->anim);
     if (c->scrolls) delete static_cast<scroll_store *>(c->scrolls);
+    if (c->defers) delete static_cast<defer_store *>(c->defers);
     if (c->focus_store)
     {
         delete static_cast<focus_store *>(c->focus_store);
@@ -2811,7 +2923,7 @@ void end_frame(context *c)
     // surfaces must go last, like the text-drag ghost above). The pick is
     // resolved here too: mouse edges are still live, and the entry push/retract
     // behaves exactly as an in-frame popup would.
-    if (c->defer_menu_id != 0 && c->defer_labels)
+    if (c->defer_menu_id != 0 && c->defer_count > 0)
     {
         ui u(c);
         popup_scope p = u.popup(c->defer_menu_id, c->defer_menu, POPUP_CLOSE_ON_CLICK_OUTSIDE);
@@ -2822,21 +2934,19 @@ void end_frame(context *c)
         else
         {
             i32 hot = c->combo_hot; // the dropdown and context menus share it
-            const i32 got =
-                detail::menu_items(u, c->defer_menu_id, c->defer_menu, c->defer_labels,
-                                   c->defer_count, hot, c->active_theme, c->defer_fresh);
+            const i32 got = detail::menu_items(
+                u, c->defer_menu_id, c->defer_menu, detail::ensure_defers(c)->ptrs.data(),
+                c->defer_count, hot, c->active_theme, c->defer_fresh);
             c->combo_hot = hot;
             if (got >= 0)
             {
-                if (c->defer_selected) *c->defer_selected = got;
                 c->defer_result_id = c->defer_menu_id; // the next call reports it
                 c->defer_result_pick = got;
                 detail::popup_retract(c, c->defer_menu_id); // same-frame close
             }
         }
         c->defer_menu_id = 0;
-        c->defer_labels = nullptr;
-        c->defer_selected = nullptr;
+        c->defer_count = 0;
     }
     if (c->defer_tip.w > 0.0f)
     {
@@ -3050,6 +3160,17 @@ void text_input_event(window &w, const char *utf8)
         len = &w.in.text_len;
     }
     if (!utf8) return;
+    // Never silently truncated: an event that will not fit reports the
+    // overflow once, then the part that fits is kept (graceful, but loud).
+    usize in_len = 0;
+    while (utf8[in_len] != '\0') ++in_len;
+    const i32 room = static_cast<i32>(sizeof(w.in.text_input)) - 1 - *len;
+    if (static_cast<i32>(in_len) > room)
+    {
+        PUFFERUI_CHECK(
+            VIOL_INPUT_OVERFLOW, false,
+            "text input did not fit the per-frame input buffer (IME commit or paste too long)");
+    }
     for (const char *p = utf8; *p && *len < static_cast<i32>(sizeof(w.in.text_input)) - 1; ++p)
         buf[(*len)++] = *p;
     buf[*len] = '\0';
@@ -3184,6 +3305,7 @@ const char *violation_code_name(violation_code code)
         "combo_empty",
         "layout_clamped",
         "no_font",
+        "input_overflow",
         "frame_ids_overflow",
     };
     return (code >= 0 && code < VIOL_COUNT) ? names[code] : "unknown";
@@ -3806,12 +3928,12 @@ rect grid_cursor::next()
     return cell(index_++);
 }
 
-rect column::cut_top(f32 height)
+[[nodiscard]] rect column::cut_top(f32 height) &
 {
     return next(height);
 }
 
-rect column::cut_bottom(f32 height)
+[[nodiscard]] rect column::cut_bottom(f32 height) &
 {
     const f32 h = clampf(height, 0.0f, max2(0.0f, bounds_.h));
     detail::report_slice_clamp("column cut_bottom", height, max2(0.0f, bounds_.h));
@@ -3820,7 +3942,7 @@ rect column::cut_bottom(f32 height)
     return r;
 }
 
-rect row::cut_left(f32 width)
+[[nodiscard]] rect row::cut_left(f32 width) &
 {
     const f32 w = clampf(width, 0.0f, max2(0.0f, bounds_.w));
     detail::report_slice_clamp("row cut_left", width, max2(0.0f, bounds_.w));
@@ -3829,7 +3951,7 @@ rect row::cut_left(f32 width)
     return r;
 }
 
-rect row::cut_right(f32 width)
+[[nodiscard]] rect row::cut_right(f32 width) &
 {
     const f32 w = clampf(width, 0.0f, max2(0.0f, bounds_.w));
     detail::report_slice_clamp("row cut_right", width, max2(0.0f, bounds_.w));
@@ -3910,10 +4032,7 @@ inline bool ensure_atlas(context *c, text_store *ts)
 inline glyph get_glyph(context *c, i32 font_index, f32 size, u32 cp)
 {
     text_store *ts = c->ts;
-    u64 key = (static_cast<u64>(static_cast<u32>(font_index)) * 1000003ull +
-               static_cast<u64>(static_cast<i32>(size * 4.0f))) *
-                  1000003ull +
-              cp;
+    text_store::glyph_key key{font_index, static_cast<i32>(size * 4.0f), cp};
     auto it = ts->glyphs.find(key);
     if (it != ts->glyphs.end()) return it->second;
 
@@ -4096,15 +4215,24 @@ void ui::text_ellipsis(rect r, std::string_view s, color c, align a)
     }
     static constexpr char ELLIPSIS[] = "\xE2\x80\xA6";
     const f32 ell_w = text_width(ELLIPSIS);
-    usize n = s.size();
-    while (n > 0)
+    // One forward pass accumulating the same per-glyph advances text_width
+    // would sum (kern pairs included): stop at the last codepoint boundary
+    // whose prefix still fits next to the ellipsis. No prefix re-measures.
+    context *cc = ctx;
+    font_handle fh = cc->active_theme.font;
+    usize i = 0, cut = 0;
+    f32 x = 0.0f;
+    u32 prev = 0;
+    while (i < s.size())
     {
-        // step back one UTF-8 codepoint
-        --n;
-        while (n > 0 && (static_cast<unsigned char>(s[n]) & 0xC0) == 0x80) --n;
-        if (text_width(s.substr(0, n)) + ell_w <= r.w) break;
+        u32 cp = utf8_decode(s, i);
+        if (cp == UTF8_END) break;
+        x += detail::kern_advance(cc, fh, cc->active_theme.text_size, prev, cp);
+        x += detail::get_glyph(cc, fh, cc->active_theme.text_size, cp).advance;
+        if (x + ell_w <= r.w) cut = i; // i is past this codepoint now
+        prev = cp;
     }
-    std::string out(s.substr(0, n));
+    std::string out(s.substr(0, cut));
     out += ELLIPSIS;
     text(r, out, c, a);
 }
@@ -5028,10 +5156,13 @@ bool ui::combo(rect r, std::string_view label, const char *const *items, i32 ite
     bool open = was_open || in.clicked || keyboard_open;
     if (in.clicked || keyboard_open) c->combo_hot = selected; // keyboard starts at the current item
 
-    // A pick resolved in the *previous* frame's deferred pass reports here.
+    // A pick resolved in the *previous* frame's deferred pass reports here
+    // and lands in the model atomically with the `changed` report — no
+    // write-back pointer into caller storage exists anymore.
     bool changed = (c->defer_result_id == drop_id);
     if (c->defer_result_id == drop_id)
     {
+        selected = c->defer_result_pick;
         c->defer_result_id = 0; // consumed
     }
 
@@ -5086,14 +5217,11 @@ bool ui::combo(rect r, std::string_view label, const char *const *items, i32 ite
         if (c->defer_menu_id != 0 && c->defer_menu_id != drop_id)
         {
             c->defer_menu_id = 0;
-            c->defer_labels = nullptr;
-            c->defer_selected = nullptr;
+            c->defer_count = 0;
         }
         c->defer_menu_id = drop_id;
         c->defer_menu = rect::make(x, y, w, h);
-        c->defer_labels = items;
-        c->defer_count = item_count;
-        c->defer_selected = &selected;
+        defer_set_labels(c, items, item_count);
         c->defer_fresh = !was_open;
     }
     return changed;
@@ -5213,14 +5341,11 @@ i32 ui::context_menu(uiid id, rect anchor, const char *const *item_labels, i32 i
         if (c->defer_menu_id != 0 && c->defer_menu_id != menu_id)
         {
             c->defer_menu_id = 0;
-            c->defer_labels = nullptr;
-            c->defer_selected = nullptr;
+            c->defer_count = 0;
         }
         c->defer_menu_id = menu_id;
         c->defer_menu = rect::make(x, y, menu_w, menu_h);
-        c->defer_labels = item_labels;
-        c->defer_count = item_count;
-        c->defer_selected = nullptr;
+        defer_set_labels(c, item_labels, item_count);
         c->defer_fresh = fresh_open;
     }
     return picked;

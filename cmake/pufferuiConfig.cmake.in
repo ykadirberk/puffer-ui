@@ -2,12 +2,22 @@
 
 include("${CMAKE_CURRENT_LIST_DIR}/pufferuiTargets.cmake")
 
-# PufferUI is a header plus one implementation translation unit. Link
-# `pufferui::pufferui` and add the implementation TU to exactly one target per
-# binary:
+# Two prebuilt variants:
+#
+#   pufferui::pufferui  core only (backend-agnostic: tests, headless, engines)
+#
+# The SDL3 variant (pufferui_sdl3) is available in the build tree; it is not
+# exported because it depends on SDL3. Package consumers who want the SDL3
+# backend either link their own SDL3 build via the single-TU path or use the
+# core target with a backend they provide.
+#
+# Prefer the single-TU distribution? PufferUI is still one header plus one
+# implementation TU: add ${PUFFERUI_IMPL} to exactly one target per binary
+# and define PUFFERUI_IMPLEMENTATION there.
 #
 #     find_package(pufferui CONFIG REQUIRED)
-#     target_link_libraries(my_app PRIVATE pufferui::pufferui)
+#     target_link_libraries(my_app PRIVATE pufferui::pufferui) # includes + core lib
+#     # ...or, single-TU style (backend of your choice):
 #     target_sources(my_app PRIVATE ${PUFFERUI_IMPL})
 #
 set(PUFFERUI_IMPL

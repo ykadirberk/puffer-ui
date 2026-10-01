@@ -797,11 +797,11 @@ Run: `pui_ex_expander`. Full source: `examples/atomic/expander.cpp`.
 ### 24. Combo boxes, tooltips and context menus
 
 The popup family ships as three one-call widgets. All three paint at the
-**end of the frame** — after every base widget — so nothing drawn after their
+**end of the frame** - after every base widget - so nothing drawn after their
 anchor can ever cover them (immediate mode paints in call order; popup
 surfaces must go last). A consequence: a mouse pick resolves at end-of-frame,
-the model write-back lands the same frame, and the widget's *next* call
-reports the change (keyboard picks resolve in-frame).
+and the widget's *next* call both reports the change and applies it to the
+model (keyboard picks resolve in-frame).
 
 - **`combo`** — a closed header showing the current item; a click opens a
   dropdown popup under it. Items are plain `interact` rects, so hover and
@@ -1155,7 +1155,7 @@ Immediate-mode widgets need a clear rule for *when the model changes* and
 | `ui.slider_float` | continuously while dragging; Left/Right by ±5% of the range (Shift 1%) when focused | `true` while the value changes. |
 | `ui.text_field` | while focused (every edit), on focus loss, and after framework edits such as a text drop — a focused buffer is the source of truth | `true` when the value changed. |
 | `ui.number_field` | same rules as `text_field` | `true` when the value changed. |
-| `ui.combo` | on the pick, but reported by the NEXT call (the pick resolves at end-of-frame) | `true` when the selection changed (previous pick). |
+| `ui.combo` | the pick resolves at end-of-frame and lands in the model together with the NEXT call's report (no deferred write-back pointer) | `true` when the selection changed (previous pick). |
 | `ui.context_menu` | no model | the picked index, or -1. |
 | `ui.scroll` | no model (offset state is keyed per id) | a `scroll_view` scope; `overflows()`/`offset()`/`content_height()`. |
 | `ui.dock_space` | no model (structural changes come back as a `dock_action`) | the action to apply (app-side). |
@@ -1260,20 +1260,23 @@ retail builds keep the cheap detection but never stop.
 | `VIOL_LAYOUT_CLAMPED` | "column slice clamped: requested N px > remaining M px" | A requested slice was clamped; opt-in via `set_report_layout_overflow`. |
 | `VIOL_NO_FONT` | "text drawn while the theme has no loaded font (load_font + set_theme)" | Text drawn while the theme has no working font: it renders nothing. The bootstrap handles this for you. |
 | `VIOL_FRAME_IDS_OVERFLOW` | "more than MAX_FRAME_IDS regions in one frame; duplicate-id checking is incomplete" | More than 2048 regions in one frame; duplicate detection stops there. Virtualize long lists (`scroll_view::virtual_list`). |
+| `VIOL_INPUT_OVERFLOW` | "text input did not fit the per-frame input buffer (IME commit or paste too long)" | A text event did not fit the per-frame input buffer; the part that fits is kept, the rest is dropped loudly. |
 
 ---
 
 ## Using PufferUI in your project
 
-PufferUI is one header plus one implementation TU. There are two ways to
-consume it:
+PufferUI is one header plus one implementation TU. Three ways to consume it:
 
-**In-tree** (you have the repo as a subdirectory):
+**In-tree, prebuilt libraries** (you have the repo as a subdirectory) — the
+implementation TU is compiled once per variant by the build, so a header edit
+does not recompile it once per executable:
 
 ```cmake
 add_subdirectory(pufferui)
-add_executable(my_app main.cpp src/pufferui_impl.cpp)   # or the installed copy
-target_link_libraries(my_app PRIVATE pufferui::pufferui)
+add_executable(my_app main.cpp)   # no impl TU listed
+target_link_libraries(my_app PRIVATE pufferui::sdl3)     # core + SDL3 backend
+# or pufferui::pufferui for the backend-agnostic core (tests, headless)
 ```
 
 **Installed** (`cmake --install out/build/x64-release --prefix <dir>`):
@@ -1284,9 +1287,15 @@ add_executable(my_app main.cpp ${PUFFERUI_IMPL})        # the impl TU path
 target_link_libraries(my_app PRIVATE pufferui::pufferui)
 ```
 
-Both link the *interface* target (headers + SDL3 as a transitive dependency)
-and compile the implementation TU exactly once. `${PUFFERUI_IMPL}` is provided
-by the package so the installed impl path stays correct.
+The exported package target is the backend-agnostic core
+(`pufferui::pufferui`); `${PUFFERUI_IMPL}` is provided so the installed impl
+path stays correct, and you bring your own backend or SDL3 (the SDL3 variant
+`pufferui_sdl3` exists in the build tree but is not exported — SDL3 is not
+ours to export).
+
+**Single-TU** (no build integration at all): add `pufferui_impl.cpp` to one
+target, define `PUFFERUI_ENABLE_SDL3` there if you want the SDL3 backend, and
+link SDL3 yourself.
 
 ### What to define, and where
 
@@ -1343,15 +1352,27 @@ out/build/x64-debug/Debug/pui_golden_tests.exe              # "0 failure(s)"
 cmake --build out/build/x64-debug --target examples_selftest # every example, offscreen
 ```
 
-- `pui_core_tests` is the headless suite: layout/id/focus/dock/window invariants,
-  expected violations captured with `set_violation_handler`, no SDL.
+- `pui_core_tests` is the headless suite, split by area (r88):
+  `tests/test_layout.cpp`, `test_input.cpp`, `test_text.cpp`,
+  `test_widgets.cpp`, `test_dock.cpp`, `test_render.cpp` — shared helpers in
+  `tests/test_util.h`. The runner supports `--filter NAME` (substring, runs
+  the matching tests) and `--list`; output stays clean (expected violations
+  are captured with `set_violation_handler`, never printed).
+- `pui_bench` is the frame-cost benchmark (headless; numbers and history in
+  `docs/perf.md`).
+- Draw-list snapshot tests record the flushed draw commands as text and
+  assert on them — platform-stable, reviewable, pixel-free.
 - `pui_golden_tests` renders fixed scenes with SDL's offscreen driver + software
   renderer and compares committed BMPs in `tests/golden/` (hash + tolerance
   compare). Regenerate with `--update` **only after eyeballing the new images**;
   failures dump `tests/golden/dump/<scene>_actual.bmp` + `_diff.bmp`.
 - Formatting is `clang-format 22.1.3` with the repo `.clang-format`
-  (`clang-format --dry-run --Werror` must pass); CI builds debug + release, runs
-  both suites and the example selftests, and checks formatting.
+  (`clang-format --dry-run --Werror` must pass for every tracked C/C++ file
+  outside `vendored/`); CI builds debug + release on Windows, plus a Linux
+  matrix (gcc + clang, warnings + ASan/UBSan on the headless suites), runs
+  all suites and the example selftests, and checks formatting.
+- See `CONTRIBUTING.md` for the house rules, and `docs/design.md` /
+  `docs/limitations.md` for the architecture and what is genuinely deferred.
 
 ## Status and roadmap
 
