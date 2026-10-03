@@ -1143,3 +1143,52 @@ PUI_TEST(test_text_kerning_places_the_second_glyph)
     }
     destroy_context(c);
 }
+
+// Home/End with Ctrl and Shift: Ctrl+Home/End jump to the ends, Shift extends the
+// selection, Ctrl+Shift+Home/End select to the ends (from wherever the anchor is).
+PUI_TEST(test_text_field_home_end_shortcuts)
+{
+    tf_env env;
+    context *c = env.c;
+    if (tf_needs_font(c)) return;
+    std::string value = "hello brave world";
+    const rect field = {0, 0, 300, 24};
+    const uiid id = "homeend"_id;
+    auto draw = [&](ui &u) { (void)u.text_field(field, value, id); };
+    auto type = [&](const char *s, f64 t)
+    {
+        text_input_event(c, s);
+        tf_frame(c, t, draw);
+    };
+    tf_click(c, 6.0f, 12.0f, 0.0, draw); // caret at 0
+
+    // Ctrl+End jumps to the end; typing appends
+    tf_key(c, key::END, true, false, 0.05, draw);
+    type("!", 0.10);
+    CHECK(value == "hello brave world!");
+    // Ctrl+Home jumps to the start
+    tf_key(c, key::HOME, true, false, 0.15, draw);
+    type("<", 0.20);
+    CHECK(value == "<hello brave world!");
+
+    // Shift+End selects to the end; typing replaces the selection
+    tf_key(c, key::RIGHT, true, false, 0.25, draw); // after "<hello"
+    tf_key(c, key::END, false, true, 0.30, draw);
+    type("|", 0.35);
+    CHECK(value == "<hello|");
+
+    // Ctrl+Shift+Home selects to the start from the caret
+    tf_key(c, key::HOME, true, true, 0.40, draw);
+    type("A", 0.45);
+    CHECK(value == "A");
+
+    // Ctrl+Shift+End selects to the end from the caret (anchor stays put)
+    type(" two three", 0.50);
+    CHECK(value == "A two three");
+    tf_key(c, key::HOME, true, false, 0.55, draw);
+    tf_key(c, key::RIGHT, true, false, 0.60, draw); // after "A"
+    tf_key(c, key::END, true, true, 0.65, draw);
+    type("!", 0.70);
+    CHECK(value == "A!");
+    CHECK(violation_count(c) == 0);
+}

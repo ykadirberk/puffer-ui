@@ -159,6 +159,56 @@ int main()
     }
     end_frame(c);
 
+    // Navigation shortcuts through the real SDL path: Ctrl+Shift+Home selects to the
+    // start of a focused field, so the next typed character replaces the selection.
+    {
+        std::string v = "hello world";
+        auto field_frame = [&](f64 t)
+        {
+            begin_frame(c, *b, t, 0.016);
+            {
+                ui u(c);
+                (void)u.text_field(rect::make(10, 10, 120, 26), v, "pump_nav"_id);
+            }
+            end_frame(c);
+        };
+        auto key_ev = [&](SDL_Keycode key, SDL_Keymod mod, bool down)
+        {
+            SDL_Event ke{};
+            ke.type = down ? SDL_EVENT_KEY_DOWN : SDL_EVENT_KEY_UP;
+            ke.key.windowID = SDL_GetWindowID(w2);
+            ke.key.key = key;
+            ke.key.mod = mod;
+            SDL_PushEvent(&ke);
+            (void)sdl3_pump(c);
+        };
+        auto text_ev = [&](const char *txt)
+        {
+            SDL_Event te{};
+            te.type = SDL_EVENT_TEXT_INPUT;
+            te.text.windowID = SDL_GetWindowID(w2);
+            te.text.text = const_cast<char *>(txt);
+            SDL_PushEvent(&te);
+            (void)sdl3_pump(c);
+        };
+        field_frame(0.100);
+        mouse_move(*b, 20, 20);
+        mouse_button(*b, true);
+        field_frame(0.116);
+        mouse_button(*b, false);
+        field_frame(0.132); // focused
+        const SDL_Keymod cs = static_cast<SDL_Keymod>(SDL_KMOD_CTRL | SDL_KMOD_SHIFT);
+        key_ev(SDLK_END, SDL_KMOD_CTRL, true); // Ctrl+End: caret to the end
+        field_frame(0.148);
+        key_ev(SDLK_END, SDL_KMOD_CTRL, false);
+        key_ev(SDLK_HOME, cs, true); // Ctrl+Shift+Home: select to the start
+        field_frame(0.164);
+        key_ev(SDLK_HOME, cs, false);
+        text_ev("Z");
+        field_frame(0.180);
+        CHECK(v == "Z");
+    }
+
     // Wheel routes.
     SDL_Event wh{};
     wh.type = SDL_EVENT_MOUSE_WHEEL;
