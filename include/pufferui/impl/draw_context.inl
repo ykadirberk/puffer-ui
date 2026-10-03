@@ -68,13 +68,15 @@ inline void dl_prepare(context *c, texture_handle tex, const rect *clip)
     }
 }
 
-// The area a draw can still change: the window's client area intersected with the
-// active clip. False when nothing bounds the draw (no frame area known, no clip).
+// The area a draw can still change: the open window frame's client area
+// intersected with the active clip. A zero-size client area paints nothing. False
+// when nothing bounds the draw (no frame open, no clip): `screen` is only
+// meaningful while a frame is open, it is left stale after end_frame.
 inline bool paint_bounds(const context *c, rect &out)
 {
     bool bounded = false;
     rect r{};
-    if (c->screen.w > 0.0f && c->screen.h > 0.0f)
+    if (c->current_window)
     {
         r = c->screen;
         bounded = true;
@@ -99,6 +101,15 @@ inline bool outside_paint(const context *c, const rect &box)
     if (pb.w <= 0.0f || pb.h <= 0.0f) return true;
     return box.right() <= pb.x || box.x >= pb.right() || box.bottom() <= pb.y ||
            box.y >= pb.bottom();
+}
+
+// How far past a shape's geometric bounds its antialiasing feather can reach.
+inline constexpr f32 FEATHER_REACH = 1.5f;
+
+// outside_paint for a shape whose geometry (feather excluded) fits in `box`.
+inline bool outside_paint_feathered(const context *c, const rect &box)
+{
+    return outside_paint(c, box.pad(-FEATHER_REACH));
 }
 
 inline void dl_add(context *c, const vertex *verts, i32 vcount, const i32 *idx, i32 icount)

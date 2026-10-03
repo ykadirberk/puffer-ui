@@ -77,11 +77,12 @@ PUI_TEST(test_culling_and_visibility)
     end_frame(c);
     CHECK(nd.vertices == 4); // the in-viewport quad submitted
 
-    // No clip active: everything is "visible".
+    // No clip active: visible means "inside the client area", like the draw culling.
     begin_frame(c, 0.016, 0.016, rect::make(0, 0, 300, 200));
     {
         ui u(c);
-        CHECK(u.is_visible(rect::make(-1000.0f, -1000.0f, 10.0f, 10.0f)));
+        CHECK(u.is_visible(rect::make(10.0f, 10.0f, 10.0f, 10.0f)));
+        CHECK(!u.is_visible(rect::make(-1000.0f, -1000.0f, 10.0f, 10.0f)));
     }
     end_frame(c);
 
@@ -1317,4 +1318,74 @@ PUI_TEST(test_blur_outside_client_area_is_skipped)
     CHECK(env.nd.targets == 0);
     env.frame(0.016, [&](ui &u) { u.blur(rect::make(20, 20, 80, 40), 12.0f, 4.0f, 1.0f); });
     CHECK(env.nd.targets >= 3);
+}
+
+// A glyph that straddles the clip edge is still emitted: culling is conservative.
+PUI_TEST(test_text_clip_edge_keeps_straddling_glyph)
+{
+    tf_env env(300, 200);
+    if (tf_needs_font(env.c)) return;
+    f32 prefix_w = 0.0f;
+    const char *line = "thequick brown fox";
+    env.frame(0.0, [&](ui &u) { prefix_w = u.text_width("thequick"); });
+    // the clip's right edge cuts through the last glyph of the prefix
+    env.frame(0.016,
+              [&](ui &u)
+              {
+                  region r = u.region(rect::make(10, 10, prefix_w - 2.0f, 24), "edge"_id);
+                  u.text(rect::make(10, 10, 280, 24), line, color::white(), ALIGN_LEFT);
+              });
+    CHECK(env.nd.vertices >= 8 * 4); // eight visible glyphs of the prefix, 4 vertices each
+}
+
+// A window with a zero-size client area paints nothing; is_visible agrees with the
+// draw calls about what is off-window.
+PUI_TEST(test_zero_area_and_is_visible)
+{
+    tf_env env(300, 200);
+    begin_frame(env.c, 0.0, 0.016, rect::make(0, 0, 0, 0));
+    {
+        ui u(env.c);
+        u.draw_rect(rect::make(10, 10, 50, 50), color::white());
+        u.draw_rounded_rect(rect::make(10, 10, 50, 50), color::white(), 8.0f);
+        CHECK(!u.is_visible(rect::make(10, 10, 50, 50)));
+    }
+    end_frame(env.c);
+    CHECK(env.nd.vertices == 0);
+    env.frame(0.016,
+              [&](ui &u)
+              {
+                  CHECK(u.is_visible(rect::make(10, 10, 50, 50)));
+                  CHECK(!u.is_visible(rect::make(400, 10, 50, 50)));
+                  CHECK(!u.is_visible(rect::make(10, -200, 50, 50)));
+              });
+}
+
+// A blur straddling a clip edge scissors its composite to the clip.
+PUI_TEST(test_blur_composite_honours_clip)
+{
+    struct clip_log_device : null_device
+    {
+        bool clip_on = false;
+        std::vector<bool> draw_clipped; // the scissor state at each draw
+        void set_clip(const rect *clip) override { clip_on = clip != nullptr; }
+        void draw(texture_handle tex, const vertex *v, i32 vc, const i32 *idx, i32 ic) override
+        {
+            draw_clipped.push_back(clip_on);
+            null_device::draw(tex, v, vc, idx, ic);
+        }
+    } d;
+    d.my_surface.w = 300;
+    d.my_surface.h = 200;
+    context *c = create_context(&d, d.create_surface());
+    begin_frame(c, 0.0, 0.016, rect::make(0, 0, 300, 200));
+    {
+        ui u(c);
+        region r = u.region(rect::make(0, 0, 60, 60), "clip"_id);
+        u.blur(rect::make(40, 20, 80, 40), 12.0f, 4.0f, 1.0f);
+    }
+    end_frame(c);
+    CHECK(d.targets >= 3);
+    CHECK(!d.draw_clipped.empty() && d.draw_clipped.front()); // the composite is scissored
+    destroy_context(c);
 }

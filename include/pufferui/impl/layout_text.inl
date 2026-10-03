@@ -390,8 +390,9 @@ bool ui::has_glyph(u32 cp)
 
 bool ui::is_visible(rect r) const
 {
-    if (ctx->clip_depth == 0) return true;
-    const rect x = rect::intersect(r, ctx->clip_stack[ctx->clip_depth - 1]);
+    rect pb;
+    if (!detail::paint_bounds(ctx, pb)) return true;
+    const rect x = rect::intersect(r, pb);
     return x.w > 0.0f && x.h > 0.0f;
 }
 
@@ -539,10 +540,13 @@ void ui::text(rect r, std::string_view s, color c, align a)
     const f32 base_y = std::floor(baseline + 0.5f);
     if (bounded)
     {
-        // generous glyph overhang: ascenders/diacritics above, descenders below
-        const f32 over = size * 0.8f;
-        if (pen - over >= pb.right() || pen + width + over <= pb.x ||
-            base_y - size * 1.6f >= pb.bottom() || base_y + size * 0.8f <= pb.y)
+        // The font's own extents plus half an em of slack for marks that overhang
+        // them (diacritics above, tails below) and for sideways overhang.
+        const f32 slack = size * 0.5f;
+        const f32 up = static_cast<f32>(ascent) * scale + slack;
+        const f32 down = static_cast<f32>(-descent) * scale + slack;
+        if (pen - slack >= pb.right() || pen + width + slack <= pb.x ||
+            base_y - up >= pb.bottom() || base_y + down <= pb.y)
             return;
     }
     for (text_store::cached_glyph &e : lay->gs)
@@ -557,10 +561,13 @@ void ui::text(rect r, std::string_view s, color c, align a)
         }
         if (bounded && e.g.w > 0.0f)
         {
-            // the bin-0 bitmap's box (other bins differ by under a pixel)
-            const f32 x0 = ix + e.g.xoff - 1.0f, y0 = base_y + e.g.yoff;
-            if (x0 >= pb.right() || x0 + e.g.w + 2.0f <= pb.x || y0 >= pb.bottom() ||
-                y0 + e.g.h <= pb.y)
+            // The bin-0 bitmap's box; a sub-pixel bin's bitmap differs from it by
+            // under a pixel, so GLYPH_BIN_SLACK on every side keeps it inside.
+            constexpr f32 GLYPH_BIN_SLACK = 1.0f;
+            const f32 x0 = ix + e.g.xoff - GLYPH_BIN_SLACK;
+            const f32 y0 = base_y + e.g.yoff - GLYPH_BIN_SLACK;
+            const f32 w = e.g.w + 2.0f * GLYPH_BIN_SLACK, h = e.g.h + 2.0f * GLYPH_BIN_SLACK;
+            if (x0 >= pb.right() || x0 + w <= pb.x || y0 >= pb.bottom() || y0 + h <= pb.y)
             {
                 pen += e.g.advance;
                 continue;

@@ -59,7 +59,7 @@ inline corner_radii inset_radii(const corner_radii &in, f32 by)
 inline void rounded_ring(ui &u, rect r, color c, const corner_radii &radii_in, f32 thickness)
 {
     if (c.a == 0 || thickness <= 0.0f) return;
-    if (outside_paint(u.ctx, r.pad(-1.5f))) return; // all eight pieces would be culled
+    if (outside_paint_feathered(u.ctx, r)) return; // all eight pieces would be culled
     const f32 t = min2(thickness, min2(r.w, r.h) * 0.5f);
     if (t <= 0.0f) return;
     const corner_radii q = clamp_radii(r, radii_in);

@@ -185,7 +185,7 @@ void ui::draw_rounded_rect(rect r, color c, f32 radius)
 void ui::draw_rounded_rect(rect r, color c, const corner_radii &radii_in)
 {
     PUFFERUI_CHECK(VIOL_INVALID_RECT, r.is_valid(), "draw_rounded_rect with invalid rect");
-    if (detail::outside_paint(ctx, r.pad(-1.5f))) return; // before the fan is built
+    if (detail::outside_paint_feathered(ctx, r)) return; // before the fan is built
     const corner_radii radii = detail::clamp_radii(r, radii_in);
     if (radii.tl == 0.0f && radii.tr == 0.0f && radii.br == 0.0f && radii.bl == 0.0f)
     {
@@ -391,9 +391,8 @@ void ui::draw_sector(vec2 center, f32 r_in, f32 r_out, f32 a0, f32 a1, color c)
     }
     if (a1 - a0 <= 0.0f || r_out <= 0.0f || r_out <= r_in) return; // degenerate: nothing to fill
     {
-        const f32 reach = r_out + 1.5f; // outer radius plus the feather
-        if (detail::outside_paint(
-                ctx, rect::make(center.x - reach, center.y - reach, reach * 2.0f, reach * 2.0f)))
+        if (detail::outside_paint_feathered(
+                ctx, rect::make(center.x - r_out, center.y - r_out, r_out * 2.0f, r_out * 2.0f)))
             return;
     }
     const f32 mid = (r_in + r_out) * 0.5f;
@@ -612,6 +611,10 @@ void ui::blur(rect r, f32 blur_radius, const corner_radii &radii_in, f32 alpha)
 
     // composite the blurred quarter back over the scene
     c->device->set_target(scene);
+    // The composite honours the active clip like every other draw: a blur that
+    // straddles a clip edge must not bleed past it.
+    const rect *clip = c->clip_depth > 0 ? &c->clip_stack[c->clip_depth - 1] : nullptr;
+    detail::dl_prepare(c, bs->quarter, clip);
     const i32 qw = (ow + 3) / 4, qh = (oh + 3) / 4;
     // The quarter texture's origin is the *source* rect, which sits `margin`
     // pixels up/left of the user rect (sampling must reach outside for a correct
