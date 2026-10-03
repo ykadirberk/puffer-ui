@@ -1,8 +1,9 @@
 # PufferUI — designed seams
 
 Interfaces that need a *shape* decided now so retrofitting later is cheap.
-Each is design-first (this document); implementations land when the plan's
-reach phase (r95) opens them.
+Each is design-first (this document) and **not implemented**: the plan's reach
+phase landed the generated API reference and kept these as seams, because each
+touches every metric/glyph/input path and earns its own revision.
 
 ## 1. DPI / content scale
 
@@ -13,8 +14,8 @@ reach phase (r95) opens them.
   px), IDs, key handling.
 - Test plan: golden scenes at 1× and 2× (the same scene, scaled metrics —
   not a pixel doubling).
-- Prerequisite: components (r91–93) — they centralize metric reads, which
-  makes the scale multiply nearly free once they exist.
+- Prerequisite (met): the `pui::comp` components (r91–93) centralize metric
+  reads, which makes the scale multiply nearly free.
 
 ## 2. Text shaper interface
 
@@ -39,7 +40,7 @@ reach phase (r95) opens them.
 
 ## 4. Accessibility hook
 
-- **Shape**: components (r91–93) may call
+- **Shape**: components may call
   `u.a11y({role, name, state, rect})` — compiled out by default; a platform
   adapter consumes the recorded tree later.
 - Why components first: one call per component instead of retrofitting
@@ -49,7 +50,7 @@ reach phase (r95) opens them.
 
 - **Shape**: a keymap registry (`u.bind(key, id)` / a `command` table) so
   components check bindings instead of reading raw keys. Keyboard
-  navigation (r85) already routes through the ring; commands add the
+  navigation already routes through the ring; commands add the
   app-level shortcut layer on top.
 
 ## 6. Stable window handles (C8)
@@ -63,5 +64,5 @@ reach phase (r95) opens them.
 
 - **Shape**: an optional `material` id in the draw command for shader-backed
   effects (SDF rounded rects, blur without render targets). Only justified
-  if the r89+ profile shows the geometry path dominating — the current
+  if profiling (`docs/perf.md`) shows the geometry path dominating — the current
   numbers (2 draw calls/frame) do not.

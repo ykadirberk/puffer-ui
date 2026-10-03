@@ -1,4 +1,4 @@
-// render: batching, flush, shapes, blur, device contract (r88 split).
+// render: batching, flush, shapes, blur, device contract.
 #include "test_util.h"
 
 PUI_TEST(test_draw_list_snapshot)
@@ -77,7 +77,7 @@ PUI_TEST(test_culling_and_visibility)
     end_frame(c);
     CHECK(nd.vertices == 4); // the in-viewport quad submitted
 
-    // No clip active: everything is "visible" (the old behavior).
+    // No clip active: everything is "visible".
     begin_frame(c, 0.016, 0.016, rect::make(0, 0, 300, 200));
     {
         ui u(c);
@@ -153,8 +153,8 @@ PUI_TEST(test_identity_scope)
 PUI_TEST(test_dup_widget_id_and_sizes)
 {
     // Debug duplicate-widget detection: the same id interacted at two
-    // different rects in one frame reports (the old failure was silent
-    // shared state); identical rects stay tolerated. Also: the natural-size
+    // different rects in one frame reports (the widgets would silently share
+    // state); identical rects stay tolerated. Also: the natural-size
     // helpers (`button_size` / `text_size`) and the options-struct forms.
     null_device nd;
     context *c = create_context(&nd, nd.create_surface());
@@ -165,7 +165,7 @@ PUI_TEST(test_dup_widget_id_and_sizes)
     {
         ui u(c);
         (void)u.interact("twice"_id, rect::make(0, 0, 40, 20));
-        (void)u.interact("twice"_id, rect::make(100, 0, 40, 20)); // different rect: the bug
+        (void)u.interact("twice"_id, rect::make(100, 0, 40, 20)); // a different rect: reported
     }
     end_frame(c);
 #if !defined(NDEBUG)
@@ -811,7 +811,7 @@ PUI_TEST(test_draw_shapes_coverage)
     {
         ui u(c);
         u.draw_line(10, 10, 80, 60, color::white());
-        // diagonal: was silent before     }
+        // a diagonal draws real geometry
         end_frame(c);
         CHECK(nd.vertices >= 4);
         begin_frame(c, 0.064, 0.016, rect::make(0, 0, 400, 120));
@@ -1164,8 +1164,8 @@ PUI_TEST(test_widget_corner_radii)
     destroy_context(c);
 }
 
-// Regression: dl_prepare read a zero-size clip as "no scissor", so everything
-// drawn inside a collapsed region painted across the whole window.
+// An empty (zero-size) clip paints nothing: everything drawn inside a collapsed
+// region is culled, never sent to the device as "no scissor".
 PUI_TEST(test_empty_clip_paints_nothing)
 {
     tf_env env;
@@ -1188,7 +1188,8 @@ PUI_TEST(test_empty_clip_paints_nothing)
     CHECK(env.nd.vertices > base); // control: a real clip still draws
 }
 
-// Regression: free_blur_store forgot the sixteenth-size target (radius > 20).
+// Destroying a context releases every blur target, including the sixteenth-size
+// one that radii above 20 use.
 struct target_counting_device : null_device
 {
     i32 destroyed = 0;

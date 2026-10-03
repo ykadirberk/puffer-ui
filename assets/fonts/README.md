@@ -11,7 +11,7 @@ use bold/oblique through `ui.text_style(size, font)` (a `text_scope`).
 redistribute).
 
 The design's required coverage set (see the migration plan §6.2) is asserted by
-`test_font_coverage` in `tests/test_core.cpp`: Basic Latin, Latin-1 Supplement,
+`test_font_coverage` in `tests/test_text.cpp`: Basic Latin, Latin-1 Supplement,
 Latin Extended-A, Greek and Coptic, General Punctuation, Super/Subscripts,
 Currency Symbols, Letterlike Symbols, Arrows, Mathematical Operators, and the
 check-mark dingbats. Unassigned slots and a few rare symbols not present in

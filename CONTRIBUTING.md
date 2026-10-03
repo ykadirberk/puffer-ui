@@ -7,6 +7,7 @@
    layout, input, text, widgets, dock, render, components). A test is
    `PUI_TEST(test_name) { tf_env env; ... }` — it registers itself and `tf_env`
    asserts zero violations on exit (see `tests/test_util.h`).
+   `python tools/run_tests.py` builds and runs every suite and check on any OS.
    Run the suite with `out/build/<preset>/…/pui_core_tests.exe`; it must
    print `all core tests passed` and exit 0. `--filter NAME` runs one test;
    `--list` lists them.
@@ -17,7 +18,7 @@
    `examples_selftest` (every example runs offscreen and asserts zero
    violations).
 4. **Formatting**: `clang-format --dry-run --Werror` must pass for every
-   tracked `.h`/`.cpp` outside `vendored/` (CI checks the `git ls-files`
+   tracked `.h`/`.cpp`/`.inl` outside `vendored/` (CI checks the `git ls-files`
    list, so new files are covered automatically).
 5. **Golden images**: `pui_golden_tests` compares against committed BMPs.
    Regenerate with `pui_golden_tests --update` only after eyeballing the
@@ -41,13 +42,13 @@
 - One context per thread (the current-context slot is `thread_local`).
 - Identity is explicit: `_id` literals, `id_child`, `u.local`. No
   label-derived IDs (rejected permanently).
-- The component convention (see the plan's r91 phase) is the way new
+- The component convention (see the plan's components phase) is the way new
   reusable widgets are added; the definition-of-done checklist lives in the
   plan.
 
 ## The plan
 
-Work is sequenced in `~/.opencode/plan/pufferui-roadmap.md` (phases r87–r95,
+Work is sequenced in `~/.opencode/plan/pufferui-roadmap.md` (phases,
 standing decisions, per-phase deliverables). Read it before starting; update
 it when something lands.
 

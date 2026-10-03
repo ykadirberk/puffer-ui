@@ -1,4 +1,4 @@
-// test_core.cpp - the runner (r88 split): registers every test from the
+// test_core.cpp - the runner: registers every test from the
 // per-area files, supports `--list` and `--filter NAME` (substring), and
 // keeps the suite contract: unfiltered + zero failures prints
 // "all core tests passed" and exits 0.

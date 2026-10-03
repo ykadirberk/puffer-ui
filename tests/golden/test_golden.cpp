@@ -1015,12 +1015,10 @@ static i32 run_scene(const golden_scene &sc, golden_hashes &hashes, bool update,
 }
 
 // ---------------------------------------------------------------- checks
-// Regression: the SDL3 backend's blit BLENDED instead of copying (SDL_RenderTexture
-// uses the texture's blend mode, not the draw blend mode), so blur-pyramid
-// texels with alpha < 1 mixed with the scratch targets' previous contents. In
-// an app shell - a page-wide fade blur, a wide frosted bar, a narrow frosted
-// column - the column's frosted color slid a little darker every frame. A
-// still scene must blur to the same pixels frame after frame.
+// A still scene must blur to the same pixels frame after frame: the backend's
+// blit is a copy (not a blend), so blur-pyramid texels never mix with the scratch
+// targets' previous contents. The scene is an app shell - a page-wide fade blur,
+// a wide frosted bar and a narrow frosted column.
 static i32 check_blur_stable(const char *only)
 {
     if (only && std::strcmp(only, "blur_stable") != 0) return 0;

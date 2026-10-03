@@ -378,7 +378,7 @@ editing model is browser-like.
 | Tab | focus the next field and select its value (typing replaces it) |
 | drag | select a range; **double-click** selects the word, **triple-click** everything |
 | drag a selection | lift and **move** it — drop into the same or another field; **Ctrl** when dropping copies; **Escape** or dropping outside cancels |
-| ←/→, Home/End | move the caret; **Shift** extends the selection |
+| ←/→, Home/End | move the caret; **Shift** extends the selection (Ctrl+Home/End and Ctrl+Shift+Home/End work too) |
 | Ctrl+←/→ | move by word; Ctrl+Shift+←/→ selects by word |
 | Backspace / Delete | delete a character; **Ctrl**+Backspace/Delete delete a word |
 | Ctrl+A / C / X / V | select all / copy / cut / paste through the app `clipboard` |
@@ -444,7 +444,10 @@ else { column pc(p.content(), 6); /* ... */ }
 ```
 
 `panel` flags: `PANEL_NO_TITLEBAR`, `PANEL_NO_CONTROLS`, `PANEL_NO_DRAG`,
-`PANEL_NO_SHADOW`. Panels block input to the UI underneath them (using
+`PANEL_NO_SHADOW`. A panel's identity is explicit: the `dock_panel` id of the
+positional form, or `.id` in the options form
+(`u.panel("Tools", bounds, {.id = "tools"_id})`); the title is never an
+identity. Panels block input to the UI underneath them (using
 previous-frame rects), which is why the panel is constructed *after* the base UI.
 
 ![pui_ex_panels: cards and floating panels](docs/img/readme/panels.png)
@@ -478,7 +481,10 @@ sv.set_content_height(40 * 24 + 39 * 4);
 - overflow is judged from the previous frame's content height, so a new scroll
   area settles in one frame. If you already know the content height (fixed rows,
   a form), call `set_content_height` **before** laying out — the first frame is
-  then correct instead of briefly collapsing.
+  then correct instead of briefly collapsing;
+- a scope clips everything drawn while it is alive, so a second scroll view (or
+  any clipped region) created while the first is still in scope is *nested* in
+  it: siblings need their own `{ }` block. An empty clip paints nothing.
 
 ![pui_ex_scroll: gutter and overlay scroll views](docs/img/readme/scroll.png)
 
@@ -508,8 +514,8 @@ if (menu_open)
 ```
 
 Flags: `POPUP_CLOSE_ON_ESCAPE`, `POPUP_CLOSE_ON_CLICK_OUTSIDE`, `POPUP_MODAL`
-(blocks the base UI entirely). Popups are capped at `MAX_POPUPS` (8) and layered
-in creation order.
+(blocks the base UI entirely). Popups are layered in creation order; the layer
+stack grows on demand, so nesting depth is not capped.
 
 ![pui_ex_popups: menus and a modal dialog](docs/img/readme/popups.png)
 
@@ -583,7 +589,7 @@ u.draw_rect(r, c);
 u.draw_rounded_rect(r, c, 8.0f);                 // antialiased
 u.draw_rounded_rect(r, c, corner_radii::top(8)); // round only some corners (0 = square)
 u.draw_rounded_rect(r, c, {.tl = 16, .br = 16}); // ... or a radius per corner
-u.draw_line(x0, y0, x1, y1, c, 2.0f);            // horizontal/vertical
+u.draw_line(x0, y0, x1, y1, c, 2.0f);            // any angle (axis-aligned lines stay flat rects)
 u.draw_polygon({{0,0},{40,0},{20,30}}, c);       // convex, feathered edge
 u.draw_sector(center, r_in, r_out, a0, a1, c);   // pie slice / ring
 u.draw_arc(center, radius, thickness, a0, a1, c);
@@ -811,7 +817,7 @@ u.text(r, s.view.clicks_label, th.text, ALIGN_LEFT);
 if (u.button(r2, "Click me", "click"_id)) s.clicks += 1;
 ```
 
-There is no intent queue and no reducer (removed in r53); components read
+There is no intent queue and no reducer; components read
 `s.view` and write `s.<field>`. See [`docs/model_view.md`](docs/model_view.md)
 and the `pui_counter` example.
 
@@ -1034,7 +1040,7 @@ confirmation).
 - **`sdl3_pump(context*)` / `sdl3_route(context*, void* event)`** — one call
   routes every SDL event to the right window: pointer, left + right buttons,
   wheel, keys with modifiers, text input, IME preedit, focus and window
-  geometry (clients stay in sync with SDL). Apps no longer hand-wire a switch
+  geometry (clients stay in sync with SDL). Apps do not hand-wire a switch
   per event type; the pump returns true on SDL_EVENT_QUIT, and window-close
   requests surface as `window::close_requested` for app policy:
 
@@ -1103,8 +1109,8 @@ sv.virtual_list(5000, 26.0f, [](ui &u, i32 index, rect row) {
   ring, and their keyed state (animation, scroll, edits) purges after the
   usual idle retention when scrolled away.
 - **Irregular rows** (variable heights, section headers) keep using manual
-  slicing with `sv.content()` and an explicit `set_content_height` — the
-  report when you skip rows past `MAX_FRAME_IDS` is your sign to virtualize.
+  slicing with `sv.content()` and an explicit `set_content_height`; for long
+  lists, virtualize.
 
 ![pui_ex_vlist: a 5,000-row virtual list](docs/img/readme/vlist.png)
 
@@ -1137,7 +1143,7 @@ static const char *const ranges[] = {"Day", "Week", "Month"};
   `explicit operator bool`, so `if (comp::segmented(...))` reads naturally.
 - `comp::switch_size(u, label)` gives the natural size for row layout.
 
-**Batch 2** (r92) adds containers:
+**Batch 2** adds containers:
 
 ```cpp
 (void)comp::tab_bar(u, body.cut_top(u.control_h()), tabs, tab, {.id = "tabs"_id});
@@ -1369,7 +1375,7 @@ field's buffer while it is focused.
 
 ### Drawing and images
 
-`ui.draw_rect` · `ui.draw_line` (axis-aligned) · `ui.draw_rounded_rect` ·
+`ui.draw_rect` · `ui.draw_line` · `ui.draw_rounded_rect` ·
 `ui.draw_polygon(span<vec2>, color)` · `ui.draw_sector(center, r_in, r_out, a0,
 a1, color)` · `ui.draw_arc(center, radius, thickness, a0, a1, color)` ·
 `ui.draw_triangles(texture, vertices, count, indices, count)` ·
@@ -1422,12 +1428,11 @@ degrades to the documented behavior:
 | `MAX_WINDOWS` | 8 | The window list's *initial* capacity — it grows on demand, so there is no window-count limit. |
 | `MAX_CLIP_DEPTH` | 64 | nested region/scroll/panel clips. |
 | `MAX_STYLE_SCOPES` | 16 | `style_scope` nesting. |
-| `MAX_POPUPS` | 8 | popup layers per frame. |
-| `MAX_PANELS` | 16 | floating panels per frame. |
+| `MAX_POPUPS` | 8 | *initial* capacity of the popup layer stack (it grows on demand). |
+| `MAX_PANELS` | 16 | *initial* capacity of the floating-panel stack (it grows on demand). |
 | `MAX_DOCK_PANELS` / `MAX_DOCK_DEPTH` | 8 / 8 | the dock tree. |
 | `MAX_TRACKS` | 16 | tracks per `track_row`/`track_column`. |
 | `MAX_ID_DEPTH` | 64 | `region`/`id_child` nesting. |
-| `MAX_FRAME_IDS` | 2048 | distinct region ids per frame (overflow now reports `VIOL_FRAME_IDS_OVERFLOW`; virtualize long lists). |
 | `MAX_BUTTON_ROLES` | 16 | button roles per theme. |
 
 Sizes beyond a limit are rejected by the guard and the operation is a no-op;
@@ -1458,13 +1463,15 @@ retail builds keep the cheap detection but never stop.
 | `VIOL_END_WITHOUT_BEGIN` | "end_frame without begin_frame" | Mismatched frame pair. |
 | `VIOL_CLIP_UNBALANCED` | "unbalanced region clip push/pop" | A scope outlived the frame; destroy scopes before `end_frame`. |
 | `VIOL_SCOPE_UNBALANCED` | "unbalanced button style scope", "button style scope overflow" | Style-scope nesting. |
-| `VIOL_POPUP_OVERFLOW` | "popup stack overflow" | More than `MAX_POPUPS` layers. |
+| `VIOL_POPUP_OVERFLOW` | "popup stack overflow" | Never raised (the stack grows on demand); kept in the enum for code stability. |
 | `VIOL_COMBO_EMPTY` | "combo needs at least one item" | A combo with zero items. |
 | `VIOL_LAYOUT_CLAMPED` | "column slice clamped: requested N px > remaining M px" | A requested slice was clamped; opt-in via `set_report_layout_overflow`. |
 | `VIOL_NO_FONT` | "text drawn while the theme has no loaded font (load_font + set_theme)" | Text drawn while the theme has no working font: it renders nothing. The bootstrap handles this for you. |
-| `VIOL_FRAME_IDS_OVERFLOW` | "more than MAX_FRAME_IDS regions in one frame; duplicate-id checking is incomplete" | More than 2048 regions in one frame; duplicate detection stops there. Virtualize long lists (`scroll_view::virtual_list`). |
+| `VIOL_FRAME_IDS_OVERFLOW` | — | Never raised (duplicate-region checking is a per-frame hash set, complete at any scale); kept in the enum for code stability. |
 | `VIOL_INPUT_OVERFLOW` | "text input did not fit the per-frame input buffer (IME commit or paste too long)" | A text event did not fit the per-frame input buffer; the part that fits is kept, the rest is dropped loudly. |
 | `VIOL_DUP_WIDGET_ID` | "duplicate widget id among siblings (the same id interacted at a different rect)" | Debug builds only: the same widget id was interacted twice at different rects in one frame — the widgets would silently share press/focus state. |
+| `VIOL_DUP_MOTION_KEY` | "animate_rect called twice for the same key in one frame" | The second call does not step the motion (it would double the speed); key each rect by identity and call once per frame. |
+| `VIOL_PANEL_NO_ID` | "panel needs an explicit id (panel_opts::id or a dock_panel id)" | A panel without an explicit identity; the title is never used as one. |
 
 ---
 
@@ -1556,11 +1563,13 @@ cmake --build out/build/x64-debug --target pui_core_tests   # or build all
 out/build/x64-debug/Debug/pui_core_tests.exe                # "all core tests passed"
 out/build/x64-debug/Debug/pui_golden_tests.exe              # "0 failure(s)"
 cmake --build out/build/x64-debug --target examples_selftest # every example, offscreen
+python tools/run_tests.py                                    # all of the above + doc checks, any OS
 ```
 
-- `pui_core_tests` is the headless suite, split by area (r88):
+- `pui_core_tests` is the headless suite, split by area:
   `tests/test_layout.cpp`, `test_input.cpp`, `test_text.cpp`,
-  `test_widgets.cpp`, `test_dock.cpp`, `test_render.cpp` — shared helpers in
+  `test_widgets.cpp`, `test_dock.cpp`, `test_render.cpp`, `test_components.cpp`,
+  `test_motion.cpp` — shared helpers in
   `tests/test_util.h`. The runner supports `--filter NAME` (substring, runs
   the matching tests) and `--list`; output stays clean (expected violations
   are captured with `set_violation_handler`, never printed).
@@ -1573,8 +1582,8 @@ cmake --build out/build/x64-debug --target examples_selftest # every example, of
   compare). Regenerate with `--update` **only after eyeballing the new images**;
   failures dump `tests/golden/dump/<scene>_actual.bmp` + `_diff.bmp`.
 - Formatting is `clang-format 22.1.3` with the repo `.clang-format`
-  (`clang-format --dry-run --Werror` must pass for every tracked C/C++ file
-  outside `vendored/`); CI builds debug + release on Windows, plus a Linux
+  (`clang-format --dry-run --Werror` must pass for every tracked `.h`/`.cpp`/`.inl`
+  file outside `vendored/`); CI builds debug + release on Windows, plus a Linux
   matrix (gcc + clang, warnings + ASan/UBSan on the headless suites), runs
   all suites and the example selftests, and checks formatting.
 - See `CONTRIBUTING.md` for the house rules, and `docs/design.md` /
@@ -1589,7 +1598,6 @@ Implemented: everything in the tutorial above. Known gaps:
 
 - `number_field` has no step buttons, integer codec or unit-suffix codec
   (deferred by decision).
-- `draw_line` is axis-aligned; use `draw_polygon` for diagonals.
 - Sectors/arcs feather their curved edges; their straight radial edges are not
   antialiased.
 - The demo's dock node pool is fixed at 16 and an undocked panel snaps to a

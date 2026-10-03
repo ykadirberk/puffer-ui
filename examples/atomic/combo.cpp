@@ -32,7 +32,7 @@ static void combo_frame(ui &u, example_app &app)
 {
     const theme &th = u.th();
 
-    // The r70 layout-overflow reporter runs in this example: any slice this
+    // The layout-overflow reporter runs in this example: any slice this
     // page requests beyond what remains is reported (and fails --selftest),
     // so the section budgets below cannot silently rot again.
     set_report_layout_overflow(app.ctx, true);
@@ -120,8 +120,8 @@ static void combo_frame(ui &u, example_app &app)
     {
         const rect body = example_section(u, col.next(H_LOG), "Event log",
                                           "what the widgets above did", app.font_bold);
-        // The log scrolls; the height is set before laying out (the r17
-        // first-frame fix), so no line ever clamps or draws on top of another.
+        // The log scrolls; the height is set before laying out, so the first
+        // frame is already right and no line clamps or draws on top of another.
         // The newest entry is first, so it is always visible.
         scroll_view log = u.scroll(body, "cm_log"_id);
         const f32 line_h = 16.0f;

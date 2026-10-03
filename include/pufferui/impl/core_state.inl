@@ -56,8 +56,8 @@ inline const char *intern_dock_name(context *c, const char *name)
     return c->dock_panel_name_buf;
 }
 // Growth-on-demand for the overlay stacks: the fixed caps are initial
-// capacities, so deep popup/panel nesting never refuses a layer (and the
-// VIOL_POPUP_OVERFLOW guard is no longer reachable).
+// capacities, so deep popup/panel nesting never refuses a layer (and
+// VIOL_POPUP_OVERFLOW is never raised).
 inline void ensure_popup_capacity(context *c, i32 need)
 {
     if (need <= c->popup_capacity) return;
@@ -342,11 +342,10 @@ struct text_store
 {
     std::vector<font_data> fonts;
 
-    // (font, size, codepoint, subpixel bin) as a struct key: no aliasing between
-    // (size, cp) pairs, unlike the old packed u64 (cp can exceed the packing
-    // multiplier). `sub` is the glyph's horizontal offset in quarter pixels
-    // (0..3): the same glyph is rasterized up to four times so that every quad
-    // can be drawn on a whole pixel yet land within 1/8 px of its true position.
+    // (font, size, codepoint, subpixel bin) as a struct key: fields never alias
+    // (a codepoint can exceed any packing multiplier). `sub` is the glyph's horizontal offset in
+    // quarter pixels (0..3): the same glyph is rasterized up to four times so that every quad can
+    // be drawn on a whole pixel yet land within 1/8 px of its true position.
     struct glyph_key
     {
         i32 font;

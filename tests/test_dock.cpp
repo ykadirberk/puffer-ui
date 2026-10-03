@@ -1,4 +1,4 @@
-// dock + windows: dock tree, multi-window, titlebar (r88 split).
+// dock + windows: dock tree, multi-window, titlebar.
 #include "test_util.h"
 
 PUI_TEST(test_window_errors)
@@ -387,12 +387,10 @@ PUI_TEST(test_multi_window)
 
 PUI_TEST(test_window_pointer_invalidation)
 {
-    // remove_window compacts the window list: pointers to later windows
-    // go stale (the user-visible bug was a second window's frame loop
-    // reporting "begin_frame: window is not registered" after the first
-    // one closed). The contract: such a pointer is a reported
-    // violation, and the correct workflow re-fetches with
-    // window_at(handle).
+    // remove_window compacts the window list, so pointers to later windows go
+    // stale. The contract: using such a pointer is a reported violation
+    // ("begin_frame: window is not registered"), and the correct workflow
+    // re-fetches with window_at(handle).
     null_device nd;
     context *c = create_context(&nd, nullptr);
     set_violation_handler(c, capture_violation, nullptr);
@@ -514,7 +512,7 @@ PUI_TEST(test_titlebar_maximize_restore)
     // host. The host reflects the OS state the way the event pump does (SDL
     // reports the maximized flag), and the host reads the REAL window state
     // when toggling, so restore stays reachable no matter how the flag
-    // drifted (the r74 regression).
+    // drifted.
     null_device nd;
     context *c = create_context(&nd, nd.create_surface());
     set_violation_handler(c, capture_violation, nullptr);
@@ -1040,9 +1038,9 @@ PUI_TEST(test_float_panel_dock_drag)
     destroy_context(c);
 }
 
-// Regression: window roots came from the slot index but survived the renumbering
-// in remove_window, so a window added after a removal could share a root (and
-// with it every titlebar id) with a survivor.
+// Window roots stay unique across remove_window and add_window: a window added
+// after a removal never shares a root (and with it every titlebar id) with a
+// survivor.
 PUI_TEST(test_window_roots_stay_unique)
 {
     null_device nd;
@@ -1063,8 +1061,8 @@ PUI_TEST(test_window_roots_stay_unique)
     destroy_context(c);
 }
 
-// Regression: a dock tab drag kept the caller's name pointer for the ghost label;
-// the drag outlives the frame that started it, so the name is copied.
+// A dock tab drag copies the panel name for the ghost label: the drag outlives
+// the frame that started it, so the caller's string need not.
 PUI_TEST(test_dock_tab_drag_name_is_interned)
 {
     context *c = create_context(nullptr);

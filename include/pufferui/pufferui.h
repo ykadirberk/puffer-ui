@@ -54,9 +54,8 @@ inline constexpr u32 UTF8_REPLACEMENT = 0xFFFDu;
 
 inline constexpr i32 MAX_ID_DEPTH = 64;
 inline constexpr i32 MAX_CLIP_DEPTH = 64;
-// MAX_FRAME_IDS was removed (r89): region-id duplicate checking is a per-frame
-// hash set, complete at any scale. VIOL_FRAME_IDS_OVERFLOW stays in the enum
-// for code stability but is no longer reachable.
+// Region-id duplicate checking is a per-frame hash set, complete at any scale.
+// VIOL_FRAME_IDS_OVERFLOW stays in the enum for code stability but is never raised.
 inline constexpr i32 MAX_STYLE_SCOPES = 16;
 inline constexpr i32 MAX_POPUPS = 8;
 inline constexpr i32 MAX_PANELS = 16;
@@ -98,7 +97,7 @@ enum violation_code : u32
     VIOL_NO_FONT,               // text drawn while the theme has no font
     VIOL_INPUT_OVERFLOW,        // text input did not fit the per-frame buffer
     VIOL_DUP_WIDGET_ID,         // the same widget id interacted twice in a frame
-    VIOL_FRAME_IDS_OVERFLOW,    // over MAX_FRAME_IDS regions; dup checking incomplete
+    VIOL_FRAME_IDS_OVERFLOW,    // never raised (kept for code stability)
     VIOL_DUP_MOTION_KEY,        // animate_rect called twice for one key in a frame
     VIOL_PANEL_NO_ID,           // a panel without an explicit id (panel_opts::id / dock_panel)
     VIOL_COUNT
@@ -274,7 +273,7 @@ struct rect
 
     // The four mutating cuts. Ref-qualified `&` with the rvalue overload
     // deleted: `r.content().cut_top(h)` (cutting a temporary) is the classic
-    // silent-overlap bug, and the compiler now rejects it outright. Chaining
+    // silent-overlap bug, so the compiler rejects it outright. Chaining
     // on `rect::make(...)` stays legal via a named local.
     [[nodiscard]] rect cut_top(f32 amount) &
     {
@@ -973,7 +972,7 @@ struct theme
     f32 text_size = 15.0f;
 
     color selection = {60, 120, 200, 140};
-    // Semantic tokens (r93): the palette components read for surfaces, text
+    // Semantic tokens: the palette components read for surfaces, text
     // and actions — separated from per-component styles, so retheming means
     // setting tokens once. Component styles default FROM these.
     struct tokens_t
@@ -2026,7 +2025,7 @@ struct ui
     // `anchor` is hovered, draws `item_labels` as a menu positioned at the
     // pointer (clamped to the window), closes on pick / outside press / escape.
     // Returns the picked item index, or -1 while nothing was picked. The app
-    // keeps no open flag: the menu state lives under `id` (see context_menu_open).
+    // keeps no open flag: the menu state lives under `id`.
     i32 context_menu(uiid id, rect anchor, const char *const *item_labels, i32 item_count);
 
     // primitives

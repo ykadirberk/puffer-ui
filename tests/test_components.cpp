@@ -1,4 +1,4 @@
-// components: the pui::comp toggle library (r91 split).
+// components: the pui::comp toggle library.
 // Each component: behavior + keyboard + zero violations.
 #include "test_util.h"
 
@@ -244,9 +244,8 @@ PUI_TEST(test_accordion)
     CHECK(!open);
 }
 
-// Regression: the accordion clipped its content to `intersect(content, header)`, an empty
-// rect, so widgets inside an open accordion could never be hovered or clicked
-// (and the content was not clipped either).
+// Widgets inside an open accordion can be hovered and clicked: the content is
+// clipped to the content area (not to the header).
 PUI_TEST(test_accordion_content_interactive)
 {
     tf_env env;
@@ -493,11 +492,8 @@ PUI_TEST(test_command_palette)
     destroy_context(c);
 }
 
-// Regression: the palette re-centered its visible window on the highlight every
-// frame, and hovering a row highlights it - so with the pointer resting on a
-// lower row the list scrolled, put another entry under the pointer, scrolled
-// again... the entries "walked". A resting pointer must leave the list still;
-// only keyboard moves (minimally) and the wheel scroll it.
+// A resting pointer leaves the palette list still: hovering a row highlights it
+// but never scrolls; only keyboard moves (minimally) and the wheel scroll it.
 PUI_TEST(test_command_palette_hover_is_stable)
 {
     null_device nd;
@@ -780,9 +776,9 @@ PUI_TEST(test_segmented_hover_and_outer_radii)
     destroy_context(c);
 }
 
-// Regression: both scrims span the whole host, panel included, so a click on the
-// drawer's or the palette's own empty area counted as a click "outside" and
-// closed them. Only a click outside the panel closes.
+// The drawer's and the palette's scrims span the whole host, panel included, but
+// only a click outside the panel closes them; a click on the panel's own empty
+// area does not.
 PUI_TEST(test_scrim_ignores_clicks_inside_the_panel)
 {
     {
@@ -848,9 +844,8 @@ PUI_TEST(test_scrim_ignores_clicks_inside_the_panel)
     }
 }
 
-// Regression: hovering a row re-highlighted it every frame, so with the pointer
-// resting on a row the Up/Down keys moved the highlight and hover moved it
-// straight back. Hover now only counts while the pointer moves.
+// Hover moves the palette highlight only while the pointer moves, so with the
+// pointer resting on a row the Up/Down keys keep the highlight they set.
 PUI_TEST(test_palette_keys_beat_a_resting_pointer)
 {
     null_device nd;
@@ -902,8 +897,8 @@ PUI_TEST(test_palette_keys_beat_a_resting_pointer)
     destroy_context(c);
 }
 
-// Regression: a component that is already open/on at first sight (or again after
-// the 5 s collection of its animation keys) animated in from zero.
+// A component that is already open/on at first sight (or again after the 5 s
+// collection of its animation keys) starts at its target instead of animating in.
 PUI_TEST(test_components_start_at_their_target)
 {
     tf_env env;

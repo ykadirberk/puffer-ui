@@ -113,9 +113,9 @@ A sliding side drawer over a host rect.
 | `comp::drawer_scope dr(u, host, bool &open, drawer_props{.id, .enabled, .width, .edge, .scrim, .close_on_scrim_click, .style})` | RAII: draw into `dr.content()`; `dr.toggled()`; `if (dr)` = open |
 | Theme slot | `theme::drawer` (`bg`, `border`, `scrim`, `radius`, `anim`) |
 | Edges | `drawer_edge::LEFT` / `RIGHT` (slides from that edge) |
-| Notes | The scrim captures clicks but never joins the Tab ring (`interact(..., focusable = false)`); a scrim click closes when `close_on_scrim_click` |
+| Notes | The scrim captures clicks but never joins the Tab ring (`interact(..., focusable = false)`); a scrim click *outside the drawer panel* closes when `close_on_scrim_click` (clicking the drawer's own empty area does not) |
 
-## Theme tokens (r93)
+## Theme tokens
 
 `theme::tokens` is the semantic layer — `surface`, `surface_alt`, `on_surface`,
 `on_surface_dim`, `primary`, `primary_hover`, `danger`, `success`, `warning`,
@@ -153,7 +153,7 @@ A modal filter-and-run overlay (Ctrl+K style).
 | `comp::command_palette(u, screen, bool &open, palette_state{.query, .active}, span<const palette_command>, palette_props{.id, .style})` | Returns `{chosen, active, shown}`; `chosen` is the ORIGINAL command index |
 | Theme slot | `theme::palette` (`scrim`, `bg`, `border`, `text`, `hint`, `selected`, `accent`, `width`, `item_h`, `radius`) |
 | Keys | Up/Down move the highlight, Enter chooses, Escape closes; typing filters (case-insensitive substring) |
-| Notes | The query field takes focus while open; the scrim captures clicks and never joins the Tab ring |
+| Notes | The query field takes focus while open; the scrim captures clicks (a click outside the panel closes it) and never joins the Tab ring. Hover moves the highlight only while the pointer moves, so Up/Down win over a resting pointer |
 
 ## `comp::section`
 

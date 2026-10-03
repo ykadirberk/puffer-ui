@@ -1,4 +1,4 @@
-// widgets: styles, panels, popups, combos, scroll (r88 split).
+// widgets: styles, panels, popups, combos, scroll.
 #include "test_util.h"
 
 PUI_TEST(test_style_cascade)
@@ -1494,10 +1494,8 @@ PUI_TEST(test_panel_close_button)
     }
     end_frame(c);
     CHECK(close_req);
-    // release over the dot closes the panel      // The
-    // titlebar keeps its full width: pressing just left of the
-    // dot (inside     // what used to be an over-broad reserve)
-    // must still start a drag.
+    // release over the dot closes the panel. The titlebar keeps its full
+    // width: pressing just left of the dot must still start a drag.
     begin_frame(c, 0.032, 0.016, rect::make(0, 0, 400, 300));
     mouse_move(c, 209, 66);
     mouse_button(c, true);
@@ -1569,13 +1567,9 @@ PUI_TEST(test_popup_retract_no_ghost)
 {
     // End-to-end ghost-entry
     // check for the same-frame
-    // close path: pick a combo
-    // // item, then verify the
-    // next frame sees no popup
-    // entry (the fix calls //
-    // detail::popup_retract
-    // internally; this asserts
-    // the observable result).
+    // close path: pick a combo item, then verify the next frame sees no popup
+    // entry (the same-frame close retracts it; this asserts the observable
+    // result).
     null_device nd;
     context *c = create_context(&nd, nd.create_surface());
     static const char *items[2] = {"A", "B"};

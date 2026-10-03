@@ -203,8 +203,8 @@ inline i32 menu_items(ui &u, uiid id, rect area, const char *const *labels, i32 
     scroll_view sv = u.scroll(area.pad(pad), id, scroll_options{2.0f, SCROLL_OVERLAY});
     if (fresh_open) sv.scroll_to(0.0f); // reopening starts at the top
     // Pre-set the content height before laying out: the rows column then sees
-    // the full list height on the very first frame (the r17 first-frame fix)
-    // instead of clamping against an empty viewport.
+    // the full list height on the very first frame instead of clamping against
+    // an empty viewport.
     sv.set_content_height(static_cast<f32>(count) * row_h + static_cast<f32>(count - 1) * 2.0f);
 
     i32 picked = -1;
@@ -282,8 +282,8 @@ bool ui::combo(rect r, std::string_view label, const char *const *items, i32 ite
     if (in.clicked || keyboard_open) c->combo_hot = selected; // keyboard starts at the current item
 
     // A pick resolved in the *previous* frame's deferred pass reports here
-    // and lands in the model atomically with the `changed` report — no
-    // write-back pointer into caller storage exists anymore.
+    // and lands in the model atomically with the `changed` report (the menu
+    // holds no pointer into caller storage).
     bool changed = (c->defer_result_id == drop_id);
     if (c->defer_result_id == drop_id)
     {

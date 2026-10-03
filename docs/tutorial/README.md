@@ -89,8 +89,5 @@ Each program (except `step01_window`) also understands
 
 PufferUI is young (0.1.x). Where something has a rough edge, the chapters say so
 rather than hide it, and chapter 9 lists the ones you are most likely to meet.
-Writing this tutorial exercised the library hard enough to find three things,
-all fixed with regression tests: a translucent text field painted its border color
-through its background, a spring animation could blow up on a very long frame,
-and an ambient animation (the drifting scene) had no way to keep the idle-sleeping
-loop awake, which is why `u.request_redraw()` now exists (chapter 6).
+An ambient animation (the drifting scene) keeps an idle-sleeping loop awake with
+`u.request_redraw()` (chapter 6).

@@ -51,6 +51,6 @@ plain fields keeps reads O(1).
   uses it for every chapter.
 - `examples/pui_demo.cpp` — the full demo: `demo_state` with a `view_t` section and
   `update_view()`.
-- `tests/test_core.cpp::test_state_view_update` — pins the snapshot + write-back
+- `tests/test_widgets.cpp::test_state_view_update` — pins the snapshot + write-back
   flow: a click writes the model during the frame, the view stays stale for that
   frame, and the next `update_view()` reflects the change.

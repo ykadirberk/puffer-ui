@@ -1,4 +1,4 @@
-// pui_bench — the frame-cost benchmark (r88). Headless (null_device): it
+// pui_bench — the frame-cost benchmark. Headless (null_device): it
 // measures the CORE's per-frame work (layout, interact, draw-list recording
 // and flushing), not the renderer. The scene is the audit's benchmark shape:
 // 2,000 buttons, 500 text rows, 50 rounded panels. Numbers land in

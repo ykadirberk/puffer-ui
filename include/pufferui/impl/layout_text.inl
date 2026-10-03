@@ -438,9 +438,8 @@ f32 ui::text_width(std::string_view s)
         e.kern_in = detail::kern_advance(c, fh, c->active_theme.text_size, prev, cp);
         e.cp = cp;
         e.g = detail::get_glyph(c, fh, c->active_theme.text_size, cp);
-        // Two separate additions: bit-identical to the old accumulation order
-        // (float associativity would drift the pen by ULPs — visible as edge
-        // coverage changes in the golden scenes).
+        // Two separate additions, in this order: float associativity would drift
+        // the pen by ULPs, visible as edge coverage changes in the golden scenes.
         built.width += e.kern_in;
         built.width += e.g.advance;
         built.gs.push_back(e);

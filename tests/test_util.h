@@ -1,4 +1,4 @@
-// Shared test helpers (r88 split). Each area file includes this.
+// Shared test helpers. Each area file includes this.
 #pragma once
 #include <pufferui/pufferui.h>
 

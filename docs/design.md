@@ -26,9 +26,10 @@ Widgets are addressed by `uiid` (64-bit) hashes:
 - `id_child(base, i)` / `u.local("part")` — scoped derivation.
 - `u.auto_id()` — a per-frame sequence counter.
 - Region (RAII scope) IDs are duplicate-checked per frame
-  (`VIOL_DUP_REGION_ID`); **widget IDs are not** (debug duplicate detection
-  is planned; see the plan's r90). No label-derived IDs — rejected by
-  decision.
+  (`VIOL_DUP_REGION_ID`); in debug builds so are widget IDs interacted at two
+  different rects (`VIOL_DUP_WIDGET_ID`). Panels take an explicit id
+  (`panel_opts::id` or their dock id; `VIOL_PANEL_NO_ID` otherwise). No
+  label-derived IDs — rejected by decision.
 
 ## Frame model
 
@@ -55,7 +56,11 @@ headless `null_device` implements the contract in memory — the whole UI
 logic is testable with no GPU.
 
 The draw list batches by clip state and texture; see `docs/perf.md` for the
-current call/vertex profile and the batching plan.
+current call/vertex profile. Batches that miss the active clip are culled
+before the device, and an empty clip (zero width/height) culls everything:
+"no scissor" means unclipped on a device, so it is never sent for a clip.
+Scopes clip while alive, so two scopes alive in one block are nested, not
+siblings.
 
 ## State and view
 
@@ -66,7 +71,7 @@ directly — see `docs/model_view.md`. No intent queues.
 
 stb_truetype rasterization into 1024² atlas pages (spilling to new pages
 when full), UTF-8 decode, kerning via stb's legacy `kern` table, no shaping
-(a deliberately deferred seam; see the plan's r95 phase).
+(a deliberately deferred seam; see `docs/seams.md`).
 
 ## Violations
 
@@ -75,16 +80,16 @@ by a handler, shown by a dev overlay, and (debug builds, unhandled) a
 debugger break at the violating call. `PUFFERUI_ASSERT` marks invariants:
 fatal, stops in every build.
 
-## Structure notes (r94)
+## Structure notes: growable stacks and interning
 
-- The overlay stacks (popups, panels, panel layers) **grow on demand**: the
-  old `MAX_POPUPS` / `MAX_PANELS` are initial capacities, so deep nesting
-  never refuses a layer (`VIOL_POPUP_OVERFLOW` is no longer reachable).
+- The overlay stacks (popups, panels, panel layers) **grow on demand**:
+  `MAX_POPUPS` / `MAX_PANELS` are initial capacities, so deep nesting
+  never refuses a layer (`VIOL_POPUP_OVERFLOW` is never raised).
 - A panel's dock name is **interned** into context-owned storage when a drag
   starts: the drag ghost draws across frames, so the caller's string need
   not outlive the gesture.
 
-## Structure notes (r96: the boilerplate pass)
+## Structure notes: file layout and shared state
 
 - **File layout.** `include/pufferui/pufferui.h` is the declaration section
   (what users read) plus the `PUFFERUI_IMPLEMENTATION` block, which is now a
@@ -108,7 +113,7 @@ fatal, stops in every build.
 - **Styles are plain structs.** Components take `const <name>_style *`
   instead of an override struct per component; `opt<T>` overrides remain for
   `button`, `panel` and `card`. `theme_lerp` interpolates every slot.
-- Still deferred: nothing structural from the r86 audit. Open items live in
+- Still deferred: nothing structural. Open items live in
   `docs/limitations.md`.
 
 ## Threads

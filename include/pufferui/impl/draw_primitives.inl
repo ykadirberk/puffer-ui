@@ -32,7 +32,7 @@ void ui::draw_triangles(texture_handle tex, const vertex *vertices, i32 vertex_c
     // Solid geometry (tex == nullptr) joins the glyph batch when an atlas
     // exists: the atlas's reserved (0,0) texel is pure white, and dl_add
     // remaps the copied verts' UVs to it. Without an atlas (no font loaded)
-    // the old nullptr-batch behavior stands.
+    // solid geometry goes out in the nullptr-texture batch.
     if (ctx->dl && tex == nullptr && ctx->ts && !ctx->ts->atlases.empty())
     {
         tex = ctx->ts->atlases.front().tex;

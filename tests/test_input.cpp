@@ -1,4 +1,4 @@
-// input: clicks, keys, interaction edges, keyboard navigation (r88 split).
+// input: clicks, keys, interaction edges, keyboard navigation.
 #include "test_util.h"
 
 PUI_TEST(test_click)
@@ -391,7 +391,7 @@ PUI_TEST(test_thread_isolation)
 {
     // The current-context slot is genuinely thread-local: two threads, two
     // contexts, two violation sinks. A violation reported on one thread must
-    // never appear on the other (the old global slot crossed them).
+    // never appear on the other.
     static std::atomic<i32> t1_events{0}, t2_events{0};
     static std::atomic<bool> go{false};
 
@@ -426,8 +426,8 @@ PUI_TEST(test_thread_isolation)
     CHECK(current_context() == nullptr);
 }
 
-// Regression: the SDL pump dropped OS auto-repeat, so a held Backspace/arrow
-// never repeated. key_repeat raises another press edge, but only while held.
+// OS auto-repeat reaches the UI: key_repeat raises another press edge for a held
+// Backspace/arrow, but only while the key is held.
 PUI_TEST(test_key_repeat)
 {
     tf_env env;

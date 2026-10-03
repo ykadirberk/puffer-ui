@@ -1,4 +1,4 @@
-// layout: rect algebra, cursors, regions, tracks, overflow (r88 split).
+// layout: rect algebra, cursors, regions, tracks, overflow.
 #include "test_util.h"
 
 PUI_TEST(test_rect_algebra)
@@ -165,8 +165,8 @@ PUI_TEST(test_limit_overflows)
         for (i32 i = MAX_STYLE_SCOPES; i >= 0; --i) scopes[i].reset();
     }
     end_frame(c);
-    // Popups grow on demand now (the cap is just the initial capacity): one
-    // beyond the old MAX_POPUPS is fine, and no violation is reported.
+    // Popups grow on demand (MAX_POPUPS is just the initial capacity): one
+    // beyond it is fine, and no violation is reported.
     begin_frame(c, 0.016, 0.016, rect::make(0, 0, 100, 100));
 
     {
@@ -175,7 +175,7 @@ PUI_TEST(test_limit_overflows)
         for (i32 i = 0; i < MAX_POPUPS + 1; ++i)
             popups[i].emplace(u, id_child("p"_id, static_cast<uiid>(i)), rect::make(0, 0, 10, 10),
                               popup_flags::NONE);
-        CHECK(c->popup_depth == MAX_POPUPS + 1); // grew past the old cap
+        CHECK(c->popup_depth == MAX_POPUPS + 1); // grew past the initial capacity
         CHECK(g_last_violation != nullptr);      // still the style-scope one, unchanged
         for (i32 i = MAX_POPUPS; i >= 0; --i) popups[i].reset();
     }
@@ -452,9 +452,8 @@ PUI_TEST(test_region_corner)
 PUI_TEST(test_region_id_overflow)
 {
     // Region-id duplicate checking is a per-frame hash set: complete at any
-    // frame scale. A frame with far more regions than the old 2048 cap
-    // reports nothing, AND a duplicate among them is still caught (the old
-    // linear list silently stopped checking past the cap).
+    // frame scale. A frame with thousands of regions reports nothing, AND a
+    // duplicate among them is still caught.
     null_device nd;
     context *c = create_context(&nd, nd.create_surface());
     set_violation_handler(c, capture_violation, nullptr);
@@ -468,7 +467,7 @@ PUI_TEST(test_region_id_overflow)
             (void)u.region(rect::make(0, 0, 50, 50), id_child("r"_id, static_cast<uiid>(i)));
     }
     end_frame(c);
-    CHECK(g_violation_events == 0); // no cap to outgrow anymore
+    CHECK(g_violation_events == 0); // no cap to outgrow
 
     // a duplicate among many regions is still caught
     g_violation_events = 0;

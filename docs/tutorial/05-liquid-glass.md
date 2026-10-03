@@ -534,11 +534,10 @@ Things worth noticing:
   through the titlebar.
 
 > **A note on `text_field` and translucent themes.** The field draws a border
-> *ring* over its translucent fill. Until recently the library painted the border
-> color as a full fill *under* the background, which a translucent theme exposed
-> as a solid slab; building this tutorial found and fixed that (and added a
-> regression test). If you ever see a widget that is "too solid" with a
-> translucent theme, that is the class of bug to suspect.
+> *ring* over its translucent fill, never the border color as a full fill *under*
+> the background: that would show through a translucent theme as a solid slab.
+> If you ever see a widget that is "too solid" with a translucent theme, suspect a
+> border painted as a fill.
 
 ## Wire it into the app
 

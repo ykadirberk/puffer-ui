@@ -12,7 +12,7 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
 - `examples/pui_demo.cpp` — SDL3 demo (target `pui_demo`), two windows, dock, HUD.
 - `examples/pui_counter.cpp` — small model/view example (target `pui_counter`).
 - `tests/test_*.cpp` — headless core tests (target `pui_core_tests`, no SDL),
-  split by area (layout, input, text, widgets, dock, render, components);
+  split by area (layout, input, text, widgets, dock, render, components, motion);
   `tests/test_core.cpp` is the runner. A test is `PUI_TEST(test_name) { tf_env
   env; ... }` (`tests/test_util.h`): it registers itself, `tf_env` creates the
   context, installs the violation capture and asserts zero violations on exit
@@ -20,10 +20,6 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
 - `tests/golden/test_golden.cpp` — golden-image tests (target `pui_golden_tests`,
   SDL offscreen + software renderer).
 - `vendored/` — third-party code: `SDL/` (SDL3), `stb/stb_truetype.h`.
-  `vendored/glew/` is present but unused; do not introduce a dependency on it.
-
-The legacy single-header library and its demo were removed (r57); there is only
-one implementation now.
 
 ## Build & run
 
@@ -81,8 +77,11 @@ Notes:
   chapter per capability, each naming the standalone target to run.
 - `examples/dock_helpers.h` — app-side dock-tree policy shared by the docking
   example and the tour.
-- `examples/pui_demo.cpp` / `pui_counter.cpp` — the larger two-window showcase
+- `examples/pui_demo.cpp` / `pui_counter.cpp` — the larger two-window demo
   and the state/view example (README chapters 20).
+- `examples/pui_showcase.cpp` — the motion/glass showcase app (animated re-layout,
+  blur, drawer, palette, board); `examples/atomic/relayout.cpp` is its
+  `animate_rect` atomic. `--fuzz SEED` stress-tests it.
 
 Rules:
 
@@ -91,7 +90,8 @@ Rules:
   on failure). `cmake --build <dir> --target examples_selftest` builds and runs
   them all; CI runs it after the golden tests.
 - **Identity stays explicit** (standing decision): `_id` literals,
-  `id_child`, `u.local`, `u.auto_id`. No label-derived IDs, ever. Loops and
+  `id_child`, `u.local`, `u.auto_id`. No label-derived IDs, ever (panels take
+  `panel_opts::id` or a dock id; none reports `VIOL_PANEL_NO_ID`). Loops and
   reusable components scope with `u.scope(key)` (RAII, no area/clip); debug
   builds report the same id interacted at two different rects
   (`VIOL_DUP_WIDGET_ID`).
@@ -182,7 +182,7 @@ programs live in `examples/tutorial/` (`pui_tut_*` targets, built and
   block.
 - State/view: one app-owned state per screen, model fields written directly, and a
   per-frame `view_t` derived by `update_view()`; components read `state.view` and
-  write model fields. There is no intent queue (removed in r53). See
+  write model fields. There is no intent queue. See
   `docs/model_view.md`. Renderer backends are documented in
   `docs/porting_a_backend.md`.
 
@@ -202,6 +202,10 @@ programs live in `examples/tutorial/` (`pui_tut_*` targets, built and
   Do not hand-roll per-rect springs in examples; improve `animate_rect` instead.
 - **Use `interaction.activated` for drag anchors, not `pressed`.** `pressed` means
   "held"; re-capturing an anchor every frame makes drags silently do nothing.
+- **An empty clip paints nothing.** A zero-size clip culls everything (device
+  "no scissor" means unclipped, so it must never reach the device). Scopes
+  (`region`, `scroll_view`, panels) clip while alive: a second one created in the
+  same block is nested in the first, not a sibling — scope siblings in `{ }`.
 - **Never cut a temporary.** `region::content()` / `panel_scope::content()` /
   `scroll_view::content()` return by value: `r.content().cut_top(h)` discards the
   cut, so the next slice overlaps the previous one. Always
@@ -237,7 +241,7 @@ programs live in `examples/tutorial/` (`pui_tut_*` targets, built and
   or the panel blocks itself.
 - **Never rewrite large files through scripted full-text passes.** A
   `WriteAllText`-style rewrite flattened every newline in
-  `tests/test_core.cpp` once (r73 recovery); the damage hid behind comments
+  `tests/test_core.cpp` once; the damage hid behind comments
   and duplicated bodies and took a long per-function repair pass to undo.
   Use targeted edits, keep the file compiling after each change, and let
   the compiler (not brace counting) tell you what broke.
@@ -266,6 +270,11 @@ programs live in `examples/tutorial/` (`pui_tut_*` targets, built and
 Every feature, revision, or fix must either **come with a test** or **pass the
 existing suite unchanged**:
 
+- `python tools/run_tests.py` runs all of the checks below in one go on Windows, Linux
+  and macOS (on Windows it finds MSVC itself): `--quick` = core + pump only,
+  `--no-build`, `--release`, `--format`, `--skip-examples`. It exits non-zero if any
+  step fails (the API-drift and tutorial checks need `pwsh`; they are skipped without).
+
 - Add or extend tests in `tests/` (headless `tests/test_core.cpp` is the default
   place) for any new behavior, and add a regression test for every bug fix.
 - Keep `pui_core_tests` green: build it and run
@@ -286,10 +295,9 @@ existing suite unchanged**:
 ## Design plan & status
 
 The single plan and roadmap lives at `~/.opencode/plan/pufferui-roadmap.md`
-(from-scratch plan, adopted r86 → supersedes the two legacy plan files, which
-remain only as history). It defines the phase sequence r87–r95 (foundations,
-test infrastructure + measurement, performance, ergonomics, the component
-layer, structure, reach), the standing decisions (notably: **no label-derived
+(a from-scratch plan). It defines the phase sequence (foundations, test
+infrastructure + measurement, performance, ergonomics, the component layer,
+structure, reach, motion), the standing decisions (notably: **no label-derived
 widget IDs, ever**), and the per-phase AGENTS.md/README deliverables.
 
 When a feature or fix lands: add/extend tests, then update

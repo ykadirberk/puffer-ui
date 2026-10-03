@@ -1,4 +1,4 @@
-// text: utf8, text drawing, fields, IME, fonts (r88 split).
+// text: utf8, text drawing, fields, IME, fonts.
 #include "test_util.h"
 
 PUI_TEST(test_utf8)
@@ -143,8 +143,7 @@ PUI_TEST(test_ime)
 PUI_TEST(test_text_atlas_paging)
 {
     // More distinct glyphs than one 1024x1024 page holds: the store spills
-    // into additional atlas pages instead of silently dropping glyphs (the
-    // old behavior - a full page just stopped rendering text).
+    // into additional atlas pages; a full page never drops glyphs.
     null_device nd;
     context *c = create_context(&nd, nd.create_surface());
     font_handle fh = load_font(c, PUFFERUI_ASSET_DIR "/fonts/DejaVuSans.ttf");
@@ -1106,7 +1105,7 @@ PUI_TEST(test_text_kerning_places_the_second_glyph)
 {
     // Kerning moves a glyph relative to the one BEFORE it. "V" inside "AV" must
     // sit exactly where a lone "V" sits when started at the pen position text_width
-    // reports for it; drawing used to apply the pair's kerning one glyph too late.
+    // reports for it (the pair's kerning applies before the second glyph).
     vertex_log_device dev;
     context *c = create_context(&dev, dev.create_surface());
     if (tf_needs_font(c))

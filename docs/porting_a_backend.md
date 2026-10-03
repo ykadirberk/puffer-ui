@@ -10,7 +10,7 @@ into pixels. The contract is two interfaces declared in
 
 The SDL3 backend (`create_sdl3_device`) is the reference implementation, and
 `null_device` in the same header is the smallest working headless one (it is what
-the test suite runs against). `test_device_contract` in `tests/test_core.cpp`
+the test suite runs against). `test_device_contract` in `tests/test_render.cpp`
 exercises the whole contract; make it pass with your device before trusting
 anything else.
 
@@ -24,7 +24,7 @@ Required:
 | `create_texture(w, h, rgba)` | RGBA8, straight (non-premultiplied) alpha; returns a handle or `nullptr` |
 | `update_texture(tex, x, y, w, h, rgba)` | partial upload; the font atlas streams dirty rects through this |
 | `destroy_texture(tex)` | free the texture; also used for targets unless `destroy_target` overrides it |
-| `draw(tex, vertices, indices)` | one triangle list; `tex == nullptr` means solid-color geometry (vertex color only) |
+| `draw(tex, vertices, vertex_count, indices, index_count)` | one triangle list; `tex == nullptr` means solid-color geometry (vertex color only) |
 
 Optional overrides, and when they matter:
 
