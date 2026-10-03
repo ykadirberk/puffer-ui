@@ -45,9 +45,7 @@ static void draw_page(ui &u, const char *subtitle)
     // A plain button with a click counter: press + release inside the button.
     if (u.button(col.next(30.0f), "Click me", "boot_btn"_id, "primary"_id)) g_clicks += 1;
 
-    char line[64];
-    std::snprintf(line, sizeof(line), "clicks: %d", g_clicks);
-    u.text(col.next(20.0f), line, th.text, ALIGN_LEFT);
+    u.textf(col.next(20.0f), th.text, ALIGN_LEFT, "clicks: %d", g_clicks);
 
     u.text_wrapped(col.next(64.0f),
                    "Drag the titlebar (the system's snap preview "

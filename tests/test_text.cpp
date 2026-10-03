@@ -1,7 +1,7 @@
 // text: utf8, text drawing, fields, IME, fonts (r88 split).
 #include "test_util.h"
 
-void test_utf8()
+PUI_TEST(test_utf8)
 {
     // "├âãÆ├åÔÇÖ├âÔÇá├óÔé¼Ôäó├âãÆ├é┬ó├â┬ó├óÔé¼┼í├é┬¼├âÔÇª├é┬¥├âãÆ├åÔÇÖ├â┬ó├óÔÇÜ┬¼├é┬ª├âãÆ├óÔé¼┼í├âÔÇÜ├é┬©"
     // (C4 9F), space,     //
@@ -22,7 +22,7 @@ void test_utf8()
     CHECK(utf8_decode(bad, j) == UTF8_REPLACEMENT);
 }
 
-void test_text()
+PUI_TEST(test_text)
 {
     null_device nd;
     context *c = create_context(&nd, nd.create_surface());
@@ -76,10 +76,10 @@ void test_text()
     destroy_context(c);
 }
 
-void test_text_edges()
+PUI_TEST(test_text_edges)
 {
-    null_device nd;
-    context *c = create_context(&nd, nd.create_surface());
+    tf_env env;
+    context *c = env.c;
     begin_frame(c, 0.0, 0.016, rect::make(0, 0, 200, 100));
 
     {
@@ -92,16 +92,14 @@ void test_text_edges()
         u.text_wrapped(rect::make(0, 0, 100, 20), "", color::white());
     }
     end_frame(c);
-    CHECK(nd.draw_calls == 0);
+    CHECK(env.nd.draw_calls == 0);
     // no font loaded -> nothing drawn
     CHECK(violation_count(c) == 0);
     // a bad font path fails cleanly, no violation
     CHECK(load_font(c, "C:/Windows/Fonts/__pufferui_missing__.ttf") == FONT_INVALID);
-    CHECK(violation_count(c) == 0);
-    destroy_context(c);
 }
 
-void test_utf8_truncated()
+PUI_TEST(test_utf8_truncated)
 {
     std::string_view cut = "\xE2\x82";
     // truncated 3-byte sequence
@@ -117,7 +115,7 @@ void test_utf8_truncated()
     CHECK(j == 1);
 }
 
-void test_ime()
+PUI_TEST(test_ime)
 {
     context *c = create_context(nullptr);
     ime_event(c, "\xE3\x81\xAB", 1);
@@ -142,7 +140,7 @@ void test_ime()
     destroy_context(c);
 }
 
-void test_text_atlas_paging()
+PUI_TEST(test_text_atlas_paging)
 {
     // More distinct glyphs than one 1024x1024 page holds: the store spills
     // into additional atlas pages instead of silently dropping glyphs (the
@@ -209,7 +207,7 @@ void test_text_atlas_paging()
     destroy_context(c);
 }
 
-void test_text_wrapped_height()
+PUI_TEST(test_text_wrapped_height)
 {
     // `text_wrapped_height` predicts exactly what `text_wrapped` draws: one
     // line for short text, more for wrapped paragraphs, and newline breaks
@@ -268,10 +266,10 @@ void test_text_wrapped_height()
     destroy_context(c);
 }
 
-void test_font_coverage()
+PUI_TEST(test_font_coverage)
 {
-    null_device nd;
-    context *c = create_context(&nd, nd.create_surface());
+    tf_env env;
+    context *c = env.c;
     font_handle fh = load_font(c, PUFFERUI_ASSET_DIR "/fonts/DejaVuSans.ttf");
     if (fh == FONT_INVALID) fh = load_font(c, "C:/Windows/Fonts/segoeui.ttf");
     if (fh == FONT_INVALID) fh = load_font(c, "C:/Windows/Fonts/arial.ttf");
@@ -372,11 +370,9 @@ void test_font_coverage()
         CHECK(missing == 0);
     }
     end_frame(c);
-    CHECK(violation_count(c) == 0);
-    destroy_context(c);
 }
 
-void test_text_polish()
+PUI_TEST(test_text_polish)
 {
     null_device nd;
     context *c = create_context(&nd, nd.create_surface());
@@ -433,7 +429,7 @@ void test_text_polish()
     destroy_context(c);
 }
 
-void test_text_field_caret_placement()
+PUI_TEST(test_text_field_caret_placement)
 {
     tf_env env;
     context *c = env.c;
@@ -488,7 +484,7 @@ void test_text_field_caret_placement()
     CHECK(violation_count(c) == 0);
 }
 
-void test_text_field_word_ops()
+PUI_TEST(test_text_field_word_ops)
 {
     tf_env env;
     context *c = env.c;
@@ -522,7 +518,7 @@ void test_text_field_word_ops()
     CHECK(violation_count(c) == 0);
 }
 
-void test_text_field_undo_redo()
+PUI_TEST(test_text_field_undo_redo)
 {
     tf_env env;
     context *c = env.c;
@@ -559,7 +555,7 @@ void test_text_field_undo_redo()
     CHECK(violation_count(c) == 0);
 }
 
-void test_input_overflow()
+PUI_TEST(test_input_overflow)
 {
     // Text input that does not fit the per-frame buffer is never silently
     // truncated: the overflow is reported once and the part that fits is
@@ -590,7 +586,7 @@ void test_input_overflow()
     destroy_context(c);
 }
 
-void test_text_field_undo_across_focus()
+PUI_TEST(test_text_field_undo_across_focus)
 {
     tf_env env;
     context *c = env.c;
@@ -616,7 +612,7 @@ void test_text_field_undo_across_focus()
     CHECK(violation_count(c) == 0);
 }
 
-void test_text_field_kerned_caret()
+PUI_TEST(test_text_field_kerned_caret)
 {
     tf_env env;
     context *c = env.c;
@@ -644,7 +640,7 @@ void test_text_field_kerned_caret()
     }
 }
 
-void test_text_field_drag_select()
+PUI_TEST(test_text_field_drag_select)
 {
     tf_env env;
     context *c = env.c;
@@ -690,7 +686,7 @@ void test_text_field_drag_select()
     CHECK(violation_count(c) == 0);
 }
 
-void test_text_field_drag_drop()
+PUI_TEST(test_text_field_drag_drop)
 {
     tf_env env;
     context *c = env.c;
@@ -783,7 +779,7 @@ void test_text_field_drag_drop()
     CHECK(violation_count(c) == 0);
 }
 
-void test_text_field_drag_edit_cancels()
+PUI_TEST(test_text_field_drag_edit_cancels)
 {
     tf_env env;
     context *c = env.c;
@@ -817,7 +813,7 @@ void test_text_field_drag_edit_cancels()
     CHECK(violation_count(c) == 0);
 }
 
-void test_text_field_long_value()
+PUI_TEST(test_text_field_long_value)
 {
     tf_env env;
     context *c = env.c;
@@ -838,7 +834,7 @@ void test_text_field_long_value()
     CHECK(violation_count(c) == 0);
 }
 
-void test_text_field()
+PUI_TEST(test_text_field)
 {
     context *c = create_context(nullptr);
     std::string value = "ab";
@@ -918,7 +914,7 @@ void test_text_field()
     destroy_context(c);
 }
 
-void test_number_field()
+PUI_TEST(test_number_field)
 {
     context *c = create_context(nullptr);
     f32 value = 2.5f;
@@ -936,7 +932,7 @@ void test_number_field()
     destroy_context(c);
 }
 
-void test_focus_tab_clipboard()
+PUI_TEST(test_focus_tab_clipboard)
 {
     context *c = create_context(nullptr);
     test_clipboard clip;
@@ -1004,7 +1000,7 @@ void test_focus_tab_clipboard()
     destroy_context(c);
 }
 
-void test_number_locale()
+PUI_TEST(test_number_locale)
 {
     context *c = create_context(nullptr);
     theme t = default_dark();
@@ -1055,3 +1051,95 @@ void test_number_locale()
     destroy_context(c);
 }
 
+namespace
+{
+// Draws `s` once and returns the glyph quads' vertices (4 per quad).
+std::vector<vertex> text_quads(vertex_log_device &dev, context *c, rect r, const char *s,
+                               align a = ALIGN_LEFT)
+{
+    dev.log.clear();
+    begin_frame(c, 0.0, 0.016, rect::make(0, 0, 400, 200));
+    {
+        ui u(c);
+        u.text(r, s, color::white(), a);
+    }
+    end_frame(c);
+    return dev.log;
+}
+} // namespace
+
+PUI_TEST(test_text_glyphs_on_whole_pixels)
+{
+    // Every glyph quad lands on whole pixels, wherever the text starts: a glyph
+    // bitmap sampled at a fractional position is smeared and uneven. Accuracy is
+    // kept by choosing among quarter-pixel rasterizations of each glyph.
+    vertex_log_device dev;
+    context *c = create_context(&dev, dev.create_surface());
+    if (tf_needs_font(c))
+    {
+        destroy_context(c);
+        return;
+    }
+    for (const f32 size : {13.0f, 16.0f, 22.5f})
+    {
+        theme t = c->active_theme;
+        t.text_size = size;
+        set_theme(c, t);
+        for (const f32 x : {10.0f, 10.25f, 10.37f, 10.5f, 10.8f})
+        {
+            for (const align a : {ALIGN_LEFT, ALIGN_CENTER, ALIGN_RIGHT})
+            {
+                const std::vector<vertex> q = text_quads(
+                    dev, c, rect::make(x, 20.37f, 211.3f, 26.0f), "Read chapter 4, AV fi", a);
+                CHECK(q.size() >= 4 * 12);
+                bool whole = true;
+                for (const vertex &v : q)
+                    whole = whole && v.x == std::floor(v.x) && v.y == std::floor(v.y);
+                CHECK(whole);
+            }
+        }
+    }
+    destroy_context(c);
+}
+
+PUI_TEST(test_text_kerning_places_the_second_glyph)
+{
+    // Kerning moves a glyph relative to the one BEFORE it. "V" inside "AV" must
+    // sit exactly where a lone "V" sits when started at the pen position text_width
+    // reports for it; drawing used to apply the pair's kerning one glyph too late.
+    vertex_log_device dev;
+    context *c = create_context(&dev, dev.create_surface());
+    if (tf_needs_font(c))
+    {
+        destroy_context(c);
+        return;
+    }
+    theme t = c->active_theme;
+    t.text_size = 32.0f;
+    set_theme(c, t);
+
+    f32 w_av = 0.0f, w_v = 0.0f, w_a = 0.0f;
+    begin_frame(c, 0.0, 0.016, rect::make(0, 0, 400, 200));
+    {
+        ui u(c);
+        w_av = u.text_width("AV");
+        w_v = u.text_width("V");
+        w_a = u.text_width("A");
+    }
+    end_frame(c);
+    CHECK(w_av != w_a + w_v); // the bundled font really kerns this pair
+
+    const std::vector<vertex> both =
+        text_quads(dev, c, rect::make(10.0f, 20.0f, 300.0f, 40.0f), "AV");
+    CHECK(both.size() == 8);
+    const std::vector<vertex> lone =
+        text_quads(dev, c, rect::make(10.0f + (w_av - w_v), 20.0f, 300.0f, 40.0f), "V");
+    CHECK(lone.size() == 4);
+    if (both.size() == 8 && lone.size() == 4)
+    {
+        CHECK(both[4].x == lone[0].x); // same whole-pixel column ...
+        CHECK(both[4].y == lone[0].y);
+        CHECK(both[5].x - both[4].x == lone[1].x - lone[0].x); // ... and the same bitmap
+    }
+    destroy_context(c);
+}

@@ -1,7 +1,7 @@
 // widgets: styles, panels, popups, combos, scroll (r88 split).
 #include "test_util.h"
 
-void test_style_cascade()
+PUI_TEST(test_style_cascade)
 {
     context *c = create_context(nullptr);
     theme t = default_dark();
@@ -27,7 +27,7 @@ void test_style_cascade()
     destroy_context(c);
 }
 
-void test_popups()
+PUI_TEST(test_popups)
 {
     context *c = create_context(nullptr);
     const rect menu = {0, 0, 100, 100};
@@ -62,7 +62,7 @@ void test_popups()
     destroy_context(c);
 }
 
-void test_panel_flags()
+PUI_TEST(test_panel_flags)
 {
     context *c = create_context(nullptr);
     begin_frame(c, 0.0, 0.016, rect::make(0, 0, 400, 300));
@@ -86,7 +86,7 @@ void test_panel_flags()
     destroy_context(c);
 }
 
-void test_state_view_update()
+PUI_TEST(test_state_view_update)
 {
     context *c = create_context(nullptr);
     sv_state s;
@@ -154,10 +154,10 @@ void test_state_view_update()
     destroy_context(c);
 }
 
-void test_widget_outline()
+PUI_TEST(test_widget_outline)
 {
-    null_device nd;
-    context *c = create_context(&nd, nd.create_surface());
+    tf_env env;
+    context *c = env.c;
     const rect r = {0, 0, 120, 28};
     // flat by default: just the fill
     begin_frame(c, 0.0, 0.016, rect::make(0, 0, 200, 100));
@@ -167,7 +167,7 @@ void test_widget_outline()
         (void)u.button(r, "flat", "outline_a"_id);
     }
     end_frame(c);
-    const i32 flat_verts = nd.vertices;
+    const i32 flat_verts = env.nd.vertices;
     CHECK(flat_verts > 0);
     // border_thickness > 0 adds a full outline ring around the
     // fill. Compare     // against an explicitly flat button so the
@@ -180,7 +180,7 @@ void test_widget_outline()
                        button_override{.border_thickness = some(1.0f)});
     }
     end_frame(c);
-    const i32 outlined_verts = nd.vertices;
+    const i32 outlined_verts = env.nd.vertices;
     begin_frame(c, 0.024, 0.016, rect::make(0, 0, 200, 100));
 
     {
@@ -189,7 +189,7 @@ void test_widget_outline()
                        button_override{.border_thickness = some(0.0f)});
     }
     end_frame(c);
-    const i32 borderless_verts = nd.vertices;
+    const i32 borderless_verts = env.nd.vertices;
     CHECK(outlined_verts > borderless_verts);
     // A fully transparent border is "no border": the fill must stay
     // full-size     // and nothing extra may be drawn, so it
@@ -221,7 +221,7 @@ void test_widget_outline()
                                        .border_thickness = some(1.5f)});
     }
     end_frame(c);
-    CHECK(nd.vertices > 0);
+    CHECK(env.nd.vertices > 0);
     begin_frame(c, 0.048, 0.016, rect::make(0, 0, 400, 100));
 
     {
@@ -235,7 +235,7 @@ void test_widget_outline()
                                        .border_thickness = some(5.0f)});
     }
     end_frame(c);
-    CHECK(nd.vertices > 0);
+    CHECK(env.nd.vertices > 0);
     // text fields: no outline when idle...
     std::string value = "x";
     begin_frame(c, 0.032, 0.016, rect::make(0, 0, 200, 100));
@@ -245,7 +245,7 @@ void test_widget_outline()
         (void)u.text_field(r, value, "outline_field"_id);
     }
     end_frame(c);
-    const i32 idle_verts = nd.vertices;
+    const i32 idle_verts = env.nd.vertices;
     // ...and a focused outline after a click
     mouse_move(c, 10, 10);
     mouse_button(c, true);
@@ -265,7 +265,7 @@ void test_widget_outline()
     }
     end_frame(c);
     CHECK(c->focus == "outline_field"_id);
-    const i32 focused_verts = nd.vertices;
+    const i32 focused_verts = env.nd.vertices;
     CHECK(focused_verts > idle_verts);
     // outline (+ caret) drawn      // the focus outline is
     // customizable: thickness 0 drops it
@@ -279,15 +279,13 @@ void test_widget_outline()
         (void)u.text_field(r, value, "outline_field"_id);
     }
     end_frame(c);
-    CHECK(nd.vertices < focused_verts);
+    CHECK(env.nd.vertices < focused_verts);
     // no outline
-    CHECK(nd.vertices >= idle_verts);
+    CHECK(env.nd.vertices >= idle_verts);
     // caret only
-    CHECK(violation_count(c) == 0);
-    destroy_context(c);
 }
 
-void test_popup_focus_trap()
+PUI_TEST(test_popup_focus_trap)
 {
     context *c = create_context(nullptr);
     std::string base = "base", pa = "a", pb = "b";
@@ -373,10 +371,10 @@ void test_popup_focus_trap()
     destroy_context(c);
 }
 
-void test_widget_extras()
+PUI_TEST(test_widget_extras)
 {
-    null_device nd;
-    context *c = create_context(&nd, nd.create_surface());
+    tf_env env;
+    context *c = env.c;
     const rect frame = rect::make(0, 0, 200, 100);
     bool checked = false;
     f32 value = 2.0f;
@@ -445,15 +443,13 @@ void test_widget_extras()
         u.progress_bar(rect::make(0, 70, 120, 10), 0.5f, color::white(), color{0, 0, 0, 255});
     }
     end_frame(c);
-    CHECK(nd.vertices >= 8);
-    CHECK(violation_count(c) == 0);
-    destroy_context(c);
+    CHECK(env.nd.vertices >= 8);
 }
 
-void test_scroll_view()
+PUI_TEST(test_scroll_view)
 {
-    null_device nd;
-    context *c = create_context(&nd, nd.create_surface());
+    tf_env env;
+    context *c = env.c;
     const rect frame = rect::make(0, 0, 200, 150);
     const rect view = rect::make(0, 0, 100, 100);
     f64 t = 0.0;
@@ -582,11 +578,9 @@ void test_scroll_view()
             sv.set_content_height(50.0f); // no overflow anymore
             CHECK(sv.offset() == 0.0f);
         });
-    CHECK(violation_count(c) == 0);
-    destroy_context(c);
 }
 
-void test_combo()
+PUI_TEST(test_combo)
 {
     null_device nd;
     context *c = create_context(&nd, nd.create_surface());
@@ -719,10 +713,10 @@ void test_combo()
     }
 }
 
-void test_combo_mouse_pick()
+PUI_TEST(test_combo_mouse_pick)
 {
-    null_device nd;
-    context *c = create_context(&nd, nd.create_surface());
+    tf_env env;
+    context *c = env.c;
     static const char *items[3] = {"Alpha", "Beta", "Gamma"};
     i32 sel = 0;
     const rect r = rect::make(20, 20, 160, 28);
@@ -787,14 +781,12 @@ void test_combo_mouse_pick()
         // and no entry lingers
     }
     end_frame(c);
-    CHECK(violation_count(c) == 0);
-    destroy_context(c);
 }
 
-void test_tooltip_delay()
+PUI_TEST(test_tooltip_delay)
 {
-    null_device nd;
-    context *c = create_context(&nd, nd.create_surface());
+    tf_env env;
+    context *c = env.c;
     const rect anchor = rect::make(100, 100, 60, 26);
     const uiid id = "tt_btn"_id;
     // Not hovered: no placement, nothing drawn at end_frame.
@@ -830,7 +822,7 @@ void test_tooltip_delay()
         CHECK(placed.right() <= 400.0f && placed.bottom() <= 400.0f);
     }
     end_frame(c);
-    CHECK(nd.vertices > 0);
+    CHECK(env.nd.vertices > 0);
     // Moving to a second widget inside the 1.2 s window: instant (no
     // wait).
     const rect other = rect::make(200, 100, 60, 26);
@@ -856,11 +848,9 @@ void test_tooltip_delay()
         CHECK(u.tooltip(other, other_id, "second tip").w == 0.0f);
     }
     end_frame(c);
-    CHECK(violation_count(c) == 0);
-    destroy_context(c);
 }
 
-void test_context_menu()
+PUI_TEST(test_context_menu)
 {
     null_device nd;
     context *c = create_context(&nd, nd.create_surface());
@@ -975,10 +965,10 @@ void test_context_menu()
     }
 }
 
-void test_scroll_options_and_limits()
+PUI_TEST(test_scroll_options_and_limits)
 {
-    null_device nd;
-    context *c = create_context(&nd, nd.create_surface());
+    tf_env env;
+    context *c = env.c;
     const rect view = rect::make(0, 0, 100, 100);
     // SCROLL_ALWAYS_RESERVE_BAR: the gutter is reserved
     // from the first frame,     // even before any content
@@ -1075,11 +1065,9 @@ void test_scroll_options_and_limits()
         CHECK(sv.offset() <= 270.0f);
     }
     end_frame(c);
-    CHECK(violation_count(c) == 0);
-    destroy_context(c);
 }
 
-void test_virtual_list()
+PUI_TEST(test_virtual_list)
 {
     // `scroll_view::virtual_list` submits only the rows that can paint: the
     // visible slice of a uniform grid, clamped to the list. The content
@@ -1186,7 +1174,7 @@ void test_virtual_list()
     destroy_context(c);
 }
 
-void test_tooltip_flip_above()
+PUI_TEST(test_tooltip_flip_above)
 {
     null_device nd;
     nd.my_surface.w = 400;
@@ -1242,7 +1230,7 @@ void test_tooltip_flip_above()
     }
 }
 
-void test_combo_popup_clamp()
+PUI_TEST(test_combo_popup_clamp)
 {
     null_device nd;
     nd.my_surface.w = 240;
@@ -1360,7 +1348,7 @@ void test_combo_popup_clamp()
     }
 }
 
-void test_popup_blocks_underlying()
+PUI_TEST(test_popup_blocks_underlying)
 {
     context *c = create_context(nullptr);
     const rect menu = {50, 50, 100, 100};
@@ -1393,7 +1381,7 @@ void test_popup_blocks_underlying()
     destroy_context(c);
 }
 
-void test_panel_card()
+PUI_TEST(test_panel_card)
 {
     context *c = create_context(nullptr);
     begin_frame(c, 0.0, 0.016, rect::make(0, 0, 400, 300));
@@ -1434,7 +1422,7 @@ void test_panel_card()
     destroy_context(c);
 }
 
-void test_panel_blocks_underlying()
+PUI_TEST(test_panel_blocks_underlying)
 {
     context *c = create_context(nullptr);
     const rect pb = {50, 50, 200, 120};
@@ -1471,7 +1459,7 @@ void test_panel_blocks_underlying()
     destroy_context(c);
 }
 
-void test_panel_close_button()
+PUI_TEST(test_panel_close_button)
 {
     context *c = create_context(nullptr);
     rect b = {50, 50, 200, 120};
@@ -1536,7 +1524,7 @@ void test_panel_close_button()
     destroy_context(c);
 }
 
-void test_context_menu_clamp()
+PUI_TEST(test_context_menu_clamp)
 {
     null_device nd;
     nd.my_surface.w = 200;
@@ -1576,7 +1564,7 @@ void test_context_menu_clamp()
     destroy_context(c);
 }
 
-void test_popup_retract_no_ghost()
+PUI_TEST(test_popup_retract_no_ghost)
 {
     // End-to-end ghost-entry
     // check for the same-frame
@@ -1660,10 +1648,10 @@ void test_popup_retract_no_ghost()
     destroy_context(c);
 }
 
-void test_checkbox_slider_edge()
+PUI_TEST(test_checkbox_slider_edge)
 {
-    null_device nd;
-    context *c = create_context(&nd, nd.create_surface());
+    tf_env env;
+    context *c = env.c;
     // checkbox: disabled never
     // hovers; a click (press +
     // release over the box) //
@@ -1738,7 +1726,60 @@ void test_checkbox_slider_edge()
         // release
     }
     end_frame(c);
+}
+
+namespace
+{
+// Reports whether any vertex of `want` color lies deeper than 4px inside `box`:
+// a filled shape has such vertices, a 1px ring hugging the edge does not.
+struct fill_probe_device : null_device
+{
+    color want{};
+    rect box{};
+    bool filled = false;
+    void draw(texture_handle tex, const vertex *v, i32 vc, const i32 *idx, i32 ic) override
+    {
+        const rect deep = box.pad(4.0f);
+        for (i32 i = 0; i < vc; ++i)
+            if (v[i].c.r == want.r && v[i].c.g == want.g && v[i].c.b == want.b &&
+                v[i].c.a == want.a && deep.contains(v[i].x, v[i].y))
+                filled = true;
+        null_device::draw(tex, v, vc, idx, ic);
+    }
+};
+} // namespace
+
+PUI_TEST(test_text_field_translucent_outline)
+{
+    // A translucent field background (glass themes) must not show the border
+    // color through it: the outline is a ring over the fill, not a fill under it.
+    fill_probe_device dev;
+    dev.want = {1, 2, 3, 255};
+    dev.box = rect::make(20, 20, 200, 40);
+    context *c = create_context(&dev, dev.create_surface());
+    theme t = default_dark();
+    t.border = dev.want;
+    t.border_thickness = 1.0f;
+    std::string value;
+    auto frame = [&](f64 now)
+    {
+        begin_frame(c, now, 0.016, rect::make(0, 0, 300, 200));
+        {
+            ui u(c);
+            (void)u.text_field(dev.box, value, "tf"_id);
+        }
+        end_frame(c);
+    };
+
+    t.widget_bg = {255, 255, 255, 30};
+    set_theme(c, t);
+    frame(0.0);
+    CHECK(!dev.filled); // translucent: ring only
+
+    t.widget_bg = {30, 34, 42, 255};
+    set_theme(c, t);
+    frame(0.016);
+    CHECK(dev.filled); // opaque: the classic two-rect outline still fills with the border color
     CHECK(violation_count(c) == 0);
     destroy_context(c);
 }
-

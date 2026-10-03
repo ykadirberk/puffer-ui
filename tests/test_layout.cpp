@@ -1,7 +1,7 @@
 // layout: rect algebra, cursors, regions, tracks, overflow (r88 split).
 #include "test_util.h"
 
-void test_rect_algebra()
+PUI_TEST(test_rect_algebra)
 {
     rect r = rect::make(10, 20, 100, 50);
     rect top = r.cut_top(10);
@@ -19,7 +19,7 @@ void test_rect_algebra()
     CHECK(!rect::make(0, 0, 10, 10).contains(11, 5));
 }
 
-void test_ids()
+PUI_TEST(test_ids)
 {
     uiid a = id_child("root"_id, "ok"_id);
     uiid b = id_child("root"_id, "ok"_id);
@@ -28,7 +28,7 @@ void test_ids()
     CHECK(a != c);
 }
 
-void test_cursors()
+PUI_TEST(test_cursors)
 {
     column col(rect::make(0, 0, 100, 100), 10.0f);
     rect a = col.next(20);
@@ -42,7 +42,7 @@ void test_cursors()
     CHECK(y.x == 35 && y.w == 30);
 }
 
-void test_rect_edges()
+PUI_TEST(test_rect_edges)
 {
     rect r = rect::make(0, 0, 100, 50);
     rect bottom = r.cut_bottom(10);
@@ -74,7 +74,7 @@ void test_rect_edges()
     CHECK(none.w == 0.0f && none.h == 0.0f);
 }
 
-void test_stack_clamp()
+PUI_TEST(test_stack_clamp)
 {
     column col(rect::make(0, 0, 100, 50), 10.0f);
     CHECK(col.next(30).h == 30.0f);
@@ -97,7 +97,7 @@ void test_stack_clamp()
     // pinned slices never overlap }
 }
 
-void test_duplicate_region_id()
+PUI_TEST(test_duplicate_region_id)
 {
     context *c = create_context(nullptr);
     set_violation_handler(c, capture_violation, nullptr);
@@ -123,7 +123,7 @@ void test_duplicate_region_id()
     destroy_context(c);
 }
 
-void test_auto_id_local()
+PUI_TEST(test_auto_id_local)
 {
     context *c = create_context(nullptr);
     begin_frame(c, 0.0, 0.016, rect::make(0, 0, 100, 100));
@@ -146,7 +146,7 @@ void test_auto_id_local()
     destroy_context(c);
 }
 
-void test_limit_overflows()
+PUI_TEST(test_limit_overflows)
 {
     context *c = create_context(nullptr);
     set_violation_handler(c, capture_violation, nullptr);
@@ -184,7 +184,7 @@ void test_limit_overflows()
     destroy_context(c);
 }
 
-void test_split_interactive()
+PUI_TEST(test_split_interactive)
 {
     context *c = create_context(nullptr);
     const rect area = {0, 0, 300, 200};
@@ -225,7 +225,7 @@ void test_split_interactive()
     destroy_context(c);
 }
 
-void test_rect_helpers()
+PUI_TEST(test_rect_helpers)
 {
     const rect r = rect::make(0, 0, 100, 50);
     CHECK(r.top_slice(10).y == 0.0f && r.top_slice(10).h == 10.0f);
@@ -261,10 +261,10 @@ void test_rect_helpers()
     // centered }
 }
 
-void test_tracks_and_grid()
+PUI_TEST(test_tracks_and_grid)
 {
-    null_device nd;
-    context *c = create_context(&nd, nd.create_surface());
+    tf_env env;
+    context *c = env.c;
     const rect area = rect::make(0, 0, 300, 100);
     begin_frame(c, 0.0, 0.016, rect::make(0, 0, 300, 100));
 
@@ -348,11 +348,9 @@ void test_tracks_and_grid()
         }
     }
     end_frame(c);
-    CHECK(violation_count(c) == 0);
-    destroy_context(c);
 }
 
-void test_layout_overflow_report()
+PUI_TEST(test_layout_overflow_report)
 {
     null_device nd;
     context *c = create_context(&nd, nd.create_surface());
@@ -418,10 +416,10 @@ void test_layout_overflow_report()
     destroy_context(c);
 }
 
-void test_region_corner()
+PUI_TEST(test_region_corner)
 {
-    null_device nd;
-    context *c = create_context(&nd, nd.create_surface());
+    tf_env env;
+    context *c = env.c;
     begin_frame(c, 0.0, 0.016, rect::make(0, 0, 300, 300));
 
     {
@@ -449,11 +447,9 @@ void test_region_corner()
         CHECK(wrapped.x == 104.0f && wrapped.bottom() == 246.0f);
     }
     end_frame(c);
-    CHECK(violation_count(c) == 0);
-    destroy_context(c);
 }
 
-void test_region_id_overflow()
+PUI_TEST(test_region_id_overflow)
 {
     // Region-id duplicate checking is a per-frame hash set: complete at any
     // frame scale. A frame with far more regions than the old 2048 cap
@@ -490,7 +486,7 @@ void test_region_id_overflow()
     destroy_context(c);
 }
 
-void test_row_cut_right_no_overlap()
+PUI_TEST(test_row_cut_right_no_overlap)
 {
     row r(rect::make(0, 0, 100, 20), 0.0f);
     rect left = r.next(30.0f);

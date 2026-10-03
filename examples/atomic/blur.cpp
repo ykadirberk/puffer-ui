@@ -52,10 +52,8 @@ static void blur_frame(ui &u, example_app &app)
                              "%.0f");
         (void)u.slider_float(col.next(26.0f), "alpha", g_alpha, 0.0f, 1.0f, "bl_alpha"_id, "%.2f");
         const bool supported = has_cap(app.device->caps(), backend_caps::RENDER_TARGETS);
-        char line[96];
-        std::snprintf(line, sizeof(line), "RENDER_TARGETS: %s",
-                      supported ? "yes" : "no (flat fallback)");
-        u.text(col.next(18.0f), line, th.text_dim, ALIGN_LEFT);
+        u.textf(col.next(18.0f), th.text_dim, ALIGN_LEFT, "RENDER_TARGETS: %s",
+                supported ? "yes" : "no (flat fallback)");
         u.text(col.next(18.0f), "left: raw   |   right: u.blur(...)", th.text_dim, ALIGN_LEFT);
     }
 

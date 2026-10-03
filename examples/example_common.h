@@ -68,20 +68,6 @@ inline const example_script_step *example_script_steps(i32 &count)
     return steps;
 }
 
-// System clipboard bridge (the core takes an app-provided clipboard).
-struct example_clipboard : clipboard
-{
-    bool get(std::string &out) override
-    {
-        char *t = SDL_GetClipboardText();
-        if (!t) return false;
-        out = t;
-        SDL_free(t);
-        return true;
-    }
-    void set(std::string_view text) override { SDL_SetClipboardText(std::string(text).c_str()); }
-};
-
 // ---------------------------------------------------------------- look & feel
 // One visual language for every example: a page with a bold title, an optional
 // subtitle, a divider and a content rect on the theme's rhythm. Examples should
@@ -94,6 +80,12 @@ inline constexpr f32 ROW_H = 28.0f;       // standard control height
 inline constexpr f32 TITLE_SIZE = 20.0f;
 inline constexpr f32 SECTION_SIZE = 15.0f;
 inline constexpr f32 CAPTION_SIZE = 14.0f;
+// Page header rhythm (example_begin_page).
+inline constexpr f32 HEAD_H = 14.0f;     // header band without a subtitle
+inline constexpr f32 HEAD_H_SUB = 34.0f; // ... with one
+inline constexpr f32 SUBTITLE_H = 20.0f;
+inline constexpr f32 DIVIDER_GAP = 6.0f; // header band -> divider line
+inline constexpr f32 BODY_GAP = 14.0f;   // divider -> page content
 } // namespace example_ui
 
 struct example_page
@@ -101,24 +93,12 @@ struct example_page
     rect content{}; // below the header, inside the page padding
 };
 
-// A card section: bold title, dim caption, divider, then the content rect.
+// A card section: bold title, dim caption, divider, then the content rect
+// (the library's comp::section, with the example font).
 inline rect example_section(ui &u, rect r, const char *title, const char *caption = nullptr,
                             font_handle bold = FONT_INVALID)
 {
-    const theme &th = u.th();
-    u.card(r);
-    rect inner = r.pad(th.card.padding);
-    const f32 head_h = caption ? 38.0f : 24.0f;
-    rect head = inner.cut_top(head_h);
-    {
-        text_scope ts = u.text_style(example_ui::SECTION_SIZE, bold);
-        u.text(head.cut_top(20.0f), title, th.text, ALIGN_LEFT);
-    }
-    if (caption) u.text(head.cut_top(16.0f), caption, th.text_dim, ALIGN_LEFT);
-    u.draw_line(inner.left(), head.bottom() + 3.0f, inner.right(), head.bottom() + 3.0f, th.border,
-                1.0f);
-    inner.cut_top(10.0f);
-    return inner;
+    return comp::section(u, r, title, caption ? caption : "", {.title_font = bold});
 }
 
 // A dim caption line (label for a control row).
@@ -160,7 +140,6 @@ struct example_app
     bool running = true;
     f64 now = 0.0;
     f64 dt = 1.0 / 60.0;
-    example_clipboard clip;
 
     // extra windows (events are routed to them by SDL window id)
     static constexpr i32 MAX_EXTRAS = 4;
@@ -175,6 +154,9 @@ struct example_app
     // frame; otherwise after a few frames).
     const char *screenshot = nullptr;
     bool help = false;
+    // `--no-script`: a selftest without the scripted input (clean screenshots:
+    // nothing pressed, scrolled or typed; the pointer stays at the corner).
+    bool no_script = false;
     // `--resize WxH`: resize the window after the first selftest frame, so the
     // re-layout path is exercised (and screenshotted) headlessly.
     i32 resize_w = 0, resize_h = 0;
@@ -233,11 +215,11 @@ inline example_page example_begin_page(ui &u, example_app &app, const char *titl
     (void)u.titlebar(w, chrome, title);
 
     rect area = chrome.pad(example_ui::PAGE_PAD);
-    rect head = area.cut_top(subtitle ? 34.0f : 14.0f);
-    if (subtitle) u.text(head.cut_top(20.0f), subtitle, th.text_dim, ALIGN_LEFT);
-    u.draw_line(area.left(), head.bottom() + 6.0f, area.right(), head.bottom() + 6.0f, th.border,
-                1.0f);
-    area.cut_top(14.0f);
+    rect head = area.cut_top(subtitle ? example_ui::HEAD_H_SUB : example_ui::HEAD_H);
+    if (subtitle) u.text(head.cut_top(example_ui::SUBTITLE_H), subtitle, th.text_dim, ALIGN_LEFT);
+    const f32 line_y = head.bottom() + example_ui::DIVIDER_GAP;
+    u.draw_line(area.left(), line_y, area.right(), line_y, th.border, 1.0f);
+    area.cut_top(example_ui::BODY_GAP);
     page.content = area;
     return page;
 }
@@ -279,6 +261,8 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
         }
         else if (std::strcmp(argv[i], "--violations") == 0)
             app.show_violations = true;
+        else if (std::strcmp(argv[i], "--no-script") == 0)
+            app.no_script = true;
         else if (std::strcmp(argv[i], "--help") == 0)
             app.help = true;
     }
@@ -292,7 +276,8 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
             "  --size WxH            client size\n"
             "  --resize WxH          resize mid-selftest (exercises re-layout)\n"
             "  --screenshot FILE     save a frame as a BMP\n"
-            "  --violations          draw the violation overlay each frame\n",
+            "  --violations          draw the violation overlay each frame\n"
+            "  --no-script           selftest without the scripted input (screenshots)\n",
             title);
         return false;
     }
@@ -349,7 +334,6 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
                                     .hover_bg = some(color{210, 70, 70, 255})});
     t.button.transition = transition{.duration = 0.10f, .curve = easing::EASE_OUT};
     set_theme(app.ctx, t);
-    set_clipboard(app.ctx, &app.clip);
     focus_window(app.ctx, *app.win);
     if (!app.selftest) SDL_StartTextInput(app.sdl_window);
     return true;
@@ -478,7 +462,7 @@ inline void example_pump(example_app &app)
 // Scripted input for --selftest (no-op otherwise).
 inline void example_script(example_app &app)
 {
-    if (!app.selftest) return;
+    if (!app.selftest || app.no_script) return;
     i32 count = 0;
     const example_script_step *steps = example_script_steps(count);
     const example_script_step &s = steps[app.frame_index % count];
@@ -527,14 +511,41 @@ inline int example_shutdown(example_app &app)
     return violations == 0 ? 0 : 1;
 }
 
-// Save the current frame to a BMP (best effort; for docs/debugging).
-inline void example_screenshot(example_app &app, const char *path)
+// Save a window's current frame to a BMP (best effort; for docs/debugging).
+inline void example_screenshot_window(SDL_Window *w, const char *path)
 {
-    if (!app.renderer || !path) return;
-    SDL_Surface *shot = SDL_RenderReadPixels(app.renderer, nullptr);
+    SDL_Renderer *ren = w ? SDL_GetRenderer(w) : nullptr;
+    if (!ren || !path) return;
+    SDL_Surface *shot = SDL_RenderReadPixels(ren, nullptr);
     if (!shot) return;
     SDL_SaveBMP(shot, path);
     SDL_DestroySurface(shot);
+}
+inline void example_screenshot(example_app &app, const char *path)
+{
+    example_screenshot_window(app.sdl_window, path);
+}
+
+// The frame clock, for example_run and hand-written loops (call it at the top
+// of every frame). Interactive runs measure real time, so animations take the
+// same wall time at 30, 60 or 144 Hz; a long stall (window drag, breakpoint)
+// counts as a quarter second so nothing jumps. Selftests step a fixed 1/60 s
+// (deterministic screenshots and goldens).
+struct example_clock
+{
+    u64 last = SDL_GetPerformanceCounter();
+    f64 freq = static_cast<f64>(SDL_GetPerformanceFrequency());
+};
+inline void example_tick(example_app &app, example_clock &clk)
+{
+    if (!app.selftest)
+    {
+        const u64 ticks = SDL_GetPerformanceCounter();
+        const f64 elapsed = static_cast<f64>(ticks - clk.last) / clk.freq;
+        clk.last = ticks;
+        app.dt = elapsed > 0.0 ? (elapsed < 0.25 ? elapsed : 0.25) : 1.0 / 60.0;
+    }
+    if (app.frame_index > 0) app.now += app.dt;
 }
 
 // Single-window run loop. `frame` is called as `frame(ui&, example_app&)`.
@@ -544,9 +555,11 @@ int example_run(const char *title, i32 w, i32 h, int argc, char **argv, FrameFn 
     example_app app;
     if (!example_init(app, title, w, h, argc, argv)) return example_shutdown(app);
 
+    example_clock clock;
     while (app.running)
     {
         if (app.selftest && app.frame_index >= app.selftest_frames) break;
+        example_tick(app, clock);
         example_pump(app);
         if (app.selftest && app.resize_w > 0 && app.frame_index == 1 && app.sdl_window)
         {
@@ -584,7 +597,6 @@ int example_run(const char *title, i32 w, i32 h, int argc, char **argv, FrameFn 
             }
         }
 
-        app.now += app.dt;
         app.frame_index += 1;
     }
     return example_shutdown(app);

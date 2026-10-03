@@ -44,10 +44,13 @@ int main(int argc, char **argv)
     // it). If the platform refuses it, the example still runs with one window.
     example_window *second = example_add_window(app, "windows - second", 440, 320);
 
+    example_clock clock;
     while (app.running)
     {
         if (app.selftest && app.frame_index >= app.selftest_frames) break;
+        example_tick(app, clock); // real time when interactive
         example_pump(app);
+        example_script(app); // --selftest input goes to the primary window
 
         begin_frame(app.ctx, *app.win, app.now, app.dt);
         {
@@ -68,7 +71,19 @@ int main(int argc, char **argv)
             second->surface->present();
         }
 
-        app.now += app.dt;
+        // --screenshot saves both windows: FILE and FILE.second.bmp
+        const bool last =
+            app.selftest ? app.frame_index + 1 >= app.selftest_frames : app.frame_index == 60;
+        if (app.screenshot && last)
+        {
+            example_screenshot(app, app.screenshot);
+            if (second && second->sdl)
+            {
+                char path[1024];
+                std::snprintf(path, sizeof(path), "%s.second.bmp", app.screenshot);
+                example_screenshot_window(second->sdl, path);
+            }
+        }
         app.frame_index += 1;
     }
 

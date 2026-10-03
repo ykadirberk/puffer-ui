@@ -1,7 +1,7 @@
 // input: clicks, keys, interaction edges, keyboard navigation (r88 split).
 #include "test_util.h"
 
-void test_click()
+PUI_TEST(test_click)
 {
     context *c = create_context(nullptr);
     null_device nd;
@@ -27,7 +27,7 @@ void test_click()
     destroy_context(c);
 }
 
-void test_release_outside_cancels()
+PUI_TEST(test_release_outside_cancels)
 {
     context *c = create_context(nullptr);
     const rect btn = {10, 10, 80, 30};
@@ -48,7 +48,7 @@ void test_release_outside_cancels()
     destroy_context(c);
 }
 
-void test_keys_and_escape()
+PUI_TEST(test_keys_and_escape)
 {
     context *c = create_context(nullptr);
     begin_frame(c, 0.0, 0.016, rect::make(0, 0, 200, 200));
@@ -77,7 +77,7 @@ void test_keys_and_escape()
     destroy_context(c);
 }
 
-void test_interaction_edges()
+PUI_TEST(test_interaction_edges)
 {
     context *c = create_context(nullptr);
     const rect r = {0, 0, 100, 100};
@@ -199,7 +199,7 @@ void test_interaction_edges()
     destroy_context(c);
 }
 
-void test_interact_topmost_wins()
+PUI_TEST(test_interact_topmost_wins)
 {
     // Overlapping hit rects are a feature with defined semantics: the
     // TOPMOST (last submitted) enabled rect containing the press position
@@ -254,7 +254,7 @@ void test_interact_topmost_wins()
     destroy_context(c);
 }
 
-void test_keyboard_navigation()
+PUI_TEST(test_keyboard_navigation)
 {
     // Tab walks the submission-order ring of every focusable widget — text
     // fields and the point-and-click widgets alike. Nothing focused: Tab
@@ -387,7 +387,7 @@ void test_keyboard_navigation()
     destroy_context(c);
 }
 
-void test_thread_isolation()
+PUI_TEST(test_thread_isolation)
 {
     // The current-context slot is genuinely thread-local: two threads, two
     // contexts, two violation sinks. A violation reported on one thread must
@@ -425,4 +425,3 @@ void test_thread_isolation()
     // (current_context was never set on the main thread by the workers.)
     CHECK(current_context() == nullptr);
 }
-

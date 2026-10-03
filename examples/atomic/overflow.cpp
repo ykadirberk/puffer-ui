@@ -52,9 +52,7 @@ static void overflow_frame(ui &u, example_app &app)
             row r(c.next(26.0f), 18.0f);
             (void)u.checkbox(r.next(170.0f), "Report overflow", g_report, "ov_report"_id);
             (void)u.checkbox(r.next(150.0f), "Make it overflow", g_narrow, "ov_narrow"_id);
-            char label[64];
-            std::snprintf(label, sizeof(label), "reports so far: %d", g_seen);
-            u.text(r.remaining(), label, th.text_dim, ALIGN_RIGHT);
+            u.textf(r.remaining(), th.text_dim, ALIGN_RIGHT, "reports so far: %d", g_seen);
         }
         // The last report of the previous frame, so the nothing-fits case is legible.
         u.text(c.next(18.0f), g_last, g_seen > 0 ? color{230, 130, 90, 255} : th.text_dim,
@@ -103,9 +101,7 @@ static void overflow_frame(ui &u, example_app &app)
         {
             const rect b = demo.corner(i, 84.0f, 24.0f, 8.0f);
             u.draw_rounded_rect(b, i == 0 ? th.accent : th.widget_hover, 5.0f);
-            char label[24];
-            std::snprintf(label, sizeof(label), "corner(%d)", i);
-            u.text(b, label, i == 0 ? th.bg : th.text, ALIGN_CENTER);
+            u.textf(b, i == 0 ? th.bg : th.text, ALIGN_CENTER, "corner(%d)", i);
         }
     }
 }

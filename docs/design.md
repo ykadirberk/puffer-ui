@@ -83,11 +83,33 @@ fatal, stops in every build.
 - A panel's dock name is **interned** into context-owned storage when a drag
   starts: the drag ghost draws across frames, so the caller's string need
   not outlive the gesture.
-- The header/implementation file split (with a generated single-header
-  amalgamation) and the `slot_pool` keyed-store consolidation are deferred
-  to a dedicated structural pass: both are behavior-neutral, large, and
-  mechanical, and `docs/perf.md` shows the keyed stores are not hot. The
-  single-header + one-TU distribution stays as-is until then.
+
+## Structure notes (r96: the boilerplate pass)
+
+- **File layout.** `include/pufferui/pufferui.h` is the declaration section
+  (what users read) plus the `PUFFERUI_IMPLEMENTATION` block, which is now a
+  list of `#include "impl/<slice>.inl"` lines inside one `namespace pui`. The
+  slices (`core_state`, `draw_context`, `input_interact`, `layout_text`,
+  `dock_style`, `widgets`, `components`, `chrome_scroll`, `typed_inputs`,
+  `draw_primitives`, `sdl3`) are plain text cuts at section banners, in order.
+  The contract is unchanged: one TU defines `PUFFERUI_IMPLEMENTATION`.
+  `tools/amalgamate.ps1` rebuilds the single-file header (verified at the
+  split to be byte-identical to the pre-split header).
+- **One allocation for keyed state.** `ctx_stores` (edit/anim/scroll/split/
+  defer stores and the per-frame id sets) hangs off `context::st`, created
+  with the context and freed with one `delete`; per-window state is the typed
+  `focus_store`/`blur` pair. No `void*` handles, no casts, no lazy `new`.
+- **Input and widget state are single structs.** `window_input` is the whole
+  input snapshot; the context derives from it (and from `interaction_state`)
+  so a frame copies whole structs in and out. Event handlers write one place
+  (`detail::input_for(window)`): the open frame's copy, or the window's queue.
+- **Interaction skeleton.** `detail::widget_activate` (interact + hand cursor +
+  click/Enter/Space as one `activated`) starts every clickable component.
+- **Styles are plain structs.** Components take `const <name>_style *`
+  instead of an override struct per component; `opt<T>` overrides remain for
+  `button`, `panel` and `card`. `theme_lerp` interpolates every slot.
+- Still deferred: nothing structural from the r86 audit. Open items live in
+  `docs/limitations.md`.
 
 ## Threads
 

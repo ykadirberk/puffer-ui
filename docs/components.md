@@ -17,16 +17,24 @@ Rules, in short (the full checklist below):
 1. **Identity is explicit.** `props.id` is required; internal parts derive
    with `id_child` / `u.scope`. Never derive an id from a label.
 2. **Props are one struct** with designated-initializer defaults; `enabled`
-   and `style` (a per-instance override) live there. No positional
+   and `style` (a `const <name>_style *`) live there. No positional
    parameter piles.
 3. **The result is a struct**, not a bool out-param: `{changed, selected,
    in}` with `explicit operator bool` for the primary event.
 4. **State is the app's**: value references are written back directly;
    transient state (animation, hover) is keyed by uiid. **No file-scope
    statics.**
-5. **Styles resolve theme → override.** Colors/sizes come from the theme
-   slot (`theme::switch_ctrl`, `theme::radio`, `theme::segmented`, …);
-   literals exist only as the style struct's defaults.
+5. **Styles resolve theme slot → `props.style`.** Colors/sizes come from the
+   theme slot (`theme::switch_ctrl`, `theme::radio`, `theme::segmented`, …);
+   literals exist only as the style struct's defaults. To restyle one
+   instance, copy the theme's style, edit the fields, and pass its address
+   (it only has to outlive the call); there are no override structs:
+
+   ```cpp
+   switch_style mine = u.th().switch_ctrl;
+   mine.track_on = u.th().tokens.danger;
+   comp::switch_toggle(u, r, "Armed", on, {.id = "arm"_id, .style = &mine});
+   ```
 6. **Keyboard + cursor**: every component joins the Tab ring via `interact`,
    supports Enter/Space (or arrow) activation, and sets the hovered cursor.
 7. **Works inside scroll views, panels and popups** (clips, id scopes).
@@ -68,10 +76,10 @@ A horizontal segmented control (Day / Week / Month style).
 
 | | |
 | --- | --- |
-| `comp::segmented(u, area, span<const char *const> labels, i32 &selected, segmented_props{.id, .enabled, .style})` | Returns `{changed, selected, in}` |
-| Theme slot | `theme::segmented` (`bg`, `selected`, `text`, `text_selected`, `radius`, `pad`, `anim`) |
+| `comp::segmented(u, area, span<const char *const> labels, i32 &selected, segmented_props{.id, .enabled, .radii, .style})` | Returns `{changed, selected, in}` |
+| Theme slot | `theme::segmented` (`bg`, `selected`, `text`, `text_selected`, `hover`, `radius`, `pad`, `anim`) |
 | Keys | Every segment joins the Tab ring; Enter/Space selects the focused segment |
-| Notes | The selected fill animates (`animate_color`), honors `reduced_motion` via the animation scopes |
+| Notes | The selected fill animates (`animate_color`), honors `reduced_motion` via the animation scopes. Every segment eases a `hover` highlight in. `.radii` (`opt<corner_radii>`) gives the control's *outer* corner radii: the first segment's left and the last one's right corners follow them (inset by `pad`, so they stay concentric in a rounded card); corners between segments keep `radius - pad`. Unset = all corners `radius` |
 
 ## `comp::tab_bar`
 
@@ -147,8 +155,21 @@ A modal filter-and-run overlay (Ctrl+K style).
 | Keys | Up/Down move the highlight, Enter chooses, Escape closes; typing filters (case-insensitive substring) |
 | Notes | The query field takes focus while open; the scrim captures clicks and never joins the Tab ring |
 
-## Roadmap
+## `comp::section`
 
-The next batches (r92–r93): tabs, accordion, drawer → toast host, table,
-command palette — promoted from the example-level widgets in
-`examples/atomic/patterns.cpp` into this library.
+A titled card: title row, optional caption row, divider, then the body.
+
+| | |
+| --- | --- |
+| `comp::section(u, area, title, caption = {}, section_props{.title_font, .style})` | Returns the body `rect` to lay content into; non-interactive, so no `id` |
+| Theme slot | `theme::section` (`title_size`, `title_h`, `caption_h`, `caption_gap`, `no_caption_gap`, `divider_gap`, `body_gap`) |
+| Notes | Colors come from the theme (`text`, `text_dim`, `border`, `card`); the examples' `example_section` is a one-line wrapper |
+
+## Adding a component
+
+1. Props/result/style structs + one function in `pufferui.h` (declaration
+   section, `namespace comp`), a theme slot, its `theme_lerp` lines.
+2. Inside the library start the interaction with
+   `detail::widget_activate(u, id, area, enabled)` (interact + hand cursor +
+   one `activated` flag for click or Enter/Space); draw from the resolved style.
+3. A `PUI_TEST` using `tf_env`, a row here, and an atomic example.

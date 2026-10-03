@@ -45,38 +45,61 @@ add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
 # ---------------------------------------------------------------------------
 include(GNUInstallDirs)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(PUFFERUI_ASSET_DIR "${CMAKE_CURRENT_SOURCE_DIR}/assets")
 set(PUFFERUI_CORE_SOURCES "src/pufferui_impl.cpp")
 
-add_library(pufferui STATIC ${PUFFERUI_CORE_SOURCES})
+# pui_add_library(<name> [SDL3]) — the core, optionally with the SDL3 backend.
+function(pui_add_library name)
+  cmake_parse_arguments(A "SDL3" "" "" ${ARGN})
+  add_library(${name} STATIC ${PUFFERUI_CORE_SOURCES})
+  if(NOT MSVC)
+    target_compile_options(${name} PRIVATE -Wall -Wextra)
+  endif()
+  target_include_directories(${name} PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vendored/stb>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+  if(A_SDL3)
+    target_compile_definitions(${name} PUBLIC PUFFERUI_ENABLE_SDL3)
+    target_link_libraries(${name} PUBLIC SDL3-static)
+  endif()
+endfunction()
+
+pui_add_library(pufferui)
 add_library(pufferui::pufferui ALIAS pufferui)
-if(NOT MSVC)
-  target_compile_options(pufferui PRIVATE -Wall -Wextra)
-endif()
-target_include_directories(pufferui PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vendored/stb>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-set_property(TARGET pufferui PROPERTY CXX_STANDARD 20)
-set_property(TARGET pufferui PROPERTY CXX_STANDARD_REQUIRED ON)
-
-add_library(pufferui_sdl3 STATIC ${PUFFERUI_CORE_SOURCES})
+pui_add_library(pufferui_sdl3 SDL3)
 add_library(pufferui::sdl3 ALIAS pufferui_sdl3)
-target_compile_definitions(pufferui_sdl3 PUBLIC PUFFERUI_ENABLE_SDL3)
-target_link_libraries(pufferui_sdl3 PUBLIC SDL3-static)
-if(NOT MSVC)
-  target_compile_options(pufferui_sdl3 PRIVATE -Wall -Wextra)
-endif()
-target_include_directories(pufferui_sdl3 PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vendored/stb>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-set_property(TARGET pufferui_sdl3 PROPERTY CXX_STANDARD 20)
-set_property(TARGET pufferui_sdl3 PROPERTY CXX_STANDARD_REQUIRED ON)
+
+# pui_add_exe(<name> SOURCES <files...> [SDL3] [DEFS <defines...>])
+# One executable on the prebuilt library (SDL3 variant with SDL3), warnings
+# on, and PUFFERUI_ASSET_DIR set so it can load the bundled fonts.
+function(pui_add_exe name)
+  cmake_parse_arguments(A "SDL3" "" "SOURCES;DEFS" ${ARGN})
+  add_executable(${name} ${A_SOURCES})
+  if(A_SDL3)
+    target_link_libraries(${name} PRIVATE pufferui_sdl3 pufferui_warnings)
+  else()
+    target_link_libraries(${name} PRIVATE pufferui pufferui_warnings)
+  endif()
+  target_compile_definitions(${name} PRIVATE
+      PUFFERUI_ASSET_DIR="${PUFFERUI_ASSET_DIR}" ${A_DEFS})
+endfunction()
+
+# pui_add_selftest_exe(<name> ...) — pui_add_exe plus a place in the
+# `examples_selftest` target (every example runs offscreen with --selftest).
+function(pui_add_selftest_exe name)
+  pui_add_exe(${name} ${ARGN})
+  set_property(GLOBAL APPEND PROPERTY PUFFERUI_SELFTESTS ${name})
+endfunction()
 
 # ---------------------------------------------------------------------------
-# Headless core tests (no SDL, no window).
+# Tests and benchmarks.
 # ---------------------------------------------------------------------------
-set(PUFFERUI_CORE_TEST_SOURCES
+# Headless core tests (no SDL, no window). Tests register themselves
+# (PUI_TEST in tests/test_util.h): add a test by writing it in an area file.
+pui_add_exe(pui_core_tests SOURCES
     tests/test_core.cpp
     tests/test_layout.cpp
     tests/test_input.cpp
@@ -85,87 +108,27 @@ set(PUFFERUI_CORE_TEST_SOURCES
     tests/test_dock.cpp
     tests/test_render.cpp
     tests/test_components.cpp
-)
-add_executable(pui_core_tests ${PUFFERUI_CORE_TEST_SOURCES})
-target_link_libraries(pui_core_tests PRIVATE pufferui pufferui_warnings)
+    tests/test_motion.cpp)
 
-set_property(TARGET pui_core_tests PROPERTY CXX_STANDARD 20)
-set_property(TARGET pui_core_tests PROPERTY CXX_STANDARD_REQUIRED ON)
-target_compile_definitions(pui_core_tests PRIVATE
-    PUFFERUI_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
-
-# ---------------------------------------------------------------------------
-# Benchmarks: headless frame-cost measurement of the core (layout + interact +
-# draw-list recording/flush on null_device). Machine-relative times; the
-# stable metrics are draw_calls/vertices. Baseline numbers live in docs/perf.md.
-# ---------------------------------------------------------------------------
-add_executable(pui_bench "tests/bench.cpp")
-target_link_libraries(pui_bench PRIVATE pufferui pufferui_warnings)
-set_property(TARGET pui_bench PROPERTY CXX_STANDARD 20)
-set_property(TARGET pui_bench PROPERTY CXX_STANDARD_REQUIRED ON)
-target_compile_definitions(pui_bench PRIVATE
-    PUFFERUI_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
-
-# TEMP probe (delete after the r89 P7 bisection)
-add_executable(pui_gprobe "out/probe/gprobe2.cpp")
-target_compile_definitions(pui_gprobe PRIVATE PUFFERUI_ENABLE_SDL3)
-target_link_libraries(pui_gprobe PRIVATE pufferui_sdl3)
-set_property(TARGET pui_gprobe PROPERTY CXX_STANDARD 20)
-set_property(TARGET pui_gprobe PROPERTY CXX_STANDARD_REQUIRED ON)
+# Headless frame-cost measurement of the core (layout + interact + draw-list
+# recording/flush on null_device). Machine-relative times; the stable metrics
+# are draw_calls/vertices. Baseline numbers live in docs/perf.md.
+pui_add_exe(pui_bench SOURCES tests/bench.cpp)
 
 # SDL event-pump tests: SDL_PushEvent-driven routing through the offscreen
 # driver. Same exit contract as the core tests (exit 0 = all passed).
-add_executable(pui_pump_tests
-  "tests/test_pump.cpp"
-)
-target_compile_definitions(pui_pump_tests PRIVATE
-    PUFFERUI_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
-target_link_libraries(pui_pump_tests PRIVATE pufferui_sdl3 pufferui_warnings)
-set_property(TARGET pui_pump_tests PROPERTY CXX_STANDARD 20)
-set_property(TARGET pui_pump_tests PROPERTY CXX_STANDARD_REQUIRED ON)
+pui_add_exe(pui_pump_tests SDL3 SOURCES tests/test_pump.cpp)
 
-# ---------------------------------------------------------------------------
-# PufferUI "next" small example: model/view/dispatch (docs/model_view.md).
-# ---------------------------------------------------------------------------
-add_executable(pui_counter
-  "examples/pui_counter.cpp"
-)
-
-target_compile_definitions(pui_counter PRIVATE
-    PUFFERUI_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
-target_link_libraries(pui_counter PRIVATE pufferui_sdl3 pufferui_warnings)
-
-set_property(TARGET pui_counter PROPERTY CXX_STANDARD 20)
-set_property(TARGET pui_counter PROPERTY CXX_STANDARD_REQUIRED ON)
-
-# ---------------------------------------------------------------------------
-# PufferUI "next" Phase 1 demo: SDL3 window using the redesigned core.
-# ---------------------------------------------------------------------------
-add_executable(pui_demo
-  "examples/pui_demo.cpp"
-)
-
-target_compile_definitions(pui_demo PRIVATE
-    PUFFERUI_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
-target_link_libraries(pui_demo PRIVATE pufferui_sdl3 pufferui_warnings)
-
-set_property(TARGET pui_demo PROPERTY CXX_STANDARD 20)
-set_property(TARGET pui_demo PROPERTY CXX_STANDARD_REQUIRED ON)
-
-# ---------------------------------------------------------------------------
 # Golden-image tests: offscreen SDL + software renderer, hash + BMP compare.
+pui_add_exe(pui_golden_tests SDL3 SOURCES tests/golden/test_golden.cpp
+    DEFS PUFFERUI_GOLDEN_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/golden")
+
 # ---------------------------------------------------------------------------
-add_executable(pui_golden_tests
-  "tests/golden/test_golden.cpp"
-)
-
-target_compile_definitions(pui_golden_tests PRIVATE
-    PUFFERUI_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets"
-    PUFFERUI_GOLDEN_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/golden")
-target_link_libraries(pui_golden_tests PRIVATE pufferui_sdl3 pufferui_warnings)
-
-set_property(TARGET pui_golden_tests PROPERTY CXX_STANDARD 20)
-set_property(TARGET pui_golden_tests PROPERTY CXX_STANDARD_REQUIRED ON)
+# Apps: the small model/view example (docs/model_view.md) and the two-window
+# demo (docking, floating panels, HUD).
+# ---------------------------------------------------------------------------
+pui_add_exe(pui_counter SDL3 SOURCES examples/pui_counter.cpp)
+pui_add_exe(pui_demo SDL3 SOURCES examples/pui_demo.cpp)
 
 # ---------------------------------------------------------------------------
 # Examples: one standalone program per capability (examples/atomic/<name>.cpp),
@@ -174,78 +137,45 @@ set_property(TARGET pui_golden_tests PROPERTY CXX_STANDARD_REQUIRED ON)
 # example by dropping the file in and appending its name to the list.
 # ---------------------------------------------------------------------------
 set(PUFFERUI_EXAMPLE_NAMES
-    hello
-    bootstrap
-    rect
-    cursors
-    tracks
-    grid
-    ids
-    text
-    buttons
-    inputs
-    widgets
-    panels
-    scroll
-    popups
-    dock
-    windows
-    drawing
-    blur
-    animation
-    theme
-    custom
-    patterns
-    expander
-    combo
-    keyboard
-    components
-    vlist
-overflow
-)
+    hello bootstrap rect cursors tracks grid ids text buttons inputs widgets
+    panels scroll popups dock windows drawing blur animation theme custom
+    patterns expander combo keyboard components vlist overflow relayout)
 
 # Headless examples: no SDL, no window (they still get the bundled font path).
-set(PUFFERUI_HEADLESS_EXAMPLES
-    headless
-    renderer
-)
+set(PUFFERUI_HEADLESS_EXAMPLES headless renderer)
 
-set(PUFFERUI_SELFTEST_COMMANDS)
-set(PUFFERUI_SELFTEST_DEPENDS)
 foreach(name IN LISTS PUFFERUI_EXAMPLE_NAMES)
-  add_executable(pui_ex_${name} "examples/atomic/${name}.cpp")
-  target_compile_definitions(pui_ex_${name} PRIVATE
-      PUFFERUI_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
-  target_link_libraries(pui_ex_${name} PRIVATE pufferui_sdl3 pufferui_warnings)
-  set_property(TARGET pui_ex_${name} PROPERTY CXX_STANDARD 20)
-  set_property(TARGET pui_ex_${name} PROPERTY CXX_STANDARD_REQUIRED ON)
-  list(APPEND PUFFERUI_SELFTEST_COMMANDS COMMAND $<TARGET_FILE:pui_ex_${name}> --selftest)
-  list(APPEND PUFFERUI_SELFTEST_DEPENDS pui_ex_${name})
+  pui_add_selftest_exe(pui_ex_${name} SDL3 SOURCES examples/atomic/${name}.cpp)
 endforeach()
-
 foreach(name IN LISTS PUFFERUI_HEADLESS_EXAMPLES)
-  add_executable(pui_ex_${name} "examples/atomic/${name}.cpp")
-  target_compile_definitions(pui_ex_${name} PRIVATE
-      PUFFERUI_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
-  target_link_libraries(pui_ex_${name} PRIVATE pufferui pufferui_warnings)
-  set_property(TARGET pui_ex_${name} PROPERTY CXX_STANDARD 20)
-  set_property(TARGET pui_ex_${name} PROPERTY CXX_STANDARD_REQUIRED ON)
-  list(APPEND PUFFERUI_SELFTEST_COMMANDS COMMAND $<TARGET_FILE:pui_ex_${name}> --selftest)
-  list(APPEND PUFFERUI_SELFTEST_DEPENDS pui_ex_${name})
+  pui_add_selftest_exe(pui_ex_${name} SOURCES examples/atomic/${name}.cpp)
 endforeach()
 
 # The guided tour: every capability in one app.
-add_executable(pui_tour "examples/pui_tour.cpp")
-target_compile_definitions(pui_tour PRIVATE
-    PUFFERUI_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
-target_link_libraries(pui_tour PRIVATE pufferui_sdl3 pufferui_warnings)
-set_property(TARGET pui_tour PROPERTY CXX_STANDARD 20)
-set_property(TARGET pui_tour PROPERTY CXX_STANDARD_REQUIRED ON)
-list(APPEND PUFFERUI_SELFTEST_COMMANDS COMMAND $<TARGET_FILE:pui_tour> --selftest)
-list(APPEND PUFFERUI_SELFTEST_DEPENDS pui_tour)
+pui_add_selftest_exe(pui_tour SDL3 SOURCES examples/pui_tour.cpp)
+# The motion showcase: animated layout (FLIP), blur, particles, components.
+pui_add_selftest_exe(pui_showcase SDL3 SOURCES examples/pui_showcase.cpp)
 
+# ---------------------------------------------------------------------------
+# The tutorial (docs/tutorial/): every chapter's program is built and, apart
+# from the window-only first step, self-tested here, so the lessons cannot rot.
+# ---------------------------------------------------------------------------
+pui_add_exe(pui_tut_step01_window SDL3 SOURCES examples/tutorial/step01_window.cpp)
+pui_add_selftest_exe(pui_tut_step01_shot SDL3 SOURCES examples/tutorial/step01_shot.cpp)
+pui_add_selftest_exe(pui_tut_button_states SDL3 SOURCES examples/tutorial/button_states.cpp)
+foreach(step step02_layout step03_tasks step04_filters step05_glass step06_motion todo)
+  pui_add_selftest_exe(pui_tut_${step} SDL3 SOURCES examples/tutorial/${step}.cpp)
+endforeach()
+# the headless test: the todo screen on a renderer that draws nothing (no SDL)
+pui_add_selftest_exe(pui_tut_todo_test SOURCES examples/tutorial/todo_test.cpp)
+
+get_property(PUFFERUI_SELFTESTS GLOBAL PROPERTY PUFFERUI_SELFTESTS)
+set(PUFFERUI_SELFTEST_COMMANDS)
+foreach(name IN LISTS PUFFERUI_SELFTESTS)
+  list(APPEND PUFFERUI_SELFTEST_COMMANDS COMMAND $<TARGET_FILE:${name}> --selftest)
+endforeach()
 add_custom_target(examples_selftest ${PUFFERUI_SELFTEST_COMMANDS}
-    DEPENDS ${PUFFERUI_SELFTEST_DEPENDS} VERBATIM)
+    DEPENDS ${PUFFERUI_SELFTESTS} VERBATIM)
 
 # ---------------------------------------------------------------------------
 # Install / export: `find_package(pufferui)` gives `pufferui::pufferui` (core)
@@ -260,11 +190,14 @@ install(TARGETS pufferui EXPORT pufferuiTargets)
 # is not ours to export): package consumers get pufferui::pufferui and either
 # provide the SDL3 backend via the single-TU path or link their own SDL3.
 install(TARGETS pufferui_sdl3)
+file(GLOB PUFFERUI_IMPL_SLICES "include/pufferui/impl/*.inl")
 install(FILES
     "include/pufferui/pufferui.h"
     "src/pufferui_impl.cpp"
     "vendored/stb/stb_truetype.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pufferui")
+install(FILES ${PUFFERUI_IMPL_SLICES}
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pufferui/impl")
 
 install(EXPORT pufferuiTargets
     NAMESPACE pufferui::

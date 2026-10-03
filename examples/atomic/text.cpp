@@ -42,11 +42,9 @@ static void text_frame(ui &u, example_app &app)
                "\xE2\x82\xBA \xE2\x82\xAC \xC2\xB2 \xE2\x86\x92",
                th.text, ALIGN_LEFT);
         {
-            char line[128];
-            std::snprintf(line, sizeof(line),
-                          "has_glyph(U+2026 ellipsis) = %s   has_glyph(U+03C0 pi) = %s",
-                          u.has_glyph(0x2026) ? "yes" : "no", u.has_glyph(0x03C0) ? "yes" : "no");
-            u.text(c.next(18.0f), line, th.text_dim, ALIGN_LEFT);
+            u.textf(c.next(18.0f), th.text_dim, ALIGN_LEFT,
+                    "has_glyph(U+2026 ellipsis) = %s   has_glyph(U+03C0 pi) = %s",
+                    u.has_glyph(0x2026) ? "yes" : "no", u.has_glyph(0x03C0) ? "yes" : "no");
         }
     }
 
@@ -71,10 +69,8 @@ static void text_frame(ui &u, example_app &app)
             const char *s = "text_fit wraps and reports the height it used";
             const rect r = c.next(38.0f);
             const f32 used = u.text_fit(r, s, th.text);
-            char line[96];
-            std::snprintf(line, sizeof(line), "text_fit used %.0f px of %.0f",
-                          static_cast<double>(used), static_cast<double>(r.h));
-            u.text(c.next(18.0f), line, th.text_dim, ALIGN_LEFT);
+            u.textf(c.next(18.0f), th.text_dim, ALIGN_LEFT, "text_fit used %.0f px of %.0f",
+                    static_cast<double>(used), static_cast<double>(r.h));
         }
 
         // Measurement + kerning are exact: layout with the same numbers you draw.

@@ -98,14 +98,27 @@ static rect window_client(SDL_Window *w)
                       static_cast<f32>(wh));
 }
 
-SDL_AppResult SDL_AppInit(void **, int, char **)
+// `--screenshot FILE`: render a few frames offscreen (software renderer), save
+// the last one as a BMP and exit - the README picture.
+static const char *g_screenshot = nullptr;
+static i32 g_frame = 0;
+
+SDL_AppResult SDL_AppInit(void **, int argc, char **argv)
 {
+    for (int i = 1; i + 1 < argc; ++i)
+        if (std::string(argv[i]) == "--screenshot") g_screenshot = argv[i + 1];
+    if (g_screenshot)
+    {
+        SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "offscreen");
+        SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
+    }
     if (!SDL_Init(SDL_INIT_VIDEO)) return SDL_APP_FAILURE;
 
     g_window = SDL_CreateWindow("PufferUI - counter (model/view example)", 520, 260,
-                                SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE);
+                                SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE |
+                                    (g_screenshot ? SDL_WINDOW_HIDDEN : 0));
     if (!g_window) return SDL_APP_FAILURE;
-    g_renderer = SDL_CreateRenderer(g_window, nullptr);
+    g_renderer = SDL_CreateRenderer(g_window, g_screenshot ? "software" : nullptr);
     if (!g_renderer) return SDL_APP_FAILURE;
 
     g_device = create_sdl3_device(g_renderer);
@@ -167,6 +180,15 @@ SDL_AppResult SDL_AppIterate(void *)
         draw_counter(u, *g_win, g_state.view, g_state);
     }
     end_frame(g_ctx);
+
+    if (g_screenshot && ++g_frame >= 4)
+    {
+        SDL_Surface *shot = SDL_RenderReadPixels(g_renderer, nullptr);
+        if (!shot) return SDL_APP_FAILURE;
+        const bool saved = SDL_SaveBMP(shot, g_screenshot);
+        SDL_DestroySurface(shot);
+        return saved ? SDL_APP_SUCCESS : SDL_APP_FAILURE;
+    }
 
     return SDL_APP_CONTINUE;
 }

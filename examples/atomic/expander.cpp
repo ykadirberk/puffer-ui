@@ -173,10 +173,8 @@ static void expander_frame(ui &u, example_app &app)
                 g_accordion = -1;
                 for (i32 i = 0; i < 6; ++i) g_rows[i] = false;
             }
-            char label[64];
-            std::snprintf(label, sizeof(label), "duration: %.0f ms",
-                          static_cast<double>(g_duration * 1000.0f));
-            u.text(r.remaining(), label, th.text_dim, ALIGN_RIGHT);
+            u.textf(r.remaining(), th.text_dim, ALIGN_RIGHT, "duration: %.0f ms",
+                    static_cast<double>(g_duration * 1000.0f));
         }
         (void)u.slider_float(c.next(26.0f), "Tween duration", g_duration, 0.05f, 0.6f,
                              "exp_duration"_id, "%.2fs");

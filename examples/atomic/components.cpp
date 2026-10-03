@@ -24,66 +24,110 @@ static void components_frame(ui &u, example_app &app)
     const theme &th = u.th();
     example_page page =
         example_begin_page(u, app, "Components", "the pui::comp toggles: switch, radio, segmented");
-    column col(page.content, example_ui::SECTION_GAP);
-
+    // Six sections are taller than the window: the page scrolls. The overlays
+    // (drawer, palette, toasts) are drawn after the scroll view, over the page.
     {
-        const rect body = example_section(
-            u, col.next(160.0f), "Switches",
-            "comp::switch_toggle(ui, rect, label, bool&, {.id}) - click or Space toggles",
-            app.font_bold);
-        column c(body, u.spacing());
-        (void)comp::switch_toggle(u, c.next(u.control_h()), "Wi-Fi", g_wifi, {.id = "ex_wifi"_id});
-        (void)comp::switch_toggle(u, c.next(u.control_h()), "Bluetooth", g_bluetooth,
-                                  {.id = "ex_bt"_id});
-        (void)comp::switch_toggle(u, c.next(u.control_h()), "Animations", g_animations,
-                                  {.id = "ex_anim"_id});
-    }
+        scroll_view sv = u.scroll(page.content, "ex_page"_id, scroll_options{0.0f, SCROLL_OVERLAY});
+        const rect content = sv.content();
+        // lay out in an open-ended column; the scroll view learns the real height
+        column col(rect::make(content.x, content.y, content.w, 100000.0f), example_ui::SECTION_GAP);
 
-    {
-        const rect body = example_section(
-            u, col.next(160.0f), "Radio group",
-            "comp::radio_group(ui, rect, labels, i32&, {.id}) - one row per label, Space selects",
-            app.font_bold);
-        static const char *const items[] = {"Draft", "Balanced", "Best quality"};
-        (void)comp::radio_group(u, body, items, g_quality, {.id = "ex_quality"_id});
-    }
-
-    {
-        rect body = example_section(
-            u, col.next(140.0f), "Segmented control",
-            "comp::segmented(ui, rect, labels, i32&, {.id}) - Day/Week/Month", app.font_bold);
-        static const char *const items[] = {"Day", "Week", "Month"};
-        (void)comp::segmented(u, body.cut_top(u.control_h()), items, g_range,
-                              {.id = "ex_range"_id});
-        char line[128];
-        std::snprintf(line, sizeof(line), "wifi %s | quality %d | range %d", g_wifi ? "on" : "off",
-                      g_quality, g_range);
-        u.text(rect::make(body.x, body.y + 4.0f, body.w, 18.0f), line, th.text_dim, ALIGN_LEFT);
-    }
-
-    {
-        rect body = example_section(
-            u, col.next(150.0f), "Tabs and accordion",
-            "comp::tab_bar + comp::accordion_scope - the header clips and animates", app.font_bold);
-        static const char *const tabs[] = {"Files", "Search", "Settings"};
-        static i32 tab = 0;
-        static bool adv_open = true;
-        (void)comp::tab_bar(u, body.cut_top(u.control_h()), tabs, tab, {.id = "ex_tabs"_id});
-        comp::accordion_scope acc(u, body.cut_top(96.0f), "Advanced", adv_open,
-                                  {.id = "ex_acc"_id, .content_h = 60.0f});
-        if (acc)
         {
-            u.text(acc.content(), "The content area animates open and clips.", th.text_dim,
-                   ALIGN_LEFT);
+            const rect body = example_section(
+                u, col.next(160.0f), "Switches",
+                "comp::switch_toggle(ui, rect, label, bool&, {.id}) - click or Space toggles",
+                app.font_bold);
+            column c(body, u.spacing());
+            (void)comp::switch_toggle(u, c.next(u.control_h()), "Wi-Fi", g_wifi,
+                                      {.id = "ex_wifi"_id});
+            (void)comp::switch_toggle(u, c.next(u.control_h()), "Bluetooth", g_bluetooth,
+                                      {.id = "ex_bt"_id});
+            (void)comp::switch_toggle(u, c.next(u.control_h()), "Animations", g_animations,
+                                      {.id = "ex_anim"_id});
         }
+
+        {
+            const rect body = example_section(u, col.next(160.0f), "Radio group",
+                                              "comp::radio_group(ui, rect, labels, i32&, {.id}) - "
+                                              "one row per label, Space selects",
+                                              app.font_bold);
+            static const char *const items[] = {"Draft", "Balanced", "Best quality"};
+            (void)comp::radio_group(u, body, items, g_quality, {.id = "ex_quality"_id});
+        }
+
+        {
+            rect body = example_section(
+                u, col.next(140.0f), "Segmented control",
+                "comp::segmented(ui, rect, labels, i32&, {.id}) - Day/Week/Month", app.font_bold);
+            static const char *const items[] = {"Day", "Week", "Month"};
+            (void)comp::segmented(u, body.cut_top(u.control_h()), items, g_range,
+                                  {.id = "ex_range"_id});
+            u.textf(rect::make(body.x, body.y + 4.0f, body.w, 18.0f), th.text_dim, ALIGN_LEFT,
+                    "wifi %s | quality %d | range %d", g_wifi ? "on" : "off", g_quality, g_range);
+        }
+
+        {
+            rect body = example_section(
+                u, col.next(150.0f), "Tabs and accordion",
+                "comp::tab_bar + comp::accordion_scope - the header clips and animates",
+                app.font_bold);
+            static const char *const tabs[] = {"Files", "Search", "Settings"};
+            static i32 tab = 0;
+            static bool adv_open = true;
+            (void)comp::tab_bar(u, body.cut_top(u.control_h()), tabs, tab, {.id = "ex_tabs"_id});
+            comp::accordion_scope acc(u, body.cut_top(96.0f), "Advanced", adv_open,
+                                      {.id = "ex_acc"_id, .content_h = 60.0f});
+            if (acc)
+            {
+                u.text(acc.content(), "The content area animates open and clips.", th.text_dim,
+                       ALIGN_LEFT);
+            }
+        }
+
+        // table: uniform columns, virtualized body
+        {
+            const rect body = example_section(
+                u, col.next(170.0f), "Table",
+                "comp::table(ui, area, headers, rows, cell_fn, {.id}) - only visible rows submit",
+                app.font_bold);
+            static const char *const headers[] = {"Name", "Size", "Kind"};
+            (void)comp::table(
+                u, body, headers, 500,
+                [](ui &uu, rect cell, i32 row, i32 col)
+                {
+                    char label[48];
+                    if (col == 0)
+                        std::snprintf(label, sizeof(label), "file_%03d.bin", row);
+                    else if (col == 1)
+                        std::snprintf(label, sizeof(label), "%d KB", (row * 7) % 900 + 1);
+                    else
+                        std::snprintf(label, sizeof(label), "%s", (row % 2) ? "image" : "text");
+                    uu.text(cell, label, uu.th().text, ALIGN_LEFT);
+                },
+                {.id = "ex_table"_id});
+        }
+
+        // the overlays' triggers: palette, drawer and a toast
+        {
+            const rect body = example_section(u, col.next(96.0f), "Palette, drawer and toasts",
+                                              "Ctrl+K style filter-and-run; a sliding drawer; "
+                                              "transient notifications",
+                                              app.font_bold);
+            row r(body.top_slice(u.control_h()), u.spacing());
+            if (u.button(r.next(u.button_size("Open palette").x), "Open palette", "ex_pal_btn"_id,
+                         button_opts{.role = "primary"_id}))
+                g_palette_open = true;
+            if (u.button(r.next(u.button_size("Open drawer").x), "Open drawer", "ex_drawer_btn"_id))
+                g_drawer_open = true;
+            if (u.button(r.next(u.button_size("Show a toast").x), "Show a toast",
+                         "ex_toast_btn"_id))
+                g_toasts.push("Saved to disk", 1);
+        }
+        sv.set_content_height(col.remaining().y - content.y);
     }
 
-    // a drawer over the page: the toggle button opens it, the scrim closes
+    // a drawer over the page: the scrim closes it
     {
-        if (u.button(rect::make(page.content.x, page.content.bottom() - u.control_h(),
-                                u.button_size("Open drawer").x, u.control_h()),
-                     "Open drawer", "ex_drawer_btn"_id, button_opts{.role = "primary"_id}))
-            g_drawer_open = true;
         const rect host = page.content;
         comp::drawer_scope dr(u, host, g_drawer_open, {.id = "ex_drawer"_id, .width = 220.0f});
         if (dr)
@@ -95,40 +139,8 @@ static void components_frame(ui &u, example_app &app)
         }
     }
 
-    // table: uniform columns, virtualized body
-    {
-        const rect body = example_section(
-            u, col.next(170.0f), "Table",
-            "comp::table(ui, area, headers, rows, cell_fn, {.id}) - only visible rows submit",
-            app.font_bold);
-        static const char *const headers[] = {"Name", "Size", "Kind"};
-        (void)comp::table(u, body, headers, 500,
-                          [](ui &uu, rect cell, i32 row, i32 col)
-                          {
-                              char label[48];
-                              if (col == 0)
-                                  std::snprintf(label, sizeof(label), "file_%03d.bin", row);
-                              else if (col == 1)
-                                  std::snprintf(label, sizeof(label), "%d KB", (row * 7) % 900 + 1);
-                              else
-                                  std::snprintf(label, sizeof(label), "%s",
-                                                (row % 2) ? "image" : "text");
-                              uu.text(cell, label, uu.th().text, ALIGN_LEFT);
-                          },
-                          {.id = "ex_table"_id});
-    }
-
     // command palette + toast host
     {
-        const rect body =
-            example_section(u, col.next(110.0f), "Palette and toasts",
-                            "Ctrl+K style filter-and-run; transient notifications", app.font_bold);
-        column c(body, u.spacing());
-        if (u.button(c.next(u.control_h()), "Open palette", "ex_pal_btn"_id,
-                     button_opts{.role = "primary"_id}))
-            g_palette_open = true;
-        if (u.button(c.next(u.control_h()), "Show a toast", "ex_toast_btn"_id))
-            g_toasts.push("Saved to disk", 1);
         static const comp::palette_command cmds[] = {{"Open file", "Ctrl+O"},
                                                      {"Save file", "Ctrl+S"},
                                                      {"Toggle theme", ""},

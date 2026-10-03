@@ -10,6 +10,10 @@ support, animation, and a replaceable renderer contract (SDL3 backend included).
 [![Backend: Pluggable](https://img.shields.io/badge/Backend-SDL3%20%2F%20Pluggable-blueviolet.svg?style=flat-square)](docs/porting_a_backend.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-teal.svg?style=flat-square)](LICENSE)
 
+![The pui_showcase app: a glass dashboard with animated metrics, a streaming chart, springing gauges and a sidebar](docs/img/readme/showcase.png)
+
+<sub>`pui_showcase` - every card, chart and control above is drawn by PufferUI (rect cutting, keyed animation, backdrop blur); software-renderer capture.</sub>
+
 ---
 
 ## Overview
@@ -26,9 +30,16 @@ only — callers opt in with `using namespace pui;`.
 - **State/view, direct write-back.** Widgets write your model fields directly;
   there is no intent queue and no reducer. See [`docs/model_view.md`](docs/model_view.md).
 - **One header + one implementation TU.** `include/pufferui/pufferui.h` +
-  `src/pufferui_impl.cpp`, no smart pointers, no hidden globals.
+  `src/pufferui_impl.cpp` (the header pulls in `impl/*.inl` slices when
+  `PUFFERUI_IMPLEMENTATION` is defined; `tools/amalgamate.ps1` builds a single
+  file), no smart pointers, no hidden globals.
 - **Tested.** A headless suite (`pui_core_tests`) and golden-image tests
   (`pui_golden_tests`) run in CI, and every example runs `--selftest` offscreen.
+
+> **New to PufferUI?** Start with the step-by-step tutorial,
+> [Build a liquid-glass todo app](docs/tutorial/README.md): setup, the frame loop,
+> layout, widgets, animation, custom widgets, persistence and testing — nine short
+> chapters, every code block compiled and tested by CI.
 
 ## Quick start
 
@@ -53,6 +64,11 @@ out/build/x64-debug/Debug/pui_tour.exe
 
 The `pui_ex_*` binaries each show one capability in isolation, and
 `pui_demo` is a bigger two-window showcase (docking, floating panels, HUD).
+`pui_showcase` is the motion-heavy one: layout that springs from rect to rect
+when it re-flows, frosted glass, particles, a draggable board, a settings drawer
+and a command palette (Ctrl+Space).
+
+![pui_showcase in the light theme: blur lens, ripples, radial menu, pseudo-3D tilt, shimmer and morphing blob](docs/img/readme/showcase-light.png)
 
 ### The smallest program
 
@@ -152,6 +168,8 @@ const bool inside = a.contains(mouse_x, mouse_y);
 > `scroll_view::content()` return by value: `r.content().cut_top(h)` discards the
 > result. Assign to a `rect` first.
 
+![pui_ex_rect: mutating cuts, ratio cuts and non-mutating slices](docs/img/readme/rect.png)
+
 Run: `pui_ex_rect`. Full source: `examples/atomic/rect.cpp`.
 
 ### 3. Cursors
@@ -174,6 +192,8 @@ col.space(6);                            // skip a gap, produce nothing
 
 `column`/`row` also have `cut_top/cut_bottom` and `cut_left/cut_right` variants
 that advance past the gap like `next` does.
+
+![pui_ex_cursors: column and row cursors, clamping](docs/img/readme/cursors.png)
 
 Run: `pui_ex_cursors`. Full source: `examples/atomic/cursors.cpp`.
 
@@ -210,6 +230,11 @@ static f32 side_w = 170;
 const auto panes = u.split_horizontal_interactive("split"_id, area, &side_w, 90, 260, 6, 6);
 // panes.first / panes.second
 ```
+
+<p>
+  <img src="docs/img/readme/tracks.png" alt="pui_ex_tracks: fixed, flex, ratio and fit-content tracks" width="49%">
+  <img src="docs/img/readme/grid.png" alt="pui_ex_grid: an auto-fit grid" width="49%">
+</p>
 
 Run: `pui_ex_tracks`, `pui_ex_grid`. Full source: `examples/atomic/tracks.cpp`,
 `examples/atomic/grid.cpp`.
@@ -258,6 +283,8 @@ Duplicate scope keys report exactly like duplicate regions. (Debug builds also
 report the same id interacted at two different rects — the silent shared-state
 bug — as `VIOL_DUP_WIDGET_ID`.)
 
+![pui_ex_ids: region-scoped and scope-derived ids](docs/img/readme/ids.png)
+
 Run: `pui_ex_ids`. Full source: `examples/atomic/ids.cpp`.
 
 ### 6. Text and fonts
@@ -292,6 +319,16 @@ answers coverage questions. Text is decoded per UTF-8 codepoint; the documented
 coverage set (Latin-1/Extended-A, Greek, punctuation, currency, math, arrows,
 check marks) is asserted by `test_font_coverage`.
 
+**Glyph placement.** Every glyph quad is drawn on whole pixels: the pen position
+is split into a pixel and a quarter-pixel bin, and each glyph is rasterized
+(lazily, then cached) for each bin it is used at, so spacing stays even and no
+glyph is smeared across two pixel columns. The baseline is rounded once per line.
+Kerning is applied to the glyph it precedes, in the same terms `text_width` sums,
+so drawing, measurement and the text-field caret agree. Rasterization itself is
+unhinted (stb_truetype), so small text is slightly soft.
+
+![pui_ex_text: styles, alignment, UTF-8, wrapping and measurement](docs/img/readme/text.png)
+
 Run: `pui_ex_text`. Full source: `examples/atomic/text.cpp`.
 
 ### 7. Buttons and roles
@@ -300,6 +337,8 @@ Run: `pui_ex_text`. Full source: `examples/atomic/text.cpp`.
 if (u.button(r, "Save", "save"_id, "primary"_id)) save();
 
 u.button(r, "Square", "sq"_id, 0, button_override{.radius = some(0.0f)});
+u.button(r, "Right", "rt"_id, 0,                      // round only some corners
+         button_override{.radii = some(corner_radii::right(14))});
 u.button(r, "Outline", "out"_id, 0,
          button_override{.bg = some(color{0, 0, 0, 0}),
                          .border = some(th.accent),
@@ -316,6 +355,15 @@ button_style st = u.resolve_button_style("primary"_id); // what a role resolves 
 Roles are theme entries: `set_button_role(t, "primary"_id, button_override{...})`.
 Hover/active colors animate when `t.button.transition = transition{0.10f}`.
 Buttons request `theme.button_cursor` on hover automatically.
+
+A button has four visual states, all from the same `button_style`: normal (`bg`),
+**hover** (`hover_bg`), **held** (`active_bg`) and keyboard-focused (a ring in
+`theme.focus_border`). Override `hover_bg` and `active_bg` together with `bg`, or the
+button changes to the theme's colors on hover. `.radii = some(corner_radii{...})`
+replaces `radius` with a radius per corner (0 = square): a button flush against a
+field rounds only its outer side, and the fill, outline and focus ring all follow.
+
+![pui_ex_buttons: roles, overrides and style scopes](docs/img/readme/buttons.png)
 
 Run: `pui_ex_buttons`. Full source: `examples/atomic/buttons.cpp`.
 
@@ -345,16 +393,19 @@ static std::string name = "PufferUI";
 static f32 amount = 12.5f;
 
 u.text_field(r, name, "name"_id);
+u.text_field(r, name, "name2"_id, field_opts{.radii = some(corner_radii::left(14))}); // flush right
 u.number_field(r2, amount, "amount"_id, "%.2f");
 
 if (u.key_pressed(key::ENTER)) submit(name, amount);
 ```
 
-Set a clipboard implementation once: `set_clipboard(ctx, &my_clipboard)` (see
-`example_clipboard` in `examples/example_common.h`, which bridges SDL).
+The clipboard is installed by `sdl3_app_init` (`sdl3_system_clipboard()`); without
+the bootstrap, set one yourself: `set_clipboard(ctx, &my_clipboard)`.
 `number_field` takes a printf format; step buttons / integer / unit codecs are
 not implemented yet (see Status). Text drag & drop is **in-app only** — interop
 with other applications is through the clipboard.
+
+![pui_ex_inputs: text and number fields](docs/img/readme/inputs.png)
 
 Run: `pui_ex_inputs`. Full source: `examples/atomic/inputs.cpp`.
 
@@ -372,6 +423,8 @@ u.progress_bar(r3, quality / 100.0f, th.accent, th.widget_bg);
 `slider_float` jumps to the click position, drags with the mouse held, clamps to
 `[min, max]` and returns `true` while the value changes. All three take the theme
 colors; the slider requests a horizontal-resize cursor on hover.
+
+![pui_ex_widgets: checkboxes, sliders and progress bars](docs/img/readme/widgets.png)
 
 Run: `pui_ex_widgets`. Full source: `examples/atomic/widgets.cpp`.
 
@@ -393,6 +446,8 @@ else { column pc(p.content(), 6); /* ... */ }
 `panel` flags: `PANEL_NO_TITLEBAR`, `PANEL_NO_CONTROLS`, `PANEL_NO_DRAG`,
 `PANEL_NO_SHADOW`. Panels block input to the UI underneath them (using
 previous-frame rects), which is why the panel is constructed *after* the base UI.
+
+![pui_ex_panels: cards and floating panels](docs/img/readme/panels.png)
 
 Run: `pui_ex_panels`. Full source: `examples/atomic/panels.cpp`.
 
@@ -425,6 +480,8 @@ sv.set_content_height(40 * 24 + 39 * 4);
   a form), call `set_content_height` **before** laying out — the first frame is
   then correct instead of briefly collapsing.
 
+![pui_ex_scroll: gutter and overlay scroll views](docs/img/readme/scroll.png)
+
 Run: `pui_ex_scroll`. Full source: `examples/atomic/scroll.cpp`.
 
 ### 12. Popups and menus
@@ -454,6 +511,8 @@ Flags: `POPUP_CLOSE_ON_ESCAPE`, `POPUP_CLOSE_ON_CLICK_OUTSIDE`, `POPUP_MODAL`
 (blocks the base UI entirely). Popups are capped at `MAX_POPUPS` (8) and layered
 in creation order.
 
+![pui_ex_popups: menus and a modal dialog](docs/img/readme/popups.png)
+
 Run: `pui_ex_popups`. Full source: `examples/atomic/popups.cpp`.
 
 ### 13. Docking
@@ -481,6 +540,8 @@ Node kinds: `DOCK_SPLIT_H`, `DOCK_SPLIT_V`, `DOCK_LEAF`, `DOCK_TABS`. Drop zones
 `act.target == nullptr` (dropped outside → undock to a floating panel).
 `examples/dock_helpers.h` implements the usual app-side policy (remove, collapse,
 tab, split, fall back when the reported target was invalidated by a collapse).
+
+![pui_ex_dock: a dock space with tabs and splits](docs/img/readme/dock.png)
 
 Run: `pui_ex_dock`. Full source: `examples/atomic/dock.cpp`.
 
@@ -511,6 +572,8 @@ surface2->present();
 `focused_window(ctx)`, `desktop_rect(ctx)`, `set_global_mouse(ctx, x, y)`.
 Feed motion from window-local events so the coordinates match `window::client`.
 
+![pui_ex_windows: two windows over one device, sharing a counter](docs/img/readme/windows.png)
+
 Run: `pui_ex_windows`. Full source: `examples/atomic/windows.cpp`.
 
 ### 15. Shapes and images
@@ -518,6 +581,8 @@ Run: `pui_ex_windows`. Full source: `examples/atomic/windows.cpp`.
 ```cpp
 u.draw_rect(r, c);
 u.draw_rounded_rect(r, c, 8.0f);                 // antialiased
+u.draw_rounded_rect(r, c, corner_radii::top(8)); // round only some corners (0 = square)
+u.draw_rounded_rect(r, c, {.tl = 16, .br = 16}); // ... or a radius per corner
 u.draw_line(x0, y0, x1, y1, c, 2.0f);            // horizontal/vertical
 u.draw_polygon({{0,0},{40,0},{20,30}}, c);       // convex, feathered edge
 u.draw_sector(center, r_in, r_out, a0, a1, c);   // pie slice / ring
@@ -532,6 +597,8 @@ u.draw_nine_slice(make_skin_image(tex, w, h, {0,0,w,h}, 6, 6, 6, 6), dst);
 `vertex` is `{x, y, u, v, color}`; `nullptr` for the texture means solid vertex
 color. Rounded rects, polygons, sectors and arcs are antialiased with a 1px alpha
 feather; the straight radial edges of sectors are not.
+
+![pui_ex_drawing: primitives, custom geometry and images](docs/img/readme/drawing.png)
 
 Run: `pui_ex_drawing`. Full source: `examples/atomic/drawing.cpp`.
 
@@ -573,6 +640,8 @@ rect behind the background), so translucent and fully transparent backgrounds
 `pui_ex_blur` shows the same scene raw on the left and blurred on the right, so
 the smear is unmistakable.
 
+![pui_ex_blur: frosted-glass backdrops](docs/img/readme/blur.png)
+
 Run: `pui_ex_blur`. Full source: `examples/atomic/blur.cpp`.
 
 ### 17. Animation
@@ -606,7 +675,49 @@ Easings: `LINEAR`, `EASE_IN`, `EASE_OUT`, `EASE_IN_OUT`, `EASE_OUT_BACK`
 (`ease(curve, t)` evaluates one). `transition{duration, curve}` on
 `theme.button.transition` animates built-in hover/active colors.
 
+![pui_ex_animation: tween, spring, smooth, appear and color lanes](docs/img/readme/animation.png)
+
 Run: `pui_ex_animation`. Full source: `examples/atomic/animation.cpp`.
+
+#### Animated layout
+
+Layout is re-cut every frame, so a rect can jump when the window resizes, a
+list reorders or a grid changes its column count. `u.animate_rect` springs it
+from where it was drawn to where the cutting puts it this frame:
+
+```cpp
+const vec2 origin{content.x, content.y}; // moves with the scroll offset
+...
+id_scope sc = u.scope(it.id); // identity, not index: reorders animate correctly
+const uiid key = u.local("pos");
+...
+const rect target = g_mode == 0 ? gc.cell(slot) : list.next(36.0f);
+...
+// entrances grow out of their own center
+const rect dot = rect::make(target.center_x(), target.center_y(), 0.0f, 0.0f);
+r = u.animate_rect(key, target, {.origin = origin, .from = some(dot)});
+```
+
+The rules:
+
+- **Key by identity** (`u.local("pos")` inside `u.scope(item.id)`), never by
+  index, and call it **once per key per frame** (a second call does not step and
+  is reported as `VIOL_DUP_MOTION_KEY`).
+- **`.origin` is the frame of reference:** pass the moving parent's corner (a
+  scroll view's content, an animating card) so scrolling or a moving parent
+  carries children without lag; only real layout changes animate.
+- **Draw and `interact` at the returned rect.** A new key starts at its target
+  (no fly-in); `.from` gives an entrance, `.snap = true` pins a dragged item
+  under the pointer (on release it springs home from the drop point).
+- **Exits are the app's:** keep the item while it leaves and re-submit
+  `u.motion_info(key).target`; `motion_info` also reports `velocity` (squash and
+  stretch, tilt) and `settled`. Reduced motion snaps; moving rects keep
+  `animations_active()` / `needs_redraw()` true.
+
+![pui_ex_relayout: tiles springing to a new grid mid-reflow](docs/img/readme/relayout.png)
+
+Run: `pui_ex_relayout`. Full source: `examples/atomic/relayout.cpp`. The
+`pui_showcase` app lays out every card, tile and board card this way.
 
 ### 18. Theming
 
@@ -637,6 +748,8 @@ cascade theme → role → scope → instance.
 soft 1px outline on controls, 7–12px radii, an 8px spacing rhythm and a muted
 scrollbar; the demo, tour and examples all start from it, so overriding a few
 fields (accent, radius, fonts) is usually enough to make an app look intentional.
+
+![pui_ex_theme: live colors, metrics and roles](docs/img/readme/theme.png)
 
 Run: `pui_ex_theme`. Full source: `examples/atomic/theme.cpp`.
 
@@ -669,6 +782,8 @@ static bool toggle_switch(ui &u, rect r, bool &value, uiid id)
 `held`, `clicked`, `double_clicked`, `right_clicked`, `focused`, `disabled`,
 `captured`, `blocked`. `u.hot_id()` is the widget under the pointer this frame.
 
+![pui_ex_custom: custom widgets from interact and primitives](docs/img/readme/custom.png)
+
 Run: `pui_ex_custom`. Full source: `examples/atomic/custom.cpp`.
 
 ### 20. State and view
@@ -697,6 +812,8 @@ if (u.button(r2, "Click me", "click"_id)) s.clicks += 1;
 There is no intent queue and no reducer (removed in r53); components read
 `s.view` and write `s.<field>`. See [`docs/model_view.md`](docs/model_view.md)
 and the `pui_counter` example.
+
+![pui_counter: the state/view counter](docs/img/readme/counter.png)
 
 Run: `pui_counter`. Full source: `examples/pui_counter.cpp`.
 
@@ -731,6 +848,8 @@ A backend implements two interfaces — `render_device` (textures, clear, clip,
 (`SCISSOR`, `RENDER_TARGETS`, `STREAMING_TEXTURES`, `SHARED_DEVICE`). The
 `pui_ex_renderer` example is a complete CPU rasterizer that writes a PPM; read it
 together with [`docs/porting_a_backend.md`](docs/porting_a_backend.md).
+
+![pui_ex_renderer: a frame drawn by a CPU render_device, saved as a PPM](docs/img/readme/renderer.png)
 
 Run: `pui_ex_headless`, `pui_ex_renderer`. Full source:
 `examples/atomic/headless.cpp`, `examples/atomic/renderer.cpp`.
@@ -772,6 +891,8 @@ t.slide = u.animate(id_child("toast"_id, t.id), t.leaving ? 0.0f : 1.0f,
 const rect r{width - 298.0f, height - 24.0f - (i + 1) * 54.0f + (1.0f - t.slide) * 60.0f, 280, 46};
 ```
 
+![pui_ex_patterns: the component pattern gallery](docs/img/readme/patterns.png)
+
 Run: `pui_ex_patterns`. Full source: `examples/atomic/patterns.cpp`.
 
 ### 23. Expanders (collapsible sections)
@@ -808,6 +929,8 @@ The chevron is a small `draw_polygon` rotated by `t * 90°`, and row summaries
 fade out with `alpha * (1 - t)`. The example also shows why UI motion stays under
 ~300 ms and how `set_reduced_motion(true)` snaps every animation for users who
 ask for it.
+
+![pui_ex_expander: collapsible sections with animated height](docs/img/readme/expander.png)
 
 Run: `pui_ex_expander`. Full source: `examples/atomic/expander.cpp`.
 
@@ -864,6 +987,8 @@ All three draw from `theme` colors and reuse `popup_scope`'s input rules, so a
 menu blocks the base UI for its lifetime, closes on Escape (context menus) or
 click-outside, and never animates on keyboard interaction (motion rules from
 chapter 22).
+
+![pui_ex_combo: combo box, tooltips and a context-menu canvas](docs/img/readme/combo.png)
 
 Run: `pui_ex_combo`. Full source: `examples/atomic/combo.cpp`.
 
@@ -949,6 +1074,8 @@ order (the order widgets paint), and Tab walks it:
   helper come for free. To draw the outline yourself, use the theme's focus
   colors when `in.focused`.
 
+![pui_ex_keyboard: the Tab focus ring](docs/img/readme/keyboard.png)
+
 Run: `pui_ex_keyboard`. Full source: `examples/atomic/keyboard.cpp`.
 
 ### 27. Virtual lists
@@ -976,6 +1103,8 @@ sv.virtual_list(5000, 26.0f, [](ui &u, i32 index, rect row) {
 - **Irregular rows** (variable heights, section headers) keep using manual
   slicing with `sv.content()` and an explicit `set_content_height` — the
   report when you skip rows past `MAX_FRAME_IDS` is your sign to virtualize.
+
+![pui_ex_vlist: a 5,000-row virtual list](docs/img/readme/vlist.png)
 
 Run: `pui_ex_vlist`. Full source: `examples/atomic/vlist.cpp`.
 
@@ -1023,6 +1152,8 @@ if (dr) draw_drawer_body(u, dr.content());
 are RAII (draw into `content()` while alive; both clip and animate, and the
 drawer's scrim captures clicks without joining the Tab ring).
 
+![pui_ex_components: switches, radio group and segmented control](docs/img/readme/components.png)
+
 Run: `pui_ex_components`. Full source: `examples/atomic/components.cpp`.
 
 
@@ -1034,6 +1165,7 @@ Run: `pui_ex_components`. Full source: `examples/atomic/components.cpp`.
 | --- | --- | --- |
 | `pui_tour` | `examples/pui_tour.cpp` | **every capability**, chapter by chapter |
 | `pui_demo` | `examples/pui_demo.cpp` | two-window showcase: dock, floating panels, HUD, transitions |
+| `pui_showcase` | `examples/pui_showcase.cpp` | motion showcase: animated re-layout (FLIP springs), glass, particles, drag-and-drop board, drawer, palette, toasts; `--fuzz SEED` stress-tests it |
 | `pui_counter` | `examples/pui_counter.cpp` | state/view + direct write-back |
 | `pui_ex_hello` | `examples/atomic/hello.cpp` | context, window, frame loop, card, raw drawing |
 | `pui_ex_bootstrap` | `examples/atomic/bootstrap.cpp` | the one-call bootstrap: `sdl3_app_init/pump/tick/shutdown`, native chrome, dev overlay — **start here** |
@@ -1054,6 +1186,7 @@ Run: `pui_ex_components`. Full source: `examples/atomic/components.cpp`.
 | `pui_ex_drawing` | `examples/atomic/drawing.cpp` | primitives, polygons/sectors/arcs, textures, 9-slice |
 | `pui_ex_blur` | `examples/atomic/blur.cpp` | `blur` + capability fallback |
 | `pui_ex_animation` | `examples/atomic/animation.cpp` | tween, spring, smooth, appear, color, reduced motion |
+| `pui_ex_relayout` | `examples/atomic/relayout.cpp` | `animate_rect`: grid/list reflow, entrances, exits, scroll without lag |
 | `pui_ex_theme` | `examples/atomic/theme.cpp` | live colors/metrics/roles, light/dark |
 | `pui_ex_custom` | `examples/atomic/custom.cpp` | `interact` + primitives, `interaction` fields |
 | `pui_ex_patterns` | `examples/atomic/patterns.cpp` | component gallery: toast, tooltip, ⌘K palette, drawer, accordion, loading states, table, … |
@@ -1113,7 +1246,7 @@ Everything below is declared in `include/pufferui/pufferui.h`, in `namespace pui
 | `uiid` | 64-bit widget id; `"Name"_id`, `id_child(parent, salt)`, `ui.local(key)`, `ui.auto_id()`. |
 | `f32/f64`, `u8..u64`, `i8..i64`, `usize` | Fixed-width aliases used everywhere. |
 | `font_handle`, `texture_handle` | `i32` / `void*` handles; `FONT_INVALID` = -1. |
-| `opt<T>` / `some(v)` / `none` | Partial overrides in `*_override` structs. |
+| `opt<T>` / `some(v)` / `none` | Partial overrides for `button` / `panel` / `card` (`*_override`). Components take a `const *_style *` instead: copy the theme's style, edit, pass the pointer. |
 | `function_ref<Sig>` | Non-owning callable reference (dock callbacks, `ui.measure`). |
 | `clipboard` | Abstract `get(std::string&)` / `set(std::string_view)`; install with `set_clipboard`. |
 | `measure_size` | `{f32 width, height}` returned by measurement. |
@@ -1246,7 +1379,9 @@ a1, color)` · `ui.draw_arc(center, radius, thickness, a0, a1, color)` ·
 
 `ui.animate(key, target, tween|spring)` · `ui.animate_global(key, target, spec)`
 · `ui.smooth(key, target, half_life)` · `ui.appear(key, duration, curve)` ·
-`ui.animate_color(key, target, tween)` · `ui.animations_active()` ·
+`ui.animate_color(key, target, tween)` · `ui.animate_rect(key, rect,
+rect_motion{spec, origin, from, snap})` · `ui.motion_info(key)` ·
+`ui.animations_active()` ·
 `ui.set_reduced_motion(bool)` · `easing`/`ease` · `tween` · `spring` ·
 `transition`.
 
@@ -1371,9 +1506,11 @@ link SDL3 yourself.
   `sdl3_route`/`sdl3_pump` and the `sdl3_app` bootstrap. Without it the core
   is backend-agnostic and compiles headless (see the `pui_ex_headless`
   example and `docs/porting_a_backend.md`).
-- `PUFFERUI_ASSET_DIR` — define it per target as a path that ends with a
-  separator; it is where the bootstrap (and `load_font`) finds the bundled
-  DejaVu fonts. System fonts are the fallback, so text works even without it.
+- `PUFFERUI_ASSET_DIR` — define it per target as the directory that contains
+  `fonts/` (no trailing separator: the code appends `/fonts/DejaVuSans.ttf`). It
+  is where the bootstrap (and your `load_font` calls) find the bundled DejaVu
+  fonts; `sdl3_app::asset_dir` overrides it at run time. System fonts are the
+  fallback, so text works even without it.
 
 ### The recommended path
 

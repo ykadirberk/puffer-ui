@@ -31,21 +31,17 @@ static void grid_frame(ui &u, example_app &app)
     const f32 grid_h =
         static_cast<f32>(probe.rows()) * cell_h + static_cast<f32>(probe.rows() - 1) * gap;
 
-    char caption[160];
-    std::snprintf(caption, sizeof(caption),
-                  "auto_fit_grid: %d columns x %d rows, cell %.0f x %.0f (resize me)",
-                  probe.columns(), probe.rows(), static_cast<double>(probe.item_width()),
-                  static_cast<double>(probe.item_height()));
-    u.text(c.next(18.0f), caption, th.text_dim, ALIGN_LEFT);
+    u.textf(c.next(18.0f), th.text_dim, ALIGN_LEFT,
+            "auto_fit_grid: %d columns x %d rows, cell %.0f x %.0f (resize me)", probe.columns(),
+            probe.rows(), static_cast<double>(probe.item_width()),
+            static_cast<double>(probe.item_height()));
 
     grid_cursor g = auto_fit_grid(c.next(grid_h), count, min_w, cell_h, gap);
     for (i32 i = 0; i < g.count(); ++i)
     {
         const rect cell = g.next();
         u.card(cell);
-        char label[32];
-        std::snprintf(label, sizeof(label), "Cell %d", i + 1);
-        u.text(cell.pad(10.0f, 0.0f), label, th.text, ALIGN_LEFT);
+        u.textf(cell.pad(10.0f, 0.0f), th.text, ALIGN_LEFT, "Cell %d", i + 1);
         // cell(i) addresses a cell without consuming the cursor.
         u.text(cell.pad(10.0f, 0.0f), i == 0 ? "cell(0)" : "", th.text_dim, ALIGN_RIGHT);
     }

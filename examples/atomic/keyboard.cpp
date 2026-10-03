@@ -34,11 +34,9 @@ static void keyboard_frame(ui &u, example_app &app)
         (void)u.slider_float(c.next(28.0f), "Volume", g_volume, 0.0f, 100.0f, "kb_volume"_id,
                              "%.0f%%");
         c.space(4.0f);
-        char line[160];
-        std::snprintf(line, sizeof(line), "clicks: %d   enabled: %s   notify: %s   volume: %.0f%%",
-                      g_clicks, g_enabled ? "on" : "off", g_notify ? "on" : "off",
-                      static_cast<double>(g_volume));
-        u.text(c.next(18.0f), line, th.text_dim, ALIGN_LEFT);
+        u.textf(c.next(18.0f), th.text_dim, ALIGN_LEFT,
+                "clicks: %d   enabled: %s   notify: %s   volume: %.0f%%", g_clicks,
+                g_enabled ? "on" : "off", g_notify ? "on" : "off", static_cast<double>(g_volume));
     }
 
     {

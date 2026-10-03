@@ -43,11 +43,9 @@ static void widgets_frame(ui &u, example_app &app)
             u.progress_bar(r.next(80.0f), 1.0f, th.accent, th.widget_bg);
         }
         c.space(6.0f);
-        char line[160];
-        std::snprintf(line, sizeof(line), "wrap = %s   grid = %s   zoom = %.2f   quality = %.0f%%",
-                      g_wrap ? "on" : "off", g_grid ? "on" : "off", static_cast<double>(g_zoom),
-                      static_cast<double>(g_quality));
-        u.text(c.next(18.0f), line, th.text_dim, ALIGN_LEFT);
+        u.textf(c.next(18.0f), th.text_dim, ALIGN_LEFT,
+                "wrap = %s   grid = %s   zoom = %.2f   quality = %.0f%%", g_wrap ? "on" : "off",
+                g_grid ? "on" : "off", static_cast<double>(g_zoom), static_cast<double>(g_quality));
     }
 }
 

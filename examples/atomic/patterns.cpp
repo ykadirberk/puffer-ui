@@ -562,9 +562,7 @@ static void card_scale(ui &u, rect r, const theme &th)
     u.draw_rounded_rect(visual, in.held ? th.accent_hover : th.accent, 8.0f);
     u.text(visual, "Press me", th.bg, ALIGN_CENTER);
     if (in.clicked) g_scaled_presses += 1;
-    char line[64];
-    std::snprintf(line, sizeof(line), "presses: %d", g_scaled_presses);
-    u.text(c.next(16.0f), line, th.text_dim, ALIGN_LEFT);
+    u.textf(c.next(16.0f), th.text_dim, ALIGN_LEFT, "presses: %d", g_scaled_presses);
 }
 
 // ---------------------------------------------------------------- card: data
@@ -728,7 +726,7 @@ static void pattern_frame(ui &u, example_app &app)
     toast_update(u, static_cast<f32>(app.dt));
     if (g_copy_request)
     {
-        app.clip.set("https://example.com/patterns");
+        sdl3_system_clipboard()->set("https://example.com/patterns");
         g_copy_request = false;
     }
     if (g_palette_open) palette_draw(u, app);

@@ -71,9 +71,8 @@ static void scroll_frame(ui &u, example_app &app)
                                 : selected   ? th.accent
                                              : th.widget_bg,
                                 3.0f);
-            char label[32];
-            std::snprintf(label, sizeof(label), "item %02d", i + 1);
-            u.text(item.pad(8.0f, 0.0f), label, selected ? th.bg : th.text, ALIGN_LEFT);
+            u.textf(item.pad(8.0f, 0.0f), selected ? th.bg : th.text, ALIGN_LEFT, "item %02d",
+                    i + 1);
             if (in.clicked)
             {
                 g_selected = i;
@@ -99,9 +98,7 @@ static void scroll_frame(ui &u, example_app &app)
         for (i32 i = 0; i < 12; ++i)
         {
             const rect line = lc.next(20.0f);
-            char label[64];
-            std::snprintf(label, sizeof(label), "overlay row %d - the bar floats", i + 1);
-            u.text(line, label, th.text_dim, ALIGN_LEFT);
+            u.textf(line, th.text_dim, ALIGN_LEFT, "overlay row %d - the bar floats", i + 1);
         }
         sv.set_content_height(12.0f * 20.0f + 11.0f * 6.0f);
     }

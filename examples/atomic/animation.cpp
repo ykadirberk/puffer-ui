@@ -27,10 +27,8 @@ static void animation_frame(ui &u, example_app &app)
         if (u.button(r.next(110.0f), "Toggle", "an_toggle"_id, "primary"_id)) g_toggle = !g_toggle;
         if (u.button(r.next(110.0f), "Replay", "an_replay"_id)) g_appear_key += 1;
         (void)u.checkbox(r.next(150.0f), "Reduced motion", g_reduced, "an_reduced"_id);
-        char line[96];
-        std::snprintf(line, sizeof(line), "animations_active(): %s",
-                      u.animations_active() ? "yes" : "no");
-        u.text(r.remaining(), line, th.text_dim, ALIGN_RIGHT);
+        u.textf(r.remaining(), th.text_dim, ALIGN_RIGHT, "animations_active(): %s",
+                u.animations_active() ? "yes" : "no");
 
         u.text(c.next(18.0f),
                "keys are collected after 5 s without use; set_reduced_motion() snaps to targets",

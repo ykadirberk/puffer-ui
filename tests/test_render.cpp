@@ -1,7 +1,7 @@
 // render: batching, flush, shapes, blur, device contract (r88 split).
 #include "test_util.h"
 
-void test_draw_list_snapshot()
+PUI_TEST(test_draw_list_snapshot)
 {
     // Draw-list snapshot tests: record the flushed draw calls as text and
     // assert on the commands — stable across platforms, reviewable in a PR,
@@ -40,7 +40,7 @@ void test_draw_list_snapshot()
     destroy_context(c);
 }
 
-void test_culling_and_visibility()
+PUI_TEST(test_culling_and_visibility)
 {
     // Draw-list-level culling: a batch that cannot intersect the active clip
     // never reaches the renderer (a scroll view's scrolled-out rows are the
@@ -89,7 +89,7 @@ void test_culling_and_visibility()
     destroy_context(c);
 }
 
-void test_identity_scope()
+PUI_TEST(test_identity_scope)
 {
     // `ui::scope(key)` — pure identity sugar: widgets inside derive with
     // `local("part")`, two instances of the same component shape never
@@ -150,7 +150,7 @@ void test_identity_scope()
     destroy_context(c);
 }
 
-void test_dup_widget_id_and_sizes()
+PUI_TEST(test_dup_widget_id_and_sizes)
 {
     // Debug duplicate-widget detection: the same id interacted at two
     // different rects in one frame reports (the old failure was silent
@@ -212,7 +212,7 @@ void test_dup_widget_id_and_sizes()
     destroy_context(c);
 }
 
-void test_needs_redraw()
+PUI_TEST(test_needs_redraw)
 {
     // The idle-sleep gate is conservative: an unsettled animation or a
     // focused text field (the caret blinks) each demand a redraw; a quiet
@@ -265,26 +265,24 @@ void test_needs_redraw()
     destroy_context(c);
 }
 
-void test_draw_batching()
+PUI_TEST(test_draw_batching)
 {
-    null_device nd;
-    context *c = create_context(&nd, nd.create_surface());
+    tf_env env;
+    context *c = env.c;
     begin_frame(c, 0.0, 0.016, rect::make(0, 0, 100, 100));
     ui u(c);
     u.draw_rect({0, 0, 10, 10}, color::white());
     u.draw_line(0, 0, 10, 0, color::white());
     // horizontal -> one more quad
-    CHECK(nd.draw_calls == 0);
+    CHECK(env.nd.draw_calls == 0);
     // still batched, not flushed
     end_frame(c);
-    CHECK(nd.draw_calls == 1);
+    CHECK(env.nd.draw_calls == 1);
     // both quads share one batch
-    CHECK(nd.vertices == 8);
-    CHECK(violation_count(c) == 0);
-    destroy_context(c);
+    CHECK(env.nd.vertices == 8);
 }
 
-void test_theme()
+PUI_TEST(test_theme)
 {
     context *c = create_context(nullptr);
     theme t = default_dark();
@@ -295,25 +293,23 @@ void test_theme()
     destroy_context(c);
 }
 
-void test_rounded_rect()
+PUI_TEST(test_rounded_rect)
 {
-    null_device nd;
-    context *c = create_context(&nd, nd.create_surface());
+    tf_env env;
+    context *c = env.c;
     begin_frame(c, 0.0, 0.016, rect::make(0, 0, 100, 100));
     ui u(c);
     u.draw_rounded_rect({10, 10, 80, 40}, color::white(), 8.0f);
     end_frame(c);
-    CHECK(nd.draw_calls == 1);
-    CHECK(nd.vertices > 4);
+    CHECK(env.nd.draw_calls == 1);
+    CHECK(env.nd.vertices > 4);
     // center fan + two rings
-    CHECK(violation_count(c) == 0);
-    destroy_context(c);
 }
 
-void test_draw_flush()
+PUI_TEST(test_draw_flush)
 {
-    null_device nd;
-    context *c = create_context(&nd, nd.create_surface());
+    tf_env env;
+    context *c = env.c;
     begin_frame(c, 0.0, 0.016, rect::make(0, 0, 200, 200));
 
     {
@@ -324,16 +320,16 @@ void test_draw_flush()
             region clip = u.region({0, 0, 50, 50}, "clip"_id);
             u.draw_rect({0, 0, 10, 10}, color::white());
         }
-        CHECK(nd.draw_calls == 1);
+        CHECK(env.nd.draw_calls == 1);
         // clip change flushed the first batch
         u.draw_rect({0, 0, 10, 10}, color::white());
     }
     end_frame(c);
-    CHECK(nd.draw_calls == 3);
+    CHECK(env.nd.draw_calls == 3);
     // + clip-restore flush + final flush      // a texture change
     // flushes the batch too
-    texture_handle t1 = nd.create_texture(4, 4, nullptr);
-    texture_handle t2 = nd.create_texture(4, 4, nullptr);
+    texture_handle t1 = env.nd.create_texture(4, 4, nullptr);
+    texture_handle t2 = env.nd.create_texture(4, 4, nullptr);
     CHECK(t1 != t2);
     begin_frame(c, 0.016, 0.016, rect::make(0, 0, 200, 200));
 
@@ -346,15 +342,13 @@ void test_draw_flush()
         i32 idx[6] = {0, 1, 2, 0, 2, 3};
         u.draw_triangles(t1, v, 4, idx, 6);
         u.draw_triangles(t2, v, 4, idx, 6);
-        CHECK(nd.draw_calls == 1);
+        CHECK(env.nd.draw_calls == 1);
     }
     end_frame(c);
-    CHECK(nd.draw_calls == 2);
-    CHECK(violation_count(c) == 0);
-    destroy_context(c);
+    CHECK(env.nd.draw_calls == 2);
 }
 
-void test_blur_fallback()
+PUI_TEST(test_blur_fallback)
 {
     // A backend without RENDER_TARGETS must fall back to a solid tint.
     struct flat_device : null_device
@@ -383,11 +377,11 @@ void test_blur_fallback()
     destroy_context(c);
 }
 
-void test_nine_slice()
+PUI_TEST(test_nine_slice)
 {
-    null_device nd;
-    context *c = create_context(&nd, nd.create_surface());
-    texture_handle tex = nd.create_texture(64, 64, nullptr);
+    tf_env env;
+    context *c = env.c;
+    texture_handle tex = env.nd.create_texture(64, 64, nullptr);
     const skin_image img = make_skin_image(tex, 64, 64, rect::make(0, 0, 48, 48), 8.0f, 8.0f, 8.0f,
                                            8.0f, SKIN_CENTER_STRETCH);
     CHECK(img.valid());
@@ -400,12 +394,12 @@ void test_nine_slice()
     {
         ui u(c);
         u.draw_nine_slice(img, rect::make(0, 0, 100, 60));
-        CHECK(nd.draw_calls == 0);
+        CHECK(env.nd.draw_calls == 0);
     }
     end_frame(c);
-    CHECK(nd.draw_calls == 1);
-    CHECK(nd.vertices == 9 * 4);
-    CHECK(nd.last_texture == tex);
+    CHECK(env.nd.draw_calls == 1);
+    CHECK(env.nd.vertices == 9 * 4);
+    CHECK(env.nd.last_texture == tex);
     // tile: repeats the edges/center, so more quads
     skin_image tiled = img;
     tiled.center_mode = SKIN_CENTER_TILE;
@@ -416,8 +410,8 @@ void test_nine_slice()
         u.draw_nine_slice(tiled, rect::make(0, 0, 200, 60));
     }
     end_frame(c);
-    CHECK(nd.vertices > 9 * 4);
-    CHECK(nd.vertices % 4 == 0);
+    CHECK(env.nd.vertices > 9 * 4);
+    CHECK(env.nd.vertices % 4 == 0);
     // none: nothing is scaled past the source slice
     skin_image fixed = img;
     fixed.center_mode = SKIN_CENTER_NONE;
@@ -428,8 +422,8 @@ void test_nine_slice()
         u.draw_nine_slice(fixed, rect::make(0, 0, 200, 60));
     }
     end_frame(c);
-    CHECK(nd.vertices >= 4 * 4);
-    CHECK(nd.vertices < 9 * 4 * 2);
+    CHECK(env.nd.vertices >= 4 * 4);
+    CHECK(env.nd.vertices < 9 * 4 * 2);
     // degenerate inputs are no-ops; draw_image emits a single quad
     begin_frame(c, 0.048, 0.016, rect::make(0, 0, 200, 200));
 
@@ -440,12 +434,10 @@ void test_nine_slice()
         u.draw_image(img, rect::make(0, 0, 40, 40));
     }
     end_frame(c);
-    CHECK(nd.vertices == 4);
-    CHECK(violation_count(c) == 0);
-    destroy_context(c);
+    CHECK(env.nd.vertices == 4);
 }
 
-void test_animation_tween()
+PUI_TEST(test_animation_tween)
 {
     context *c = create_context(nullptr);
     const rect frame = rect::make(0, 0, 200, 100);
@@ -515,7 +507,7 @@ void test_animation_tween()
     destroy_context(c);
 }
 
-void test_animation_spring_smooth()
+PUI_TEST(test_animation_spring_smooth)
 {
     context *c = create_context(nullptr);
     const rect frame = rect::make(0, 0, 200, 100);
@@ -609,7 +601,7 @@ void test_animation_spring_smooth()
     }
 }
 
-void test_animation_scope_color_appear()
+PUI_TEST(test_animation_scope_color_appear)
 {
     context *c = create_context(nullptr);
     const rect frame = rect::make(0, 0, 200, 100);
@@ -718,7 +710,7 @@ void test_animation_scope_color_appear()
     destroy_context(c);
 }
 
-void test_violation_overlay()
+PUI_TEST(test_violation_overlay)
 {
     // violation_last reports the exact guard message (stable string literals
     // the overlay and tests may rely on), and the overlay draws only when the
@@ -773,7 +765,7 @@ void test_violation_overlay()
     destroy_context(c);
 }
 
-void test_draw_shapes_coverage()
+PUI_TEST(test_draw_shapes_coverage)
 {
     null_device nd;
     context *c = create_context(&nd, nd.create_surface());
@@ -836,10 +828,10 @@ void test_draw_shapes_coverage()
     }
 }
 
-void test_shapes()
+PUI_TEST(test_shapes)
 {
-    null_device nd;
-    context *c = create_context(&nd, nd.create_surface());
+    tf_env env;
+    context *c = env.c;
     begin_frame(c, 0.0, 0.016, rect::make(0, 0, 100, 100));
 
     {
@@ -849,13 +841,11 @@ void test_shapes()
         u.draw_polygon(quad, color::white());
     }
     end_frame(c);
-    CHECK(nd.draw_calls >= 1);
-    CHECK(nd.vertices > 4);
-    CHECK(violation_count(c) == 0);
-    destroy_context(c);
+    CHECK(env.nd.draw_calls >= 1);
+    CHECK(env.nd.vertices > 4);
 }
 
-void test_device_contract()
+PUI_TEST(test_device_contract)
 {
     null_device nd;
     CHECK(has_cap(nd.caps(), backend_caps::RENDER_TARGETS));
@@ -898,7 +888,7 @@ void test_device_contract()
     destroy_context(c);
 }
 
-void test_blur()
+PUI_TEST(test_blur)
 {
     null_device nd;
     nd.my_surface.w = 200;
@@ -917,5 +907,259 @@ void test_blur()
     CHECK(nd.draw_calls >= 1);
     // background + composite quad
     CHECK(violation_count(c) == 0);
+    destroy_context(c);
+}
+
+PUI_TEST(test_spring_survives_long_frames)
+{
+    // A frame can be far longer than the spring's natural period (a window drag,
+    // a debugger stop): the integrator must stay stable and still arrive.
+    tf_env env;
+    const spring sp{.stiffness = 380.0f, .damping_ratio = 0.55f};
+    for (const f64 dt : {0.05, 0.25, 0.9})
+    {
+        f32 worst = 0.0f, last = 0.0f;
+        const uiid key = id_child("spring_dt"_id, static_cast<uiid>(dt * 1000.0));
+        f64 now = 0.0;
+        for (i32 frame = 0; frame < 40; ++frame)
+        {
+            now += dt;
+            begin_frame(env.c, now, dt, rect::make(0, 0, 300, 200));
+            {
+                ui u(env.c);
+                last = u.animate_global(key, 1.0f, sp);
+            }
+            end_frame(env.c);
+            worst = max2(worst, last < 0.0f ? -last : last);
+        }
+        CHECK(worst < 2.0f);                 // bounded: no blow-up
+        CHECK(last > 0.99f && last < 1.01f); // and it arrived at the target
+    }
+}
+
+PUI_TEST(test_request_redraw)
+{
+    // Ambient motion that is not a keyed animation keeps frames coming by asking
+    // every frame; the request lapses with the first frame that does not repeat it.
+    tf_env env;
+    env.frame(0.0, [](ui &) {});
+    CHECK(!needs_redraw(env.c));
+
+    env.frame(0.016, [](ui &u) { u.request_redraw(); });
+    CHECK(needs_redraw(env.c));
+    env.frame(0.032, [](ui &u) { u.request_redraw(); });
+    CHECK(needs_redraw(env.c));
+
+    env.frame(0.048, [](ui &) {});
+    CHECK(!needs_redraw(env.c)); // not repeated: the app may sleep again
+}
+
+namespace
+{
+std::vector<vertex> rounded_fill(vertex_log_device &dev, context *c, rect r,
+                                 const corner_radii &radii)
+{
+    dev.log.clear();
+    begin_frame(c, 0.0, 0.016, rect::make(0, 0, 300, 200));
+    {
+        ui u(c);
+        u.draw_rounded_rect(r, color{255, 255, 255, 255}, radii);
+    }
+    end_frame(c);
+    return dev.log;
+}
+} // namespace
+
+PUI_TEST(test_rounded_rect_corner_radii)
+{
+    // A corner with radius 0 is square: the fill reaches the exact corner point.
+    // A rounded corner stays well away from it.
+    vertex_log_device dev;
+    context *c = create_context(&dev, dev.create_surface());
+    set_violation_handler(c, capture_violation, nullptr);
+    g_violation_events = 0;
+    const rect r = rect::make(20, 20, 100, 60);
+    const f32 right = r.right(), bottom = r.bottom();
+
+    std::vector<vertex> top = rounded_fill(dev, c, r, corner_radii::top(16.0f));
+    CHECK(!vertex_near(top, r.x, r.y, 3.0f, 255));      // top-left rounded
+    CHECK(!vertex_near(top, right, r.y, 3.0f, 255));    // top-right rounded
+    CHECK(vertex_near(top, right, bottom, 0.01f, 255)); // bottom-right square
+    CHECK(vertex_near(top, r.x, bottom, 0.01f, 255));   // bottom-left square
+
+    std::vector<vertex> bottom_only = rounded_fill(dev, c, r, corner_radii::bottom(16.0f));
+    CHECK(vertex_near(bottom_only, r.x, r.y, 0.01f, 255));
+    CHECK(vertex_near(bottom_only, right, r.y, 0.01f, 255));
+    CHECK(!vertex_near(bottom_only, right, bottom, 3.0f, 255));
+    CHECK(!vertex_near(bottom_only, r.x, bottom, 3.0f, 255));
+
+    // radii may differ per corner (a "leaf": opposite corners round)
+    std::vector<vertex> leaf = rounded_fill(dev, c, r, {.tl = 24.0f, .br = 24.0f});
+    CHECK(!vertex_near(leaf, r.x, r.y, 3.0f, 255));
+    CHECK(vertex_near(leaf, right, r.y, 0.01f, 255));
+    CHECK(!vertex_near(leaf, right, bottom, 3.0f, 255));
+    CHECK(vertex_near(leaf, r.x, bottom, 0.01f, 255));
+
+    // all corners through the struct == the plain radius overload, vertex for vertex
+    std::vector<vertex> a = rounded_fill(dev, c, r, corner_radii::all(12.0f));
+    dev.log.clear();
+    begin_frame(c, 0.0, 0.016, rect::make(0, 0, 300, 200));
+    {
+        ui u(c);
+        u.draw_rounded_rect(r, color{255, 255, 255, 255}, 12.0f);
+    }
+    end_frame(c);
+    CHECK(a.size() == dev.log.size());
+    bool same = a.size() == dev.log.size();
+    for (size_t i = 0; same && i < a.size(); ++i)
+        same = a[i].x == dev.log[i].x && a[i].y == dev.log[i].y;
+    CHECK(same);
+
+    // all radii zero is a plain rect; oversized radii are clamped to half the short side
+    CHECK(rounded_fill(dev, c, r, {}).size() == 4);
+    std::vector<vertex> huge = rounded_fill(dev, c, r, corner_radii::all(1000.0f));
+    CHECK(!huge.empty() && !vertex_near(huge, r.x, r.y, 3.0f, 255));
+
+    CHECK(violation_count(c) == 0);
+    CHECK(g_violation_events == 0);
+    destroy_context(c);
+}
+
+PUI_TEST(test_blur_corner_radii)
+{
+    // The blur composite follows the same per-corner shape, so a blurred panel can
+    // have square edges where it docks to something.
+    vertex_log_device dev;
+    dev.my_surface.w = 300;
+    dev.my_surface.h = 200;
+    context *c = create_context(&dev, dev.create_surface());
+    set_violation_handler(c, capture_violation, nullptr);
+    g_violation_events = 0;
+    const rect r = rect::make(40, 40, 120, 80);
+
+    auto composite = [&](const corner_radii &radii)
+    {
+        dev.log.clear();
+        begin_frame(c, 0.0, 0.016, rect::make(0, 0, 300, 200));
+        {
+            ui u(c);
+            u.draw_rect(rect::make(0, 0, 300, 200), color{40, 80, 160, 255}); // something to blur
+            u.blur(r, 12.0f, radii, 1.0f);
+        }
+        end_frame(c);
+        return dev.log;
+    };
+
+    std::vector<vertex> bottom = composite(corner_radii::bottom(18.0f));
+    CHECK(vertex_near(bottom, r.x, r.y, 0.01f, 255));
+    CHECK(vertex_near(bottom, r.right(), r.y, 0.01f, 255));
+    CHECK(!vertex_near(bottom, r.x, r.bottom(), 3.0f, 255));
+    CHECK(!vertex_near(bottom, r.right(), r.bottom(), 3.0f, 255));
+
+    std::vector<vertex> all = composite(corner_radii::all(18.0f));
+    CHECK(!vertex_near(all, r.x, r.y, 3.0f, 255));
+
+    // the plain overload still means "all corners"
+    dev.log.clear();
+    begin_frame(c, 0.0, 0.016, rect::make(0, 0, 300, 200));
+    {
+        ui u(c);
+        u.draw_rect(rect::make(0, 0, 300, 200), color{40, 80, 160, 255});
+        u.blur(r, 12.0f, 18.0f, 1.0f);
+    }
+    end_frame(c);
+    CHECK(dev.log.size() == all.size());
+
+    CHECK(violation_count(c) == 0);
+    destroy_context(c);
+}
+
+PUI_TEST(test_widget_corner_radii)
+{
+    // A button and a text field can round only some corners (a field flush against
+    // its button): the fill and the outline both follow, and the default stays
+    // all-corners. Checked on geometry: a square corner has a vertex exactly on
+    // the corner point, a rounded one stays away from it.
+    vertex_log_device dev;
+    context *c = create_context(&dev, dev.create_surface());
+    set_violation_handler(c, capture_violation, nullptr);
+    g_violation_events = 0;
+    const rect r = rect::make(20, 20, 120, 40);
+    const f32 right = r.right(), bottom = r.bottom();
+    const color border{1, 2, 3, 255};
+
+    auto frame = [&](auto &&draw)
+    {
+        dev.log.clear();
+        begin_frame(c, 0.0, 0.016, rect::make(0, 0, 300, 200));
+        {
+            ui u(c);
+            draw(u);
+        }
+        end_frame(c);
+        return dev.log;
+    };
+
+    // --- button: opaque fill (classic two-rect path)
+    theme t = default_dark();
+    t.button.bg = {40, 80, 160, 255};
+    t.button.border_thickness = 0.0f;
+    set_theme(c, t);
+    std::vector<vertex> b = frame(
+        [&](ui &u)
+        {
+            (void)u.button(r, "", "b"_id, 0,
+                           button_override{.radii = some(corner_radii::right(14.0f))});
+        });
+    CHECK(vertex_near(b, r.x, r.y, 0.01f, 255)); // left corners square
+    CHECK(vertex_near(b, r.x, bottom, 0.01f, 255));
+    CHECK(!vertex_near(b, right, r.y, 3.0f, 255)); // right corners rounded
+    CHECK(!vertex_near(b, right, bottom, 3.0f, 255));
+
+    // --- button: translucent fill + outline ring in a unique color
+    t.button.bg = {255, 255, 255, 30};
+    t.button.border = border;
+    t.button.border_thickness = 2.0f;
+    set_theme(c, t);
+    auto has_border = [&](const std::vector<vertex> &log, f32 x, f32 y)
+    {
+        for (const vertex &v : log)
+            if (v.c.r == border.r && v.c.g == border.g && v.c.b == border.b && v.c.a == 255 &&
+                std::fabs(v.x - x) <= 0.01f && std::fabs(v.y - y) <= 0.01f)
+                return true;
+        return false;
+    };
+    std::vector<vertex> ring = frame(
+        [&](ui &u)
+        {
+            (void)u.button(r, "", "b"_id, 0,
+                           button_override{.radii = some(corner_radii::right(14.0f))});
+        });
+    CHECK(has_border(ring, r.x, r.y)); // the outline reaches the square corner ...
+    CHECK(has_border(ring, r.x, bottom));
+    CHECK(!has_border(ring, right, r.y)); // ... and starts after the arc on a round one
+    CHECK(!has_border(ring, right, bottom));
+
+    // the default is every corner rounded (no behavior change without the option)
+    std::vector<vertex> all = frame([&](ui &u) { (void)u.button(r, "", "b"_id); });
+    CHECK(!has_border(all, r.x, r.y) && !has_border(all, right, bottom));
+
+    // --- text field
+    t = default_dark();
+    set_theme(c, t);
+    std::string value;
+    std::vector<vertex> f = frame(
+        [&](ui &u)
+        {
+            (void)u.text_field(r, value, "f"_id,
+                               field_opts{.radii = some(corner_radii::left(14.0f))});
+        });
+    CHECK(!vertex_near(f, r.x, r.y, 3.0f, 255)); // left rounded
+    CHECK(!vertex_near(f, r.x, bottom, 3.0f, 255));
+    CHECK(vertex_near(f, right, r.y, 0.01f, 255)); // right square
+    CHECK(vertex_near(f, right, bottom, 0.01f, 255));
+
+    CHECK(violation_count(c) == 0);
+    CHECK(g_violation_events == 0);
     destroy_context(c);
 }

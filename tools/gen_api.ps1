@@ -17,6 +17,28 @@ for ($i = 0; $i -lt $lines.Count; $i++) {
 }
 if ($impl -lt 0) { throw 'implementation block not found' }
 
+# A declaration may span several lines: join continuation lines until the
+# statement ends (';' for a declaration, '{' for an inline body). Returns the
+# joined text and the index of its last line, or $null when the line does not
+# start a function declaration.
+function Read-Declaration([string[]]$src, [int]$start, [int]$limit, [string]$indent) {
+    $raw = $src[$start]
+    if (-not $raw.StartsWith($indent) -or $raw.Substring($indent.Length).StartsWith(' ')) { return $null }
+    $t = $raw.Trim()
+    if ($t -match '^(//|#|return|if |for |while |switch |case |else|struct |enum |using |typedef |template|namespace|static_assert|explicit |friend )') { return $null }
+    if ($t -notmatch '^[A-Za-z_][A-Za-z0-9_:<>,\*& ]*[ \*&][A-Za-z_][A-Za-z0-9_]*\(') { return $null }
+    $text = $t
+    $j = $start
+    while (-not ($text.EndsWith(';') -or $text.EndsWith('{') -or $text.EndsWith('}')) -and $j + 1 -lt $limit) {
+        $j++
+        $text = $text + ' ' + $src[$j].Trim()
+    }
+    if (-not ($text.EndsWith(';') -or $text.EndsWith('{'))) { return $null }
+    $text = ($text -replace '\s*\{$', ';') -replace '\s+', ' '
+    $text = $text -replace '\( ', '(' -replace ' \)', ')'
+    return @{ Text = $text; End = $j }
+}
+
 $out = New-Object System.Collections.Generic.List[string]
 $out.Add('# PufferUI API reference (generated)')
 $out.Add('')
@@ -25,46 +47,74 @@ $out.Add('by `tools/gen_api.ps1` (CI checks it does not drift). Every declaratio
 $out.Add('is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.')
 $out.Add('')
 
-# Collect ui member declarations inside `struct ui { ... };`
+# ---- ui members: inside `struct ui { ... };`, one indent level in -------------
 $uiStart = -1
 for ($i = 0; $i -lt $impl; $i++) {
     if ($lines[$i] -match '^struct ui$') { $uiStart = $i; break }
 }
+$uiCount = 0
 if ($uiStart -ge 0) {
     $out.Add('## `ui` methods')
     $out.Add('')
     $depth = 0; $opened = $false
     for ($i = $uiStart; $i -lt $impl; $i++) {
         $l = $lines[$i]
-        if ($l -match '^\s*//') { continue }
-        $trim = $l.Trim()
-        if ($trim -match '^(void|bool|f32|i32|uiid|rect|vec2|color|font_handle|panel_scope|popup_scope|scroll_view|text_scope|style_scope|id_scope|const char \*|interaction)\s+[A-Za-z_]') {
-            if ($trim.Contains('(') -and ($trim.EndsWith(';') -or $trim.EndsWith('{'))) {
-                $sig = ($trim -replace '\s*\{$', ';')
-                $out.Add(('- `' + $sig + '`'))
+        $decl = $null
+        if ($depth -eq 1) { $decl = Read-Declaration $lines $i $impl '    ' }
+        if ($decl) {
+            $out.Add(('- `' + $decl.Text + '`'))
+            $uiCount++
+            # skip the continuation lines, but still count their braces
+            for ($k = $i; $k -le $decl.End; $k++) {
+                foreach ($ch in $lines[$k].ToCharArray()) {
+                    if ($ch -eq '{') { $depth++; $opened = $true } elseif ($ch -eq '}') { $depth-- }
+                }
             }
+            $i = $decl.End
+            continue
         }
         foreach ($ch in $l.ToCharArray()) {
-            if ($ch -eq '{') { $depth++; $opened = $true }
-            elseif ($ch -eq '}') { $depth-- }
+            if ($ch -eq '{') { $depth++; $opened = $true } elseif ($ch -eq '}') { $depth-- }
         }
         if ($opened -and $depth -eq 0 -and $i -gt $uiStart) { break }
     }
     $out.Add('')
 }
 
-# Free functions / types: declarations at file scope (4-space indent would be members).
+# ---- file-scope functions: column 0, split into core and `pui::comp` -----------
+$core = New-Object System.Collections.Generic.List[string]
+$comp = New-Object System.Collections.Generic.List[string]
+$inComp = $false
+for ($i = 0; $i -lt $impl; $i++) {
+    $l = $lines[$i]
+    if ($l -match '^namespace comp$') { $inComp = $true; continue }
+    if ($l -match '^\} // namespace comp') { $inComp = $false; continue }
+    $decl = Read-Declaration $lines $i $impl ''
+    if (-not $decl) { continue }
+    if ($decl.Text.Contains(' operator') -or $decl.Text -match '^inline ') { $i = $decl.End; continue }
+    if ($inComp) { $comp.Add(('- `' + $decl.Text + '`')) } else { $core.Add(('- `' + $decl.Text + '`')) }
+    $i = $decl.End
+}
 $out.Add('## Free functions and parameters')
 $out.Add('')
-for ($i = 0; $i -lt $impl; $i++) {
-    $trim = $lines[$i].Trim()
-    if ($trim -match '^(context \*|void |bool |f32 |uiid |rect |const char \*)[A-Za-z_].*\(' -and
-        $trim.EndsWith(';') -and -not $lines[$i].StartsWith('    ')) {
-        $out.Add(('- `' + $trim + '`'))
+foreach ($e in $core) { $out.Add($e) }
+$out.Add('')
+$out.Add('## Components (`pui::comp`)')
+$out.Add('')
+foreach ($e in $comp) { $out.Add($e) }
+$out.Add('')
+
+# Coverage guard: the generator must keep seeing the multi-line declarations it
+# once missed. If a refactor of the header or this script drops any of them, fail
+# loudly instead of publishing a reference that silently shrank.
+$text = ($out -join "`n") + "`n"
+foreach ($probe in @('slider_float', 'combo(', 'dock_space', 'titlebar', 'switch_toggle',
+                     'radio_group', 'tab_bar', 'comp::table', 'command_palette', 'measure_text')) {
+    if (-not $text.Contains($probe) -and -not ($probe -eq 'comp::table' -and $text -match 'table\(ui')) {
+        throw "gen_api coverage check failed: '$probe' is missing from the generated reference"
     }
 }
 
-$text = ($out -join "`n") + "`n"
 if ($Check) {
     if (-not (Test-Path $outFile)) { Write-Host 'docs/api.md missing'; exit 1 }
     $existing = [System.IO.File]::ReadAllText($outFile) -replace "`r`n", "`n"
@@ -76,4 +126,4 @@ if ($Check) {
     exit 0
 }
 [System.IO.File]::WriteAllText($outFile, $text, (New-Object System.Text.UTF8Encoding $false))
-Write-Host ("wrote docs/api.md ({0} lines)" -f $out.Count)
+Write-Host ("wrote docs/api.md ({0} lines, {1} ui methods, {2} free, {3} components)" -f $out.Count, $uiCount, $core.Count, $comp.Count)

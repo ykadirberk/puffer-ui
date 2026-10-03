@@ -60,9 +60,10 @@ static void ids_frame(ui &u, example_app &app)
             std::snprintf(label, sizeof(label),
                           "row %d's open button: u.local(\"open\") = 0x%016llX", i,
                           static_cast<unsigned long long>(u.local("open")));
-            u.text(rect::make(row.right() + u.spacing(), row.y,
-                              max2(0.0f, c.bounds_.right() - row.right() - u.spacing()), row.h),
-                   label, th.text_dim, ALIGN_LEFT);
+            // the label sits right after the button, in the rest of the row
+            const f32 lx = row.x + open_sz.x + u.spacing();
+            u.text_ellipsis(rect::make(lx, row.y, max2(0.0f, row.right() - lx), row.h), label,
+                            th.text_dim, ALIGN_LEFT);
         }
     }
 

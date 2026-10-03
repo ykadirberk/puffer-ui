@@ -60,9 +60,7 @@ static void panel_content(ui &u, uiid panel, rect pc, const theme &th)
         column c(inner, 6.0f);
         u.text(c.next(18.0f), "Stats panel", th.text, ALIGN_LEFT);
         if (u.button(c.next(26.0f), "count", "dk_count"_id)) g_stat_count += 1;
-        char line[48];
-        std::snprintf(line, sizeof(line), "count: %d", g_stat_count);
-        u.text(c.next(18.0f), line, th.text_dim, ALIGN_LEFT);
+        u.textf(c.next(18.0f), th.text_dim, ALIGN_LEFT, "count: %d", g_stat_count);
     }
     else if (panel == "log"_id)
     {
@@ -70,9 +68,7 @@ static void panel_content(ui &u, uiid panel, rect pc, const theme &th)
         column c(sv.content(), 4.0f);
         for (i32 i = 0; i < 30; ++i)
         {
-            char line[48];
-            std::snprintf(line, sizeof(line), "log %02d", i + 1);
-            u.text(c.next(16.0f), line, th.text_dim, ALIGN_LEFT);
+            u.textf(c.next(16.0f), th.text_dim, ALIGN_LEFT, "log %02d", i + 1);
         }
         sv.set_content_height(30.0f * 16.0f + 29.0f * 4.0f);
     }

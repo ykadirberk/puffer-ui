@@ -13,19 +13,6 @@
 
 using namespace pui;
 
-struct sdl_clipboard : clipboard
-{
-    bool get(std::string &out) override
-    {
-        char *t = SDL_GetClipboardText();
-        if (!t) return false;
-        out = t;
-        SDL_free(t);
-        return true;
-    }
-    void set(std::string_view text) override { SDL_SetClipboardText(std::string(text).c_str()); }
-};
-
 // --- state / view ----------------------------------------------------------
 // One app-owned state object. Components read the per-frame view snapshot
 // (`update_view()`) for derived display data and write model fields directly.
@@ -262,7 +249,6 @@ static pui::window *g_win2 = nullptr;
 static u64 g_freq = 1;
 static u64 g_last = 0;
 static int g_hover = -1;
-static sdl_clipboard g_clipboard;
 static bool g_vsync = false;     // perf measurement defaults to no vsync
 static std::string g_title_last; // only call SDL_SetWindowTitle on change
 
@@ -438,7 +424,7 @@ SDL_AppResult SDL_AppInit(void **, int, char **)
                                     .hover_bg = some(color{210, 70, 70, 255})});
     t.button.transition = transition{.duration = 0.10f, .curve = easing::EASE_OUT};
     set_theme(g_ctx, t);
-    set_clipboard(g_ctx, &g_clipboard);
+    set_clipboard(g_ctx, sdl3_system_clipboard());
     demo_dock_init(g_state);
 
     g_win1 = add_window(g_ctx, g_window, g_surface, demo_window_client(g_window));

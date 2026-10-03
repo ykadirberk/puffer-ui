@@ -4,7 +4,9 @@
 
 1. **Every change lands with tests.** A fix without a regression test is
    incomplete. New behavior needs headless tests in `tests/` (split by area:
-   layout, input, text, widgets, dock, render — see `tests/test_util.h`).
+   layout, input, text, widgets, dock, render, components). A test is
+   `PUI_TEST(test_name) { tf_env env; ... }` — it registers itself and `tf_env`
+   asserts zero violations on exit (see `tests/test_util.h`).
    Run the suite with `out/build/<preset>/…/pui_core_tests.exe`; it must
    print `all core tests passed` and exit 0. `--filter NAME` runs one test;
    `--list` lists them.

@@ -3,13 +3,20 @@
 ## Project
 
 **PufferUI** — a C++20 immediate-mode GUI library with a "pure rect-cutting"
-layout engine. The library is one header (`include/pufferui/pufferui.h`,
-declaration section + `PUFFERUI_IMPLEMENTATION` block) plus exactly one
-implementation TU (`src/pufferui_impl.cpp`).
+layout engine. The library is one header (`include/pufferui/pufferui.h`: the
+declaration section, plus a `PUFFERUI_IMPLEMENTATION` block that includes the
+`include/pufferui/impl/*.inl` slices in order) and exactly one implementation
+TU (`src/pufferui_impl.cpp`). Edit implementation code in the slice that owns
+its section; `tools/amalgamate.ps1` rebuilds the single-file header.
 
 - `examples/pui_demo.cpp` — SDL3 demo (target `pui_demo`), two windows, dock, HUD.
 - `examples/pui_counter.cpp` — small model/view example (target `pui_counter`).
-- `tests/test_core.cpp` — headless core tests (target `pui_core_tests`, no SDL).
+- `tests/test_*.cpp` — headless core tests (target `pui_core_tests`, no SDL),
+  split by area (layout, input, text, widgets, dock, render, components);
+  `tests/test_core.cpp` is the runner. A test is `PUI_TEST(test_name) { tf_env
+  env; ... }` (`tests/test_util.h`): it registers itself, `tf_env` creates the
+  context, installs the violation capture and asserts zero violations on exit
+  (`env.expect_clean = false` for tests that provoke guards on purpose).
 - `tests/golden/test_golden.cpp` — golden-image tests (target `pui_golden_tests`,
   SDL offscreen + software renderer).
 - `vendored/` — third-party code: `SDL/` (SDL3), `stb/stb_truetype.h`.
@@ -46,12 +53,13 @@ out/build/x64-debug/Debug/pui_golden_tests.exe # golden-image tests (SDL offscre
 Notes:
 - `out/` is generated build output and is gitignored. Never edit files under `out/`; regenerate instead.
 - `assets/fonts/DejaVuSans.ttf` is the bundled coverage font (see `assets/fonts/README.md`); targets get `PUFFERUI_ASSET_DIR` so they can load it deterministically. System fonts remain a fallback. `DejaVuSans-Bold.ttf` / `DejaVuSans-Oblique.ttf` are bundled too; pick them per scope with `ui.text_style(size, font)` (a `text_scope`), which also overrides the size.
-- Targets: `pui_core_tests` compiles `tests/test_core.cpp` + `src/pufferui_impl.cpp`
-  (no SDL); `pui_pump_tests` compiles `tests/test_pump.cpp` + the impl TU with
-  `PUFFERUI_ENABLE_SDL3` (routes synthetic SDL_PushEvent input through the
-  offscreen driver); `pui_demo`, `pui_counter` and `pui_golden_tests` compile
-  their source + `src/pufferui_impl.cpp` and define `PUFFERUI_ENABLE_SDL3`.
-  Add new `.cpp` files to the right target in `CMakeLists.txt`.
+- Targets: the implementation TU is built once into the `pufferui` (core) and
+  `pufferui_sdl3` (core + SDL3 backend) static libraries; every executable is
+  one `pui_add_exe(name [SDL3] SOURCES ...)` line in `CMakeLists.txt` (examples
+  use `pui_add_selftest_exe`). `pui_core_tests` is the headless suite (no SDL);
+  `pui_pump_tests` routes synthetic SDL_PushEvent input through the offscreen
+  driver; `pui_demo`, `pui_counter` and `pui_golden_tests` link `pufferui_sdl3`.
+  Add new `.cpp` files to the right `pui_add_exe` call.
 - `pui_golden_tests` renders fixed scenes with SDL's offscreen driver + software
   renderer and compares against committed goldens in `tests/golden/`. Regenerate
   with `pui_golden_tests --update` **only after eyeballing the regenerated BMPs**
@@ -96,10 +104,19 @@ Rules:
 - **Reusable widgets are components** (`namespace pui::comp`, one convention
   — see `docs/components.md`): free functions taking
   `(ui&, rect area, ..., const props&)`; props/result structs; **explicit
-  `props.id`** (never label-derived); theme → override styles; no file-scope
-  statics; keyboard-operable with cursor feedback; a headless test, an atomic
-  example and a catalogue row each. Improve the shared components instead of
-  copying widget code between examples.
+  `props.id`** (never label-derived); theme slot + `props.style` (a
+  `const <name>_style *`: copy the theme's style, edit it, pass the pointer —
+  no per-component override structs); no file-scope statics; keyboard-operable
+  with cursor feedback (inside the library, start with
+  `detail::widget_activate`); a headless test, an atomic example and a
+  catalogue row each. Improve the shared components instead of copying widget
+  code between examples.
+- **One place per change.** A style field, a keyed store, an input field or a
+  test must be addable by editing one place. If a change needs the same name
+  edited in more than two spots, add the shared struct or helper first
+  (`interaction_state`, `window_input`, `ctx_stores`, `PUI_TEST` are those
+  helpers). Do not hand-copy a field list (`theme_lerp` is the one
+  intentional enumeration — add new slot fields there and in the test).
 - Examples lay out from `example_app::width/height`, which `example_common.h`
   keeps in sync with the real window on resize (and at startup), so they re-flow
   instead of keeping their startup size. `--resize WxH` exercises that path
@@ -120,6 +137,23 @@ Rules:
   per-example one-off styling.
 - README snippets are copied from the example sources; when an example changes,
   update the matching README snippet in the same change.
+- README pictures (`docs/img/readme/`, one above each chapter's "Run:" line,
+  plus the two `pui_showcase` shots) come from `tools/readme_shots.ps1`: when an
+  example's look changes, rerun it (release build) and review the PNGs before
+  committing them. A new chapter with a "Run:" line gets an entry there too.
+
+## The tutorial
+
+`docs/tutorial/` is a step-by-step course (setup to a liquid-glass todo app) whose
+programs live in `examples/tutorial/` (`pui_tut_*` targets, built and
+`--selftest`ed in CI; `pui_tut_todo_test` is a headless test).
+
+- Code blocks in the chapters that start with `<!-- src: <path> -->` are excerpts
+  of that file; `tools/check_tutorial.ps1` (a CI step) fails when a block drifts.
+  Change the source, then fix the block it points at.
+- The pictures in `docs/tutorial/img/` come from `tools/tutorial_shots.ps1`.
+- A public API change that a tutorial program uses must update that program and
+  its chapter in the same revision.
 
 ## Code conventions
 
@@ -137,8 +171,9 @@ Rules:
   `using namespace pui;`.
 - Keep the declaration section tiny: no `<vector>/<map>/<unordered_map>/<cmath>/<charconv>`
   and no SDL there. Heavy types live in the implementation section and are reached
-  from `context` via `void*` handles (`dl`, `ts`, `edits`, `anim`, `blur`,
-  `splits`, `scrolls`, `focus_store`).
+  from `context` through forward-declared, typed pointers: `dl`, `ts`, `st`
+  (`ctx_stores`: edit/anim/scroll/split/defer stores and the per-frame id
+  sets, one allocation), and the per-window `focus_store` / `blur`.
 - A node is a region/slice: prefer `cut_top/bottom/left/right`, `pad`, `column`/
   `row`, `track_row`/`track_column`, `auto_fit_grid`, and `scroll` over manual
   coordinate math, and assert slice validity.
@@ -158,6 +193,13 @@ Rules:
   rects disjoint, or pass `enabled = false` to the one that must yield (the panel
   titlebar yields to its close dot this way; the scroll thumb interacts before
   content for the same reason).
+- **Animated layout goes through `u.animate_rect`, keyed by identity.** Key it
+  with `u.local(...)` inside `u.scope(item.id)` (never the list index, or
+  reorders animate the wrong items), call it once per key per frame (a second
+  call is `VIOL_DUP_MOTION_KEY` and does not step), and pass the moving
+  parent's corner as `.origin` (a scroll view's content, an animating card) so
+  scrolling never makes children lag. Draw *and* interact at the returned rect.
+  Do not hand-roll per-rect springs in examples; improve `animate_rect` instead.
 - **Use `interaction.activated` for drag anchors, not `pressed`.** `pressed` means
   "held"; re-capturing an anchor every frame makes drags silently do nothing.
 - **Never cut a temporary.** `region::content()` / `panel_scope::content()` /

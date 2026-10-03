@@ -1,7 +1,7 @@
 // dock + windows: dock tree, multi-window, titlebar (r88 split).
 #include "test_util.h"
 
-void test_window_errors()
+PUI_TEST(test_window_errors)
 {
     null_device nd;
     context *c = create_context(&nd, nullptr);
@@ -44,7 +44,7 @@ void test_window_errors()
     destroy_context(c);
 }
 
-void test_dock_empty()
+PUI_TEST(test_dock_empty)
 {
     context *c = create_context(nullptr);
     dock_node leaf{};
@@ -64,7 +64,7 @@ void test_dock_empty()
     destroy_context(c);
 }
 
-void test_dock_persistence()
+PUI_TEST(test_dock_persistence)
 {
     // The dock tree round-trips: save -> restore -> save produces the same
     // text, and the restored structure matches node for node (kinds, ratios,
@@ -146,7 +146,7 @@ void test_dock_persistence()
     destroy_context(c);
 }
 
-void test_multi_window()
+PUI_TEST(test_multi_window)
 {
     // A single-window backend refuses a second window (reported, not
     // silent).
@@ -385,7 +385,7 @@ void test_multi_window()
     }
 }
 
-void test_window_pointer_invalidation()
+PUI_TEST(test_window_pointer_invalidation)
 {
     // remove_window compacts the window list: pointers to later windows
     // go stale (the user-visible bug was a second window's frame loop
@@ -438,7 +438,7 @@ void test_window_pointer_invalidation()
     // ----------
 }
 
-void test_titlebar()
+PUI_TEST(test_titlebar)
 {
     // The custom titlebar on a borderless window: it paints the bar and the
     // three glyph buttons; native dragging/resizing/Aero Snap come from the
@@ -508,7 +508,7 @@ void test_titlebar()
     destroy_context(c);
 }
 
-void test_titlebar_maximize_restore()
+PUI_TEST(test_titlebar_maximize_restore)
 {
     // The maximize/restore glyph toggles the real window state through the
     // host. The host reflects the OS state the way the event pump does (SDL
@@ -584,7 +584,7 @@ void test_titlebar_maximize_restore()
     destroy_context(c);
 }
 
-void test_titlebar_close_paths()
+PUI_TEST(test_titlebar_close_paths)
 {
     // The custom titlebar's close button must set the window's close request
     // in every ordering that can occur in a real event pump: a plain click, a
@@ -710,7 +710,7 @@ void test_titlebar_close_paths()
     destroy_context(c);
 }
 
-void test_dock_tabs()
+PUI_TEST(test_dock_tabs)
 {
     context *c = create_context(nullptr);
     dock_node leaf{};
@@ -755,7 +755,7 @@ void test_dock_tabs()
     destroy_context(c);
 }
 
-void test_dock_split_and_ratio()
+PUI_TEST(test_dock_split_and_ratio)
 {
     context *c = create_context(nullptr);
     dock_node a{}, b{}, root{};
@@ -816,7 +816,7 @@ void test_dock_split_and_ratio()
     destroy_context(c);
 }
 
-void test_dock_drag_action()
+PUI_TEST(test_dock_drag_action)
 {
     context *c = create_context(nullptr);
     dock_node leaf{};
@@ -871,7 +871,7 @@ void test_dock_drag_action()
     destroy_context(c);
 }
 
-void test_dock_tabs_no_overflow()
+PUI_TEST(test_dock_tabs_no_overflow)
 {
     context *c = create_context(nullptr);
     dock_node leaf{};
@@ -917,7 +917,7 @@ void test_dock_tabs_no_overflow()
     destroy_context(c);
 }
 
-void test_dock_drop_left_zone()
+PUI_TEST(test_dock_drop_left_zone)
 {
     context *c = create_context(nullptr);
     dock_node leaf{};
@@ -970,7 +970,7 @@ void test_dock_drop_left_zone()
     destroy_context(c);
 }
 
-void test_dock_content_clipped()
+PUI_TEST(test_dock_content_clipped)
 {
     context *c = create_context(nullptr);
     dock_node leaf{};
@@ -996,7 +996,7 @@ void test_dock_content_clipped()
     destroy_context(c);
 }
 
-void test_float_panel_dock_drag()
+PUI_TEST(test_float_panel_dock_drag)
 {
     context *c = create_context(nullptr);
     dock_node leaf{};
@@ -1039,4 +1039,3 @@ void test_float_panel_dock_drag()
     CHECK(violation_count(c) == 0);
     destroy_context(c);
 }
-

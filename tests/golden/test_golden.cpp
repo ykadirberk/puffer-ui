@@ -675,6 +675,30 @@ static void draw_blur_align(golden_env &e, i32, i32)
     u.blur(rect::make(162.0f, 164.0f, 156.0f, 34.0f), 5.0f, 4.0f, 1.0f);
 }
 
+// ---- animated layout: six tiles switch from a 3x2 grid to a column on frame 1;
+// frames 1 and 2 catch u.animate_rect mid-flight (springs from where each
+// tile was, sizes included)
+static void draw_relayout(golden_env &e, i32, i32 frame)
+{
+    ui u(e.ctx);
+    const theme &th = u.th();
+    u.draw_rect(rect::make(0, 0, GOLDEN_W, GOLDEN_H), th.bg);
+    const color cols[6] = {{230, 110, 90, 255}, {240, 180, 70, 255},  {120, 200, 110, 255},
+                           {70, 190, 200, 255}, {100, 130, 240, 255}, {200, 110, 220, 255}};
+    for (i32 i = 0; i < 6; ++i)
+    {
+        rect target{};
+        if (frame == 0)
+            target = rect::make(20.0f + static_cast<f32>(i % 3) * 96.0f,
+                                20.0f + static_cast<f32>(i / 3) * 86.0f, 84.0f, 74.0f);
+        else
+            target = rect::make(200.0f, 14.0f + static_cast<f32>(i) * 30.0f, 100.0f, 24.0f);
+        id_scope sc = u.scope(static_cast<uiid>(i + 1));
+        const rect r = u.animate_rect(u.local("pos"), target, {.spec = spring{220.0f, 0.8f}});
+        u.draw_rounded_rect(r, cols[i], 8.0f);
+    }
+}
+
 // ---- blur strength: the edge spread must track the radius
 static void draw_blur_edge(golden_env &e, i32, i32)
 {
@@ -757,6 +781,7 @@ static const golden_scene SCENES[] = {
     {"blur", 1, 0, 2, 1, nullptr, draw_blur_align, 96},
     {"blur_edge", 1, 0, 2, 1, nullptr, draw_blur_edge, 96},
     {"inputs", 1, 0, 4, 3, inputs_input, draw_inputs},
+    {"relayout", 1, 0, 9, 7, nullptr, draw_relayout},
 };
 inline constexpr i32 SCENE_COUNT = static_cast<i32>(sizeof(SCENES) / sizeof(SCENES[0]));
 
@@ -983,6 +1008,71 @@ static i32 run_scene(const golden_scene &sc, golden_hashes &hashes, bool update,
     return failures;
 }
 
+// ---------------------------------------------------------------- checks
+// Regression: the SDL3 backend's blit BLENDED instead of copying (SDL_RenderTexture
+// uses the texture's blend mode, not the draw blend mode), so blur-pyramid
+// texels with alpha < 1 mixed with the scratch targets' previous contents. In
+// an app shell - a page-wide fade blur, a wide frosted bar, a narrow frosted
+// column - the column's frosted color slid a little darker every frame. A
+// still scene must blur to the same pixels frame after frame.
+static i32 check_blur_stable(const char *only)
+{
+    if (only && std::strcmp(only, "blur_stable") != 0) return 0;
+    golden_env e;
+    if (!env_init(e, 1))
+    {
+        env_shutdown(e);
+        std::printf("FAIL blur_stable: environment init failed\n");
+        return 1;
+    }
+    const color flat{80, 40, 160, 255};
+    const color tint{255, 255, 255, 20};
+    const rect fade_r = rect::make(60.0f, 0.0f, 260.0f, 200.0f);
+    const rect bar = rect::make(70.0f, 8.0f, 240.0f, 44.0f);
+    const rect side = rect::make(6.0f, 8.0f, 30.0f, 184.0f); // ~4 texels at 1/16
+    i32 first[3] = {-1, -1, -1};
+    i32 drift = 0;
+    i32 failures = 0;
+    for (i32 frame = 0; frame < 30; ++frame)
+    {
+        begin_frame(e.ctx, *e.windows[0], frame_time(frame), 1.0 / 60.0);
+        {
+            ui u(e.ctx);
+            u.draw_rect(rect::make(0, 0, GOLDEN_W, GOLDEN_H), flat);
+            u.blur(fade_r, 16.0f, 0.0f, 0.5f);
+            u.blur(bar, 28.0f, 12.0f, 1.0f);
+            u.draw_rounded_rect(bar, tint, 12.0f);
+            u.blur(side, 22.0f, 12.0f, 1.0f);
+            u.draw_rounded_rect(side, tint, 12.0f);
+        }
+        end_frame(e.ctx);
+        if (!env_capture(e))
+        {
+            std::printf("FAIL blur_stable: pixel readback failed\n");
+            ++failures;
+            break;
+        }
+        const u8 *p = e.pixels.data() + (static_cast<usize>(120) * GOLDEN_W + 21) * 4;
+        for (i32 c = 0; c < 3; ++c)
+        {
+            if (first[c] < 0) first[c] = p[c];
+            const i32 d = std::abs(static_cast<i32>(p[c]) - first[c]);
+            drift = d > drift ? d : drift;
+        }
+    }
+    env_shutdown(e);
+    if (failures == 0 && drift > 1)
+    {
+        std::printf("FAIL blur_stable  a still scene's blur drifted by %d over 30 frames\n", drift);
+        ++failures;
+    }
+    else if (failures == 0)
+    {
+        std::printf("ok   blur_stable  (drift %d over 30 frames)\n", drift);
+    }
+    return failures;
+}
+
 int main(int argc, char **argv)
 {
     bool update = false;
@@ -1000,6 +1090,7 @@ int main(int argc, char **argv)
 
     i32 failures = 0, captured = 0;
     for (const golden_scene &sc : SCENES) failures += run_scene(sc, hashes, update, only, captured);
+    if (!update) failures += check_blur_stable(only);
 
     if (update)
     {

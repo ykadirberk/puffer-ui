@@ -16,6 +16,28 @@ using namespace pui;
 
 inline int g_failures = 0;
 
+// Self-registering tests: `PUI_TEST(test_name) { ... }` defines the test and
+// adds it to the runner (tests/test_core.cpp). One place per test - nothing to
+// declare or list, so a test cannot be "written but never registered".
+struct test_entry
+{
+    const char *name;
+    void (*fn)();
+};
+inline std::vector<test_entry> &test_registry()
+{
+    static std::vector<test_entry> r;
+    return r;
+}
+struct test_registrar
+{
+    test_registrar(const char *name, void (*fn)()) { test_registry().push_back({name, fn}); }
+};
+#define PUI_TEST(name)                                                                             \
+    static void name();                                                                            \
+    static const test_registrar name##_registrar(#name, name);                                     \
+    static void name()
+
 // Expected violations are captured instead of printed, and the guard that fired
 // is asserted by message (install with set_violation_handler).
 inline const char *g_last_violation = nullptr;
@@ -57,12 +79,32 @@ struct snapshot_device : null_device
         std::snprintf(line, sizeof(line), "draw tex=%d verts=%d v0=(%.0f,%.0f,%d,%d,%d,%d)",
                       static_cast<int>(reinterpret_cast<ptrdiff_t>(tex)), vcount,
                       static_cast<double>(v0.x), static_cast<double>(v0.y),
-                      static_cast<int>(v0.c.a), static_cast<int>(v0.c.r),
-                      static_cast<int>(v0.c.g), static_cast<int>(v0.c.b));
+                      static_cast<int>(v0.c.a), static_cast<int>(v0.c.r), static_cast<int>(v0.c.g),
+                      static_cast<int>(v0.c.b));
         calls.push_back(line);
         null_device::draw(tex, verts, vcount, idx, icount); // keep the counters hot
     }
 };
+
+// Keeps every vertex that reaches the device, in submission order.
+struct vertex_log_device : null_device
+{
+    std::vector<vertex> log;
+    void draw(texture_handle tex, const vertex *v, i32 vc, const i32 *idx, i32 ic) override
+    {
+        log.insert(log.end(), v, v + vc);
+        null_device::draw(tex, v, vc, idx, ic);
+    }
+};
+
+// Is there a vertex within `tol` of (x, y) that is at least `min_alpha` opaque?
+inline bool vertex_near(const std::vector<vertex> &log, f32 x, f32 y, f32 tol, u8 min_alpha)
+{
+    for (const vertex &v : log)
+        if (v.c.a >= min_alpha && std::fabs(v.x - x) <= tol && std::fabs(v.y - y) <= tol)
+            return true;
+    return false;
+}
 
 struct recorder_host : window_host
 {
@@ -119,15 +161,40 @@ struct tf_env
 {
     null_device nd;
     context *c = nullptr;
-    explicit tf_env(i32 w = 300, i32 h = 200)
+    i32 w, h;
+    // A test must leave the context violation-free; one that provokes guards on
+    // purpose sets this false (and asserts the guard it expects itself).
+    bool expect_clean = true;
+    explicit tf_env(i32 w_ = 300, i32 h_ = 200) : w(w_), h(h_)
     {
         nd.my_surface.w = w;
         nd.my_surface.h = h;
         c = create_context(&nd, nd.create_surface());
+        set_violation_handler(c, capture_violation, nullptr);
+        g_violation_events = 0;
     }
-    ~tf_env() { destroy_context(c); }
+    ~tf_env()
+    {
+        if (expect_clean)
+        {
+            CHECK(violation_count(c) == 0);
+            CHECK(g_violation_events == 0);
+        }
+        destroy_context(c);
+    }
     tf_env(const tf_env &) = delete;
     tf_env &operator=(const tf_env &) = delete;
+
+    // One frame: begin, `draw(ui&)`, end.
+    template <typename DrawFn> void frame(f64 t, DrawFn &&draw)
+    {
+        begin_frame(c, t, 0.016, rect::make(0, 0, static_cast<f32>(w), static_cast<f32>(h)));
+        {
+            ui u(c);
+            draw(u);
+        }
+        end_frame(c);
+    }
 };
 
 inline bool tf_needs_font(context *c)
@@ -194,4 +261,3 @@ struct test_clipboard : clipboard
     }
     void set(std::string_view text) override { data.assign(text); }
 };
-

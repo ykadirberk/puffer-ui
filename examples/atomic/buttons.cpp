@@ -25,19 +25,15 @@ static void buttons_frame(ui &u, example_app &app)
         if (u.button(r.next(120.0f), "Default", "btn_default"_id)) g_clicks += 1;
         if (u.button(r.next(120.0f), "Primary", "btn_primary"_id, "primary"_id)) g_clicks += 1;
         if (u.button(r.next(120.0f), "Danger", "btn_danger"_id, "danger"_id)) g_clicks += 1;
-        char label[32];
-        std::snprintf(label, sizeof(label), "clicks: %d", g_clicks);
-        u.text(r.remaining(), label, th.text_dim, ALIGN_RIGHT);
+        u.textf(r.remaining(), th.text_dim, ALIGN_RIGHT, "clicks: %d", g_clicks);
 
         // Roles are theme entries; resolve_button_style shows what a role resolves to.
         {
             const button_style st = u.resolve_button_style("primary"_id);
-            char line[160];
-            std::snprintf(line, sizeof(line),
-                          "resolve_button_style(\"primary\"): radius %.1f, pad_x %.1f, border %.1f",
-                          static_cast<double>(st.radius), static_cast<double>(st.pad_x),
-                          static_cast<double>(st.border_thickness));
-            u.text(c.next(18.0f), line, th.text_dim, ALIGN_LEFT);
+            u.textf(c.next(18.0f), th.text_dim, ALIGN_LEFT,
+                    "resolve_button_style(\"primary\"): radius %.1f, pad_x %.1f, border %.1f",
+                    static_cast<double>(st.radius), static_cast<double>(st.pad_x),
+                    static_cast<double>(st.border_thickness));
         }
         u.text(c.next(18.0f), "hover/active colors animate when theme.button.transition is set",
                th.text_dim, ALIGN_LEFT);

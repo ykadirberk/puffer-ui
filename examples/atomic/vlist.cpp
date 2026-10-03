@@ -17,12 +17,14 @@ static void vlist_frame(ui &u, example_app &app)
     example_page page = example_begin_page(u, app, "Virtual list",
                                            "5,000 rows - only the visible ones are submitted");
     column col(page.content, example_ui::SECTION_GAP);
+    // the summary is cut off the bottom first; the list takes what is left
+    const rect costs_r = col.cut_bottom(84.0f);
 
     i32 rendered = 0; // rows the callback saw this frame
 
     {
         const rect body = example_section(
-            u, col.next(300.0f), "The list",
+            u, col.remaining(), "The list",
             "sv.virtual_list(count, row_height, fn) - fn runs for the visible slice only",
             app.font_bold);
         scroll_view sv = u.scroll(body, "vlist_rows"_id);
@@ -47,14 +49,12 @@ static void vlist_frame(ui &u, example_app &app)
 
     {
         const rect body = example_section(
-            u, col.next(64.0f), "What a frame costs",
+            u, costs_r, "What a frame costs",
             "the callback count, not the list length, decides the work", app.font_bold);
         column c(body, 6.0f);
-        char line[160];
-        std::snprintf(line, sizeof(line),
-                      "submitted %d of %d rows this frame - scrolling never grows the cost",
-                      rendered, kRowCount);
-        u.text(c.next(18.0f), line, th.text_dim, ALIGN_LEFT);
+        u.textf(c.next(18.0f), th.text_dim, ALIGN_LEFT,
+                "submitted %d of %d rows this frame - scrolling never grows the cost", rendered,
+                kRowCount);
     }
 }
 

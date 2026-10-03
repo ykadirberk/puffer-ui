@@ -912,7 +912,24 @@ static void ch_animation(ui &u, example_app &app, rect body)
                                        30.0f + 90.0f * clampf(a, 0.0f, 1.0f), 24.0f * a + 1.0f),
                             c, 5.0f);
     }
-    u.text(col.next(16.0f), "animate/animate_color/smooth/appear are keyed and collected after 5 s",
+    {
+        // animate_rect: Toggle reverses the order (and the widths); each box is
+        // keyed by its identity and springs from where it was to its new slot
+        const rect b = lane("layout", 34.0f);
+        u.draw_rect(b, th.widget_bg);
+        row slots(b.pad(4.0f, 5.0f), 6.0f);
+        for (i32 slot = 0; slot < 5; ++slot)
+        {
+            const i32 box = g_play ? 4 - slot : slot; // which box takes this slot
+            const rect target = slots.next(g_play ? 30.0f + 12.0f * static_cast<f32>(box) : 60.0f);
+            const rect r = u.animate_rect(id_child("tr_layout"_id, static_cast<uiid>(box)), target);
+            color c = th.accent;
+            c.a = static_cast<u8>(110 + 29 * box);
+            u.draw_rounded_rect(r, c, 5.0f);
+        }
+    }
+    u.text(col.next(16.0f),
+           "animate/animate_color/smooth/appear/animate_rect are keyed and collected after 5 s",
            th.text_dim, ALIGN_LEFT);
 }
 

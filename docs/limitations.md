@@ -12,6 +12,9 @@ Items marked *(planned)* have a phase; the rest are accepted for now.
   glyph draws nothing for that character).
 - Glyph atlases never evict *(planned: surfaced LRU page policy, r89/r94)*.
 - Fractional font sizes quantize to quarter pixels for cache keys.
+- Glyphs are rasterized unhinted (stb_truetype) at four horizontal subpixel
+  offsets; small text is evenly spaced but slightly soft. A contrast/gamma curve
+  on the coverage or an SDF/hinting backend would sharpen it *(not planned yet)*.
 
 ## Scale
 

@@ -119,9 +119,8 @@ static void custom_frame(ui &u, example_app &app)
         {
             row r(c.next(28.0f), 8.0f);
             (void)toggle_switch(u, r.next(180.0f), g_enabled, "cu_switch"_id);
-            char line[64];
-            std::snprintf(line, sizeof(line), "enabled: %s", g_enabled ? "yes" : "no");
-            u.text(r.remaining(), line, th.text_dim, ALIGN_RIGHT);
+            u.textf(r.remaining(), th.text_dim, ALIGN_RIGHT, "enabled: %s",
+                    g_enabled ? "yes" : "no");
         }
 
         example_caption(u, c.next(16.0f), "segmented(id_child(id, i))");
@@ -145,22 +144,19 @@ static void custom_frame(ui &u, example_app &app)
             interaction in = u.interact("cu_probe"_id, probe);
             if (in.hovered) u.set_cursor(CURSOR_HAND);
             u.draw_rect(probe, in.held ? th.accent : in.hovered ? th.widget_hover : th.widget_bg);
-            char line[192];
-            std::snprintf(line, sizeof(line),
-                          "hovered %d  pressed %d  activated %d  held %d  clicked %d  double %d  "
-                          "right %d  focused %d",
-                          in.hovered ? 1 : 0, in.pressed ? 1 : 0, in.activated ? 1 : 0,
-                          in.held ? 1 : 0, in.clicked ? 1 : 0, in.double_clicked ? 1 : 0,
-                          in.right_clicked ? 1 : 0, in.focused ? 1 : 0);
-            u.text(probe.pad(8.0f, 0.0f), line, in.held ? th.bg : th.text_dim, ALIGN_LEFT);
+            u.textf(probe.pad(8.0f, 0.0f), in.held ? th.bg : th.text_dim, ALIGN_LEFT,
+                    "hovered %d  pressed %d  activated %d  held %d  clicked %d  double %d  "
+                    "right %d  focused %d",
+                    in.hovered ? 1 : 0, in.pressed ? 1 : 0, in.activated ? 1 : 0, in.held ? 1 : 0,
+                    in.clicked ? 1 : 0, in.double_clicked ? 1 : 0, in.right_clicked ? 1 : 0,
+                    in.focused ? 1 : 0);
         }
 
         {
             const uiid hot = u.hot_id();
-            char line[96];
-            std::snprintf(line, sizeof(line), "hot_id(): 0x%016llX (widget under the pointer)",
-                          static_cast<unsigned long long>(hot));
-            u.text(c.next(18.0f), line, th.text_dim, ALIGN_LEFT);
+            u.textf(c.next(18.0f), th.text_dim, ALIGN_LEFT,
+                    "hot_id(): 0x%016llX (widget under the pointer)",
+                    static_cast<unsigned long long>(hot));
         }
         u.text(c.next(18.0f),
                "ids from `id_child`/`local`/`auto_id` keep instances independent; hover uses the "

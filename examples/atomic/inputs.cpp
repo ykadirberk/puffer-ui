@@ -54,10 +54,9 @@ static void inputs_frame(ui &u, example_app &app)
                "drag to select, double-click a word, drag a selection to move it (Ctrl copies)",
                th.text_dim, ALIGN_LEFT);
 
-        char line[128];
-        std::snprintf(line, sizeof(line), "key_down(LEFT) = %s   key_pressed(TAB) = %s",
-                      u.key_down(key::LEFT) ? "yes" : "no", u.key_pressed(key::TAB) ? "yes" : "no");
-        u.text(c.next(18.0f), line, th.text_dim, ALIGN_LEFT);
+        u.textf(c.next(18.0f), th.text_dim, ALIGN_LEFT,
+                "key_down(LEFT) = %s   key_pressed(TAB) = %s", u.key_down(key::LEFT) ? "yes" : "no",
+                u.key_pressed(key::TAB) ? "yes" : "no");
     }
 
     // A second form with different widths (tracks make alignment easy).

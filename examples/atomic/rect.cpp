@@ -17,7 +17,7 @@ static void rect_frame(ui &u, example_app &app)
     // --- mutating cuts: each cut shortens the source and returns the slice ----
     {
         const rect body =
-            example_section(u, col.next(150.0f), "Mutating cuts",
+            example_section(u, col.next(200.0f), "Mutating cuts",
                             "cut_top/bottom/left/right shorten the source", app.font_bold);
         column c(body, 8.0f);
 
@@ -89,17 +89,15 @@ static void rect_frame(ui &u, example_app &app)
         const rect a = rect::make(40.0f, 0.0f, 120.0f, 40.0f);
         const rect b = rect::make(120.0f, 20.0f, 120.0f, 40.0f);
         const rect overlap = rect::intersect(a, b);
-        char line[160];
-        std::snprintf(line, sizeof(line),
-                      "intersect(a,b) = %.0fx%.0f at (%.0f,%.0f)  |  a.contains(80,20): %s",
-                      static_cast<double>(overlap.w), static_cast<double>(overlap.h),
-                      static_cast<double>(overlap.x), static_cast<double>(overlap.y),
-                      a.contains(80.0f, 20.0f) ? "yes" : "no");
-        u.text(c.next(18.0f), line, th.text_dim, ALIGN_LEFT);
+        u.textf(c.next(18.0f), th.text_dim, ALIGN_LEFT,
+                "intersect(a,b) = %.0fx%.0f at (%.0f,%.0f)  |  a.contains(80,20): %s",
+                static_cast<double>(overlap.w), static_cast<double>(overlap.h),
+                static_cast<double>(overlap.x), static_cast<double>(overlap.y),
+                a.contains(80.0f, 20.0f) ? "yes" : "no");
     }
 }
 
 int main(int argc, char **argv)
 {
-    return example_run("rect", 640, 460, argc, argv, rect_frame);
+    return example_run("rect", 640, 560, argc, argv, rect_frame);
 }
