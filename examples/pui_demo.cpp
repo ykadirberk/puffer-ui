@@ -575,9 +575,11 @@ static void demo_draw_float_panels(ui &u, pui::window &w, const demo_state::view
         u.blur(rect::make(local.x, local.y - slide, local.w, local.h), 12.0f, 6.0f, open_t);
         rect shown = local;
         shown.y -= slide;
-        pui::panel_scope p = u.panel("Inspector", shown, PANEL_NONE, 0, nullptr,
-                                     panel_override{.bg = some(color{28, 32, 40, 150}),
-                                                    .titlebar_bg = some(color{20, 24, 30, 170})});
+        pui::panel_scope p =
+            u.panel("Inspector", shown,
+                    {.id = "inspector"_id,
+                     .style = panel_override{.bg = some(color{28, 32, 40, 150}),
+                                             .titlebar_bg = some(color{20, 24, 30, 170})}});
         if (p.close_requested)
         {
             s.inspector_open = false;

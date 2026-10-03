@@ -606,9 +606,11 @@ Run: `pui_ex_drawing`. Full source: `examples/atomic/drawing.cpp`.
 
 ```cpp
 u.blur(panel_bounds, 14.0f, 10.0f, 1.0f);   // radius, corner radius, alpha
-panel_scope p = u.panel("Frosted", panel_bounds, PANEL_NO_CONTROLS, 0, nullptr,
-                        panel_override{.bg = some(color{20, 24, 30, 120}),
-                                       .titlebar_bg = some(color{20, 24, 30, 160})});
+panel_scope p = u.panel("Frosted", panel_bounds,
+                        {.id = "frosted"_id,
+                         .flags = PANEL_NO_CONTROLS,
+                         .style = panel_override{.bg = some(color{20, 24, 30, 120}),
+                                                 .titlebar_bg = some(color{20, 24, 30, 160})}});
 ```
 
 `blur` samples what has been drawn so far *behind* the rect and composites a
@@ -1325,7 +1327,7 @@ page.
 | `ui.text_field(rect, std::string&, id)` | Returns `true` on change. |
 | `ui.number_field(rect, f32&, id, fmt)` | Returns `true` on change. |
 | `ui.card(rect, card_override)` | Themed rounded rect. |
-| `ui.panel(title, rect&, flags, dock_id, dock_name, panel_override)` | Floating panel scope; flags + per-panel style override (translucent backgrounds for frosted glass). |
+| `ui.panel(title, rect&, {.id, .flags, .dock_panel, .dock_name, .style})` | Floating panel scope; the identity is the explicit `.id` (or the `dock_panel` id), never the title; flags + per-panel style override (translucent backgrounds for frosted glass). |
 | `ui.popup(id, rect, flags)` | Top input-capturing layer. |
 | `ui.titlebar(window, rect&, title)` | Borderless chrome: paints the bar + min/max/close; buttons route through `window_host`. Native dragging/resizing/Aero Snap come from `install_window_chrome`. |
 | `window_host`, `set_window_host`, `install_window_chrome` | Platform actions for the custom chrome; `install_system_chrome` maps the bar to the system caption (native drag + snap) and adds native resize bands. |
@@ -1402,7 +1404,7 @@ button_override)`.
 | `add_window(ctx, native, surface, client)` / `remove_window` | Window registration. |
 | `set_window_client`, `focus_window`, `focused_window`, `desktop_rect` | Window management. |
 | `begin_frame(ctx, window&, now, dt)` / `begin_frame(ctx, now, dt, rect)` / `end_frame` | Frame loop (per window / primary). |
-| `mouse_move`, `mouse_button(down)`, `mouse_button(button, down)`, `mouse_wheel`, `key_event`, `text_input_event`, `ime_event`, `mods_event` | Input, `window&` and `context*` overloads. |
+| `mouse_move`, `mouse_button(down)`, `mouse_button(button, down)`, `mouse_wheel`, `key_event`, `key_repeat` (OS auto-repeat of a held key), `text_input_event`, `ime_event`, `mods_event` | Input, `window&` and `context*` overloads. |
 | `set_global_mouse(ctx, x, y)` | Set the shared pointer position (same space as `window::client`). |
 | `set_clipboard(ctx, clipboard*)` | Install the app clipboard. |
 | `key`, `KEY_COUNT`, `pointer_button` | Input enums. |

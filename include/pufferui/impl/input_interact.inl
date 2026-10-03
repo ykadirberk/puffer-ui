@@ -79,6 +79,14 @@ void key_event(window &w, key k, bool down)
     q.key_down[i] = down;
 }
 
+void key_repeat(window &w, key k)
+{
+    const i32 i = static_cast<i32>(k);
+    if (i < 0 || i >= KEY_COUNT) return;
+    window_input &q = detail::input_for(w);
+    if (q.key_down[i]) q.key_pressed[i] = true; // only a held key repeats
+}
+
 void text_input_event(window &w, const char *utf8)
 {
     window_input &q = detail::input_for(w);
@@ -211,6 +219,7 @@ const char *violation_code_name(violation_code code)
         "dup_widget_id",
         "frame_ids_overflow",
         "dup_motion_key",
+        "panel_no_id",
     };
     return (code >= 0 && code < VIOL_COUNT) ? names[code] : "unknown";
 }
@@ -231,6 +240,7 @@ inline uiid anim_scoped_id(context *c, uiid key, bool global)
 
 inline f32 tween_value(context *c, anim_store::entry &e, f32 target, const tween &spec)
 {
+    if (!e.initialized && spec.from_target) e.current = target;
     if (!e.initialized || e.kind != 0 || e.target != target)
     {
         if (e.initialized && e.kind == 0 && e.duration > 0.0f)

@@ -29,7 +29,7 @@ switch_result switch_toggle(ui &u, rect area, std::string_view label, bool &valu
     }
 
     const rect track{area.x, area.y + (area.h - s.height) * 0.5f, s.width, s.height};
-    const tween tw{s.anim.duration, s.anim.curve};
+    const tween tw{s.anim.duration, s.anim.curve, true};
     const color bg = s.animate ? u.animate_color(id_child(p.id, "track"_id),
                                                  value ? s.track_on : s.track_off, tw)
                                : (value ? s.track_on : s.track_off);
@@ -133,7 +133,7 @@ segmented_result segmented(ui &u, rect area, std::span<const char *const> labels
 
         const bool on = (selected == i);
         const color fill = on ? u.animate_color(id_child(item_id, "bg"_id), st.selected,
-                                                tween{st.anim.duration, st.anim.curve})
+                                                tween{st.anim.duration, st.anim.curve, true})
                               : color{0, 0, 0, 0};
         if (on) u.draw_rounded_rect(seg, fill, rr);
         // hover: a highlight that eases in over the segment, selected or not
@@ -180,7 +180,7 @@ tabs_result tab_bar(ui &u, rect area, std::span<const char *const> labels, i32 &
         u.text(tab, labels[i] ? labels[i] : "", on ? st.text_active : st.text, ALIGN_CENTER);
         const color ul =
             u.animate_color(id_child(item_id, "ul"_id), on ? st.underline : color{0, 0, 0, 0},
-                            tween{st.anim.duration, st.anim.curve});
+                            tween{st.anim.duration, st.anim.curve, true});
         u.draw_rect(rect::make(tab.x, tab.bottom() - st.underline_h, tab.w, st.underline_h), ul);
         if (in.focused) detail::focus_ring(u, tab, st.radius);
     }
@@ -213,7 +213,7 @@ accordion_scope::accordion_scope(ui &u, rect area, std::string_view title, bool 
            title, st.text, ALIGN_LEFT);
     // chevron: down when open, right when closed (rotates with the animation)
     const f32 t = u.animate(id_child(p.id, "t"_id), open ? 1.0f : 0.0f,
-                            tween{st.anim.duration, st.anim.curve});
+                            tween{st.anim.duration, st.anim.curve, true});
     {
         const f32 cx = header.right() - u.padding();
         const f32 cy = header.center_y();
@@ -247,25 +247,28 @@ drawer_scope::drawer_scope(ui &u, rect host, bool &open, const drawer_props &p)
     drawer_style st = p.style ? *p.style : c->active_theme.drawer;
 
     const f32 t = u.animate(id_child(p.id, "t"_id), open ? 1.0f : 0.0f,
-                            tween{st.anim.duration, st.anim.curve});
-    // the scrim captures clicks behind the drawer (never in the Tab ring)
+                            tween{st.anim.duration, st.anim.curve, true});
+    const f32 w = p.width;
+    const f32 slide = (p.edge == drawer_edge::LEFT) ? -w * (1.0f - t) : w * (1.0f - t);
+    const f32 x = (p.edge == drawer_edge::LEFT) ? host.x + slide : host.right() - w + slide;
+    const rect panel = rect::make(x, host.y, w, host.h);
+
+    // the scrim captures clicks behind the drawer (never in the Tab ring); it
+    // spans the whole host, so a click on the drawer's own empty area is not
+    // a click "outside" and must not close it
     if (t > 0.0f && p.scrim)
     {
         const interaction scrim = u.interact(id_child(p.id, "scrim"_id), host, true, false);
         u.draw_rect(host,
                     color{st.scrim.r, st.scrim.g, st.scrim.b, static_cast<u8>(st.scrim.a * t)});
-        if (scrim.clicked && p.close_on_scrim_click && open)
+        if (scrim.clicked && p.close_on_scrim_click && open &&
+            !panel.contains(c->mouse_x, c->mouse_y))
         {
             open = false;
             open_ = false;
             toggled_ = true;
         }
     }
-
-    const f32 w = p.width;
-    const f32 slide = (p.edge == drawer_edge::LEFT) ? -w * (1.0f - t) : w * (1.0f - t);
-    const f32 x = (p.edge == drawer_edge::LEFT) ? host.x + slide : host.right() - w + slide;
-    const rect panel = rect::make(x, host.y, w, host.h);
     u.draw_rounded_rect(panel, st.bg, st.radius);
     if (st.border.a > 0) detail::rounded_ring(u, panel, st.border, st.radius, 1.0f);
     content_ = panel.pad(c->active_theme.padding);
@@ -458,14 +461,14 @@ palette_result command_palette(ui &u, rect screen, bool &open, palette_state &st
     palette_style sty = p.style ? *p.style : u.th().palette;
 
     // the scrim (never in the Tab ring) + the panel
-    const interaction scrim = u.interact(id_child(p.id, "scrim"_id), screen, true, false);
-    u.draw_rect(screen, sty.scrim);
-    if (scrim.clicked) open = false;
-
     const i32 shown_max = 8;
     const f32 panel_h = 52.0f + sty.item_h * static_cast<f32>(shown_max) + 8.0f;
     const rect panel = rect::make(screen.center_x() - sty.width * 0.5f, screen.y + screen.h * 0.18f,
                                   sty.width, min2(panel_h, screen.h * 0.7f));
+    const interaction scrim = u.interact(id_child(p.id, "scrim"_id), screen, true, false);
+    u.draw_rect(screen, sty.scrim);
+    // the scrim spans the screen, panel included: only a click outside closes
+    if (scrim.clicked && !panel.contains(u.ctx->mouse_x, u.ctx->mouse_y)) open = false;
     u.draw_rounded_rect(panel, sty.bg, sty.radius);
     u.draw_rounded_rect(rect::make(panel.x, panel.y, 3.0f, panel.h), sty.accent, sty.radius);
     if (sty.border.a > 0) detail::rounded_ring(u, panel, sty.border, sty.radius, 1.0f);
@@ -536,6 +539,12 @@ palette_result command_palette(ui &u, rect screen, bool &open, palette_state &st
     st.first = st.first < 0 ? 0 : (st.first > max_first ? max_first : st.first);
     const i32 first = st.first;
 
+    // Hover moves the highlight only while the pointer moves: a pointer resting
+    // over a row must not fight the Up/Down keys every frame.
+    const bool pointer_moved = u.ctx->mouse_x != st.pointer_x || u.ctx->mouse_y != st.pointer_y;
+    st.pointer_x = u.ctx->mouse_x;
+    st.pointer_y = u.ctx->mouse_y;
+
     i32 rank = -1;
     i32 drawn = 0;
     for (i32 i = 0; i < total && drawn < shown_max; ++i)
@@ -549,7 +558,7 @@ palette_result command_palette(ui &u, rect screen, bool &open, palette_state &st
         const interaction in = u.interact(item_id, item, true, false);
         if (in.hovered)
         {
-            st.active = rank;
+            if (pointer_moved && !kb_moved) st.active = rank;
             u.set_cursor(u.th().button_cursor);
         }
         const bool hl = (rank == st.active);

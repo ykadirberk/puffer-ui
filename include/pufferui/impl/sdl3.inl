@@ -716,7 +716,13 @@ bool sdl3_route_impl(context *c, SDL_Event *e)
             mapped = false;
             break;
         }
-        if (mapped && !(down && e->key.repeat)) key_event(*w, k, down);
+        if (mapped)
+        {
+            if (down && e->key.repeat)
+                key_repeat(*w, k);
+            else
+                key_event(*w, k, down);
+        }
         break;
     }
     case SDL_EVENT_TEXT_INPUT:

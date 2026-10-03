@@ -9,28 +9,25 @@ void ui::draw_triangles(texture_handle tex, const vertex *vertices, i32 vertex_c
     if (vertex_count <= 0 || index_count <= 0) return;
     // Cull whole batches that cannot paint: when a clip is active, a batch
     // whose bounding box misses the clip is dropped here — the renderer never
-    // sees it (this is what keeps clipped-out scroll/panel content cheap).
+    // sees it (this is what keeps clipped-out scroll/panel content cheap). An
+    // empty clip (w/h 0: a collapsed region) paints nothing, so everything is
+    // culled; the device must never see it, because "no scissor" is how a
+    // device spells "unclipped".
     if (ctx->clip_depth > 0)
     {
-        // Cull only against a real clip: a degenerate one (w/h 0 — possible
-        // when a sibling clipped scope is still alive) renders "nothing" on
-        // GPU scissors but passes through on the software renderer's quirk;
-        // either way that behavior belongs to the renderer, not to us.
         const rect clip = ctx->clip_stack[ctx->clip_depth - 1];
-        if (clip.w > 0.0f && clip.h > 0.0f)
+        if (clip.w <= 0.0f || clip.h <= 0.0f) return;
+        f32 minx = vertices[0].x, maxx = minx, miny = vertices[0].y, maxy = miny;
+        for (i32 i = 1; i < vertex_count; ++i)
         {
-            f32 minx = vertices[0].x, maxx = minx, miny = vertices[0].y, maxy = miny;
-            for (i32 i = 1; i < vertex_count; ++i)
-            {
-                minx = min2(minx, vertices[i].x);
-                maxx = max2(maxx, vertices[i].x);
-                miny = min2(miny, vertices[i].y);
-                maxy = max2(maxy, vertices[i].y);
-            }
-            const rect aabb{minx, miny, maxx - minx, maxy - miny};
-            const rect isect = rect::intersect(aabb, clip);
-            if (isect.w <= 0.0f || isect.h <= 0.0f) return;
+            minx = min2(minx, vertices[i].x);
+            maxx = max2(maxx, vertices[i].x);
+            miny = min2(miny, vertices[i].y);
+            maxy = max2(maxy, vertices[i].y);
         }
+        const rect aabb{minx, miny, maxx - minx, maxy - miny};
+        const rect isect = rect::intersect(aabb, clip);
+        if (isect.w <= 0.0f || isect.h <= 0.0f) return;
     }
     // Solid geometry (tex == nullptr) joins the glyph batch when an atlas
     // exists: the atlas's reserved (0,0) texel is pure white, and dl_add
@@ -194,8 +191,12 @@ void ui::draw_rounded_rect(rect r, color c, const corner_radii &radii_in)
         draw_rect(r, c);
         return;
     }
-    std::vector<vertex> verts;
-    std::vector<i32> idx;
+    if (!ctx->dl) return;
+    // the draw list's scratch buffers: no heap allocation per rounded shape
+    std::vector<vertex> &verts = ctx->dl->scratch_v;
+    std::vector<i32> &idx = ctx->dl->scratch_i;
+    verts.clear();
+    idx.clear();
     detail::build_rounded_fan(
         r, radii, c, [](f32, f32, f32 &u, f32 &v) { u = v = 0.0f; }, verts, idx);
     draw_triangles(nullptr, verts.data(), static_cast<i32>(verts.size()), idx.data(),
@@ -629,8 +630,11 @@ void ui::blur(rect r, f32 blur_radius, const corner_radii &radii_in, f32 alpha)
 
     // Rounded composite: the same fan + 1px feather ring draw_rounded_rect uses,
     // with UVs taken from each vertex's scene position.
-    std::vector<vertex> verts;
-    std::vector<i32> idx;
+    if (!c->dl) return;
+    std::vector<vertex> &verts = c->dl->scratch_v;
+    std::vector<i32> &idx = c->dl->scratch_i;
+    verts.clear();
+    idx.clear();
     detail::build_rounded_fan(
         r, radii, col,
         [&](f32 x, f32 y, f32 &out_u, f32 &out_v)

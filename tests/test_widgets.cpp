@@ -73,7 +73,8 @@ PUI_TEST(test_panel_flags)
         rect b = {10, 10, 200, 120};
 
         {
-            panel_scope p = u.panel("NoTitle", b, PANEL_NO_TITLEBAR | PANEL_NO_SHADOW);
+            panel_scope p = u.panel(
+                "NoTitle", b, {.id = "notitle"_id, .flags = PANEL_NO_TITLEBAR | PANEL_NO_SHADOW});
             CHECK(p.open);
             // without a titlebar the client starts right below the
             // border
@@ -1391,7 +1392,7 @@ PUI_TEST(test_panel_card)
         rect pb = {50, 50, 200, 120};
 
         {
-            panel_scope p = u.panel("Test Panel", pb, PANEL_NONE);
+            panel_scope p = u.panel("Test Panel", pb, {.id = "test_panel"_id});
             CHECK(p.open);
             CHECK(!p.close_requested);
             CHECK(p.content().w > 0.0f);
@@ -1433,7 +1434,7 @@ PUI_TEST(test_panel_blocks_underlying)
     {
         ui u(c);
         rect b = pb;
-        panel_scope p = u.panel("P", b, PANEL_NONE);
+        panel_scope p = u.panel("P", b, {.id = "p"_id});
     }
     end_frame(c);
     // frame 2: a widget under the panel must NOT respond; panel content
@@ -1449,7 +1450,7 @@ PUI_TEST(test_panel_blocks_underlying)
         CHECK(!under.hovered);
         CHECK(c->active == 0);
         rect b = pb;
-        panel_scope p = u.panel("P", b, PANEL_NONE);
+        panel_scope p = u.panel("P", b, {.id = "p"_id});
         interaction inside = u.interact("inside"_id, rect{60, 90, 120, 40});
         CHECK(inside.hovered);
         // panel content is allowed
@@ -1475,7 +1476,7 @@ PUI_TEST(test_panel_close_button)
     {
         ui u(c);
         rect bb = b;
-        panel_scope p = u.panel("P", bb, PANEL_NONE);
+        panel_scope p = u.panel("P", bb, {.id = "p"_id});
         close_req = p.close_requested;
     }
     end_frame(c);
@@ -1488,7 +1489,7 @@ PUI_TEST(test_panel_close_button)
     {
         ui u(c);
         rect bb = b;
-        panel_scope p = u.panel("P", bb, PANEL_NONE);
+        panel_scope p = u.panel("P", bb, {.id = "p"_id});
         close_req = p.close_requested;
     }
     end_frame(c);
@@ -1504,7 +1505,7 @@ PUI_TEST(test_panel_close_button)
     {
         ui u(c);
         rect bb = b;
-        panel_scope p = u.panel("P", bb, PANEL_NONE);
+        panel_scope p = u.panel("P", bb, {.id = "p"_id});
         (void)p;
     }
     end_frame(c);
@@ -1515,7 +1516,7 @@ PUI_TEST(test_panel_close_button)
     {
         ui u(c);
         rect bb = b;
-        panel_scope p = u.panel("P", bb, PANEL_NONE);
+        panel_scope p = u.panel("P", bb, {.id = "p"_id});
         (void)p;
     }
     end_frame(c);
@@ -1782,4 +1783,34 @@ PUI_TEST(test_text_field_translucent_outline)
     CHECK(dev.filled); // opaque: the classic two-rect outline still fills with the border color
     CHECK(violation_count(c) == 0);
     destroy_context(c);
+}
+
+// A panel's identity is explicit: the title is never one.
+PUI_TEST(test_panel_needs_explicit_id)
+{
+    tf_env env;
+    env.expect_clean = false;
+    rect b = rect::make(10, 10, 120, 90);
+    env.frame(0.0, [&](ui &u) { panel_scope p = u.panel("Same title", b, {.id = "pa"_id}); });
+    CHECK(violation_count(env.c) == 0);
+
+    // two panels with one title but different ids are two panels
+    rect b1 = rect::make(10, 10, 100, 80), b2 = rect::make(150, 10, 100, 80);
+    env.frame(0.016,
+              [&](ui &u)
+              {
+                  {
+                      panel_scope p = u.panel("Same title", b1, {.id = "pa"_id});
+                  }
+                  {
+                      panel_scope p = u.panel("Same title", b2, {.id = "pb"_id});
+                  }
+              });
+    CHECK(violation_count(env.c) == 0);
+    CHECK(env.c->panel_depth == 2);
+    CHECK(env.c->panels[0].id == "pa"_id && env.c->panels[1].id == "pb"_id);
+
+    // no id (and no dock identity): reported
+    env.frame(0.032, [&](ui &u) { panel_scope p = u.panel("Anon", b, PANEL_NONE); });
+    CHECK(violation_last_code(env.c) == VIOL_PANEL_NO_ID);
 }

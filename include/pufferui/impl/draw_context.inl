@@ -124,9 +124,8 @@ inline void free_blur_store(context *c, blur_store *&bs)
     if (!bs) return;
     if (c->device)
     {
-        if (bs->half) c->device->destroy_target(bs->half);
-        if (bs->quarter) c->device->destroy_target(bs->quarter);
-        if (bs->eighth) c->device->destroy_target(bs->eighth);
+        for (texture_handle t : {bs->half, bs->quarter, bs->eighth, bs->sixteenth})
+            if (t) c->device->destroy_target(t);
     }
     delete bs;
     bs = nullptr;
@@ -190,6 +189,13 @@ void set_theme(context *c, const theme &t)
 // ---- windows ----
 namespace detail
 {
+// The per-window root id: a pure function of the slot, so it can be re-derived
+// whenever remove_window renumbers the list.
+inline uiid window_root(i32 index)
+{
+    return id_child(0x77696E646F770000ull, static_cast<uiid>(index) + 1);
+}
+
 // Grow the heap-owned window list, keeping interior pointers valid.
 inline void grow_windows(context *c)
 {
@@ -221,7 +227,7 @@ window *add_window(context *c, void *handle, render_surface *surface, rect clien
     w.surface = surface ? surface : c->surface;
     w.index = c->window_count;
     set_window_client(w, client);
-    w.root = id_child(0x77696E646F770000ull, static_cast<uiid>(w.index) + 1);
+    w.root = detail::window_root(w.index);
     c->window_count += 1;
     if (!c->focused_win) focus_window(c, w);
     return &w;
@@ -280,6 +286,7 @@ void remove_window(context *c, window &w)
     {
         c->windows[j].owner = c;
         c->windows[j].index = j;
+        c->windows[j].root = detail::window_root(j); // roots follow the index, so they stay unique
     }
     c->focused_win = (focus_index >= 0 && c->window_count > 0) ? &c->windows[focus_index] : nullptr;
     for (i32 j = 0; j < c->window_count; ++j)

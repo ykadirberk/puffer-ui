@@ -113,6 +113,7 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `bool needs_redraw(const context *c);`
 - `void mouse_move(window &w, f32 x, f32 y);`
 - `void mouse_button(window &w, bool down); // left button void mouse_button(window &w, pointer_button b, bool down); // any button void key_event(window &w, key k, bool down);`
+- `void key_repeat(window &w, key k);`
 - `void text_input_event(window &w, const char *utf8);`
 - `void ime_event(window &w, const char *preedit, i32 cursor);`
 - `void mods_event(window &w, bool shift, bool ctrl);`

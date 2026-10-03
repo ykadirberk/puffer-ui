@@ -440,9 +440,12 @@ static void draw_layers(golden_env &e, i32, i32)
     {
         // A translucent frosted surface over the blurred rect: the smear stays
         // visible (an opaque panel would hide it completely).
-        panel_scope p = u.panel("Blur", fb, PANEL_NO_CONTROLS, 0, nullptr,
-                                panel_override{.bg = some(color{70, 100, 150, 90}),
-                                               .titlebar_bg = some(color{30, 40, 60, 120})});
+        panel_scope p =
+            u.panel("Blur", fb,
+                    {.id = "blur_panel"_id,
+                     .flags = PANEL_NO_CONTROLS,
+                     .style = panel_override{.bg = some(color{70, 100, 150, 90}),
+                                             .titlebar_bg = some(color{30, 40, 60, 120})}});
         column pc(p.content(), 4.0f);
         u.text(pc.next(16.0f), "blur", th.text, ALIGN_LEFT);
         u.text(pc.next(14.0f), "panel", th.text_dim, ALIGN_LEFT);
@@ -610,19 +613,22 @@ static void draw_layout(golden_env &e, i32, i32)
         u.text(cell.pad(8.0f, 0.0f), label, th.text, ALIGN_LEFT);
     }
 
-    // scroll view: the bar shows from frame 1 on, content is clipped
-    scroll_view sv = u.scroll(rect::make(10, 148, 140, 42), "g_scroll"_id,
-                              scroll_options{4.0f, SCROLL_ALWAYS_RESERVE_BAR});
-    column col(sv.content(), 4.0f);
-    for (i32 i = 0; i < 5; ++i)
+    // scroll view: the bar shows from frame 1 on, content is clipped. Scoped so its
+    // clip is popped before the next view: a live sibling would be its parent clip.
     {
-        const rect r = col.next(16.0f);
-        u.draw_rect(r, i == 0 ? th.accent : th.widget_bg);
-        char label[16];
-        std::snprintf(label, sizeof(label), "row %d", i + 1);
-        u.text(r.pad(6.0f, 0.0f), label, th.text, ALIGN_LEFT);
+        scroll_view sv = u.scroll(rect::make(10, 148, 140, 42), "g_scroll"_id,
+                                  scroll_options{4.0f, SCROLL_ALWAYS_RESERVE_BAR});
+        column col(sv.content(), 4.0f);
+        for (i32 i = 0; i < 5; ++i)
+        {
+            const rect r = col.next(16.0f);
+            u.draw_rect(r, i == 0 ? th.accent : th.widget_bg);
+            char label[16];
+            std::snprintf(label, sizeof(label), "row %d", i + 1);
+            u.text(r.pad(6.0f, 0.0f), label, th.text, ALIGN_LEFT);
+        }
+        sv.set_content_height(5.0f * 16.0f + 4.0f * 4.0f);
     }
-    sv.set_content_height(5.0f * 16.0f + 4.0f * 4.0f);
 
     // overlay scroll view, scrolled by the input callback
     scroll_view ov = u.scroll(rect::make(160, 148, 140, 42), "g_overlay"_id,

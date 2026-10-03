@@ -100,6 +100,7 @@ enum violation_code : u32
     VIOL_DUP_WIDGET_ID,         // the same widget id interacted twice in a frame
     VIOL_FRAME_IDS_OVERFLOW,    // over MAX_FRAME_IDS regions; dup checking incomplete
     VIOL_DUP_MOTION_KEY,        // animate_rect called twice for one key in a frame
+    VIOL_PANEL_NO_ID,           // a panel without an explicit id (panel_opts::id / dock_panel)
     VIOL_COUNT
 };
 
@@ -561,6 +562,9 @@ struct tween
 {
     f32 duration = 0.2f;
     easing curve = easing::EASE_OUT;
+    // A key seen for the first time (or again after its 5 s collection) starts at
+    // the target instead of 0: state that is already there must not animate in.
+    bool from_target = false;
 };
 
 // spring: physics; settles when it stops moving. Retargets keep velocity.
@@ -843,6 +847,7 @@ struct panel_override
 // The options form for panels: named, order-independent, extensible.
 struct panel_opts
 {
+    uiid id = 0; // the panel's identity (drag/press/block state); required unless dock_panel is set
     u32 flags = PANEL_NONE;
     uiid dock_panel = 0;             // dock into a leaf/tab node of the app-owned tree
     const char *dock_name = nullptr; // the tab title when docked
@@ -1950,7 +1955,9 @@ struct ui
 
     panel_scope panel(std::string_view title, rect &bounds, u32 flags = PANEL_NONE,
                       uiid dock_panel = 0, const char *dock_name = nullptr, panel_override ov = {});
-    // Options form: `u.panel("Find", bounds, {.dock_panel = "left"_id})`.
+    // Options form: `u.panel("Find", bounds, {.id = "find"_id})`. The positional form
+    // takes its identity from `dock_panel`; a panel with neither reports
+    // VIOL_PANEL_NO_ID (the title is never an identity).
     panel_scope panel(std::string_view title, rect &bounds, const panel_opts &opts);
 
     // splitters + docking
@@ -2283,6 +2290,8 @@ struct palette_state
     i32 active = 0;
     i32 first =
         0; // first visible entry: moves only to keep a keyboard highlight in view, or by wheel
+    f32 pointer_x = -1.0f, pointer_y = -1.0f; // where the pointer was last frame: hover only
+                                              // moves the highlight when the pointer moved
 };
 struct palette_props
 {
@@ -2688,6 +2697,9 @@ void mouse_move(window &w, f32 x, f32 y);
 void mouse_button(window &w, bool down);                   // left button
 void mouse_button(window &w, pointer_button b, bool down); // any button
 void key_event(window &w, key k, bool down);
+// The OS auto-repeat of a key that is already held: raises another key_pressed edge
+// (text fields repeat Backspace/arrows, sliders step) without a new key-down.
+void key_repeat(window &w, key k);
 void text_input_event(window &w, const char *utf8);
 void ime_event(window &w, const char *preedit, i32 cursor);
 void mods_event(window &w, bool shift, bool ctrl);

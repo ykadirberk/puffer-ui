@@ -522,6 +522,7 @@ void ui::text(rect r, std::string_view s, color c, align a)
     const f32 baseline = r.y + (r.h - size) * 0.5f + static_cast<f32>(ascent) * scale;
 
     const rect *clip = (cc->clip_depth > 0) ? &cc->clip_stack[cc->clip_depth - 1] : nullptr;
+    if (clip && (clip->w <= 0.0f || clip->h <= 0.0f)) return; // empty clip: nothing can paint
 
     // Every quad is drawn on whole pixels. A glyph bitmap sampled at a fractional
     // position is smeared across two pixel columns and looks heavier or lighter

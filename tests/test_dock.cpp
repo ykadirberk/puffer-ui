@@ -340,7 +340,7 @@ PUI_TEST(test_multi_window)
 
             {
                 ui u(c);
-                panel_scope p = u.panel("panel_a", b1, PANEL_NONE);
+                panel_scope p = u.panel("panel_a", b1, {.id = "panel_a"_id});
                 (void)p;
             }
             end_frame(c);
@@ -349,7 +349,7 @@ PUI_TEST(test_multi_window)
 
             {
                 ui u(c);
-                panel_scope p = u.panel("panel_b", b2, PANEL_NONE);
+                panel_scope p = u.panel("panel_b", b2, {.id = "panel_b"_id});
                 (void)p;
             }
             end_frame(c);
@@ -1037,5 +1037,60 @@ PUI_TEST(test_float_panel_dock_drag)
     CHECK(act.panel == "floating"_id);
     CHECK(act.target == &leaf);
     CHECK(violation_count(c) == 0);
+    destroy_context(c);
+}
+
+// Regression: window roots came from the slot index but survived the renumbering
+// in remove_window, so a window added after a removal could share a root (and
+// with it every titlebar id) with a survivor.
+PUI_TEST(test_window_roots_stay_unique)
+{
+    null_device nd;
+    context *c = create_context(&nd, nullptr);
+    set_violation_handler(c, capture_violation, nullptr);
+    g_violation_events = 0;
+    for (i32 i = 1; i <= 3; ++i)
+        (void)add_window(c, reinterpret_cast<void *>(static_cast<ptrdiff_t>(i)),
+                         nd.create_surface(), rect::make(0, 0, 100, 100));
+    remove_window(c, *window_at(c, reinterpret_cast<void *>(2)));
+    (void)add_window(c, reinterpret_cast<void *>(4), nd.create_surface(),
+                     rect::make(0, 0, 100, 100));
+    CHECK(c->window_count == 3);
+    for (i32 i = 0; i < c->window_count; ++i)
+        for (i32 j = i + 1; j < c->window_count; ++j)
+            CHECK(c->windows[i].root != c->windows[j].root);
+    CHECK(violation_count(c) == 0);
+    destroy_context(c);
+}
+
+// Regression: a dock tab drag kept the caller's name pointer for the ghost label;
+// the drag outlives the frame that started it, so the name is copied.
+PUI_TEST(test_dock_tab_drag_name_is_interned)
+{
+    context *c = create_context(nullptr);
+    char name[16] = "Tab";
+    dock_node leaf{};
+    leaf.kind = DOCK_LEAF;
+    leaf.panels[0] = "tab"_id;
+    leaf.panel_names[0] = name;
+    leaf.panel_count = 1;
+    auto draw = [](uiid, rect, bool) {};
+    auto frame = [&](f64 now, f32 mx, f32 my, bool press)
+    {
+        begin_frame(c, now, 0.016, rect::make(0, 0, 300, 200));
+        mouse_move(c, mx, my);
+        if (press) mouse_button(c, true);
+        {
+            ui u(c);
+            (void)u.dock_space("dock"_id, {0, 0, 300, 200}, leaf, draw);
+        }
+        end_frame(c);
+    };
+    frame(0.0, 20, 10, false);
+    frame(0.016, 20, 10, true); // press the tab
+    std::snprintf(name, sizeof(name), "%s", "gone");
+    frame(0.032, 20, 60, false);
+    CHECK(c->dock_panel_name != nullptr);
+    CHECK(c->dock_panel_name != nullptr && std::strcmp(c->dock_panel_name, "Tab") == 0);
     destroy_context(c);
 }

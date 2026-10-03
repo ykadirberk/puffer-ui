@@ -775,3 +775,154 @@ PUI_TEST(test_segmented_hover_and_outer_radii)
     CHECK(g_violation_events == 0);
     destroy_context(c);
 }
+
+// Regression: both scrims span the whole host, panel included, so a click on the
+// drawer's or the palette's own empty area counted as a click "outside" and
+// closed them. Only a click outside the panel closes.
+PUI_TEST(test_scrim_ignores_clicks_inside_the_panel)
+{
+    {
+        tf_env env;
+        context *c = env.c;
+        bool open = true;
+        const rect host = rect::make(0, 0, 300, 200);
+        auto frame = [&](f64 t)
+        {
+            env.frame(t, [&](ui &u)
+                      { comp::drawer_scope dr(u, host, open, {.id = "drw"_id, .width = 200.0f}); });
+        };
+        frame(0.0);
+        mouse_move(c, 100.0f, 100.0f); // inside the drawer, on no widget
+        mouse_button(c, true);
+        frame(0.016);
+        mouse_button(c, false);
+        frame(0.032);
+        CHECK(open);
+    }
+    {
+        null_device nd;
+        context *c = create_context(&nd, nd.create_surface());
+        set_violation_handler(c, capture_violation, nullptr);
+        g_violation_events = 0;
+        if (tf_needs_font(c))
+        {
+            destroy_context(c);
+            return;
+        }
+        static const comp::palette_command cmds[] = {{"Open file", ""}, {"Save file", ""}};
+        bool open = true;
+        comp::palette_state st;
+        const rect screen = rect::make(0, 0, 600, 400);
+        auto frame = [&](f64 t)
+        {
+            begin_frame(c, t, 0.016, screen);
+            {
+                ui u(c);
+                (void)comp::command_palette(u, screen, open, st,
+                                            std::span<const comp::palette_command>(cmds),
+                                            {.id = "pal"_id});
+            }
+            end_frame(c);
+        };
+        frame(0.0);
+        frame(0.016);
+        mouse_move(c, 300.0f, screen.h * 0.18f + 2.0f); // the panel's top padding
+        mouse_button(c, true);
+        frame(0.032);
+        mouse_button(c, false);
+        frame(0.048);
+        CHECK(open);
+
+        mouse_move(c, 5.0f, 5.0f); // outside: the scrim proper
+        mouse_button(c, true);
+        frame(0.064);
+        mouse_button(c, false);
+        frame(0.080);
+        CHECK(!open);
+        CHECK(violation_count(c) == 0);
+        destroy_context(c);
+    }
+}
+
+// Regression: hovering a row re-highlighted it every frame, so with the pointer
+// resting on a row the Up/Down keys moved the highlight and hover moved it
+// straight back. Hover now only counts while the pointer moves.
+PUI_TEST(test_palette_keys_beat_a_resting_pointer)
+{
+    null_device nd;
+    context *c = create_context(&nd, nd.create_surface());
+    set_violation_handler(c, capture_violation, nullptr);
+    g_violation_events = 0;
+    if (tf_needs_font(c))
+    {
+        destroy_context(c);
+        return;
+    }
+    static char names[10][16];
+    static comp::palette_command cmds[10];
+    for (i32 i = 0; i < 10; ++i)
+    {
+        std::snprintf(names[i], sizeof(names[i]), "Command %02d", i);
+        cmds[i] = {names[i], ""};
+    }
+    bool open = true;
+    comp::palette_state st;
+    const rect screen = rect::make(0, 0, 600, 600);
+    auto frame = [&](f64 t)
+    {
+        begin_frame(c, t, 0.016, screen);
+        {
+            ui u(c);
+            (void)comp::command_palette(u, screen, open, st,
+                                        std::span<const comp::palette_command>(cmds),
+                                        {.id = "pal"_id});
+        }
+        end_frame(c);
+    };
+    frame(0.0);
+    frame(0.016);
+    const theme &th = c->active_theme;
+    const f32 items_y = screen.h * 0.18f + th.padding * 0.75f + th.control_h + 6.0f;
+    const f32 row_h = th.palette.item_h;
+    mouse_move(c, 300.0f, items_y + row_h * 2.5f); // rests on the third row
+    frame(0.032);
+    CHECK(st.active == 2); // the pointer moved: hover highlights
+    frame(0.048);
+    key_event(c, key::DOWN, true);
+    frame(0.064);
+    key_event(c, key::DOWN, false);
+    frame(0.080);
+    frame(0.096);
+    CHECK(st.active == 3); // the key won and the resting pointer left it alone
+    CHECK(violation_count(c) == 0);
+    destroy_context(c);
+}
+
+// Regression: a component that is already open/on at first sight (or again after
+// the 5 s collection of its animation keys) animated in from zero.
+PUI_TEST(test_components_start_at_their_target)
+{
+    tf_env env;
+    bool open = true;
+    f32 content_h = -1.0f;
+    env.frame(0.0,
+              [&](ui &u)
+              {
+                  comp::accordion_scope acc(u, rect::make(10, 10, 200, 100), "Open", open,
+                                            {.id = "acc"_id, .content_h = 60.0f});
+                  content_h = acc.content().h;
+              });
+    CHECK(content_h == 60.0f); // fully open on the very first frame
+
+    bool on = true;
+    f32 knob = -1.0f;
+    env.frame(0.016,
+              [&](ui &u)
+              {
+                  (void)comp::switch_toggle(u, rect::make(10, 150, 120, 24), "Wi-Fi", on,
+                                            {.id = "sw"_id});
+                  // the knob's own key, read back at its (unchanged) target
+                  knob = u.animate(id_child("sw"_id, "knob"_id), 1.0f, tween{});
+              });
+    CHECK(knob == 1.0f); // already "on": the knob never slid in from the off position
+}

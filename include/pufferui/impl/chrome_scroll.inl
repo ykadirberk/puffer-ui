@@ -469,16 +469,25 @@ i32 ui::context_menu(uiid id, rect anchor, const char *const *item_labels, i32 i
     return picked;
 }
 
-panel_scope ui::panel(std::string_view title, rect &bounds, const panel_opts &opts)
-{
-    return panel(title, bounds, opts.flags, opts.dock_panel, opts.dock_name, opts.style);
-}
-
 panel_scope ui::panel(std::string_view title, rect &bounds, u32 flags, uiid dock_panel,
                       const char *dock_name, panel_override ov)
 {
-    const panel_style s = merge_style(ctx->active_theme.panel, ov);
-    const uiid id = hash(title);
+    return panel(
+        title, bounds,
+        panel_opts{.flags = flags, .dock_panel = dock_panel, .dock_name = dock_name, .style = ov});
+}
+
+panel_scope ui::panel(std::string_view title, rect &bounds, const panel_opts &opts)
+{
+    const u32 flags = opts.flags;
+    const uiid dock_panel = opts.dock_panel;
+    const char *dock_name = opts.dock_name;
+    const panel_style s = merge_style(ctx->active_theme.panel, opts.style);
+    // Identity is explicit, never the title: `.id`, or the dock identity a
+    // dockable panel already carries.
+    const uiid id = opts.id != 0 ? opts.id : dock_panel;
+    PUFFERUI_CHECK(VIOL_PANEL_NO_ID, id != 0,
+                   "panel needs an explicit id (panel_opts::id or a dock_panel id)");
     const bool no_titlebar = (flags & PANEL_NO_TITLEBAR) != 0;
     const bool no_controls = (flags & PANEL_NO_CONTROLS) != 0;
     const bool no_drag = (flags & PANEL_NO_DRAG) != 0;
@@ -1024,7 +1033,7 @@ inline void dock_draw_node(ui &u, uiid node_id, dock_node &n, rect area, i32 dep
                 {
                     c->dock_panel = n.panels[i];
                     c->dock_source = &n;
-                    c->dock_panel_name = n.panel_names[i];
+                    c->dock_panel_name = detail::intern_dock_name(c, n.panel_names[i]);
                     c->dock_dragging = false;
                     c->dock_press_x = c->mouse_x;
                     c->dock_press_y = c->mouse_y;

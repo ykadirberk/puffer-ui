@@ -1163,3 +1163,57 @@ PUI_TEST(test_widget_corner_radii)
     CHECK(g_violation_events == 0);
     destroy_context(c);
 }
+
+// Regression: dl_prepare read a zero-size clip as "no scissor", so everything
+// drawn inside a collapsed region painted across the whole window.
+PUI_TEST(test_empty_clip_paints_nothing)
+{
+    tf_env env;
+    const i32 base = env.nd.vertices;
+    env.frame(0.0,
+              [&](ui &u)
+              {
+                  region r = u.region(rect::make(10, 10, 50, 0), "collapsed"_id);
+                  u.draw_rect(rect::make(0, 0, 100, 100), color::white());
+                  u.draw_rounded_rect(rect::make(0, 0, 100, 100), color::white(), 8.0f);
+              });
+    CHECK(env.nd.vertices == base); // nothing reached the device
+
+    env.frame(0.016,
+              [&](ui &u)
+              {
+                  region r = u.region(rect::make(10, 10, 50, 50), "open"_id);
+                  u.draw_rect(rect::make(0, 0, 100, 100), color::white());
+              });
+    CHECK(env.nd.vertices > base); // control: a real clip still draws
+}
+
+// Regression: free_blur_store forgot the sixteenth-size target (radius > 20).
+struct target_counting_device : null_device
+{
+    i32 destroyed = 0;
+    void destroy_target(texture_handle t) override
+    {
+        ++destroyed;
+        null_device::destroy_target(t);
+    }
+};
+
+PUI_TEST(test_blur_frees_every_target)
+{
+    target_counting_device nd;
+    nd.my_surface.w = 200;
+    nd.my_surface.h = 100;
+    context *c = create_context(&nd, nd.create_surface());
+    begin_frame(c, 0.0, 0.016, rect::make(0, 0, 200, 100));
+    {
+        ui u(c);
+        u.draw_rect({0, 0, 200, 100}, color::white());
+        u.blur({20, 20, 80, 40}, 30.0f, 4.0f, 0.8f); // radius > 20: all four levels
+    }
+    end_frame(c);
+    CHECK(nd.targets == 4);
+    CHECK(violation_count(c) == 0);
+    destroy_context(c);
+    CHECK(nd.destroyed == nd.targets); // every target the blur made is released
+}

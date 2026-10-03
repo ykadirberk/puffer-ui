@@ -425,3 +425,32 @@ PUI_TEST(test_thread_isolation)
     // (current_context was never set on the main thread by the workers.)
     CHECK(current_context() == nullptr);
 }
+
+// Regression: the SDL pump dropped OS auto-repeat, so a held Backspace/arrow
+// never repeated. key_repeat raises another press edge, but only while held.
+PUI_TEST(test_key_repeat)
+{
+    tf_env env;
+    bool seen = false;
+    auto frame = [&](f64 t) { env.frame(t, [&](ui &u) { seen = u.key_pressed(key::BACKSPACE); }); };
+    frame(0.0);
+    window *w = first_window(env.c);
+    CHECK(w != nullptr);
+
+    key_repeat(*w, key::BACKSPACE); // not held: no edge
+    frame(0.016);
+    CHECK(!seen);
+
+    key_event(*w, key::BACKSPACE, true);
+    frame(0.032);
+    CHECK(seen);
+    frame(0.048); // held, no new event: the edge is spent
+    CHECK(!seen);
+    key_repeat(*w, key::BACKSPACE); // the OS repeat
+    frame(0.064);
+    CHECK(seen);
+    key_event(*w, key::BACKSPACE, false);
+    key_repeat(*w, key::BACKSPACE); // released: a late repeat is ignored
+    frame(0.080);
+    CHECK(!seen);
+}
