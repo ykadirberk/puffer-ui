@@ -24,10 +24,11 @@ the rest are accepted for now.
   The popup/panel stacks and the window list grow on demand
   (`MAX_POPUPS`/`MAX_PANELS`/`MAX_WINDOWS` are initial capacities), and
   duplicate-region checking is an unbounded per-frame hash set.
-- Culling is per draw batch: a batch whose bounding box misses the active clip
-  is dropped before the renderer, and `scroll_view::virtual_list` skips building
-  off-screen rows. Other off-screen content is still *built* (only its
-  geometry is culled).
+- Culling is geometric: a draw whose bounding box lies wholly outside the
+  client area or the active clip never reaches the renderer (shapes, text glyphs,
+  blurs), and `scroll_view::virtual_list` skips building off-screen rows. Other
+  off-screen content is still *built* (layout and widget calls run); only its
+  geometry is culled.
 - Single-threaded, single-context; per-window draw lists are recorded
   sequentially (parallel recording is a design note, not planned).
 

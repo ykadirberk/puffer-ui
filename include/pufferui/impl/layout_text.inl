@@ -521,7 +521,12 @@ void ui::text(rect r, std::string_view s, color c, align a)
     const f32 baseline = r.y + (r.h - size) * 0.5f + static_cast<f32>(ascent) * scale;
 
     const rect *clip = (cc->clip_depth > 0) ? &cc->clip_stack[cc->clip_depth - 1] : nullptr;
-    if (clip && (clip->w <= 0.0f || clip->h <= 0.0f)) return; // empty clip: nothing can paint
+    // What this run can still paint: the client area intersected with the clip. An
+    // empty area paints nothing; a run wholly outside it, or a glyph outside it,
+    // is skipped (no quad, no batch break, no rasterization of its subpixel bin).
+    rect pb{};
+    const bool bounded = detail::paint_bounds(cc, pb);
+    if (bounded && (pb.w <= 0.0f || pb.h <= 0.0f)) return;
 
     // Every quad is drawn on whole pixels. A glyph bitmap sampled at a fractional
     // position is smeared across two pixel columns and looks heavier or lighter
@@ -532,6 +537,14 @@ void ui::text(rect r, std::string_view s, color c, align a)
     // one before it, so it is applied before the glyph is placed (text_width sums
     // the same terms, so measurement and drawing agree).
     const f32 base_y = std::floor(baseline + 0.5f);
+    if (bounded)
+    {
+        // generous glyph overhang: ascenders/diacritics above, descenders below
+        const f32 over = size * 0.8f;
+        if (pen - over >= pb.right() || pen + width + over <= pb.x ||
+            base_y - size * 1.6f >= pb.bottom() || base_y + size * 0.8f <= pb.y)
+            return;
+    }
     for (text_store::cached_glyph &e : lay->gs)
     {
         pen += e.kern_in;
@@ -541,6 +554,17 @@ void ui::text(rect r, std::string_view s, color c, align a)
         {
             bin = 0;
             ix += 1.0f;
+        }
+        if (bounded && e.g.w > 0.0f)
+        {
+            // the bin-0 bitmap's box (other bins differ by under a pixel)
+            const f32 x0 = ix + e.g.xoff - 1.0f, y0 = base_y + e.g.yoff;
+            if (x0 >= pb.right() || x0 + e.g.w + 2.0f <= pb.x || y0 >= pb.bottom() ||
+                y0 + e.g.h <= pb.y)
+            {
+                pen += e.g.advance;
+                continue;
+            }
         }
         const glyph *gp = &e.g;
         if (bin > 0)

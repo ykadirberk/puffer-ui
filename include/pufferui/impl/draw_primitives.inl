@@ -7,16 +7,16 @@ void ui::draw_triangles(texture_handle tex, const vertex *vertices, i32 vertex_c
                         const i32 *indices, i32 index_count)
 {
     if (vertex_count <= 0 || index_count <= 0) return;
-    // Cull whole batches that cannot paint: when a clip is active, a batch
-    // whose bounding box misses the clip is dropped here — the renderer never
-    // sees it (this is what keeps clipped-out scroll/panel content cheap). An
-    // empty clip (w/h 0: a collapsed region) paints nothing, so everything is
+    // Cull whole batches that cannot paint: a batch whose bounding box misses the
+    // client area or the active clip is dropped here — the renderer never sees it
+    // (this is what keeps off-window and clipped-out scroll/panel content cheap).
+    // An empty clip (w/h 0: a collapsed region) paints nothing, so everything is
     // culled; the device must never see it, because "no scissor" is how a
     // device spells "unclipped".
-    if (ctx->clip_depth > 0)
+    rect bounds;
+    if (detail::paint_bounds(ctx, bounds))
     {
-        const rect clip = ctx->clip_stack[ctx->clip_depth - 1];
-        if (clip.w <= 0.0f || clip.h <= 0.0f) return;
+        if (bounds.w <= 0.0f || bounds.h <= 0.0f) return;
         f32 minx = vertices[0].x, maxx = minx, miny = vertices[0].y, maxy = miny;
         for (i32 i = 1; i < vertex_count; ++i)
         {
@@ -26,7 +26,7 @@ void ui::draw_triangles(texture_handle tex, const vertex *vertices, i32 vertex_c
             maxy = max2(maxy, vertices[i].y);
         }
         const rect aabb{minx, miny, maxx - minx, maxy - miny};
-        const rect isect = rect::intersect(aabb, clip);
+        const rect isect = rect::intersect(aabb, bounds);
         if (isect.w <= 0.0f || isect.h <= 0.0f) return;
     }
     // Solid geometry (tex == nullptr) joins the glyph batch when an atlas
@@ -185,6 +185,7 @@ void ui::draw_rounded_rect(rect r, color c, f32 radius)
 void ui::draw_rounded_rect(rect r, color c, const corner_radii &radii_in)
 {
     PUFFERUI_CHECK(VIOL_INVALID_RECT, r.is_valid(), "draw_rounded_rect with invalid rect");
+    if (detail::outside_paint(ctx, r.pad(-1.5f))) return; // before the fan is built
     const corner_radii radii = detail::clamp_radii(r, radii_in);
     if (radii.tl == 0.0f && radii.tr == 0.0f && radii.br == 0.0f && radii.bl == 0.0f)
     {
@@ -389,6 +390,12 @@ void ui::draw_sector(vec2 center, f32 r_in, f32 r_out, f32 a0, f32 a1, color c)
         a1 = t;
     }
     if (a1 - a0 <= 0.0f || r_out <= 0.0f || r_out <= r_in) return; // degenerate: nothing to fill
+    {
+        const f32 reach = r_out + 1.5f; // outer radius plus the feather
+        if (detail::outside_paint(
+                ctx, rect::make(center.x - reach, center.y - reach, reach * 2.0f, reach * 2.0f)))
+            return;
+    }
     const f32 mid = (r_in + r_out) * 0.5f;
     const i32 seg = static_cast<i32>(max2(3.0f, std::ceil((a1 - a0) * max2(2.0f, mid) * 0.25f)));
 
@@ -511,6 +518,7 @@ void ui::blur(rect r, f32 blur_radius, const corner_radii &radii_in, f32 alpha)
     render_surface *surf = c->current_window ? c->current_window->surface : c->surface;
     if (!c->device || !surf) return;
     PUFFERUI_CHECK(VIOL_INVALID_RECT, r.is_valid(), "blur with invalid rect");
+    if (detail::outside_paint(c, r)) return; // the composite could not change a pixel
 
     // No render targets: defined fallback -> solid translucent tint.
     if (!has_cap(c->device->caps(), backend_caps::RENDER_TARGETS))

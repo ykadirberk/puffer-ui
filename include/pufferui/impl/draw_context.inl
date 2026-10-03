@@ -68,6 +68,39 @@ inline void dl_prepare(context *c, texture_handle tex, const rect *clip)
     }
 }
 
+// The area a draw can still change: the window's client area intersected with the
+// active clip. False when nothing bounds the draw (no frame area known, no clip).
+inline bool paint_bounds(const context *c, rect &out)
+{
+    bool bounded = false;
+    rect r{};
+    if (c->screen.w > 0.0f && c->screen.h > 0.0f)
+    {
+        r = c->screen;
+        bounded = true;
+    }
+    if (c->clip_depth > 0)
+    {
+        const rect &top = c->clip_stack[c->clip_depth - 1];
+        r = bounded ? rect::intersect(r, top) : top;
+        bounded = true;
+    }
+    out = r;
+    return bounded;
+}
+
+// True when a draw confined to `box` (feather included) cannot change a pixel: it
+// lies wholly outside the client area or the active clip, or the clip is empty.
+// Callers skip the draw (and the geometry they would build) entirely.
+inline bool outside_paint(const context *c, const rect &box)
+{
+    rect pb;
+    if (!paint_bounds(c, pb)) return false;
+    if (pb.w <= 0.0f || pb.h <= 0.0f) return true;
+    return box.right() <= pb.x || box.x >= pb.right() || box.bottom() <= pb.y ||
+           box.y >= pb.bottom();
+}
+
 inline void dl_add(context *c, const vertex *verts, i32 vcount, const i32 *idx, i32 icount)
 {
     if (!c->dl || vcount <= 0 || icount <= 0) return;

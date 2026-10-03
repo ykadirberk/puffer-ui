@@ -56,8 +56,11 @@ headless `null_device` implements the contract in memory — the whole UI
 logic is testable with no GPU.
 
 The draw list batches by clip state and texture; see `docs/perf.md` for the
-current call/vertex profile. Batches that miss the active clip are culled
-before the device, and an empty clip (zero width/height) culls everything:
+current call/vertex profile. A draw whose bounding box lies wholly outside the
+client area or the active clip is culled before the device (shapes at
+`draw_triangles`, with early outs ahead of the geometry build for rounded
+rects, rings, sectors and blurs; text per run and per glyph), and an empty clip
+(zero width/height) culls everything:
 "no scissor" means unclipped on a device, so it is never sent for a clip.
 Scopes clip while alive, so two scopes alive in one block are nested, not
 siblings.

@@ -202,7 +202,10 @@ programs live in `examples/tutorial/` (`pui_tut_*` targets, built and
   Do not hand-roll per-rect springs in examples; improve `animate_rect` instead.
 - **Use `interaction.activated` for drag anchors, not `pressed`.** `pressed` means
   "held"; re-capturing an anchor every frame makes drags silently do nothing.
-- **An empty clip paints nothing.** A zero-size clip culls everything (device
+- **A draw that cannot paint is not issued.** `detail::paint_bounds` is the
+  client area intersected with the active clip; geometry wholly outside it is
+  culled before the device (new primitives that build geometry should test
+  `detail::outside_paint` first). A zero-size clip culls everything (device
   "no scissor" means unclipped, so it must never reach the device). Scopes
   (`region`, `scroll_view`, panels) clip while alive: a second one created in the
   same block is nested in the first, not a sibling — scope siblings in `{ }`.

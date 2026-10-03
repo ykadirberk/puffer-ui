@@ -1218,3 +1218,103 @@ PUI_TEST(test_blur_frees_every_target)
     destroy_context(c);
     CHECK(nd.destroyed == nd.targets); // every target the blur made is released
 }
+
+// A draw that lies wholly outside the client area never reaches the device, with
+// or without a clip; one that overlaps the edge still does.
+PUI_TEST(test_draw_outside_client_area_is_culled)
+{
+    tf_env env(300, 200);
+    auto drawn = [&](auto &&fn, f64 t)
+    {
+        env.frame(t, fn);
+        return env.nd.vertices; // the device counts per frame
+    };
+    // fully outside on every side: nothing is submitted
+    const rect outside[] = {
+        {-200, 10, 100, 50}, {400, 10, 100, 50}, {10, -200, 100, 50}, {10, 300, 100, 50}};
+    f64 t = 0.0;
+    for (const rect &r : outside)
+    {
+        CHECK(drawn([&](ui &u) { u.draw_rect(r, color::white()); }, t += 0.016) == 0);
+        CHECK(drawn([&](ui &u) { u.draw_rounded_rect(r, color::white(), 8.0f); }, t += 0.016) == 0);
+        CHECK(drawn([&](ui &u)
+                    { u.draw_line(r.x, r.y, r.right(), r.bottom(), color::white(), 2.0f); },
+                    t += 0.016) == 0);
+        CHECK(drawn(
+                  [&](ui &u)
+                  {
+                      u.draw_sector(vec2{r.center_x(), r.center_y()}, 4.0f, 20.0f, 0.0f, 3.0f,
+                                    color::white());
+                  },
+                  t += 0.016) == 0);
+        CHECK(drawn([&](ui &u) { u.card(r); }, t += 0.016) == 0);
+    }
+    // straddling the edge: still drawn
+    CHECK(drawn([&](ui &u) { u.draw_rect(rect::make(-50, 10, 100, 50), color::white()); },
+                t += 0.016) > 0);
+    CHECK(drawn([&](ui &u)
+                { u.draw_rounded_rect(rect::make(250, 150, 100, 100), color::white(), 8.0f); },
+                t += 0.016) > 0);
+    // inside a clip that excludes it (the clip itself is on screen): culled too
+    CHECK(drawn(
+              [&](ui &u)
+              {
+                  region r = u.region(rect::make(0, 0, 50, 50), "clip"_id);
+                  u.draw_rect(rect::make(100, 100, 50, 50), color::white());
+              },
+              t += 0.016) == 0);
+}
+
+// Text wholly outside the client area or the clip submits no glyph quads, and a
+// run that only partly fits submits only the glyphs that can show.
+PUI_TEST(test_text_outside_clip_is_culled)
+{
+    tf_env env(300, 200);
+    if (tf_needs_font(env.c)) return;
+    auto drawn = [&](auto &&fn, f64 t)
+    {
+        env.frame(t, fn);
+        return env.nd.vertices; // the device counts per frame
+    };
+    const char *line = "the quick brown fox jumps over the lazy dog";
+    const rect row = rect::make(10, 10, 280, 24);
+    const i32 all = drawn([&](ui &u) { u.text(row, line, color::white(), ALIGN_LEFT); }, 0.0);
+    CHECK(all > 0);
+    // far outside the window, in each direction
+    CHECK(drawn([&](ui &u)
+                { u.text(rect::make(-2000, 10, 280, 24), line, color::white(), ALIGN_LEFT); },
+                0.016) == 0);
+    CHECK(drawn([&](ui &u)
+                { u.text(rect::make(10, 900, 280, 24), line, color::white(), ALIGN_LEFT); },
+                0.032) == 0);
+    CHECK(drawn([&](ui &u)
+                { u.text(rect::make(10, -900, 280, 24), line, color::white(), ALIGN_LEFT); },
+                0.048) == 0);
+    // a narrow clip shows only the first glyphs
+    const i32 clipped = drawn(
+        [&](ui &u)
+        {
+            region r = u.region(rect::make(10, 10, 40, 24), "narrow"_id);
+            u.text(row, line, color::white(), ALIGN_LEFT);
+        },
+        0.064);
+    CHECK(clipped > 0 && clipped < all / 2);
+    // text scrolled out above a clip: nothing
+    CHECK(drawn(
+              [&](ui &u)
+              {
+                  region r = u.region(rect::make(10, 100, 200, 30), "view"_id);
+                  u.text(rect::make(10, 10, 280, 24), line, color::white(), ALIGN_LEFT);
+              },
+              0.080) == 0);
+}
+
+// A blur whose rect cannot change a pixel builds no pyramid.
+PUI_TEST(test_blur_outside_client_area_is_skipped)
+{
+    tf_env env(300, 200);
+    env.frame(0.0, [&](ui &u) { u.blur(rect::make(500, 10, 80, 40), 12.0f, 4.0f, 1.0f); });
+    CHECK(env.nd.targets == 0);
+    env.frame(0.016, [&](ui &u) { u.blur(rect::make(20, 20, 80, 40), 12.0f, 4.0f, 1.0f); });
+    CHECK(env.nd.targets >= 3);
+}
