@@ -191,14 +191,21 @@ inline i32 menu_items(ui &u, uiid id, rect area, const char *const *labels, i32 
     // are neither drawn nor hoverable. SCROLL_OVERLAY keeps the bar floating
     // over the clipped rows instead of re-reserving width, and the bar draws
     // after the rows so a row can never steal its press (hit-rect ordering).
+    // The surface comes first, outside the viewport clip (the scroll view clips to
+    // the padded rows, which would cut the rounded panel down to its inside). A
+    // glass menu blurs what is behind it before its tint goes on.
+    const menu_style &m = t.menu;
+    if (m.blur > 0.5f) u.blur(area, m.blur, corner_radii::all(m.radius), 1.0f);
+    u.draw_rounded_rect(area, m.bg, m.radius);
+    if (m.border.a > 0) detail::rounded_ring(u, area, m.border, m.radius, 1.0f);
+    if (m.accent.a > 0) u.draw_rect(rect::make(area.x, area.y, area.w, 2.0f), m.accent);
+
     scroll_view sv = u.scroll(area.pad(pad), id, scroll_options{2.0f, SCROLL_OVERLAY});
     if (fresh_open) sv.scroll_to(0.0f); // reopening starts at the top
     // Pre-set the content height before laying out: the rows column then sees
     // the full list height on the very first frame (the r17 first-frame fix)
     // instead of clamping against an empty viewport.
     sv.set_content_height(static_cast<f32>(count) * row_h + static_cast<f32>(count - 1) * 2.0f);
-    u.draw_rounded_rect(area, t.panel_bg, 6.0f);
-    u.draw_rect(rect::make(area.x, area.y, area.w, 2.0f), t.accent);
 
     i32 picked = -1;
     column rows(sv.content(), 2.0f);
@@ -209,7 +216,7 @@ inline i32 menu_items(ui &u, uiid id, rect area, const char *const *labels, i32 
         interaction in = u.interact(item_id, row);
         if (in.hovered) u.set_cursor(CURSOR_HAND);
         if (in.hovered) hot = i; // mouse and keyboard share one highlight
-        if (hot == i && count > 1) u.draw_rounded_rect(row, t.widget_hover, 4.0f);
+        if (hot == i && count > 1) u.draw_rounded_rect(row, m.hover, 4.0f);
         u.text(row.pad(8.0f, 0.0f), labels[i], t.text, ALIGN_LEFT);
         if (in.clicked) picked = i;
     }

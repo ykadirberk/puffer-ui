@@ -595,6 +595,8 @@ PUI_TEST(test_theme_lerp_slots)
     b.panel.radius = a.panel.radius + 10.0f;
     b.table.row_h = a.table.row_h + 20.0f;
     b.toast.width = a.toast.width + 100.0f;
+    b.menu.bg = {255, 255, 255, 255};
+    b.menu.blur = a.menu.blur + 20.0f;
 
     const theme mid = theme_lerp(a, b, 0.5f);
     CHECK(mid.switch_ctrl.track_on.r > a.switch_ctrl.track_on.r &&
@@ -605,6 +607,8 @@ PUI_TEST(test_theme_lerp_slots)
     CHECK(mid.panel.radius > a.panel.radius && mid.panel.radius < b.panel.radius);
     CHECK(mid.table.row_h > a.table.row_h && mid.table.row_h < b.table.row_h);
     CHECK(mid.toast.width > a.toast.width && mid.toast.width < b.toast.width);
+    CHECK(mid.menu.bg.r > a.menu.bg.r && mid.menu.bg.r < 255);
+    CHECK(mid.menu.blur > a.menu.blur && mid.menu.blur < b.menu.blur);
 
     const theme end = theme_lerp(a, b, 1.0f);
     CHECK(end.switch_ctrl.track_on.r == 255 && end.switch_ctrl.track_on.g == 0);
@@ -925,4 +929,46 @@ PUI_TEST(test_components_start_at_their_target)
                   knob = u.animate(id_child("sw"_id, "knob"_id), 1.0f, tween{});
               });
     CHECK(knob == 1.0f); // already "on": the knob never slid in from the off position
+}
+
+// A glass menu (translucent menu.bg + menu.blur) blurs what is behind it before
+// its tint goes on; the stock opaque menu makes no blur targets at all.
+PUI_TEST(test_glass_menu)
+{
+    static const char *items[2] = {"Open", "Close"};
+    const rect anchor = rect::make(40, 40, 120, 60);
+    auto open_menu = [&](f32 blur, color bg, bool &tint_seen, i32 &targets)
+    {
+        color_probe_device dev;
+        dev.want = bg;
+        dev.my_surface.w = 400;
+        dev.my_surface.h = 400;
+        context *c = create_context(&dev, dev.create_surface());
+        set_violation_handler(c, capture_violation, nullptr);
+        g_violation_events = 0;
+        theme t = default_dark();
+        t.menu.bg = bg;
+        t.menu.blur = blur;
+        set_theme(c, t);
+        begin_frame(c, 0.0, 0.016, rect::make(0, 0, 400, 400));
+        mouse_move(c, 80, 60);
+        mouse_button(c, pointer_button::RIGHT, true);
+        {
+            ui u(c);
+            (void)u.context_menu("cm"_id, anchor, items, 2);
+        }
+        end_frame(c); // the deferred menu surface paints here
+        tint_seen = dev.seen;
+        targets = dev.targets;
+        CHECK(violation_count(c) == 0);
+        destroy_context(c);
+    };
+    bool tint = false;
+    i32 targets = -1;
+    open_menu(18.0f, {1, 2, 3, 200}, tint, targets);
+    CHECK(tint);         // the translucent tint is drawn...
+    CHECK(targets >= 3); // ...over a blurred backdrop
+    open_menu(0.0f, {1, 2, 3, 255}, tint, targets);
+    CHECK(tint);
+    CHECK(targets == 0); // an opaque menu needs no blur
 }

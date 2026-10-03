@@ -737,6 +737,19 @@ struct palette_style
     f32 radius = 10.0f;
 };
 
+// The popup menu surface shared by the combo dropdown and context menus. A
+// translucent `bg` with `blur` > 0 is liquid glass: the scene behind the menu is
+// blurred first, so the labels stay readable over whatever is underneath.
+struct menu_style
+{
+    color bg = {28, 32, 40, 255};
+    color border = {0, 0, 0, 0}; // 1px ring; alpha 0 = none
+    color hover = {54, 62, 74, 255};
+    color accent = {0, 0, 0, 0}; // stripe along the top edge; alpha 0 = none
+    f32 radius = 6.0f;
+    f32 blur = 0.0f; // backdrop blur radius behind the menu; 0 = none
+};
+
 // A titled card section (comp::section): title row, optional caption row, a
 // divider, then the body. Colors come from the theme (text, text_dim, border).
 struct section_style
@@ -991,6 +1004,7 @@ struct theme
     toast_style toast;         // pui::comp::toast_draw
     table_style table;         // pui::comp::table
     palette_style palette;     // pui::comp::command_palette
+    menu_style menu;           // combo dropdown + context menu surface
     section_style section;     // pui::comp::section
     button_role button_roles[MAX_BUTTON_ROLES]{};
     i32 button_role_count = 0;
@@ -1071,6 +1085,8 @@ inline theme default_dark()
     t.toast.text = t.text;
     t.table.border = t.border;
     t.table.text = t.text;
+    t.menu.bg = t.panel_bg;
+    t.menu.hover = t.widget_hover;
     t.palette.accent = t.accent;
     t.palette.text = t.text;
     t.palette.hint = t.text_dim;
@@ -1160,6 +1176,8 @@ inline theme theme_lerp(const theme &a, const theme &b, f32 t)
     PUI_LF(section.title_size), PUI_LF(section.title_h), PUI_LF(section.caption_h);
     PUI_LF(section.caption_gap), PUI_LF(section.no_caption_gap), PUI_LF(section.divider_gap);
     PUI_LF(section.body_gap);
+    PUI_LC(menu.bg), PUI_LC(menu.border), PUI_LC(menu.hover), PUI_LC(menu.accent);
+    PUI_LF(menu.radius), PUI_LF(menu.blur);
     return r;
 }
 #undef PUI_LC

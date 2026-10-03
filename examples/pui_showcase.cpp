@@ -727,6 +727,13 @@ static theme make_theme(const showcase &s, f32 light, color accent, f32 density)
     d.palette.radius = 16.0f;
     d.palette.width = 480.0f;
     d.palette.item_h = 34.0f;
+    // popup menus (context menu, combo): liquid glass - the scene behind is blurred
+    // and tinted, so the labels stay readable over the nebula
+    d.menu.bg = {30, 26, 70, 210};
+    d.menu.border = {255, 255, 255, 70};
+    d.menu.hover = {255, 255, 255, 38};
+    d.menu.radius = 14.0f;
+    d.menu.blur = 26.0f;
     d.switch_ctrl.track_off = {255, 255, 255, 40};
     d.radio.ring = {255, 255, 255, 120};
     d.segmented.bg = {0, 0, 0, 50};
@@ -743,6 +750,9 @@ static theme make_theme(const showcase &s, f32 light, color accent, f32 density)
     l.widget_active = {255, 255, 255, 110};
     l.border = {40, 50, 100, 46};
     l.panel_bg = {255, 255, 255, 110};
+    l.menu.bg = {255, 255, 255, 220};
+    l.menu.border = {40, 50, 100, 60};
+    l.menu.hover = {0, 0, 0, 18};
     l.button.bg = {255, 255, 255, 150};
     l.button.hover_bg = {255, 255, 255, 215};
     l.button.active_bg = {255, 255, 255, 110};
