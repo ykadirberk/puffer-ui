@@ -186,7 +186,12 @@ inline void example_sync_client(example_app &app)
             app.width = ww;
             app.height = wh;
         }
-        if (app.win) set_window_client(*app.win, example_client(app.sdl_window));
+        if (app.win)
+        {
+            set_window_client(*app.win, example_client(app.sdl_window));
+            app.width = static_cast<i32>(app.win->area.w);
+            app.height = static_cast<i32>(app.win->area.h);
+        }
     }
     for (i32 i = 0; i < app.extra_count; ++i)
     {
@@ -287,7 +292,6 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
         SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "offscreen");
         SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
     }
-    SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
     SDL_SetLogPriorities(SDL_LOG_PRIORITY_ERROR);
 
     if (!SDL_Init(SDL_INIT_VIDEO))
@@ -314,6 +318,9 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
     app.win = boot.win;
     app.font = boot.font;     // the bootstrap loaded the bundled (or fallback) font
     example_sync_client(app); // adopt the window's real client size
+    // Interactive runs keep the device default (vsync on); an offscreen
+    // selftest has no display to wait for, so it runs uncapped.
+    if (app.selftest) app.device->set_vsync(false);
 
     // Bold/oblique keep examples (and screenshots) deterministic; they reuse
     // the base font when the bundled variants are missing.
@@ -447,14 +454,18 @@ inline void example_pump(example_app &app)
     // reach the examples' layout inputs.
     int ww = 0, wh = 0;
     SDL_GetWindowSize(app.sdl_window, &ww, &wh);
-    if (ww != app.width || wh != app.height) example_sync_client(app);
+    if (static_cast<f32>(ww) != app.win->client.w || static_cast<f32>(wh) != app.win->client.h)
+        example_sync_client(app);
+    app.width = static_cast<i32>(app.win->area.w);
+    app.height = static_cast<i32>(app.win->area.h);
     for (i32 i = 0; i < app.extra_count; ++i)
     {
         example_window &ew = app.extras[i];
         if (!ew.sdl || !ew.win) continue;
         int ew_w = 0, ew_h = 0;
         SDL_GetWindowSize(ew.sdl, &ew_w, &ew_h);
-        if (static_cast<f32>(ew_w) != ew.win->area.w || static_cast<f32>(ew_h) != ew.win->area.h)
+        if (static_cast<f32>(ew_w) != ew.win->client.w ||
+            static_cast<f32>(ew_h) != ew.win->client.h)
             set_window_client(*ew.win, example_client(ew.sdl));
     }
 }
@@ -574,8 +585,7 @@ int example_run(const char *title, i32 w, i32 h, int argc, char **argv, FrameFn 
             if (app.show_violations) // drawn last so nothing covers it
                 draw_violation_overlay(u, rect::make(8.0f, app.win->area.h - 40.0f, 360.0f, 32.0f));
         }
-        end_frame(app.ctx);
-        app.surface->present();
+        end_frame(app.ctx); // presents: a second present() would wait another vblank
         if (app.screenshot &&
             (app.selftest ? (app.frame_index + 1 >= app.selftest_frames) : (app.frame_index == 60)))
             example_screenshot(app, app.screenshot);
@@ -593,7 +603,6 @@ int example_run(const char *title, i32 w, i32 h, int argc, char **argv, FrameFn 
                     app.extra_frame(u, app, i + 1);
                 }
                 end_frame(app.ctx);
-                ew.surface->present();
             }
         }
 

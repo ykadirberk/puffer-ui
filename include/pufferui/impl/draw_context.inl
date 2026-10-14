@@ -55,7 +55,9 @@ inline void dl_prepare(context *c, texture_handle tex, const rect *clip)
     if (clip_changed)
     {
         dl_flush(c);
-        if (c->device) c->device->set_clip(want_active ? &want : nullptr);
+        const f32 s = c->render_scale;
+        const rect pixels{want.x * s, want.y * s, want.w * s, want.h * s};
+        if (c->device) c->device->set_clip(want_active ? &pixels : nullptr);
         dl.clip_active = want_active;
         dl.clip = want;
         dl.clip_known = true;
@@ -118,6 +120,16 @@ inline void dl_add(context *c, const vertex *verts, i32 vcount, const i32 *idx, 
     draw_list &dl = *c->dl;
     i32 base = static_cast<i32>(dl.verts.size());
     dl.verts.insert(dl.verts.end(), verts, verts + vcount);
+    if (c->render_scale != 1.0f)
+        for (usize i = dl.verts.size() - static_cast<usize>(vcount); i < dl.verts.size(); ++i)
+        {
+            dl.verts[i].x *= c->render_scale;
+            dl.verts[i].y *= c->render_scale;
+        }
+    if (c->disabled_depth > 0)
+        for (usize i = dl.verts.size() - static_cast<usize>(vcount); i < dl.verts.size(); ++i)
+            dl.verts[i].c.a =
+                static_cast<u8>(dl.verts[i].c.a * clampf(c->disabled_alpha, 0.0f, 1.0f));
     if (dl.solid_uv_remap)
     {
         // Solid geometry rides in the glyph batch: remap the copied verts' UVs
@@ -352,7 +364,20 @@ window *first_window(context *c)
 void set_window_client(window &w, rect client)
 {
     w.client = client;
-    w.area = rect::make(0.0f, 0.0f, client.w, client.h);
+    w.area = rect::make(0.0f, 0.0f, client.w / w.input_scale, client.h / w.input_scale);
+}
+
+void set_window_scale(window &w, f32 scale, const scale_opts &opts)
+{
+    if (!std::isfinite(scale) || scale <= 0.0f) return;
+    const f32 input = opts.input_scale == 0.0f ? scale : opts.input_scale;
+    if (!std::isfinite(input) || input <= 0.0f) return;
+    // Change scale between frames so clipping, input and geometry use one scale.
+    if (w.owner && w.owner->current_window) return;
+    w.scale = scale;
+    w.input_scale = input;
+    set_window_client(w, w.client);
+    if (w.owner) w.owner->redraw_requested = true;
 }
 
 void focus_window(context *c, window &w)
@@ -395,7 +420,9 @@ inline rect desktop_local(context *c)
 {
     if (!c->current_window) return c->screen;
     const rect &cl = c->current_window->client;
-    return rect::make(c->desktop.x - cl.x, c->desktop.y - cl.y, c->desktop.w, c->desktop.h);
+    const f32 s = c->current_window->input_scale;
+    return rect::make((c->desktop.x - cl.x) / s, (c->desktop.y - cl.y) / s, c->desktop.w / s,
+                      c->desktop.h / s);
 }
 } // namespace detail
 
@@ -424,14 +451,15 @@ void begin_frame(context *c, window &w, f64 now, f64 dt)
     c->now = now;
     c->dt = dt;
     c->current_window = &w;
+    c->render_scale = w.scale;
     c->screen = w.area;
     c->desktop = desktop_rect(c);
 
     // The pointer is one; each window derives its local position from the shared
     // desktop position, so cross-window drags keep working while another window
     // receives the motion events.
-    c->mouse_x = c->mouse_global_x - w.client.x;
-    c->mouse_y = c->mouse_global_y - w.client.y;
+    c->mouse_x = (c->mouse_global_x - w.client.x) / w.input_scale;
+    c->mouse_y = (c->mouse_global_y - w.client.y) / w.input_scale;
     // This frame's input and this window's persistent widget state come in as
     // whole structs; the wheel delta is consumed from the queue.
     static_cast<window_input &>(*c) = w.in;
@@ -554,7 +582,7 @@ void begin_frame(context *c, f64 now, f64 dt, rect screen)
     if (!w->surface) w->surface = c->surface;
     // Single-window path: the primary window lives at the desktop origin.
     w->area = screen;
-    w->client = rect::make(0.0f, 0.0f, screen.w, screen.h);
+    w->client = rect::make(0.0f, 0.0f, screen.w * w->input_scale, screen.h * w->input_scale);
     begin_frame(c, *w, now, dt);
 }
 
@@ -587,6 +615,7 @@ void end_frame(context *c)
     PUFFERUI_CHECK(VIOL_END_WITHOUT_BEGIN, w != nullptr, "end_frame without begin_frame");
     if (!w) return;
     PUFFERUI_CHECK(VIOL_CLIP_UNBALANCED, c->clip_depth == 0, "unbalanced region clip push/pop");
+    PUFFERUI_CHECK(VIOL_SCOPE_UNBALANCED, c->disabled_depth == 0, "disabled scope outlived frame");
     PUFFERUI_CHECK(VIOL_SCOPE_UNBALANCED, c->button_scope_depth == 0,
                    "unbalanced button style scope");
 

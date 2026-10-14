@@ -49,6 +49,9 @@ jobs:
       - name: Example selftests (offscreen)
         run: cmake --build out/build/x64-debug --target examples_selftest
 
+      - name: External CMake consumers
+        run: python tools/check_consumers.py --sdl-build out/build/x64-debug
+
       - name: Configure (release)
         run: cmake --preset x64-release
 
@@ -114,4 +117,7 @@ jobs:
           cmake --build out/build/linux --target pui_pump_tests pui_golden_tests &&
           out/build/linux/Debug/pui_pump_tests &&
           out/build/linux/Debug/pui_golden_tests
+
+      - name: External core consumers
+        run: python3 tools/check_consumers.py
 

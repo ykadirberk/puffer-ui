@@ -24,6 +24,13 @@ static int g_failures = 0;
         }                                                                                          \
     } while (0)
 
+static int vsync_of(SDL_Renderer *r)
+{
+    int v = -1;
+    SDL_GetRenderVSync(r, &v);
+    return v;
+}
+
 int main()
 {
     SDL_SetLogPriorities(SDL_LOG_PRIORITY_ERROR);
@@ -64,6 +71,21 @@ int main()
     const bool quit = sdl3_pump(c);
     CHECK(!quit);
     CHECK(window_host_of(c) != nullptr); // installed by the routing above
+    // ...together with click-through: SDL's default swallows the first click
+    // on an unfocused window, so widgets there ignored it.
+    CHECK(SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, false));
+    {
+        // DEFAULT priority: an app's own choice survives a later device.
+        SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "0");
+        render_device *dev = create_sdl3_device(nullptr);
+        CHECK(!SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, true));
+        destroy_sdl3_device(dev);
+        SDL_ResetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH);
+        // apps on their own SDL setup get it from the device
+        dev = create_sdl3_device(nullptr);
+        CHECK(SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, false));
+        destroy_sdl3_device(dev);
+    }
     CHECK(a->close_requested == false);
     begin_frame(c, *a, 0.0, 0.016);
     {
@@ -237,6 +259,22 @@ int main()
     CHECK(b->close_requested);
     CHECK(!a->close_requested);
 
+    // Expanded keys and all modifiers route to the correct window.
+    SDL_Event shortcut{};
+    shortcut.type = SDL_EVENT_KEY_DOWN;
+    shortcut.key.windowID = SDL_GetWindowID(w1);
+    shortcut.key.key = SDLK_K;
+    shortcut.key.mod = SDL_KMOD_CTRL | SDL_KMOD_ALT | SDL_KMOD_GUI;
+    SDL_PushEvent(&shortcut);
+    (void)sdl3_pump(c);
+    begin_frame(c, *a, 4.0, 0.016);
+    {
+        ui u(c);
+        CHECK(u.shortcut({key::K, MOD_CTRL | MOD_ALT | MOD_SUPER}));
+        CHECK(!u.shortcut({key::K, MOD_CTRL | MOD_ALT | MOD_SUPER}));
+    }
+    end_frame(c);
+
     // Quit surfaces as the pump's return value.
     SDL_Event q{};
     q.type = SDL_EVENT_QUIT;
@@ -244,6 +282,40 @@ int main()
     CHECK(sdl3_pump(c));
 
     destroy_context(c);
+
+    // VSync paces the loop on ONE window: the loop presents every window in
+    // turn, so per-window vsync made two windows run at half the refresh rate.
+    {
+        SDL_Renderer *r1 = SDL_CreateRenderer(w1, "software");
+        CHECK(r1 != nullptr);
+        render_device *dev = create_sdl3_device(r1);
+        render_surface *s1 = dev->create_surface(w1);
+        render_surface *s2 = dev->create_surface(w2);
+        CHECK(s1 && s2 && s1 != s2);
+        SDL_Renderer *r2 = SDL_GetRenderer(w2);
+        CHECK(r2 != nullptr && r2 != r1);
+        SDL_ShowWindow(w1);
+        SDL_ShowWindow(w2);
+        s1->make_current(*dev);
+        s1->present();
+        s2->make_current(*dev);
+        s2->present();
+        CHECK(vsync_of(r1) == 1); // the first window on screen waits
+        CHECK(vsync_of(r2) == 0); // the other one does not
+        // A hidden (or minimized) pacer hands the wait over on the next present.
+        SDL_HideWindow(w1);
+        s2->make_current(*dev);
+        s2->present();
+        CHECK(vsync_of(r1) == 0);
+        CHECK(vsync_of(r2) == 1);
+        // Off means off for every window.
+        dev->set_vsync(false);
+        CHECK(vsync_of(r1) == 0);
+        CHECK(vsync_of(r2) == 0);
+        destroy_sdl3_device(dev); // destroys r2 (device-owned)
+        SDL_DestroyRenderer(r1);
+    }
+
     SDL_DestroyWindow(w1);
     SDL_DestroyWindow(w2);
     SDL_Quit();

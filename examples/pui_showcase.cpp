@@ -236,9 +236,9 @@ struct showcase
     f64 fps_acc_t = 0.0, fps_acc_build = 0.0, fps_acc_max = 0.0;
     i32 fps_acc_n = 0;
     f32 fps_shown = 60.0f, ms_shown = 16.7f, build_shown = 0.0f, max_shown = 16.7f;
-    // vsync starts OFF so the HUD measures the real cost of a frame; the device
-    // is told only when the setting changes (the backend starts with it on)
-    bool vsync = false, vsync_applied = true;
+    // vsync starts ON like the backend (the HUD chip uncaps it to measure the
+    // real cost of a frame); the device is told only when the setting changes
+    bool vsync = true, vsync_applied = true;
     f32 build_ms = 0.0f; // the previous frame's CPU build time
     bool hud_compact = false;
     f32 clock = 0.0f; // ambient clock (stops when ambient motion is off)

@@ -889,6 +889,37 @@ PUI_TEST(test_device_contract)
     destroy_context(c);
 }
 
+// end_frame presents the window's surface, once. The example loops used to
+// present again after it, so with vsync on every frame waited two vblanks
+// (30 fps on a 60 Hz display); the loops no longer do, and this pins the
+// contract they rely on.
+PUI_TEST(test_end_frame_presents_once)
+{
+    struct counting_surface : null_surface
+    {
+        i32 presents = 0;
+        void present() override { ++presents; }
+    };
+    null_device nd;
+    counting_surface s1, s2;
+    context *c = create_context(&nd, nullptr);
+    window *w1 = add_window(c, reinterpret_cast<void *>(1), &s1, rect::make(0, 0, 200, 150));
+    window *w2 = add_window(c, reinterpret_cast<void *>(2), &s2, rect::make(200, 0, 200, 150));
+    CHECK(w1 && w2);
+    for (i32 f = 0; f < 3; ++f)
+    {
+        begin_frame(c, *w1, f * 0.016, 0.016);
+        CHECK(s1.presents == f); // not before the frame is built
+        end_frame(c);
+        begin_frame(c, *w2, f * 0.016, 0.016);
+        end_frame(c);
+        CHECK(s1.presents == f + 1);
+        CHECK(s2.presents == f + 1);
+    }
+    CHECK(violation_count(c) == 0);
+    destroy_context(c);
+}
+
 PUI_TEST(test_blur)
 {
     null_device nd;

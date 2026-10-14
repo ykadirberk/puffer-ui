@@ -53,8 +53,7 @@ while (sdl3_app_pump(app)) // routes input, keeps the window size current; false
         (void)u.titlebar(*app.win, page, "Glass Todo"); // `page` shrinks by the bar
         u.text(page.pad(20.0f).top_slice(24.0f), "Hello, PufferUI", u.th().text, ALIGN_LEFT);
     }
-    end_frame(app.ctx);
-    app.surface->present();
+    end_frame(app.ctx); // draws the frame and presents it
 }
 
 sdl3_app_shutdown(app);
@@ -71,8 +70,7 @@ Walking through it:
 | `begin_frame(app.ctx, *app.win, app.now, app.dt)` | Opens a frame for one window: the events collected since last frame become this frame's input. |
 | `ui u(app.ctx);` | The object you draw with. It lives for one frame; make it on the stack inside the frame, as shown. |
 | *your drawing* | Everything between `begin_frame` and `end_frame`. |
-| `end_frame(app.ctx)` | Flushes the batched geometry to the renderer and closes the frame. |
-| `app.surface->present()` | Shows the finished image. |
+| `end_frame(app.ctx)` | Flushes the batched geometry to the renderer, closes the frame and shows the finished image (it presents the window, so there is no separate present call). |
 | `sdl3_app_shutdown(app)` | Destroys everything in the right order. |
 
 Three rules that follow from this shape:
@@ -192,8 +190,7 @@ template <typename FrameFn> void tut_loop(tut_app &app, FrameFn &&build)
             if (!app.selftest)
                 draw_violation_overlay(u, rect::make(8.0f, app.height() - 40.0f, 360.0f, 32.0f));
         }
-        end_frame(app.ctx);
-        app.boot.surface->present();
+        end_frame(app.ctx); // presents the window
         ++app.frame;
     }
 }

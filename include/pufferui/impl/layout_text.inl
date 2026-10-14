@@ -292,29 +292,56 @@ inline bool ensure_atlas(context *c, text_store *ts)
     return true;
 }
 
+inline font_handle font_for(context *c, font_handle primary, u32 cp)
+{
+    if (!c->ts) return primary;
+    const auto has = [&](font_handle f)
+    {
+        return f >= 0 && f < static_cast<i32>(c->ts->fonts.size()) && c->ts->fonts[f].ok &&
+               stbtt_FindGlyphIndex(&c->ts->fonts[f].info, static_cast<i32>(cp)) != 0;
+    };
+    if (has(primary)) return primary;
+    for (font_handle f : c->ts->fallbacks)
+        if (has(f)) return f;
+    return primary;
+}
+
+inline u64 layout_key(context *c, font_handle font, f32 size, std::string_view text)
+{
+    const u64 original =
+        (static_cast<u64>(static_cast<u32>(font)) << 48) ^
+        (static_cast<u64>(static_cast<u32>(static_cast<i32>(size * 4.0f) & 0xFFFF)) << 32) ^
+        hash(text);
+    return c->render_scale == 1.0f ? original
+                                   : id_child(original, static_cast<uiid>(c->render_scale * 1024));
+}
+
 inline glyph get_glyph(context *c, i32 font_index, f32 size, u32 cp, i32 sub = 0)
 {
     text_store *ts = c->ts;
-    text_store::glyph_key key{font_index, static_cast<i32>(size * 4.0f), cp, sub};
+    font_index = font_for(c, font_index, cp);
+    const f32 density = c->render_scale;
+    text_store::glyph_key key{font_index, static_cast<i32>(size * 4.0f), cp, sub,
+                              static_cast<i32>(density * 1024)};
     auto it = ts->glyphs.find(key);
     if (it != ts->glyphs.end()) return it->second;
 
     glyph g{};
     font_data &fd = ts->fonts[static_cast<usize>(font_index)];
-    f32 scale = stbtt_ScaleForPixelHeight(&fd.info, size);
+    f32 scale = stbtt_ScaleForPixelHeight(&fd.info, size * density);
     i32 advance = 0, lsb = 0;
     stbtt_GetCodepointHMetrics(&fd.info, static_cast<i32>(cp), &advance, &lsb);
-    g.advance = static_cast<f32>(advance) * scale;
+    g.advance = static_cast<f32>(advance) * stbtt_ScaleForPixelHeight(&fd.info, size);
 
     i32 gw = 0, gh = 0, xo = 0, yo = 0;
     // `sub` shifts the outline right by sub/4 of a pixel before rasterizing.
     unsigned char *bitmap =
         stbtt_GetCodepointBitmapSubpixel(&fd.info, scale, scale, static_cast<f32>(sub) * 0.25f,
                                          0.0f, static_cast<i32>(cp), &gw, &gh, &xo, &yo);
-    g.xoff = static_cast<f32>(xo);
-    g.yoff = static_cast<f32>(yo);
-    g.w = static_cast<f32>(gw);
-    g.h = static_cast<f32>(gh);
+    g.xoff = static_cast<f32>(xo) / density;
+    g.yoff = static_cast<f32>(yo) / density;
+    g.w = static_cast<f32>(gw) / density;
+    g.h = static_cast<f32>(gh) / density;
 
     if (bitmap && gw > 0 && gh > 0 && ensure_atlas(c, ts))
     {
@@ -367,6 +394,9 @@ inline glyph get_glyph(context *c, i32 font_index, f32 size, u32 cp, i32 sub = 0
 inline f32 kern_advance(context *c, font_handle fh, f32 size, u32 a, u32 b)
 {
     if (!a || !b || !c->ts || fh < 0 || fh >= static_cast<i32>(c->ts->fonts.size())) return 0.0f;
+    const font_handle af = font_for(c, fh, a), bf = font_for(c, fh, b);
+    if (af != bf) return 0.0f;
+    fh = af;
     font_data &fd = c->ts->fonts[static_cast<usize>(fh)];
     if (!fd.ok) return 0.0f;
     const f32 scale = stbtt_ScaleForPixelHeight(&fd.info, size);
@@ -377,12 +407,25 @@ inline f32 kern_advance(context *c, font_handle fh, f32 size, u32 a, u32 b)
 
 } // namespace detail
 
+bool set_font_fallbacks(context *c, std::span<const font_handle> fonts)
+{
+    if (!c || !c->ts) return fonts.empty();
+    for (font_handle f : fonts)
+        if (f < 0 || f >= static_cast<i32>(c->ts->fonts.size()) || !c->ts->fonts[f].ok)
+            return false;
+    c->ts->fallbacks.assign(fonts.begin(), fonts.end());
+    for (auto &slot : c->ts->layout_cache.slots) slot.tag = 0;
+    c->redraw_requested = true;
+    return true;
+}
+
 bool ui::has_glyph(u32 cp)
 {
     context *c = ctx;
     if (!c->ts) return false;
     font_handle fh = c->active_theme.font;
     if (fh < 0 || fh >= static_cast<i32>(c->ts->fonts.size())) return false;
+    fh = detail::font_for(c, fh, cp);
     font_data &fd = c->ts->fonts[static_cast<usize>(fh)];
     if (!fd.ok) return false;
     return stbtt_FindGlyphIndex(&fd.info, static_cast<i32>(cp)) != 0;
@@ -421,11 +464,7 @@ f32 ui::text_width(std::string_view s)
     // change for a loaded font, so entries cannot go stale. Building the
     // layout here is fine: a measure almost always precedes a draw of the
     // same string, and the built glyphs serve the emit path next call.
-    const u64 key = (static_cast<u64>(static_cast<u32>(fh)) << 48) ^
-                    (static_cast<u64>(static_cast<u32>(
-                         static_cast<i32>(c->active_theme.text_size * 4.0f) & 0xFFFF))
-                     << 32) ^
-                    hash(s);
+    const u64 key = detail::layout_key(c, fh, c->active_theme.text_size, s);
     if (text_store::text_layout *lay = c->ts->layout_cache.find(key)) return lay->width;
 
     text_store::text_layout built;
@@ -482,10 +521,7 @@ void ui::text(rect r, std::string_view s, color c, align a)
     // The layout cache is shared with text_width (same key): a hit emits
     // from cached glyph copies — no decode, no glyph-map lookups, no stb
     // calls.
-    const u64 key =
-        (static_cast<u64>(static_cast<u32>(fh)) << 48) ^
-        (static_cast<u64>(static_cast<u32>(static_cast<i32>(size * 4.0f) & 0xFFFF)) << 32) ^
-        hash(s);
+    const u64 key = detail::layout_key(cc, fh, size, s);
     text_store::text_layout *lay = cc->ts->layout_cache.find(key);
     if (!lay)
     {
@@ -537,7 +573,8 @@ void ui::text(rect r, std::string_view s, color c, align a)
     // once per line for the same reason. Kerning moves a glyph relative to the
     // one before it, so it is applied before the glyph is placed (text_width sums
     // the same terms, so measurement and drawing agree).
-    const f32 base_y = std::floor(baseline + 0.5f);
+    const f32 density = cc->render_scale;
+    const f32 base_y = std::floor(baseline * density + 0.5f) / density;
     if (bounded)
     {
         // The font's own extents plus half an em of slack for marks that overhang
@@ -552,13 +589,14 @@ void ui::text(rect r, std::string_view s, color c, align a)
     for (text_store::cached_glyph &e : lay->gs)
     {
         pen += e.kern_in;
-        f32 ix = std::floor(pen);
-        i32 bin = static_cast<i32>((pen - ix) * 4.0f + 0.5f);
+        f32 ix = std::floor(pen * density);
+        i32 bin = static_cast<i32>((pen * density - ix) * 4.0f + 0.5f);
         if (bin >= 4)
         {
             bin = 0;
             ix += 1.0f;
         }
+        ix /= density;
         if (bounded && e.g.w > 0.0f)
         {
             // The bin-0 bitmap's box; a sub-pixel bin's bitmap differs from it by

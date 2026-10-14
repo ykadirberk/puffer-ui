@@ -249,7 +249,7 @@ static pui::window *g_win2 = nullptr;
 static u64 g_freq = 1;
 static u64 g_last = 0;
 static int g_hover = -1;
-static bool g_vsync = false;     // perf measurement defaults to no vsync
+static bool g_vsync = true;      // the HUD toggle uncaps it for perf measurement
 static std::string g_title_last; // only call SDL_SetWindowTitle on change
 
 static rect demo_window_client(SDL_Window *w)
@@ -373,10 +373,6 @@ static void demo_draw_frame_hud(ui &u, const pui::window &w)
 SDL_AppResult SDL_AppInit(void **, int, char **)
 {
     if (!SDL_Init(SDL_INIT_VIDEO)) return SDL_APP_FAILURE;
-
-    // Interacting with a second window must not cost an extra click: with the
-    // default, the first click on an unfocused window is consumed by activation.
-    SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 
     g_window = SDL_CreateWindow("PufferUI (next) - window 1", 900, 600,
                                 SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE);

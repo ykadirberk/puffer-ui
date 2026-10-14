@@ -263,6 +263,16 @@ bool ui::combo(rect r, std::string_view label, const char *const *items, i32 ite
     }
     PUFFERUI_CHECK(VIOL_COMBO_EMPTY, item_count > 0, "combo needs at least one item");
     if (item_count <= 0) return false;
+    if (c->disabled_depth > 0)
+    {
+        if (c->defer_result_id == drop_id) c->defer_result_id = 0;
+        if (c->defer_menu_id == drop_id)
+        {
+            c->defer_menu_id = 0;
+            c->defer_count = 0;
+        }
+        return false;
+    }
     if (selected < 0) selected = 0;
     if (selected >= item_count) selected = item_count - 1;
 
@@ -403,6 +413,16 @@ i32 ui::context_menu(uiid id, rect anchor, const char *const *item_labels, i32 i
     context *c = ctx;
     const theme &t = c->active_theme;
     const uiid menu_id = id_child(id, "menu"_id);
+    if (c->disabled_depth > 0)
+    {
+        if (c->defer_result_id == menu_id) c->defer_result_id = 0;
+        if (c->defer_menu_id == menu_id)
+        {
+            c->defer_menu_id = 0;
+            c->defer_count = 0;
+        }
+        return -1;
+    }
 
     // Was the menu open last frame?
     bool open = false;

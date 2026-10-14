@@ -25,8 +25,8 @@ void mouse_move(window &w, f32 x, f32 y)
     c->mouse_global_y = w.client.y + y;
     if (detail::window_is_current(w))
     {
-        c->mouse_x = x;
-        c->mouse_y = y;
+        c->mouse_x = x / w.input_scale;
+        c->mouse_y = y / w.input_scale;
     }
 }
 
@@ -120,11 +120,13 @@ void ime_event(window &w, const char *preedit, i32 cursor)
     q.ime_preedit[q.ime_preedit_len] = '\0';
 }
 
-void mods_event(window &w, bool shift, bool ctrl)
+void mods_event(window &w, bool shift, bool ctrl, bool alt, bool super)
 {
     window_input &q = detail::input_for(w);
     q.shift_down = shift;
     q.ctrl_down = ctrl;
+    q.alt_down = alt;
+    q.super_down = super;
 }
 
 void mouse_move(context *c, f32 x, f32 y)
@@ -163,10 +165,10 @@ void ime_event(context *c, const char *preedit, i32 cursor)
     if (w) ime_event(*w, preedit, cursor);
 }
 
-void mods_event(context *c, bool shift, bool ctrl)
+void mods_event(context *c, bool shift, bool ctrl, bool alt, bool super)
 {
     window *w = c->focused_win ? c->focused_win : detail::ensure_primary(c);
-    if (w) mods_event(*w, shift, ctrl);
+    if (w) mods_event(*w, shift, ctrl, alt, super);
 }
 
 void set_clipboard(context *c, clipboard *clip)
@@ -607,13 +609,47 @@ rect region::corner(i32 n, f32 w, f32 h, f32 margin) const
 }
 
 // ---- interaction ----
+disabled_scope::disabled_scope(ui &u, bool disabled)
+{
+    if (disabled)
+    {
+        ctx_ = u.ctx;
+        ++ctx_->disabled_depth;
+    }
+}
+disabled_scope::~disabled_scope()
+{
+    if (ctx_) --ctx_->disabled_depth;
+}
+
+bool ui::shortcut(key_chord chord, const shortcut_opts &opts)
+{
+    const i32 k = static_cast<i32>(chord.code);
+    if (!opts.enabled || ctx->disabled_depth || k >= KEY_COUNT ||
+        (opts.focus && ctx->focus != opts.focus))
+        return false;
+    const u32 mods = (ctx->shift_down ? MOD_SHIFT : 0u) | (ctx->ctrl_down ? MOD_CTRL : 0u) |
+                     (ctx->alt_down ? MOD_ALT : 0u) | (ctx->super_down ? MOD_SUPER : 0u);
+    if (mods != chord.mods || !ctx->key_pressed[k]) return false;
+    ctx->key_pressed[k] = false;
+    return true;
+}
+
 interaction ui::interact(uiid id, rect area, bool enabled, bool focusable)
 {
     context *c = ctx;
     interaction in;
+    enabled = enabled && c->disabled_depth == 0;
     in.disabled = !enabled;
 
-    if (!enabled) return in;
+    if (!enabled)
+    {
+        if (c->active == id) c->active = 0;
+        if (c->focus == id) c->focus = 0;
+        if (c->focus_request == id) c->focus_request = 0;
+        if (c->text_drag.source_id == id) c->text_drag.active = false;
+        return in;
+    }
 
     // A popup opened last frame captures all input. Base UI is blocked outright;
     // only popup content inside the top popup's rect may interact. "Click

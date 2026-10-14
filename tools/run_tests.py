@@ -119,8 +119,10 @@ def main():
         if not args.quick:
             targets.append("pui_golden_tests")
         # examples_selftest builds *and runs* every example: its own step below
-        r.step(f"build ({', '.join(targets)})",
-               ["cmake", "--build", build_dir, "--target", *targets])
+        if not r.step(f"build ({', '.join(targets)})",
+                      ["cmake", "--build", build_dir, "--target", *targets]):
+            print("Build failed; existing binaries have not been validated against these sources.")
+            return 1
 
     def suite(exe, name):
         path = os.path.join(bin_dir, exe + EXE)
@@ -134,6 +136,7 @@ def main():
     suite("pui_pump_tests", "pump tests (SDL event routing)")
     if not args.quick:
         suite("pui_golden_tests", "golden-image tests")
+        r.step("external consumer builds", [sys.executable, os.path.join(ROOT, "tools", "check_consumers.py")])
         if not args.skip_examples:
             r.step("examples_selftest (every example, offscreen)",
                    ["cmake", "--build", build_dir, "--target", "examples_selftest"])

@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -771,7 +772,31 @@ static void draw_inputs(golden_env &e, i32, i32)
     u.text(rect::make(118, 156, 190, 14), "clipped long value", th.text_dim, ALIGN_LEFT);
 }
 
+static void dpi_input(golden_env &e, i32)
+{
+    set_window_scale(*e.windows[0], 2.0f);
+}
+
+static void draw_dpi(golden_env &e, i32, i32)
+{
+    ui u(e.ctx);
+    u.draw_rect({0, 0, 160, 100}, u.th().bg);
+    u.text({6, 2, 150, 18}, "AV: logical pixels", u.th().text);
+    {
+        auto disabled = u.disabled();
+        u.button({6, 24, 100, 24}, "Disabled", "dpi_disabled"_id);
+    }
+    {
+        auto clip = u.region({6, 54, 110, 32}, "dpi_clip"_id);
+        u.draw_rect({6, 54, 60, 32}, u.th().accent);
+        u.blur({20, 54, 110, 32}, 4, 4);
+        u.text({10, 54, 140, 30}, "Clipped text", u.th().text);
+    }
+}
+
 static const golden_scene SCENES[] = {
+    {"dpi_1x", 1, 0, 1, 0, nullptr, draw_dpi},
+    {"dpi_2x", 1, 0, 1, 0, dpi_input, draw_dpi},
     {"shapes", 1, 0, 1, 0, nullptr, draw_shapes},
     {"text", 1, 0, 1, 0, nullptr, draw_text},
     // Widget scenes raise the per-pixel clamp too: the outline ring corners
@@ -963,6 +988,9 @@ static i32 run_scene(const golden_scene &sc, golden_hashes &hashes, bool update,
         const u64 golden_hash = hashes.get(name);
         if (golden_hash == 0)
         {
+            std::filesystem::create_directories(golden_dir() + "/dump");
+            write_bmp((golden_dir() + "/dump/" + name + "_actual.bmp").c_str(), actual.data(),
+                      GOLDEN_W, GOLDEN_H);
             std::printf("FAIL %-12s no golden hash (run --update)\n", name.c_str());
             ++failures;
             continue;

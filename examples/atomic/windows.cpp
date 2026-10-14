@@ -57,8 +57,7 @@ int main(int argc, char **argv)
             ui u(app.ctx);
             window_content(u, 0, *app.win);
         }
-        end_frame(app.ctx);
-        app.surface->present();
+        end_frame(app.ctx); // presents the primary window
 
         if (second && second->win)
         {
@@ -67,8 +66,7 @@ int main(int argc, char **argv)
                 ui u(app.ctx);
                 window_content(u, 1, *second->win);
             }
-            end_frame(app.ctx);
-            second->surface->present();
+            end_frame(app.ctx); // presents the second window
         }
 
         // --screenshot saves both windows: FILE and FILE.second.bmp

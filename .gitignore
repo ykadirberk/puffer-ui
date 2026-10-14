@@ -2,6 +2,7 @@
 out/
 build/
 build-*/
+__pycache__/
 cmake-build-*/
 
 # Visual Studio

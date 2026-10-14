@@ -6,11 +6,9 @@ the rest are accepted for now.
 
 ## Text
 
-- **No complex-script shaping** — no BiDi/RTL, no ligatures, no HarfBuzz;
-  kerning uses stb's legacy `kern` table (GPOS kerning in modern fonts is
-  ignored) *(deferred: the text-shaper seam)*.
-- No per-glyph font fallback chains (`has_glyph` reports coverage; a missing
-  glyph draws nothing for that character).
+- **No complex-script shaping** — no BiDi/RTL, no ligatures, no HarfBuzz.
+  Kerning uses stb's supported GPOS pair adjustments, falling back to `kern`.
+  `set_font_fallbacks` supplies ordered per-glyph fallback; it does not shape text.
 - Glyph atlases never evict (pages are added when full) *(deferred: a surfaced LRU policy)*.
 - Fractional font sizes quantize to quarter pixels for cache keys.
 - Glyphs are rasterized unhinted (stb_truetype) at four horizontal subpixel
@@ -29,7 +27,7 @@ the rest are accepted for now.
   blurs), and `scroll_view::virtual_list` skips building off-screen rows. Other
   off-screen content is still *built* (layout and widget calls run); only its
   geometry is culled.
-- Single-threaded, single-context; per-window draw lists are recorded
+- One context per drawing thread; per-window draw lists within a context are recorded
   sequentially (parallel recording is a design note, not planned).
 
 ## API surface
@@ -49,7 +47,10 @@ the rest are accepted for now.
 - The core widget set is deliberately small; switch, radio, segmented, tabs,
   accordion, drawer, toast, table, command palette and section live in
   `pui::comp` (see `docs/components.md`).
-- No multiline text editor, no date picker, no tree view yet.
+- No multiline text editor or date picker. Tree rows and selectable rows are
+  available; the app owns expansion and selection. Tables support stable keys,
+  resizable widths and sort requests, but not column reordering/hiding or horizontal scrolling.
+- Color editing currently uses RGBA sliders; there is no HSV picker or eyedropper.
 
 ## Platform
 
@@ -58,5 +59,6 @@ the rest are accepted for now.
 - The default asset directory (`PUFFERUI_ASSET_DIR`) is baked at build time;
   `sdl3_app::asset_dir` overrides the bundled-font root at runtime, in the
   bootstrap only.
-- DPI/content-scale is not applied to metrics *(deferred: `window::scale`)*;
-  touch/pen input is mouse-shaped today.
+- DPI converts logical layout to framebuffer geometry and rasterizes glyphs at
+  the window density. SDL follows scale-change events; custom hosts supply scale.
+  Touch/pen input remains mouse-shaped; platform accessibility adapters are absent.

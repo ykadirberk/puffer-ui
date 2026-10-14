@@ -136,11 +136,11 @@ Transient notifications from an app-owned queue.
 
 ## `comp::table`
 
-A uniform-column table with a pinned header and a virtualized body.
+A table with a pinned header, optional resizable columns, and a virtualized body.
 
 | | |
 | --- | --- |
-| `comp::table(u, area, span<const char *const> headers, i32 rows, function_ref<void(ui&, rect, i32 row, i32 col)> cell_draw, table_props{.id, .enabled, .row_h, .header_h, .style})` | Returns `{clicked_row, clicked_col, focused_row}`; `if (res)` = a row was activated |
+| `comp::table(u, area, headers, rows, cell_draw, table_props{.id, .row_key, .columns, .state})` | Returns row/column activation, stable record key, sort/selection changes and modifier intent; `if (res)` = a row was activated |
 | Theme slot | `theme::table` (`header_bg`, `row_bg`, `row_alt`, `row_hover`, `header_text`, `text`, `border`, `row_h`, `header_h`) |
 | Notes | The body is a `scroll_view` + `virtual_list`: only visible rows are submitted; clicking resolves the column from the pointer; Enter/Space activates the focused row |
 
@@ -164,6 +164,32 @@ A titled card: title row, optional caption row, divider, then the body.
 | `comp::section(u, area, title, caption = {}, section_props{.title_font, .style})` | Returns the body `rect` to lay content into; non-interactive, so no `id` |
 | Theme slot | `theme::section` (`title_size`, `title_h`, `caption_h`, `caption_gap`, `no_caption_gap`, `divider_gap`, `body_gap`) |
 | Notes | Colors come from the theme (`text`, `text_dim`, `border`, `card`); the examples' `example_section` is a one-line wrapper |
+
+## Editor components
+
+The editor components reuse established theme slots rather than duplicating
+styles. `selectable`, `tree_node`, and `drag_value` resolve `theme::button` or a
+`const button_style *style`. Color channels use the standard slider theme.
+
+| Component | Model and result | Example |
+| --- | --- | --- |
+| `selectable` | Caller-owned selection; `{activated, in}` | `pui_ex_tree` |
+| `tree_node` | App-owned `bool open`, depth, leaf/selected flags; `{toggled, selected, in}` | `pui_ex_tree` |
+| `drag_value` | `double&`, speed/min/max; `{changed, in}` | `pui_ex_numeric` |
+| `color_edit` | `color&`, optional alpha channel; `{changed, in}` | `pui_ex_colors` |
+| `form_field` | Label width + help/error message; returns editor rect | `pui_ex_numeric` |
+
+Tables now take optional `.row_key`, `.columns`, and `.state`. The record key
+must remain stable across reorder/filter operations. Columns store mutable
+width/minimum width and sortable status; zero width shares remaining space.
+The app applies `sort_changed` after the call and retains `table_state`.
+Results carry `clicked_key`, Shift/Ctrl selection intent, and the original
+row/column indices. Cell callbacks get a stable row/column scope and clipping.
+
+All interactive editor components accept explicit IDs, join the Tab ring, and
+work inside `u.disabled()`. Tree branch Left/Right changes expansion; numeric
+drag and channel sliders accept Left/Right. The app chooses which tree nodes
+to submit and owns multi-selection policy.
 
 ## Adding a component
 

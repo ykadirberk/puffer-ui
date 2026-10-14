@@ -341,6 +341,7 @@ template <class T, usize N> struct direct_cache
 struct text_store
 {
     std::vector<font_data> fonts;
+    std::vector<font_handle> fallbacks;
 
     // (font, size, codepoint, subpixel bin) as a struct key: fields never alias
     // (a codepoint can exceed any packing multiplier). `sub` is the glyph's horizontal offset in
@@ -352,6 +353,7 @@ struct text_store
         i32 size_q; // size quantized to quarter pixels
         u32 cp;
         i32 sub;
+        i32 density_q;
         bool operator==(const glyph_key &) const = default;
     };
     struct glyph_key_hash
@@ -362,6 +364,7 @@ struct text_store
             h = h * 0x9E3779B97F4A7C15ull + static_cast<u64>(k.size_q);
             h = h * 0x9E3779B97F4A7C15ull + static_cast<u64>(k.cp);
             h = h * 0x9E3779B97F4A7C15ull + static_cast<u64>(k.sub);
+            h = h * 0x9E3779B97F4A7C15ull + static_cast<u64>(k.density_q);
             h ^= h >> 33;
             h *= 0xff51afd7ed558ccdull;
             h ^= h >> 33;

@@ -9,6 +9,7 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `region region(rect area, uiid key, bool push_clip = true);`
 - `vec2 button_size(std::string_view label);`
 - `vec2 text_size(std::string_view s);`
+- `bool shortcut(key_chord chord, const shortcut_opts &opts = {});`
 - `interaction interact(uiid id, rect area, bool enabled = true, bool focusable = true);`
 - `f32 text_width(std::string_view s);`
 - `void text(rect r, std::string_view s, color c, align a = ALIGN_LEFT);`
@@ -38,6 +39,9 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `bool text_field(rect r, std::string &value, uiid id);`
 - `bool text_field(rect r, std::string &value, uiid id, const field_opts &opts);`
 - `bool number_field(rect r, f32 &value, uiid id, const char *fmt = "%.2f");`
+- `bool int_field(rect r, i64 &value, uiid id, const field_opts &opts = {});`
+- `bool double_field(rect r, f64 &value, uiid id, const field_opts &opts = {});`
+- `bool vector_field(rect r, std::span<f32> values, uiid id, const field_opts &opts = {});`
 - `popup_scope popup(uiid id, rect area, popup_flags flags = popup_flags::NONE);`
 - `titlebar_result titlebar(window &w, rect &bounds, std::string_view title);`
 - `bool combo(rect r, std::string_view label, const char *const *items, i32 item_count, i32 &selected, uiid id, f32 max_popup_height = 220.0f);`
@@ -99,11 +103,13 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `void set_device(context *c, render_device *device, render_surface *surface);`
 - `void set_theme(context *c, const theme &t);`
 - `font_handle load_font(context *c, const char *path);`
+- `bool set_font_fallbacks(context *c, std::span<const font_handle> fonts);`
 - `window *add_window(context *c, void *handle, render_surface *surface, rect client);`
 - `void remove_window(context *c, window &w);`
 - `window *window_at(context *c, void *handle);`
 - `window *first_window(context *c);`
 - `void set_window_client(window &w, rect client);`
+- `void set_window_scale(window &w, f32 scale, const scale_opts &opts = {});`
 - `void focus_window(context *c, window &w);`
 - `window *focused_window(context *c);`
 - `rect desktop_rect(context *c);`
@@ -116,7 +122,7 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `void key_repeat(window &w, key k);`
 - `void text_input_event(window &w, const char *utf8);`
 - `void ime_event(window &w, const char *preedit, i32 cursor);`
-- `void mods_event(window &w, bool shift, bool ctrl);`
+- `void mods_event(window &w, bool shift, bool ctrl, bool alt = false, bool super = false);`
 - `void mouse_wheel(window &w, f32 dx, f32 dy);`
 - `void mouse_move(context *c, f32 x, f32 y);`
 - `void mouse_button(context *c, bool down);`
@@ -124,7 +130,7 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `void key_event(context *c, key k, bool down);`
 - `void text_input_event(context *c, const char *utf8);`
 - `void ime_event(context *c, const char *preedit, i32 cursor);`
-- `void mods_event(context *c, bool shift, bool ctrl);`
+- `void mods_event(context *c, bool shift, bool ctrl, bool alt = false, bool super = false);`
 - `void mouse_wheel(context *c, f32 dx, f32 dy);`
 - `void set_clipboard(context *c, clipboard *clip);`
 - `void install_window_chrome(context *c, window &w);`
@@ -132,6 +138,11 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 
 ## Components (`pui::comp`)
 
+- `selectable_result selectable(ui &u, rect area, std::string_view label, const selectable_props &p = {});`
+- `tree_result tree_node(ui &u, rect area, std::string_view label, bool &open, const tree_props &p = {});`
+- `edit_result drag_value(ui &u, rect area, std::string_view label, f64 &value, const drag_value_props &p = {});`
+- `edit_result color_edit(ui &u, rect area, color &value, const color_props &p = {});`
+- `rect form_field(ui &u, rect area, std::string_view label, const form_props &p = {});`
 - `vec2 switch_size(ui &u, std::string_view label);`
 - `switch_result switch_toggle(ui &u, rect area, std::string_view label, bool &value, const switch_props &p = {});`
 - `radio_result radio_group(ui &u, rect area, std::span<const char *const> labels, i32 &selected, const radio_props &p = {});`

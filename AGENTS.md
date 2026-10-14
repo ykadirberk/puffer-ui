@@ -188,11 +188,14 @@ programs live in `examples/tutorial/` (`pui_tut_*` targets, built and
 
 ## Guardrails that prevent real bugs
 
-- **Overlapping hit rects steal presses.** If two `interact` rects overlap, the
-  first one drawn claims the press and the second never activates. Keep sibling hit
-  rects disjoint, or pass `enabled = false` to the one that must yield (the panel
-  titlebar yields to its close dot this way; the scroll thumb interacts before
-  content for the same reason).
+- **Overlapping hit rects use last-submitted capture.** A later enabled rect
+  can supersede an earlier press claim. Both calls may report `activated`, but
+  only the final owner receives the release click. Keep drag handles disjoint
+  from sibling hit rects when their press-edge effects must be exclusive.
+- **Disabled scopes and DPI.** End `u.disabled()` before `end_frame`, as with
+  other RAII scopes. Layout is logical; backend geometry/scissors are pixels.
+  Change window scale only between frames. Table row keys identify records,
+  not sorted/filtered indices. Shortcuts are consumed in submission order.
 - **Animated layout goes through `u.animate_rect`, keyed by identity.** Key it
   with `u.local(...)` inside `u.scope(item.id)` (never the list index, or
   reorders animate the wrong items), call it once per key per frame (a second

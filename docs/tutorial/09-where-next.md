@@ -114,13 +114,13 @@ Honesty about a young library saves you time. As of this writing:
 
 * **Text input is single-line.** There is no multi-line editor, no password mode, no
   built-in placeholder (you drew one in chapter 4).
-* **Text rendering is simple.** No complex-script shaping, no right-to-left, and
-  characters the font lacks draw as nothing. The bundled DejaVu font covers Latin,
+* **Text rendering is simple.** No complex-script shaping or right-to-left.
+  Register extra glyph coverage with `set_font_fallbacks`. The bundled DejaVu font covers Latin,
   Greek, Cyrillic and many symbols.
 * **No images or icons from files yet.** Chapter 6's icons were drawn from lines
   and arcs; textures can be created through the renderer, but there is no loader.
-* **High-DPI scaling is not handled by the library yet** (see `docs/seams.md` for
-  the plan): check how your app looks on a display scaled to 150–200%.
+* **DPI uses logical coordinates.** The SDL backend follows display scale changes;
+  custom hosts call `set_window_scale`. Glyphs are rasterized at framebuffer density.
 * **No accessibility tree** (screen readers) yet.
 * **Blur is approximate** (stepwise radius) and costs a batch break per call.
 * **Per-corner rounding covers shapes you draw, `u.blur`, `button`, `text_field` and
@@ -165,7 +165,7 @@ screen like this one is a small fraction of that.
 
 | | |
 |---|---|
-| [`README.md`](../../README.md) | the long reference tutorial: 28 chapters, one per capability |
+| [`README.md`](../../README.md) | the reference tutorial, one chapter per capability |
 | [`docs/components.md`](../components.md) | the component catalogue and how to write your own |
 | [`docs/api.md`](../api.md) | every public function, generated from the header |
 | [`docs/model_view.md`](../model_view.md) | the state/view pattern used here |

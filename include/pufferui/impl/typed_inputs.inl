@@ -286,9 +286,20 @@ inline bool caret_visible(context *c)
     return std::fmod(c->now, 1.0) < 0.5;
 }
 
-inline bool edit_buffer(ui &u, uiid id, rect r, const interaction &in, edit_state &st)
+inline bool edit_buffer(ui &u, uiid id, rect r, const interaction &in, edit_state &st,
+                        bool read_only = false)
 {
     context *c = u.ctx;
+    if (read_only)
+    {
+        st.pending_drag = false;
+        st.drag_moved = false;
+        if (c->text_drag.source_id == id)
+        {
+            c->text_drag.active = false;
+            c->text_drag.text.clear();
+        }
+    }
 
     bool changed = false;
 
@@ -315,7 +326,7 @@ inline bool edit_buffer(ui &u, uiid id, rect r, const interaction &in, edit_stat
 
     // A blocked field (under a popup/panel layer) neither joins the tab order nor
     // consumes input, so an open popup traps focus.
-    if (in.blocked)
+    if (in.blocked || in.disabled)
     {
         if (st.focused) set_focus(false);
         return false;
@@ -379,7 +390,7 @@ inline bool edit_buffer(ui &u, uiid id, rect r, const interaction &in, edit_stat
         else
         {
             const bool inside_sel = has_selection(st) && idx > sel_lo(st) && idx < sel_hi(st);
-            if (inside_sel && !c->shift_down)
+            if (inside_sel && !c->shift_down && !read_only)
                 st.pending_drag = true; // may become a move drag; else collapses on release
             else
             {
@@ -391,7 +402,7 @@ inline bool edit_buffer(ui &u, uiid id, rect r, const interaction &in, edit_stat
     }
 
     // Drop an active text drag into this field (move; hold Ctrl to copy).
-    if (c->text_drag.active && c->mouse_released && in.hovered)
+    if (!read_only && c->text_drag.active && c->mouse_released && in.hovered)
     {
         const usize idx = index_at_x(u, st.buffer, local_x);
         const usize lo = c->text_drag.lo, hi = c->text_drag.hi;
@@ -475,7 +486,7 @@ inline bool edit_buffer(ui &u, uiid id, rect r, const interaction &in, edit_stat
         if (has_selection(st) && c->clip)
             c->clip->set(std::string_view(st.buffer).substr(sel_lo(st), sel_hi(st) - sel_lo(st)));
     }
-    if (c->ctrl_down && c->key_pressed[static_cast<i32>(key::X)] && has_selection(st))
+    if (!read_only && c->ctrl_down && c->key_pressed[static_cast<i32>(key::X)] && has_selection(st))
     {
         if (c->clip)
             c->clip->set(std::string_view(st.buffer).substr(sel_lo(st), sel_hi(st) - sel_lo(st)));
@@ -483,7 +494,7 @@ inline bool edit_buffer(ui &u, uiid id, rect r, const interaction &in, edit_stat
         erase_range(st, sel_lo(st), sel_hi(st));
         changed = true;
     }
-    if (c->ctrl_down && c->key_pressed[static_cast<i32>(key::V)] && c->clip)
+    if (!read_only && c->ctrl_down && c->key_pressed[static_cast<i32>(key::V)] && c->clip)
     {
         std::string paste;
         if (c->clip->get(paste))
@@ -496,12 +507,13 @@ inline bool edit_buffer(ui &u, uiid id, rect r, const interaction &in, edit_stat
             changed = true;
         }
     }
-    if (c->ctrl_down && c->key_pressed[static_cast<i32>(key::Z)] && !c->shift_down)
+    if (!read_only && c->ctrl_down && c->key_pressed[static_cast<i32>(key::Z)] && !c->shift_down)
     {
         if (undo_edit(st)) changed = true;
     }
-    if (c->ctrl_down && (c->key_pressed[static_cast<i32>(key::Y)] ||
-                         (c->shift_down && c->key_pressed[static_cast<i32>(key::Z)])))
+    if (!read_only && c->ctrl_down &&
+        (c->key_pressed[static_cast<i32>(key::Y)] ||
+         (c->shift_down && c->key_pressed[static_cast<i32>(key::Z)])))
     {
         if (redo_edit(st)) changed = true;
     }
@@ -550,7 +562,7 @@ inline bool edit_buffer(ui &u, uiid id, rect r, const interaction &in, edit_stat
     }
 
     // typing replaces selection
-    if (c->text_len > 0)
+    if (!read_only && c->text_len > 0)
     {
         push_undo(st, c->now, !has_selection(st));
         if (has_selection(st)) erase_range(st, sel_lo(st), sel_hi(st));
@@ -561,7 +573,7 @@ inline bool edit_buffer(ui &u, uiid id, rect r, const interaction &in, edit_stat
     }
 
     // backspace / delete (Ctrl deletes a whole word)
-    if (c->key_pressed[static_cast<i32>(key::BACKSPACE)])
+    if (!read_only && c->key_pressed[static_cast<i32>(key::BACKSPACE)])
     {
         if (has_selection(st))
         {
@@ -578,7 +590,7 @@ inline bool edit_buffer(ui &u, uiid id, rect r, const interaction &in, edit_stat
             changed = true;
         }
     }
-    if (c->key_pressed[static_cast<i32>(key::DEL)])
+    if (!read_only && c->key_pressed[static_cast<i32>(key::DEL)])
     {
         if (has_selection(st))
         {
@@ -759,6 +771,7 @@ bool ui::text_field(rect r, std::string &value, uiid id)
 
 bool ui::text_field(rect r, std::string &value, uiid id, const field_opts &opts)
 {
+    auto disabled = this->disabled(!opts.enabled);
     const theme &t = ctx->active_theme;
     const corner_radii radii = opts.radii.set ? opts.radii.value : corner_radii::all(t.radius);
     interaction in = interact(id, r);
@@ -772,12 +785,21 @@ bool ui::text_field(rect r, std::string &value, uiid id, const field_opts &opts)
         st.anchor = st.caret;
         st.scroll_x = 0.0f;
     }
-    const bool edited = detail::edit_buffer(*this, id, r, in, st);
+    if (opts.read_only || in.disabled)
+    {
+        st.buffer = value;
+        if (st.caret > st.buffer.size()) st.caret = st.buffer.size();
+        if (st.anchor > st.buffer.size()) st.anchor = st.buffer.size();
+        st.undo.clear();
+        st.redo.clear();
+    }
+    const bool edited = detail::edit_buffer(*this, id, r, in, st, opts.read_only);
     bool changed = false;
     // Write back when focused, when focus was just lost, or when the framework
     // edited the buffer (e.g. a text drop into an unfocused field) — otherwise
     // the next reload would discard the edit.
-    if ((st.focused || was_focused || edited) && value != st.buffer)
+    if (!opts.read_only && !in.disabled && (st.focused || was_focused || edited) &&
+        value != st.buffer)
     {
         value = st.buffer;
         changed = true;
@@ -797,6 +819,77 @@ bool ui::text_field(rect r, std::string &value, uiid id, const field_opts &opts)
     const color bc = st.focused ? t.focus_border : t.border;
     detail::draw_edit_body(*this, r, radii, bc, bt, st, st.focused ? st.buffer : value, st.focused,
                            drop_index, is_source, ctx->text_drag.lo, ctx->text_drag.hi);
+    return changed;
+}
+
+namespace detail
+{
+template <class T> bool scalar_field(ui &u, rect r, T &value, uiid id, const field_opts &opts)
+{
+    auto disabled = u.disabled(!opts.enabled);
+    const interaction in = u.interact(id, r);
+    edit_state &st = edit_for(u.ctx, id);
+    if (!st.focused || opts.read_only || in.disabled)
+    {
+        char buf[128];
+        const auto formatted = std::to_chars(buf, buf + sizeof(buf), value);
+        st.buffer.assign(buf, formatted.ptr);
+        if (!st.focused) st.caret = st.anchor = st.buffer.size();
+        if (st.caret > st.buffer.size()) st.caret = st.buffer.size();
+        if (st.anchor > st.buffer.size()) st.anchor = st.buffer.size();
+        if (opts.read_only || in.disabled)
+        {
+            st.undo.clear();
+            st.redo.clear();
+        }
+    }
+    const bool was_focused = st.focused;
+    const bool edited = edit_buffer(u, id, r, in, st, opts.read_only);
+    bool changed = false, valid = true;
+    if (!opts.read_only && !in.disabled && (st.focused || was_focused || edited))
+    {
+        T parsed{};
+        const auto result =
+            std::from_chars(st.buffer.data(), st.buffer.data() + st.buffer.size(), parsed);
+        valid = result.ec == std::errc{} && result.ptr == st.buffer.data() + st.buffer.size();
+        if constexpr (std::is_floating_point_v<T>) valid = valid && std::isfinite(parsed);
+        if (valid && parsed != value)
+        {
+            value = parsed;
+            changed = true;
+        }
+    }
+    const theme &t = u.th();
+    if (in.hovered) u.set_cursor(t.text_cursor);
+    draw_edit_body(u, r, opts.radii.set ? opts.radii.value : corner_radii::all(t.radius),
+                   !valid       ? t.tokens.danger
+                   : st.focused ? t.focus_border
+                                : t.border,
+                   st.focused ? t.focus_border_thickness : t.border_thickness, st, st.buffer,
+                   st.focused, -1, false, 0, 0);
+    return changed;
+}
+} // namespace detail
+
+bool ui::int_field(rect r, i64 &value, uiid id, const field_opts &opts)
+{
+    return detail::scalar_field(*this, r, value, id, opts);
+}
+bool ui::double_field(rect r, f64 &value, uiid id, const field_opts &opts)
+{
+    return detail::scalar_field(*this, r, value, id, opts);
+}
+bool ui::vector_field(rect r, std::span<f32> values, uiid id, const field_opts &opts)
+{
+    if (values.empty()) return false;
+    row fields(r, spacing());
+    const f32 width = max2(0.0f, (r.w - spacing() * static_cast<f32>(values.size() - 1)) /
+                                     static_cast<f32>(values.size()));
+    bool changed = false;
+    for (usize i = 0; i < values.size(); ++i)
+        changed =
+            detail::scalar_field(*this, fields.next(width), values[i], id_child(id, i + 1), opts) ||
+            changed;
     return changed;
 }
 

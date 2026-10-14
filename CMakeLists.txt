@@ -4,10 +4,20 @@ cmake_minimum_required (VERSION 3.21)
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
   cmake_policy(SET CMP0141 NEW)
-  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
+  if(NOT DEFINED CMAKE_MSVC_DEBUG_INFORMATION_FORMAT)
+    set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>")
+  endif()
 endif()
 
 project ("PufferUI" VERSION 0.1.0.1)
+set(PUFFERUI_TOP_LEVEL OFF)
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+  set(PUFFERUI_TOP_LEVEL ON)
+endif()
+option(PUFFERUI_BUILD_TESTS "Build tests and benchmarks" ${PUFFERUI_TOP_LEVEL})
+option(PUFFERUI_BUILD_EXAMPLES "Build examples and tutorials" ${PUFFERUI_TOP_LEVEL})
+option(PUFFERUI_WITH_SDL3 "Build the SDL3 backend" ON)
+option(PUFFERUI_USE_SYSTEM_SDL3 "Use find_package(SDL3) instead of vendored SDL" OFF)
 
 # Link-time optimization for release builds. No /fp:fast: the golden-image
 # tests compare rendered pixels across compilers, and fast-math changes
@@ -30,8 +40,17 @@ endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 
-set(BUILD_SHARED_LIBS OFF)
-add_subdirectory(vendored/SDL EXCLUDE_FROM_ALL)
+if(PUFFERUI_WITH_SDL3)
+  if(PUFFERUI_USE_SYSTEM_SDL3)
+    find_package(SDL3 CONFIG REQUIRED)
+  else()
+    set(SDL_SHARED OFF CACHE BOOL "Build SDL shared library")
+    set(SDL_STATIC ON CACHE BOOL "Build SDL static library")
+    set(SDL_TEST_LIBRARY OFF CACHE BOOL "Build SDL's own test support library")
+    set(SDL_INSTALL ON CACHE BOOL "Install the SDL dependency with PufferUI")
+    add_subdirectory(vendored/SDL)
+  endif()
+endif()
 
 # ---------------------------------------------------------------------------
 # PufferUI libraries. The implementation TU is compiled ONCE per variant and
@@ -54,6 +73,7 @@ set(PUFFERUI_CORE_SOURCES "src/pufferui_impl.cpp")
 function(pui_add_library name)
   cmake_parse_arguments(A "SDL3" "" "" ${ARGN})
   add_library(${name} STATIC ${PUFFERUI_CORE_SOURCES})
+  target_compile_features(${name} PUBLIC cxx_std_20)
   if(NOT MSVC)
     target_compile_options(${name} PRIVATE -Wall -Wextra)
   endif()
@@ -63,14 +83,17 @@ function(pui_add_library name)
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
   if(A_SDL3)
     target_compile_definitions(${name} PUBLIC PUFFERUI_ENABLE_SDL3)
-    target_link_libraries(${name} PUBLIC SDL3-static)
+    target_link_libraries(${name} PUBLIC $<BUILD_INTERFACE:SDL3::SDL3> $<INSTALL_INTERFACE:SDL3::SDL3>)
   endif()
 endfunction()
 
 pui_add_library(pufferui)
 add_library(pufferui::pufferui ALIAS pufferui)
-pui_add_library(pufferui_sdl3 SDL3)
-add_library(pufferui::sdl3 ALIAS pufferui_sdl3)
+if(PUFFERUI_WITH_SDL3)
+  pui_add_library(pufferui_sdl3 SDL3)
+  add_library(pufferui::sdl3 ALIAS pufferui_sdl3)
+  set_target_properties(pufferui_sdl3 PROPERTIES EXPORT_NAME sdl3)
+endif()
 
 # pui_add_exe(<name> SOURCES <files...> [SDL3] [DEFS <defines...>])
 # One executable on the prebuilt library (SDL3 variant with SDL3), warnings
@@ -99,6 +122,7 @@ endfunction()
 # ---------------------------------------------------------------------------
 # Headless core tests (no SDL, no window). Tests register themselves
 # (PUI_TEST in tests/test_util.h): add a test by writing it in an area file.
+if(PUFFERUI_BUILD_TESTS)
 pui_add_exe(pui_core_tests SOURCES
     tests/test_core.cpp
     tests/test_layout.cpp
@@ -108,6 +132,7 @@ pui_add_exe(pui_core_tests SOURCES
     tests/test_dock.cpp
     tests/test_render.cpp
     tests/test_components.cpp
+    tests/test_ergonomics.cpp
     tests/test_motion.cpp)
 
 # Headless frame-cost measurement of the core (layout + interact + draw-list
@@ -117,16 +142,20 @@ pui_add_exe(pui_bench SOURCES tests/bench.cpp)
 
 # SDL event-pump tests: SDL_PushEvent-driven routing through the offscreen
 # driver. Same exit contract as the core tests (exit 0 = all passed).
+if(PUFFERUI_WITH_SDL3)
 pui_add_exe(pui_pump_tests SDL3 SOURCES tests/test_pump.cpp)
 
 # Golden-image tests: offscreen SDL + software renderer, hash + BMP compare.
 pui_add_exe(pui_golden_tests SDL3 SOURCES tests/golden/test_golden.cpp
     DEFS PUFFERUI_GOLDEN_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/golden")
+endif()
+endif()
 
 # ---------------------------------------------------------------------------
 # Apps: the small model/view example (docs/model_view.md) and the two-window
 # demo (docking, floating panels, HUD).
 # ---------------------------------------------------------------------------
+if(PUFFERUI_BUILD_EXAMPLES AND PUFFERUI_WITH_SDL3)
 pui_add_exe(pui_counter SDL3 SOURCES examples/pui_counter.cpp)
 pui_add_exe(pui_demo SDL3 SOURCES examples/pui_demo.cpp)
 
@@ -139,7 +168,8 @@ pui_add_exe(pui_demo SDL3 SOURCES examples/pui_demo.cpp)
 set(PUFFERUI_EXAMPLE_NAMES
     hello bootstrap rect cursors tracks grid ids text buttons inputs widgets
     panels scroll popups dock windows drawing blur animation theme custom
-    patterns expander combo keyboard components vlist overflow relayout)
+    patterns expander combo keyboard components vlist overflow relayout
+    controls tables tree numeric colors dpi)
 
 # Headless examples: no SDL, no window (they still get the bundled font path).
 set(PUFFERUI_HEADLESS_EXAMPLES headless renderer)
@@ -176,6 +206,7 @@ foreach(name IN LISTS PUFFERUI_SELFTESTS)
 endforeach()
 add_custom_target(examples_selftest ${PUFFERUI_SELFTEST_COMMANDS}
     DEPENDS ${PUFFERUI_SELFTESTS} VERBATIM)
+endif()
 
 # ---------------------------------------------------------------------------
 # Install / export: `find_package(pufferui)` gives `pufferui::pufferui` (core)
@@ -186,10 +217,10 @@ add_custom_target(examples_selftest ${PUFFERUI_SELFTEST_COMMANDS}
 include(CMakePackageConfigHelpers)
 
 install(TARGETS pufferui EXPORT pufferuiTargets)
-# pufferui_sdl3 is a build-tree convenience (it depends on SDL3-static, which
-# is not ours to export): package consumers get pufferui::pufferui and either
-# provide the SDL3 backend via the single-TU path or link their own SDL3.
-install(TARGETS pufferui_sdl3)
+# The SDL variant has the same target name in the build and installed package.
+if(PUFFERUI_WITH_SDL3)
+  install(TARGETS pufferui_sdl3 EXPORT pufferuiTargets)
+endif()
 file(GLOB PUFFERUI_IMPL_SLICES "include/pufferui/impl/*.inl")
 install(FILES
     "include/pufferui/pufferui.h"

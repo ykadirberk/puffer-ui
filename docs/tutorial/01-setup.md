@@ -172,8 +172,7 @@ int main()
             (void)u.titlebar(*app.win, page, "Glass Todo"); // `page` shrinks by the bar
             u.text(page.pad(20.0f).top_slice(24.0f), "Hello, PufferUI", u.th().text, ALIGN_LEFT);
         }
-        end_frame(app.ctx);
-        app.surface->present();
+        end_frame(app.ctx); // draws the frame and presents it
     }
 
     sdl3_app_shutdown(app);

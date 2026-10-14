@@ -199,5 +199,6 @@ bool ui::button(rect r, std::string_view label, uiid id, uiid role_id, button_ov
 
 bool ui::button(rect r, std::string_view label, uiid id, const button_opts &opts)
 {
+    auto disabled = this->disabled(!opts.enabled);
     return button(r, label, id, opts.role, opts.style);
 }

@@ -1,15 +1,17 @@
 @PACKAGE_INIT@
 
+include(CMakeFindDependencyMacro)
+if(@PUFFERUI_WITH_SDL3@)
+    find_dependency(SDL3 CONFIG)
+endif()
 include("${CMAKE_CURRENT_LIST_DIR}/pufferuiTargets.cmake")
 
 # Two prebuilt variants:
 #
 #   pufferui::pufferui  core only (backend-agnostic: tests, headless, engines)
 #
-# The SDL3 variant (pufferui_sdl3) is available in the build tree; it is not
-# exported because it depends on SDL3. Package consumers who want the SDL3
-# backend either link their own SDL3 build via the single-TU path or use the
-# core target with a backend they provide.
+# pufferui::sdl3 is exported when PUFFERUI_WITH_SDL3 was enabled; its SDL3
+# dependency is found above. Core-only packages require no SDL installation.
 #
 # Prefer the single-TU distribution? PufferUI is still one header plus one
 # implementation TU: add ${PUFFERUI_IMPL} to exactly one target per binary

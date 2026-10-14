@@ -535,11 +535,13 @@ void ui::blur(rect r, f32 blur_radius, const corner_radii &radii_in, f32 alpha)
 
     detail::dl_flush(c); // everything drawn so far must land in the scene
 
+    const f32 density = c->render_scale;
+    blur_radius *= density;
     const i32 margin = static_cast<i32>(max2(0.0f, min2(blur_radius, 16.0f)));
-    i32 rx = static_cast<i32>(std::floor(r.x)) - margin;
-    i32 ry = static_cast<i32>(std::floor(r.y)) - margin;
-    i32 rw = static_cast<i32>(std::ceil(r.right())) + margin - rx;
-    i32 rh = static_cast<i32>(std::ceil(r.bottom())) + margin - ry;
+    i32 rx = static_cast<i32>(std::floor(r.x * density)) - margin;
+    i32 ry = static_cast<i32>(std::floor(r.y * density)) - margin;
+    i32 rw = static_cast<i32>(std::ceil(r.right() * density)) + margin - rx;
+    i32 rh = static_cast<i32>(std::ceil(r.bottom() * density)) + margin - ry;
     if (rx < 0)
     {
         rw += rx;
@@ -620,9 +622,9 @@ void ui::blur(rect r, f32 blur_radius, const corner_radii &radii_in, f32 alpha)
     // pixels up/left of the user rect (sampling must reach outside for a correct
     // blur). UVs therefore come from each vertex's scene position - using 0..1/pts
     // would shift the blurred image by `margin` and pull outside content in.
-    const f32 du = 0.25f / static_cast<f32>(qw);
-    const f32 dv = 0.25f / static_cast<f32>(qh);
-    const f32 ox = static_cast<f32>(rx), oy = static_cast<f32>(ry);
+    const f32 du = density * 0.25f / static_cast<f32>(qw);
+    const f32 dv = density * 0.25f / static_cast<f32>(qh);
+    const f32 ox = static_cast<f32>(rx) / density, oy = static_cast<f32>(ry) / density;
     const color col{255, 255, 255, static_cast<u8>(clampf(alpha * 255.0f, 0.0f, 255.0f))};
 
     const corner_radii radii = detail::clamp_radii(r, radii_in);
@@ -635,7 +637,8 @@ void ui::blur(rect r, f32 blur_radius, const corner_radii &radii_in, f32 alpha)
             {r.x, r.bottom(), (r.x - ox) * du, (r.bottom() - oy) * dv, col},
         };
         i32 idx[6] = {0, 1, 2, 0, 2, 3};
-        c->device->draw(bs->quarter, v, 4, idx, 6);
+        detail::dl_add(c, v, 4, idx, 6);
+        detail::dl_flush(c);
         return;
     }
 
@@ -654,6 +657,7 @@ void ui::blur(rect r, f32 blur_radius, const corner_radii &radii_in, f32 alpha)
             out_v = (y - oy) * dv;
         },
         verts, idx);
-    c->device->draw(bs->quarter, verts.data(), static_cast<i32>(verts.size()), idx.data(),
-                    static_cast<i32>(idx.size()));
+    detail::dl_add(c, verts.data(), static_cast<i32>(verts.size()), idx.data(),
+                   static_cast<i32>(idx.size()));
+    detail::dl_flush(c);
 }

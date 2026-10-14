@@ -10,6 +10,7 @@
 #include "example_common.h"
 
 #include <cmath>
+#include <algorithm>
 #include <vector>
 
 // ---------------------------------------------------------------- chapter state
@@ -1144,6 +1145,61 @@ static void ch_headless(ui &u, example_app &app, rect body)
     u.text(bar, "every example runs headless in CI via --selftest", th.bg, ALIGN_CENTER);
 }
 
+static void ch_editors(ui &u, example_app &app, rect body)
+{
+    static i64 count = 42;
+    static f32 position[] = {1, 2, 3};
+    static color tint{86, 156, 255, 255};
+    static bool open = true;
+    column rows(body, u.spacing());
+    rect form = example_section(u, rows.next(u.control_h() * 5), "Editor controls",
+                                "pui_ex_numeric / pui_ex_colors / pui_ex_tree", app.font_bold);
+    column fields(form, u.spacing());
+    u.int_field(fields.next(u.control_h()), count, "tour_integer"_id);
+    u.vector_field(fields.next(u.control_h()), position, "tour_vector"_id);
+    comp::color_edit(u, fields.next(u.control_h()), tint, {.id = "tour_rgba"_id});
+    comp::tree_node(u, rows.next(u.control_h()), "App-owned tree", open, {.id = "tour_tree"_id});
+    if (open) u.text(rows.next(u.control_h()), "Explicit IDs, ordinary functions", u.th().text);
+}
+
+static void ch_app_tools(ui &u, example_app &app, rect body)
+{
+    static bool enabled = true;
+    static std::string path = "Project / assets";
+    static i32 saves = 0;
+    static uiid records[] = {101, 202, 303};
+    static comp::table_state state;
+    static comp::table_column columns[] = {{180}, {0}};
+    column rows(body, u.spacing());
+    u.checkbox(rows.next(u.control_h()), "Enable commands and table", enabled, "tools_enabled"_id);
+    u.text_field(rows.next(u.control_h()), path, "tools_path"_id, {.read_only = true});
+    {
+        auto disabled = u.disabled(!enabled);
+        if (u.button(rows.next(u.control_h()), "Save (Ctrl+S)", "tools_save"_id) ||
+            u.shortcut({key::S, MOD_CTRL}))
+            ++saves;
+    }
+    u.textf(rows.next(u.control_h()), u.th().text_dim, ALIGN_LEFT,
+            "Saved %d times; framebuffer scale %.2f", saves, app.win->scale);
+    const char *headers[] = {"Record", "Value"};
+    const auto key_for = [](i32 row) { return records[row]; };
+    const auto result =
+        comp::table(u, rows.next(u.control_h() * 5), headers, 3,
+                    [](ui &view, rect cell, i32 row, i32 col)
+                    {
+                        view.textf(cell, view.th().text, ALIGN_LEFT, "%llu",
+                                   static_cast<unsigned long long>(records[row] * (col ? 10 : 1)));
+                    },
+                    {.id = "tools_table"_id,
+                     .enabled = enabled,
+                     .row_key = key_for,
+                     .columns = columns,
+                     .state = &state});
+    if (result.sort_changed)
+        std::sort(std::begin(records), std::end(records),
+                  [](uiid a, uiid b) { return state.descending ? a > b : a < b; });
+}
+
 static const tour_chapter CHAPTERS[] = {
     {"Start", "Bootstrap", "one-call app setup, the raw frame loop, native chrome",
      "pui_ex_bootstrap", ch_bootstrap},
@@ -1155,6 +1211,10 @@ static const tour_chapter CHAPTERS[] = {
      ch_text},
     {"Widgets", "Buttons", "roles, overrides, style_scope", "pui_ex_buttons", ch_buttons},
     {"Widgets", "Inputs", "text_field / number_field, focus, Enter", "pui_ex_inputs", ch_inputs},
+    {"Widgets", "Editor controls", "Numeric, color and tree components", "pui_ex_numeric",
+     ch_editors},
+    {"Widgets", "App tools", "Control states, shortcuts, keyed tables and display scaling",
+     "pui_ex_controls / pui_ex_tables / pui_ex_dpi", ch_app_tools},
     {"Widgets", "Small widgets", "checkbox, slider, progress bar", "pui_ex_widgets", ch_widgets},
     {"Widgets", "Keyboard", "Tab rings, Enter/Space activation, arrow keys", "pui_ex_keyboard",
      ch_keyboard},

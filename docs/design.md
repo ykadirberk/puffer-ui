@@ -73,8 +73,12 @@ directly — see `docs/model_view.md`. No intent queues.
 ## Text
 
 stb_truetype rasterization into 1024² atlas pages (spilling to new pages
-when full), UTF-8 decode, kerning via stb's legacy `kern` table, no shaping
+when full), UTF-8 decode, kerning via stb's GPOS/`kern` support, no shaping
 (a deliberately deferred seam; see `docs/seams.md`).
+
+Window layout is logical. Geometry and scissors scale at the renderer boundary;
+glyphs rasterize at `window::scale` with logical advances. An ordered, copied
+font fallback list supplies missing glyphs before measurement/rasterization.
 
 ## Violations
 

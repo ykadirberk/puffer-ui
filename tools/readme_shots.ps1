@@ -10,7 +10,7 @@
 # Software-renderer note: very large blurred panels do not frost there (SDL's
 # software triangle limit), so pictures can show slightly less glass than a
 # GPU run.
-param([string]$BinDir = 'out/build/x64-release/Release')
+param([string]$BinDir = 'out/build/x64-release/Release', [string[]]$Names = @())
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
@@ -52,11 +52,18 @@ $shots = @(
     @('keyboard', 'pui_ex_keyboard', '--selftest --frames 46'),
     @('vlist', 'pui_ex_vlist', '--selftest --frames 46'),
     @('components', 'pui_ex_components', '--selftest --frames 46 --no-script'),  # unscrolled
+    @('controls', 'pui_ex_controls', '--selftest --frames 6 --no-script'),
+    @('tables', 'pui_ex_tables', '--selftest --frames 6 --no-script'),
+    @('tree', 'pui_ex_tree', '--selftest --frames 6 --no-script'),
+    @('numeric', 'pui_ex_numeric', '--selftest --frames 6 --no-script'),
+    @('colors', 'pui_ex_colors', '--selftest --frames 6 --no-script'),
+    @('dpi', 'pui_ex_dpi', '--selftest --frames 6 --no-script'),
     @('counter', 'pui_counter', ''),  # its own --screenshot mode (frame 4)
     @('showcase', 'pui_showcase', '--selftest --frames 100 --page 0 --no-script --no-hud'),
     @('showcase-light', 'pui_showcase', '--selftest --frames 100 --page 3 --no-script --no-hud --light')
 )
 foreach ($s in $shots) {
+    if ($Names.Count -gt 0 -and $s[0] -notin $Names) { continue }
     $exe = Join-Path $bin ($s[1] + '.exe')
     if (-not (Test-Path $exe)) { throw "missing $exe (build the examples first)" }
     $bmp = Join-Path ([System.IO.Path]::GetTempPath()) ('readme_' + $s[0] + '.bmp')
@@ -84,6 +91,7 @@ foreach ($s in $shots) {
     Write-Output "wrote docs/img/readme/$($s[0]).png"
 }
 
+if ($Names.Count -gt 0 -and 'renderer' -notin $Names) { return }
 # The CPU renderer example writes its own frame as a PPM (P6) in the working
 # directory: that file IS the picture (a custom render_device's output).
 $tmp = Join-Path ([System.IO.Path]::GetTempPath()) 'readme_renderer'

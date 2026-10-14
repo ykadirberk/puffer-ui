@@ -85,6 +85,7 @@ inline bool tut_init(tut_app &app, const char *title, i32 w, i32 h, int argc, ch
     }
     app.ctx = app.boot.ctx;
     app.win = app.boot.win;
+    if (app.selftest) app.boot.device->set_vsync(false); // offscreen: nothing to wait for
 
     // the bootstrap loaded the regular face; add the bold one
     app.font = app.boot.font;
@@ -122,8 +123,7 @@ template <typename FrameFn> void tut_loop(tut_app &app, FrameFn &&build)
             if (!app.selftest)
                 draw_violation_overlay(u, rect::make(8.0f, app.height() - 40.0f, 360.0f, 32.0f));
         }
-        end_frame(app.ctx);
-        app.boot.surface->present();
+        end_frame(app.ctx); // presents the window
         ++app.frame;
     }
 }

@@ -1,13 +1,12 @@
 # PufferUI — designed seams
 
 Interfaces that need a *shape* decided now so retrofitting later is cheap.
-Each is design-first (this document) and **not implemented**: the plan's reach
-phase landed the generated API reference and kept these as seams, because each
-touches every metric/glyph/input path and earns its own revision.
+Items explicitly marked implemented describe the current contract; the rest
+remain design notes. A planned interface is not an available API.
 
-## 1. DPI / content scale
+## 1. DPI / content scale — implemented
 
-- **Shape**: `window::scale` (f32, 1.0 by default). All theme metrics and
+- **API**: `set_window_scale` / `window::scale` (1.0 by default). All theme metrics and
   font sizes are LOGICAL px; the renderer multiplies at draw time (vertex
   positions/sizes scale; the glyph atlas holds pages per `size*scale`).
 - What must NOT change: rect-cutting math (apps keep thinking in logical
@@ -22,8 +21,8 @@ touches every metric/glyph/input path and earns its own revision.
 - **Shape**: an interface with `measure(text, style) -> extent`,
   `shape(text, style) -> glyph run`, `rasterize(...)`; the current
   stb_truetype implementation is the default.
-- Why now: stb ignores GPOS kerning (modern fonts, incl. DejaVu, carry it),
-  has no BiDi/RTL, no ligatures. A shaping backend (HarfBuzz or a
+- Why now: stb supports GPOS pair kerning, but has no BiDi/RTL or ligatures.
+  Ordered glyph fallback is implemented separately. A shaping backend (HarfBuzz or a
   built-in subset) becomes a drop-in behind the interface.
 - What must NOT change: the layout cache's key contract (the shaper's
   output is cached the same way), the atlas paging, `text_*` APIs.
@@ -47,6 +46,10 @@ touches every metric/glyph/input path and earns its own revision.
   every widget.
 
 ## 5. Commands / shortcuts
+
+Implemented: full common key/modifier input and `u.shortcut(chord, opts)` with
+exact modifiers and first-caller consumption. Optional `.focus` limits ownership
+to a widget. This small API is available now; the registry below remains a proposal.
 
 - **Shape**: a keymap registry (`u.bind(key, id)` / a `command` table) so
   components check bindings instead of reading raw keys. Keyboard

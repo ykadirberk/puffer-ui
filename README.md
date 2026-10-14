@@ -100,8 +100,7 @@ int main()
             u.draw_rect(rect::make(0, 0, w, h), th.bg);
             u.text(rect::make(24, 24, 300, 24), "Hello, PufferUI", th.text, ALIGN_LEFT);
         }
-        end_frame(app.ctx);
-        app.surface->present();
+        end_frame(app.ctx); // also presents the window
     }
     sdl3_app_shutdown(app);
     return 0;
@@ -130,7 +129,8 @@ with `pui_ex_*`; read them under `examples/atomic/`.
 - `window *add_window(ctx, native_handle, surface, client_rect)` registers a
   window; `client` is in desktop coordinates, `window::area` is local `{0,0,w,h}`.
 - `begin_frame(ctx, *win, now_seconds, dt_seconds)` … `end_frame(ctx)` surround
-  one window's frame; call `present()` on its surface afterwards.
+  one window's frame; `end_frame` also presents the window's surface (do not
+  call `present()` again: with vsync on, each extra present waits another vblank).
 - Input is fed per window: `mouse_move(window&, x, y)` uses window-local
   coordinates, `mouse_button(window&, down)`, `mouse_wheel(window&, dx, dy)`,
   `key_event(window&, key, down)`, `text_input_event(window&, utf8)`,
@@ -565,13 +565,11 @@ window *win2 = add_window(ctx, sdl2, device->create_surface(sdl2), rect::make(82
 // frame them one after another
 begin_frame(ctx, *win1, now, dt);
 { ui u(ctx); frame_a(u); }
-end_frame(ctx);
-surface1->present();
+end_frame(ctx); // presents win1
 
 begin_frame(ctx, *win2, now, dt);
 { ui u(ctx); frame_b(u); }
-end_frame(ctx);
-surface2->present();
+end_frame(ctx); // presents win2
 ```
 
 `set_window_client(w, rect)`, `remove_window(ctx, w)`, `focus_window(ctx, w)`,
@@ -1167,7 +1165,135 @@ Run: `pui_ex_components`. Full source: `examples/atomic/components.cpp`.
 
 ---
 
+### 29. Control states and shortcuts
+
+![Control states](docs/img/readme/controls.png)
+
+Run: `pui_ex_controls`
+
+Disabled scopes block pointer/keyboard input and dim submitted geometry. Nested
+scopes cannot re-enable a disabled parent. They must end before `end_frame`.
+Read-only fields keep selection and copy; they never overwrite the model.
+
+```cpp
+u.text_field(rows.next(u.control_h()), name, "name"_id, {.read_only = true});
+{
+    auto disabled = u.disabled(!enabled);
+    if (u.button(rows.next(u.control_h()), "Save", "save"_id) || u.shortcut({key::S, MOD_CTRL}))
+        ++saved;
+}
+```
+
+Shortcuts match exact modifiers and consume their key edge. Call focused
+commands before app commands, using `.focus = widget_id` when appropriate.
+Letters, digits, punctuation, F1–F12, navigation keys and Ctrl/Shift/Alt/Super
+are routed by SDL. This is explicit submission-order ownership, not a deferred
+command registry. Use `button_opts::enabled` for an individual button.
+
+### 30. Tables with record identity
+
+![Tables](docs/img/readme/tables.png)
+
+Run: `pui_ex_tables`
+
+Pass `.row_key` to associate focus with a record across sorting/filtering.
+The default is index + 1; use it only when row order is stable. Keys must be
+unique, nonzero and independent of presentation order. Optional app-owned
+`table_column` widths resize in place. `table_state` holds selected record and
+sort direction. Header activation returns `sort_changed`; sort your model
+after the table returns. Cell callbacks run in a row/column ID scope and clip.
+`clicked_key`, `extend_selection` and `toggle_selection` let an application
+maintain its own range or multi-selection model.
+
+```cpp
+static comp::table_state state;
+static comp::table_column columns[] = {{200}, {120}};
+static uiid records[] = {101, 202, 303};
+```
+
+### 31. Tree rows and selection
+
+![Tree rows](docs/img/readme/tree.png)
+
+Run: `pui_ex_tree`
+
+`comp::tree_node` takes an app-owned expansion bool. Submit children only while
+open, giving each record a stable ID and a depth. Left/Right collapse/expand a
+focused branch; Enter/Space select a row. `comp::selectable` is the flat-list
+version, with an activation result and caller-provided selected state.
+
+```cpp
+if (comp::tree_node(u, rows.next(u.control_h()), "Assets", open,
+                    {.id = "assets"_id, .selected = selected == "assets"_id}))
+    selected = "assets"_id;
+```
+
+### 32. Numeric editors and form rows
+
+![Numeric editors](docs/img/readme/numeric.png)
+
+Run: `pui_ex_numeric`
+
+`int_field` parses signed 64-bit integers without passing through float;
+`double_field` retains double precision. Overflow, trailing garbage and
+non-finite values leave the model unchanged. `vector_field` lays out float
+components with derived IDs. All take `field_opts`. `comp::drag_value` offers
+mouse dragging and Left/Right steps with explicit speed and bounds.
+`comp::form_field` returns the editor rect alongside a measured/fixed-width
+label and optional help/error message.
+
+```cpp
+u.int_field(comp::form_field(u, rows.next(u.control_h()), "Count", {.label_width = 100}), count,
+            "count"_id);
+u.double_field(comp::form_field(u, rows.next(u.control_h()), "Precise", {.label_width = 100}),
+               precise, "precise"_id);
+u.vector_field(comp::form_field(u, rows.next(u.control_h()), "Position", {.label_width = 100}),
+               position, "position"_id);
+```
+
+### 33. Color editing
+
+![Color editor](docs/img/readme/colors.png)
+
+Run: `pui_ex_colors`
+
+The RGBA editor uses keyboard-operable channel sliders. `.alpha = false`
+keeps the existing alpha unchanged. Disable it through `.enabled` or a scope.
+
+```cpp
+comp::color_edit(u, rows.next(u.control_h()), value, {.id = "color"_id});
+u.draw_rounded_rect(rows.next(u.control_h() * 3), value, u.th().radius);
+```
+
+### 34. DPI and font fallback
+
+![DPI and fonts](docs/img/readme/dpi.png)
+
+Run: `pui_ex_dpi`
+
+Layout and theme metrics are logical units. `window::scale` converts them to
+framebuffer pixels; glyphs rasterize at that density rather than magnifying
+low-resolution bitmaps. The SDL bootstrap follows display-scale changes and
+exposes logical `width/height`. Custom hosts call `set_window_scale` between
+frames; `.input_scale` describes native pointer units per logical unit when
+different from framebuffer scale. `window::client` remains in native units;
+`window::area` is logical. Backend geometry/scissors remain in framebuffer pixels.
+
+`set_font_fallbacks(ctx, fonts)` copies an ordered span of loaded font handles.
+The primary font wins, followed by fallbacks with the requested glyph.
+Measurement, kerning and subpixel rasterization use the same chosen font.
+This adds glyph coverage, not complex-script shaping or BiDi.
+
 ## Examples index
+
+| Target | Capability |
+| --- | --- |
+| `pui_ex_controls` | Disabled groups, read-only text, shortcuts |
+| `pui_ex_tables` | Stable row keys, column resizing, sort requests |
+| `pui_ex_tree` | Tree expansion and selectable rows |
+| `pui_ex_numeric` | Integer/double/vector fields, dragging, form rows |
+| `pui_ex_colors` | RGBA channel editing |
+| `pui_ex_dpi` | Logical units and display density |
 
 | Target | Source | Shows |
 | --- | --- | --- |
@@ -1484,7 +1610,7 @@ implementation TU is compiled once per variant by the build, so a header edit
 does not recompile it once per executable:
 
 ```cmake
-add_subdirectory(pufferui)
+add_subdirectory(pufferui EXCLUDE_FROM_ALL)
 add_executable(my_app main.cpp)   # no impl TU listed
 target_link_libraries(my_app PRIVATE pufferui::sdl3)     # core + SDL3 backend
 # or pufferui::pufferui for the backend-agnostic core (tests, headless)
@@ -1494,15 +1620,22 @@ target_link_libraries(my_app PRIVATE pufferui::sdl3)     # core + SDL3 backend
 
 ```cmake
 find_package(pufferui REQUIRED)
-add_executable(my_app main.cpp ${PUFFERUI_IMPL})        # the impl TU path
+add_executable(my_app main.cpp)
 target_link_libraries(my_app PRIVATE pufferui::pufferui)
 ```
 
-The exported package target is the backend-agnostic core
-(`pufferui::pufferui`); `${PUFFERUI_IMPL}` is provided so the installed impl
-path stays correct, and you bring your own backend or SDL3 (the SDL3 variant
-`pufferui_sdl3` exists in the build tree but is not exported — SDL3 is not
-ours to export).
+Both build-tree and installed packages provide `pufferui::pufferui` (core) and,
+when enabled, `pufferui::sdl3`. C++20 propagates from the target. The SDL-enabled
+package finds its SDL3 dependency; vendored SDL is installed alongside it.
+`${PUFFERUI_IMPL}` is an alternative to linking the prebuilt implementation,
+not an extra source to compile while also linking it.
+
+When consumed as a subdirectory, examples/tests default off. Set
+`PUFFERUI_WITH_SDL3=OFF` for a core-only build with no SDL configuration;
+`PUFFERUI_USE_SYSTEM_SDL3=ON` uses `find_package(SDL3)` instead of the submodule.
+`PUFFERUI_BUILD_TESTS` and `PUFFERUI_BUILD_EXAMPLES` can be selected independently.
+`python tools/check_consumers.py` verifies both in-tree and installed consumers;
+`--sdl-build out/build/x64-debug` also verifies the installed SDL target.
 
 **Single-TU** (no build integration at all): add `pufferui_impl.cpp` to one
 target, define `PUFFERUI_ENABLE_SDL3` there if you want the SDL3 backend, and
@@ -1534,8 +1667,7 @@ while (sdl3_app_pump(app))          // events + client sync; false = stop
     sdl3_app_tick(app);             // the frame clock
     begin_frame(app.ctx, *app.win, app.now, app.dt);
     { /* ui u(app.ctx); ... draw ... */ }
-    end_frame(app.ctx);
-    app.surface->present();
+    end_frame(app.ctx);             // flush + present
 }
 sdl3_app_shutdown(app);
 ```

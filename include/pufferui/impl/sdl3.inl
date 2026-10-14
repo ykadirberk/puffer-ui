@@ -21,10 +21,24 @@ struct sdl3_texture
 
 struct sdl3_device;
 
+// SDL's defaults that fight an immediate-mode UI, set at DEFAULT priority so an
+// app's own SDL_SetHint (or the environment) still wins. Click-through: SDL
+// otherwise swallows the first click on an unfocused window (it only
+// activates it), so every second window, dialog or tool palette costs an
+// extra click before any widget reacts.
+inline void sdl3_default_hints()
+{
+    SDL_SetHintWithPriority(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1", SDL_HINT_DEFAULT);
+}
+
 struct sdl3_surface : render_surface
 {
     sdl3_device *dev = nullptr;
     i32 slot = -1;
+    // end_frame presents; an app that presents again afterwards must not
+    // re-present the same frame (with vsync on that waits a second vblank
+    // and halves the frame rate). Re-armed by make_current (begin_frame).
+    bool presented = false;
 
     void make_current(render_device &device) override;
     texture_handle scene_target() override;
@@ -41,6 +55,7 @@ struct sdl3_device : render_device
         bool owns_renderer = false;
         texture_handle scene = nullptr;
         i32 scene_w = 0, scene_h = 0;
+        i32 vsync_applied = -1; // what SDL_SetRenderVSync last got (-1: never)
     };
 
     std::vector<slot> slots;
@@ -157,7 +172,6 @@ struct sdl3_device : render_device
             ren = primary_renderer;
             primary_claimed = true;
             if (!win) win = SDL_GetRenderWindow(ren);
-            SDL_SetRenderVSync(ren, vsync_enabled ? 1 : 0);
         }
         else
         {
@@ -165,7 +179,6 @@ struct sdl3_device : render_device
             ren = SDL_CreateRenderer(win, nullptr);
             if (!ren) return nullptr;
             owns = true;
-            SDL_SetRenderVSync(ren, vsync_enabled ? 1 : 0);
         }
 
         auto *s = new sdl3_surface();
@@ -177,7 +190,52 @@ struct sdl3_device : render_device
         sl.owns_renderer = owns;
         slots.push_back(sl);
         surfaces.push_back(s);
+        sync_vsync();
         return s;
+    }
+
+    // VSync paces the app's loop, and the loop presents every window in turn:
+    // if each window waited for its own vblank, N windows would run at
+    // 1/N of the refresh rate. So exactly one window - the first one on
+    // screen - waits; the others present without waiting and the compositor
+    // shows them at their next vblank (windowed: no tearing). A minimized or
+    // hidden pacer hands the job to the next visible window, so the loop never
+    // spins uncapped while any window is on screen.
+    // A slot outlives its window when the app destroys an extra window (SDL
+    // takes the window's renderer with it); SDL validates the handle, so a
+    // destroyed window reads as id 0.
+    static bool slot_alive(const slot &sl)
+    {
+        return sl.renderer && sl.window && SDL_GetWindowID(sl.window) != 0;
+    }
+
+    i32 pacer_slot() const
+    {
+        constexpr SDL_WindowFlags off_screen =
+            SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED | SDL_WINDOW_OCCLUDED;
+        i32 first = -1;
+        for (i32 i = 0; i < static_cast<i32>(slots.size()); ++i)
+        {
+            const slot &sl = slots[static_cast<usize>(i)];
+            if (!slot_alive(sl)) continue;
+            if (first < 0) first = i;
+            if ((SDL_GetWindowFlags(sl.window) & off_screen) == 0) return i;
+        }
+        return first; // nothing on screen: the first window still paces
+    }
+
+    // Applies the pacing; SDL is only called when a window's setting changes.
+    void sync_vsync()
+    {
+        const i32 pacer = vsync_enabled ? pacer_slot() : -1;
+        for (i32 i = 0; i < static_cast<i32>(slots.size()); ++i)
+        {
+            slot &sl = slots[static_cast<usize>(i)];
+            const i32 want = i == pacer ? 1 : 0;
+            if (!slot_alive(sl) || sl.vsync_applied == want) continue;
+            SDL_SetRenderVSync(sl.renderer, want);
+            sl.vsync_applied = want;
+        }
     }
 
     void ensure_scene(i32 slot_index, i32 w, i32 h)
@@ -201,8 +259,7 @@ struct sdl3_device : render_device
     void set_vsync(bool enabled) override
     {
         vsync_enabled = enabled;
-        for (slot &sl : slots)
-            if (sl.renderer) SDL_SetRenderVSync(sl.renderer, enabled ? 1 : 0);
+        sync_vsync();
     }
 
     void clear(color col) override
@@ -385,6 +442,7 @@ void sdl3_surface::make_current(render_device &)
     sdl3_device &d = *dev;
     if (slot < 0 || slot >= static_cast<i32>(d.slots.size())) return;
     d.current_slot = slot;
+    presented = false;
     sdl3_device::slot &sl = d.slots[static_cast<usize>(slot)];
     if (!sl.renderer) return;
     int w = 0, h = 0;
@@ -419,8 +477,11 @@ void sdl3_surface::present()
 {
     sdl3_device &d = *dev;
     if (slot < 0 || slot >= static_cast<i32>(d.slots.size())) return;
+    if (presented) return; // this frame is already on screen
     sdl3_device::slot &sl = d.slots[static_cast<usize>(slot)];
     if (!sl.renderer) return;
+    presented = true;
+    d.sync_vsync(); // the pacer may have changed (minimized, hidden, closed)
     d.current_slot = slot;
     SDL_SetRenderTarget(sl.renderer, nullptr);
     SDL_SetRenderDrawBlendMode(sl.renderer, SDL_BLENDMODE_NONE);
@@ -440,6 +501,7 @@ void sdl3_surface::present()
 render_device *create_sdl3_device(void *sdl_renderer)
 {
 #if defined(PUFFERUI_ENABLE_SDL3)
+    sdl3_default_hints();
     auto *d = new sdl3_device();
     d->primary_renderer = static_cast<SDL_Renderer *>(sdl_renderer);
     return d;
@@ -493,7 +555,8 @@ SDL_HitTestResult SDLCALL sdl3_chrome_hit_test(SDL_Window *win, const SDL_Point 
     context *c = static_cast<context *>(data);
     window *w = c ? window_at(c, win) : nullptr;
     if (!w) return SDL_HITTEST_NORMAL;
-    const f32 lx = static_cast<f32>(area->x), ly = static_cast<f32>(area->y);
+    const f32 lx = static_cast<f32>(area->x) / w->input_scale,
+              ly = static_cast<f32>(area->y) / w->input_scale;
     if (!w->maximized)
     {
         // Generous native resize borders: the corner squares claim both axes
@@ -572,12 +635,23 @@ window_host *sdl3_host_instance()
     static sdl3_window_host host;
     return &host;
 }
+
+void sdl3_sync_scale(window &w, SDL_Window *sdl)
+{
+    const f32 density = SDL_GetWindowPixelDensity(sdl);
+    const f32 scale = SDL_GetWindowDisplayScale(sdl);
+    if (density > 0.0f) set_window_scale(w, scale, {.input_scale = scale / density});
+}
 } // namespace
 
 bool sdl3_route_impl(context *c, SDL_Event *e)
 {
     if (!c || !e) return false;
-    if (!window_host_of(c)) set_window_host(c, sdl3_host_instance());
+    if (!window_host_of(c))
+    {
+        sdl3_default_hints(); // apps that route SDL events over their own device
+        set_window_host(c, sdl3_host_instance());
+    }
 
     switch (e->type)
     {
@@ -597,11 +671,14 @@ bool sdl3_route_impl(context *c, SDL_Event *e)
     }
     case SDL_EVENT_WINDOW_RESIZED:
     case SDL_EVENT_WINDOW_MOVED:
+    case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
+    case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
     {
         SDL_Window *sdl = SDL_GetWindowFromID(e->window.windowID);
         window *w = sdl ? window_at(c, sdl) : nullptr;
         if (w)
         {
+            sdl3_sync_scale(*w, sdl);
             int x = 0, y = 0, ww = 0, wh = 0;
             SDL_GetWindowPosition(sdl, &x, &y);
             SDL_GetWindowSize(sdl, &ww, &wh);
@@ -652,65 +729,20 @@ bool sdl3_route_impl(context *c, SDL_Event *e)
         window *w = window_at(c, SDL_GetWindowFromID(e->key.windowID));
         if (!w) w = focused_window(c);
         if (!w) break;
-        mods_event(*w, (e->key.mod & SDL_KMOD_SHIFT) != 0, (e->key.mod & SDL_KMOD_CTRL) != 0);
+        mods_event(*w, (e->key.mod & SDL_KMOD_SHIFT) != 0, (e->key.mod & SDL_KMOD_CTRL) != 0,
+                   (e->key.mod & SDL_KMOD_ALT) != 0, (e->key.mod & SDL_KMOD_GUI) != 0);
         key k = key::ESCAPE;
         bool mapped = true;
         switch (e->key.key)
         {
-        case SDLK_ESCAPE:
-            k = key::ESCAPE;
-            break;
-        case SDLK_RETURN:
+#define PUI_KEY_CASE(name, native)                                                                 \
+    case SDLK_##native:                                                                            \
+        k = key::name;                                                                             \
+        break;
+            PUI_KEYS(PUI_KEY_CASE)
+#undef PUI_KEY_CASE
         case SDLK_KP_ENTER:
             k = key::ENTER;
-            break;
-        case SDLK_TAB:
-            k = key::TAB;
-            break;
-        case SDLK_BACKSPACE:
-            k = key::BACKSPACE;
-            break;
-        case SDLK_SPACE:
-            k = key::SPACE;
-            break;
-        case SDLK_LEFT:
-            k = key::LEFT;
-            break;
-        case SDLK_RIGHT:
-            k = key::RIGHT;
-            break;
-        case SDLK_UP:
-            k = key::UP;
-            break;
-        case SDLK_DOWN:
-            k = key::DOWN;
-            break;
-        case SDLK_HOME:
-            k = key::HOME;
-            break;
-        case SDLK_END:
-            k = key::END;
-            break;
-        case SDLK_A:
-            k = key::A;
-            break;
-        case SDLK_C:
-            k = key::C;
-            break;
-        case SDLK_X:
-            k = key::X;
-            break;
-        case SDLK_V:
-            k = key::V;
-            break;
-        case SDLK_Z:
-            k = key::Z;
-            break;
-        case SDLK_Y:
-            k = key::Y;
-            break;
-        case SDLK_DELETE:
-            k = key::DEL;
             break;
         default:
             mapped = false;
@@ -770,7 +802,7 @@ bool sdl3_app_init(sdl3_app &a, const char *title, i32 w, i32 h, int argc, char 
 
     const SDL_WindowFlags flags = SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE |
                                   (a.hidden ? SDL_WINDOW_HIDDEN : static_cast<SDL_WindowFlags>(0));
-    a.sdl_window = SDL_CreateWindow(title, w, h, flags);
+    a.sdl_window = SDL_CreateWindow(title, w, h, flags | SDL_WINDOW_HIGH_PIXEL_DENSITY);
     if (!a.sdl_window)
     {
         SDL_Quit();
@@ -837,8 +869,8 @@ bool sdl3_app_init(sdl3_app &a, const char *title, i32 w, i32 h, int argc, char 
     set_theme(a.ctx, base);
     set_clipboard(a.ctx, sdl3_system_clipboard());
 
-    a.width = w;
-    a.height = h;
+    a.width = static_cast<i32>(a.win->area.w);
+    a.height = static_cast<i32>(a.win->area.h);
     a.freq = static_cast<f64>(SDL_GetPerformanceFrequency());
     a.last_counter = SDL_GetPerformanceCounter();
     a.inited = true;
@@ -874,6 +906,8 @@ bool sdl3_app_pump(sdl3_app &a)
             set_window_client(*a.win, rect::make(static_cast<f32>(x), static_cast<f32>(y),
                                                  static_cast<f32>(ww), static_cast<f32>(wh)));
         if (a.win->close_requested) return false;
+        a.width = static_cast<i32>(a.win->area.w);
+        a.height = static_cast<i32>(a.win->area.h);
     }
     return true;
 }
@@ -918,6 +952,11 @@ void install_window_chrome(context *c, window &w)
     // is AFTER the app created its windows - ensure it exists here so the
     // chrome install cannot be silently skipped.
     if (!c->host) set_window_host(c, sdl3_host_instance());
+    if (c->host == sdl3_host_instance() && w.handle)
+    {
+        sdl3_default_hints();
+        sdl3_sync_scale(w, static_cast<SDL_Window *>(w.handle));
+    }
 #endif
     if (!c->host) return;
     c->host->install_system_chrome(w);

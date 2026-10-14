@@ -19,3 +19,5 @@ menus_f4 9e3ea22f8381dd83
 menus_f5 0eee8f079a1c69bd
 relayout_f7 f8c193d451ae38b5
 relayout_f8 1950bb70b6be519e
+dpi_1x 6291ff0d9b30efeb
+dpi_2x 984abc5d421e7c60

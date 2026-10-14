@@ -371,21 +371,62 @@ table_result table(ui &u, rect area, std::span<const char *const> headers, i32 r
                    function_ref<void(ui &, rect, i32, i32)> cell_draw, const table_props &p)
 {
     table_result out{};
+    auto disabled = u.disabled(!p.enabled);
     table_style st = p.style ? *p.style : u.th().table;
 
     const f32 row_h = p.row_h > 0.0f ? p.row_h : st.row_h;
     const f32 header_h = p.header_h > 0.0f ? p.header_h : st.header_h;
     const i32 cols = static_cast<i32>(headers.size());
-    const f32 col_w = cols > 0 ? area.w / static_cast<f32>(cols) : area.w;
+    std::vector<f32> widths(static_cast<usize>(cols));
+    f32 fixed = 0.0f;
+    i32 flexible = 0;
+    for (i32 c = 0; c < cols; ++c)
+    {
+        const f32 w = c < static_cast<i32>(p.columns.size()) ? p.columns[c].width : 0.0f;
+        if (w > 0.0f)
+            fixed += w;
+        else
+            ++flexible;
+        widths[c] = max2(0.0f, w);
+    }
+    for (f32 &w : widths)
+        if (w == 0.0f) w = flexible ? max2(0.0f, area.w - fixed) / flexible : 0.0f;
 
     rect body = area;
     const rect head = body.cut_top(header_h);
     u.draw_rect(head, st.header_bg);
+    f32 x = head.x;
     for (i32 c = 0; c < cols; ++c)
     {
-        const rect cell = rect::make(head.x + col_w * static_cast<f32>(c), head.y, col_w, head.h);
-        u.text(rect::make(cell.x + 8.0f, cell.y, max2(0.0f, cell.w - 12.0f), cell.h),
-               headers[c] ? headers[c] : "", st.header_text, ALIGN_LEFT);
+        const rect cell =
+            rect::make(x, head.y, min2(widths[c], max2(0.0f, head.right() - x)), head.h);
+        if (p.state && (c >= static_cast<i32>(p.columns.size()) || p.columns[c].sortable))
+        {
+            const auto act =
+                detail::widget_activate(u, id_child(p.id, static_cast<uiid>(c) ^ "header"_id),
+                                        cell.pad(3.0f, 0.0f), p.enabled);
+            if (act.activated)
+            {
+                p.state->descending = p.state->sort_column == c && !p.state->descending;
+                p.state->sort_column = c;
+                out.sort_changed = true;
+            }
+        }
+        u.text_ellipsis(rect::make(cell.x + 8.0f, cell.y, max2(0.0f, cell.w - 12.0f), cell.h),
+                        headers[c] ? headers[c] : "", st.header_text, ALIGN_LEFT);
+        if (c < static_cast<i32>(p.columns.size()) && c + 1 < cols)
+        {
+            const uiid resize_id = id_child(p.id, static_cast<uiid>(c) ^ "resize"_id);
+            const rect grip{cell.right() - 3.0f, cell.y, 6.0f, cell.h};
+            const auto in = u.interact(resize_id, grip, p.enabled, false);
+            if (in.hovered || in.held) u.set_cursor(CURSOR_HRESIZE);
+            f32 &anchor = u.ctx->st->splits.offsets[resize_id];
+            if (in.activated) anchor = u.ctx->mouse_x - widths[c];
+            if (in.held)
+                p.columns[c].width =
+                    max2(max2(1.0f, p.columns[c].min_width), u.ctx->mouse_x - anchor);
+        }
+        x += widths[c];
     }
     if (st.border.a > 0)
         u.draw_rect(rect::make(head.x, head.bottom() - 1.0f, head.w, 1.0f), st.border);
@@ -396,29 +437,54 @@ table_result table(ui &u, rect area, std::span<const char *const> headers, i32 r
         row_count, row_h,
         [&](ui &uu, i32 row, rect row_rect)
         {
-            const uiid row_id = id_child(p.id, static_cast<uiid>(row));
+            const uiid record = p.row_key ? p.row_key(row) : static_cast<uiid>(row) + 1;
+            const uiid row_id = id_child(p.id, record);
+            auto row_scope = uu.scope(row_id);
             const detail::activation act = detail::widget_activate(uu, row_id, row_rect, p.enabled);
             const interaction &in = act.in;
             if (act.activated)
             {
                 out.clicked_row = row;
+                out.clicked_key = record;
+                out.extend_selection = uu.ctx->shift_down;
+                out.toggle_selection = uu.ctx->ctrl_down;
+                if (p.state)
+                {
+                    out.selection_changed = p.state->selected != record;
+                    p.state->selected = record;
+                }
                 // the column comes from the click position (keyboard: the first)
-                out.clicked_col =
-                    in.clicked
-                        ? static_cast<i32>((uu.ctx->mouse_x - row_rect.x) / max2(1.0f, col_w))
-                        : 0;
+                out.clicked_col = 0;
+                f32 edge = row_rect.x;
+                if (in.clicked)
+                    for (i32 c = 0; c < cols; ++c)
+                    {
+                        edge += widths[c];
+                        if (uu.ctx->mouse_x < edge)
+                        {
+                            out.clicked_col = c;
+                            break;
+                        }
+                    }
                 out.clicked_col = out.clicked_col < 0       ? 0
                                   : out.clicked_col >= cols ? cols - 1
                                                             : out.clicked_col;
             }
             if (in.focused) out.focused_row = row;
 
-            const color bg = in.hovered ? st.row_hover : (row % 2 ? st.row_alt : st.row_bg);
+            const color bg = (in.hovered || (p.state && p.state->selected == record))
+                                 ? st.row_hover
+                                 : (row % 2 ? st.row_alt : st.row_bg);
             uu.draw_rect(row_rect, bg);
+            f32 cell_x = row_rect.x;
             for (i32 c = 0; c < cols; ++c)
             {
-                const rect cell = rect::make(row_rect.x + col_w * static_cast<f32>(c), row_rect.y,
-                                             col_w, row_rect.h);
+                const rect cell =
+                    rect::make(cell_x, row_rect.y,
+                               min2(widths[c], max2(0.0f, row_rect.right() - cell_x)), row_rect.h);
+                cell_x += widths[c];
+                if (cell.w <= 0.0f) continue;
+                auto clip = uu.region(cell, static_cast<uiid>(c) + 1);
                 if (cell_draw)
                     cell_draw(uu,
                               rect::make(cell.x + 8.0f, cell.y, max2(0.0f, cell.w - 12.0f), cell.h),
@@ -427,6 +493,135 @@ table_result table(ui &u, rect area, std::span<const char *const> headers, i32 r
         });
     sv.set_content_height(static_cast<f32>(row_count) * row_h);
     return out;
+}
+
+selectable_result selectable(ui &u, rect area, std::string_view label, const selectable_props &p)
+{
+    auto disabled = u.disabled(!p.enabled);
+    const auto act = detail::widget_activate(u, p.id, area, p.enabled);
+    const button_style &s = p.style ? *p.style : u.th().button;
+    u.draw_rounded_rect(area,
+                        p.selected       ? s.active_bg
+                        : act.in.hovered ? s.hover_bg
+                                         : s.bg,
+                        s.radius);
+    u.text_ellipsis(area.pad(s.pad_x, 0), label, s.text);
+    if (act.in.focused) detail::focus_ring(u, area, s.radius);
+    return {act.activated, act.in};
+}
+
+tree_result tree_node(ui &u, rect area, std::string_view label, bool &open, const tree_props &p)
+{
+    auto disabled = u.disabled(!p.enabled);
+    const f32 indent = max2(0.0f, static_cast<f32>(p.depth)) * u.padding();
+    (void)area.cut_left(indent);
+    rect arrow = area.cut_left(u.control_h());
+    tree_result out;
+    if (!p.leaf)
+    {
+        auto toggle =
+            selectable(u, arrow, open ? "-" : "+",
+                       {.id = id_child(p.id, "toggle"_id), .enabled = p.enabled, .style = p.style});
+        if (toggle)
+        {
+            open = !open;
+            out.toggled = true;
+        }
+    }
+    auto item =
+        selectable(u, area, label,
+                   {.id = p.id, .enabled = p.enabled, .selected = p.selected, .style = p.style});
+    out.selected = item.activated;
+    out.in = item.in;
+    if (!p.leaf && item.in.focused)
+    {
+        const bool left = u.shortcut({key::LEFT}, {.focus = p.id});
+        const bool right = u.shortcut({key::RIGHT}, {.focus = p.id});
+        if ((left && open) || (right && !open))
+        {
+            open = right;
+            out.toggled = true;
+        }
+    }
+    return out;
+}
+
+edit_result drag_value(ui &u, rect area, std::string_view label, f64 &value,
+                       const drag_value_props &p)
+{
+    auto disabled = u.disabled(!p.enabled);
+    const interaction in = u.interact(p.id, area, p.enabled);
+    f32 &last_x = u.ctx->st->splits.offsets[p.id];
+    if (in.activated) last_x = u.ctx->mouse_x;
+    f64 next = value;
+    bool editing = false;
+    if (in.held)
+    {
+        editing = u.ctx->mouse_x != last_x;
+        next += static_cast<f64>(u.ctx->mouse_x - last_x) * p.speed;
+        last_x = u.ctx->mouse_x;
+    }
+    if (in.focused)
+    {
+        if (u.shortcut({key::LEFT}, {.focus = p.id}))
+        {
+            next -= p.speed;
+            editing = true;
+        }
+        if (u.shortcut({key::RIGHT}, {.focus = p.id}))
+        {
+            next += p.speed;
+            editing = true;
+        }
+    }
+    if (next < p.min) next = p.min;
+    if (next > p.max) next = p.max;
+    const bool changed = editing && !in.disabled && std::isfinite(next) && next != value;
+    if (changed) value = next;
+    if (in.hovered || in.held) u.set_cursor(CURSOR_HRESIZE);
+    const button_style &s = p.style ? *p.style : u.th().button;
+    u.draw_rounded_rect(area, in.held ? s.active_bg : in.hovered ? s.hover_bg : s.bg, s.radius);
+    rect body = area.pad(s.pad_x, 0);
+    u.text(body, label, s.text);
+    u.textf(body, s.text, ALIGN_RIGHT, "%.6g", value);
+    if (in.focused) detail::focus_ring(u, area, s.radius);
+    return {changed, in};
+}
+
+edit_result color_edit(ui &u, rect area, color &value, const color_props &p)
+{
+    auto disabled = u.disabled(!p.enabled);
+    auto scope = u.scope(p.id);
+    const i32 count = p.alpha ? 4 : 3;
+    const char *labels[] = {"R", "G", "B", "A"};
+    u8 *channels[] = {&value.r, &value.g, &value.b, &value.a};
+    row rows(area, u.spacing());
+    const f32 width = max2(0.0f, (area.w - u.spacing() * static_cast<f32>(count - 1)) / count);
+    edit_result out;
+    for (i32 i = 0; i < count; ++i)
+    {
+        f32 v = *channels[i];
+        if (u.slider_float(rows.next(width), labels[i], v, 0, 255, u.local(labels[i]), "%.0f"))
+        {
+            *channels[i] = static_cast<u8>(v + 0.5f);
+            out.changed = true;
+        }
+    }
+    return out;
+}
+
+rect form_field(ui &u, rect area, std::string_view label, const form_props &p)
+{
+    if (!p.message.empty())
+    {
+        rect message = area.cut_bottom(u.line_height());
+        u.text_ellipsis(message, p.message, p.error ? u.th().tokens.danger : u.th().text_dim);
+        (void)area.cut_bottom(u.spacing());
+    }
+    const f32 width = p.label_width > 0 ? p.label_width : u.text_width(label) + u.padding();
+    u.text_ellipsis(area.cut_left(width), label, u.th().text);
+    (void)area.cut_left(u.spacing());
+    return area;
 }
 
 // ---- command palette --------------------------------------------------------

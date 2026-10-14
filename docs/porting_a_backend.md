@@ -36,6 +36,10 @@ Optional overrides, and when they matter:
 - `set_cursor(cursor)` — the core already dedupes per hovered window; just map
   the enum and skip if unchanged.
 - `set_vsync(bool)` — best effort; backends without control may ignore it.
+  With several windows, let one surface wait for the vblank and present the
+  others without waiting (the SDL3 device picks the first window on screen):
+  the app presents its windows one after another, so a wait per window would
+  divide the frame rate by the window count.
 - `create_target` / `destroy_target` / `blit` / `set_target` / `current_target` —
   required for `backend_caps::RENDER_TARGETS` (backdrop blur). `blit` is a
   filtered (bilinear) copy used by the blur pyramid.
@@ -46,7 +50,9 @@ Optional overrides, and when they matter:
 - `default_target()` — the texture the core draws into (usually the backbuffer).
 - `scene_target()` — offscreen target the blur samples; may equal the default.
 - `output_size(w, h)` — client size in pixels.
-- `present()` — swap/present after the frame.
+- `present()` — swap/present after the frame. `end_frame` calls it once per
+  window frame; apps do not call it again (with vsync on, a second present of
+  the same frame waits another vblank and halves the frame rate).
 - `resize()` — called when the window size changed.
 
 ## Vertex format and conventions

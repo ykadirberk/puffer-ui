@@ -476,28 +476,53 @@ inline constexpr align ALIGN_CENTER = align::CENTER;
 inline constexpr align ALIGN_RIGHT = align::RIGHT;
 
 // ---------------------------------------------------------------- keyboard
+// One key list drives both the portable enum and the SDL mapping.
+// clang-format off
+#define PUI_KEYS(APPLY) \
+    APPLY(ESCAPE, ESCAPE) APPLY(ENTER, RETURN) APPLY(TAB, TAB) \
+    APPLY(BACKSPACE, BACKSPACE) APPLY(SPACE, SPACE) \
+    APPLY(LEFT, LEFT) APPLY(RIGHT, RIGHT) APPLY(UP, UP) APPLY(DOWN, DOWN) \
+    APPLY(HOME, HOME) APPLY(END, END) \
+    APPLY(A, A) APPLY(C, C) APPLY(X, X) APPLY(V, V) APPLY(Z, Z) APPLY(Y, Y) APPLY(DEL, DELETE) \
+    APPLY(B, B) APPLY(D, D) APPLY(E, E) APPLY(F, F) APPLY(G, G) APPLY(H, H) APPLY(I, I) \
+    APPLY(J, J) APPLY(K, K) APPLY(L, L) APPLY(M, M) APPLY(N, N) APPLY(O, O) APPLY(P, P) \
+    APPLY(Q, Q) APPLY(R, R) APPLY(S, S) APPLY(T, T) APPLY(U, U) APPLY(W, W) \
+    APPLY(NUM_0, 0) APPLY(NUM_1, 1) APPLY(NUM_2, 2) APPLY(NUM_3, 3) APPLY(NUM_4, 4) \
+    APPLY(NUM_5, 5) APPLY(NUM_6, 6) APPLY(NUM_7, 7) APPLY(NUM_8, 8) APPLY(NUM_9, 9) \
+    APPLY(F1, F1) APPLY(F2, F2) APPLY(F3, F3) APPLY(F4, F4) APPLY(F5, F5) APPLY(F6, F6) \
+    APPLY(F7, F7) APPLY(F8, F8) APPLY(F9, F9) APPLY(F10, F10) APPLY(F11, F11) APPLY(F12, F12) \
+    APPLY(PAGE_UP, PAGEUP) APPLY(PAGE_DOWN, PAGEDOWN) APPLY(INSERT, INSERT) \
+    APPLY(MINUS, MINUS) APPLY(EQUALS, EQUALS) APPLY(COMMA, COMMA) APPLY(PERIOD, PERIOD) \
+    APPLY(SLASH, SLASH) APPLY(BACKSLASH, BACKSLASH) APPLY(SEMICOLON, SEMICOLON) \
+    APPLY(APOSTROPHE, APOSTROPHE) APPLY(GRAVE, GRAVE) \
+    APPLY(LEFT_BRACKET, LEFTBRACKET) APPLY(RIGHT_BRACKET, RIGHTBRACKET)
+// clang-format on
 enum class key : u8
 {
-    ESCAPE,
-    ENTER,
-    TAB,
-    BACKSPACE,
-    SPACE,
-    LEFT,
-    RIGHT,
-    UP,
-    DOWN,
-    HOME,
-    END,
-    A,
-    C,
-    X,
-    V,
-    Z,
-    Y,
-    DEL
+#define PUI_KEY_ENUM(name, native) name,
+    PUI_KEYS(PUI_KEY_ENUM)
+#undef PUI_KEY_ENUM
+    COUNT
 };
-inline constexpr i32 KEY_COUNT = 18;
+inline constexpr i32 KEY_COUNT = static_cast<i32>(key::COUNT);
+enum key_mod : u32
+{
+    MOD_NONE = 0,
+    MOD_SHIFT = 1,
+    MOD_CTRL = 2,
+    MOD_ALT = 4,
+    MOD_SUPER = 8
+};
+struct key_chord
+{
+    key code = key::ENTER;
+    u32 mods = MOD_NONE;
+};
+struct shortcut_opts
+{
+    bool enabled = true;
+    uiid focus = 0; // 0 = app command; otherwise only this focused widget may claim it
+};
 
 enum class cursor : u8
 {
@@ -621,6 +646,8 @@ struct button_override
 struct field_opts
 {
     opt<corner_radii> radii;
+    bool enabled = true;
+    bool read_only = false; // selection and copy remain available
 };
 
 // ---- toggle controls (the pui::comp library) --------------------------------
@@ -767,6 +794,7 @@ struct button_opts
 {
     uiid role = 0;           // theme role id ("primary"_id, "danger"_id, ...)
     button_override style{}; // per-instance style override
+    bool enabled = true;
 };
 
 inline button_style merge_style(button_style s, const button_override &o)
@@ -1493,6 +1521,8 @@ struct window_input
     i32 ime_cursor = 0;
     bool shift_down = false;
     bool ctrl_down = false;
+    bool alt_down = false;
+    bool super_down = false;
 };
 
 // Per-window interaction state that survives between that window's frames. The
@@ -1514,6 +1544,8 @@ struct context;
 
 struct window : interaction_state
 {
+    f32 scale = 1.0f;       // framebuffer pixels per logical unit
+    f32 input_scale = 1.0f; // platform event coordinates per logical unit
     context *owner = nullptr;
     void *handle = nullptr; // native window (platform-specific)
     render_surface *surface = nullptr;
@@ -1589,6 +1621,9 @@ struct context : interaction_state, window_input
     text_store *ts = nullptr;
     ctx_stores *st = nullptr; // keyed stores, created with the context
     bool reduced_motion = false;
+    f32 render_scale = 1.0f;
+    i32 disabled_depth = 0;
+    f32 disabled_alpha = 0.45f;
     blur_store *blur = nullptr; // the open window's blur scratch
 
     // dock drag state (panel dragged by its tab)
@@ -1770,6 +1805,16 @@ struct id_scope
     id_scope &operator=(id_scope &&) = delete;
 };
 
+// A nested disabled scope blocks input and dims all submitted geometry.
+struct disabled_scope
+{
+    context *ctx_ = nullptr;
+    explicit disabled_scope(ui &u, bool disabled = true);
+    ~disabled_scope();
+    disabled_scope(const disabled_scope &) = delete;
+    disabled_scope &operator=(const disabled_scope &) = delete;
+};
+
 // Scroll view flags
 inline constexpr u32 SCROLL_NONE = 0;
 inline constexpr u32 SCROLL_ALWAYS_RESERVE_BAR = 1 << 0; // stable gutter, no layout shift
@@ -1892,6 +1937,7 @@ struct ui
     // Scoped identity for loops and reusable components: widgets inside
     // derive with `local("part")`. RAII — destroy before end_frame.
     id_scope scope(uiid key) { return id_scope(*this, key); }
+    disabled_scope disabled(bool on = true) { return disabled_scope(*this, on); }
 
     uiid local(std::string_view key) const { return id_child(ctx->current_region, key); }
     uiid auto_id() { return id_child(0x5055494155544F00ull, ++ctx->seq); }
@@ -1915,6 +1961,9 @@ struct ui
     bool key_down(key k) const { return ctx->key_down[static_cast<i32>(k)]; }
     // Mark a pressed key as handled so nothing later in the frame reacts to it.
     void consume_key(key k) { ctx->key_pressed[static_cast<i32>(k)] = false; }
+    // Exact modifiers, first matching caller consumes the edge. Call focused
+    // commands before app commands; disabled scopes never claim shortcuts.
+    bool shortcut(key_chord chord, const shortcut_opts &opts = {});
 
     // Pointer state for a rect. `focusable = false` keeps the widget out of
     // the Tab ring (a click-capturing scrim, a passive hit area) while it
@@ -1994,6 +2043,9 @@ struct ui
     // side, so a field can sit flush against a button.
     bool text_field(rect r, std::string &value, uiid id, const field_opts &opts);
     bool number_field(rect r, f32 &value, uiid id, const char *fmt = "%.2f");
+    bool int_field(rect r, i64 &value, uiid id, const field_opts &opts = {});
+    bool double_field(rect r, f64 &value, uiid id, const field_opts &opts = {});
+    bool vector_field(rect r, std::span<f32> values, uiid id, const field_opts &opts = {});
 
     // overlay layer (draw after base UI; input capture uses the previous frame)
     popup_scope popup(uiid id, rect area, popup_flags flags = popup_flags::NONE);
@@ -2087,6 +2139,72 @@ struct ui
 // implementations live in the implementation section.
 namespace comp
 {
+struct selectable_props
+{
+    uiid id = 0;
+    bool enabled = true;
+    bool selected = false;
+    const button_style *style = nullptr; // theme.button
+};
+struct selectable_result
+{
+    bool activated = false;
+    interaction in{};
+    explicit operator bool() const { return activated; }
+};
+selectable_result selectable(ui &u, rect area, std::string_view label,
+                             const selectable_props &p = {});
+struct tree_props
+{
+    uiid id = 0;
+    bool enabled = true;
+    bool leaf = false;
+    bool selected = false;
+    i32 depth = 0;
+    const button_style *style = nullptr; // theme.button
+};
+struct tree_result
+{
+    bool toggled = false;
+    bool selected = false;
+    interaction in{};
+    explicit operator bool() const { return selected; }
+};
+tree_result tree_node(ui &u, rect area, std::string_view label, bool &open,
+                      const tree_props &p = {});
+struct drag_value_props
+{
+    uiid id = 0;
+    bool enabled = true;
+    f64 speed = 0.1;
+    f64 min = -1.0e30, max = 1.0e30;
+    const button_style *style = nullptr; // theme.button
+};
+struct edit_result
+{
+    bool changed = false;
+    interaction in{};
+    explicit operator bool() const { return changed; }
+};
+edit_result drag_value(ui &u, rect area, std::string_view label, f64 &value,
+                       const drag_value_props &p = {});
+struct color_props
+{
+    uiid id = 0;
+    bool enabled = true;
+    bool alpha = true;
+};
+edit_result color_edit(ui &u, rect area, color &value, const color_props &p = {});
+struct form_props
+{
+    f32 label_width = 0.0f;     // 0 = measure label + padding
+    std::string_view message{}; // validation/help line below the control
+    bool error = false;
+};
+// Lay out a label, editor area and optional validation line; draw the editor
+// into the returned rect. The caller owns row height and form state.
+rect form_field(ui &u, rect area, std::string_view label, const form_props &p = {});
+
 struct switch_props
 {
     uiid id = 0; // required: identity is explicit
@@ -2273,6 +2391,18 @@ struct toast_props
 void toast_draw(ui &u, rect anchor, toast_host &host, const toast_props &p = {});
 
 // ---- table ------------------------------------------------------------------
+struct table_column
+{
+    f32 width = 0.0f; // 0 = share remaining width
+    f32 min_width = 40.0f;
+    bool sortable = true;
+};
+struct table_state
+{
+    uiid selected = 0;
+    i32 sort_column = -1;
+    bool descending = false;
+};
 struct table_props
 {
     uiid id = 0;
@@ -2280,12 +2410,20 @@ struct table_props
     f32 row_h = 0.0f;                   // 0 = the theme's
     f32 header_h = 0.0f;                // 0 = the theme's
     const table_style *style = nullptr; // null = the theme slot; else copy-edit-pass
+    function_ref<uiid(i32)> row_key;    // stable record identity; unset = index + 1
+    std::span<table_column> columns;    // optional app-owned widths, resized in place
+    table_state *state = nullptr;       // optional selection and sort request
 };
 struct table_result
 {
     i32 clicked_row = -1;
     i32 clicked_col = -1;
     i32 focused_row = -1;
+    uiid clicked_key = 0;
+    bool sort_changed = false;
+    bool selection_changed = false;
+    bool extend_selection = false; // Shift: app may extend its selection from an anchor
+    bool toggle_selection = false; // Ctrl: app may toggle this key in its selection set
     explicit operator bool() const { return clicked_row >= 0; }
 };
 // A uniform-column table over `area` (headers pinned, body scrolls with
@@ -2666,6 +2804,8 @@ void set_device(context *c, render_device *device, render_surface *surface);
 void set_theme(context *c, const theme &t);
 
 font_handle load_font(context *c, const char *path);
+// Copied into the context. Primary font wins; fallbacks are tried in order.
+bool set_font_fallbacks(context *c, std::span<const font_handle> fonts);
 
 // ---- windows ----
 // The first window may always be added; every later window requires
@@ -2684,6 +2824,11 @@ window *window_at(context *c, void *handle);
 window *first_window(context *c);
 
 void set_window_client(window &w, rect client);
+struct scale_opts
+{
+    f32 input_scale = 0.0f;
+}; // 0 = same as render scale
+void set_window_scale(window &w, f32 scale, const scale_opts &opts = {});
 void focus_window(context *c, window &w);
 window *focused_window(context *c);
 rect desktop_rect(context *c);
@@ -2719,7 +2864,7 @@ void key_event(window &w, key k, bool down);
 void key_repeat(window &w, key k);
 void text_input_event(window &w, const char *utf8);
 void ime_event(window &w, const char *preedit, i32 cursor);
-void mods_event(window &w, bool shift, bool ctrl);
+void mods_event(window &w, bool shift, bool ctrl, bool alt = false, bool super = false);
 void mouse_wheel(window &w, f32 dx, f32 dy);
 
 // Single-window convenience: routes to the primary window.
@@ -2729,7 +2874,7 @@ void mouse_button(context *c, pointer_button b, bool down);
 void key_event(context *c, key k, bool down);
 void text_input_event(context *c, const char *utf8);
 void ime_event(context *c, const char *preedit, i32 cursor);
-void mods_event(context *c, bool shift, bool ctrl);
+void mods_event(context *c, bool shift, bool ctrl, bool alt = false, bool super = false);
 void mouse_wheel(context *c, f32 dx, f32 dy);
 void set_clipboard(context *c, clipboard *clip);
 
@@ -2755,6 +2900,8 @@ i32 violation_count(context *c);
 #include <cstdlib>
 #include <cmath>
 #include <vector>
+#include <charconv>
+#include <limits>
 #include <string>
 #include <unordered_map>
 #include <fstream>

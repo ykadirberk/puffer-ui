@@ -66,7 +66,6 @@ int main(int argc, char **argv)
         SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "offscreen");
         SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
     }
-    SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
     SDL_SetLogPriorities(SDL_LOG_PRIORITY_ERROR);
 
     sdl3_app app;
@@ -118,8 +117,7 @@ int main(int argc, char **argv)
             // (drawn last so nothing covers it).
             draw_violation_overlay(u, rect::make(8.0f, app.win->area.h - 40.0f, 360.0f, 32.0f));
         }
-        end_frame(app.ctx);
-        app.surface->present();
+        end_frame(app.ctx); // also presents the window
     }
     sdl3_app_shutdown(app);
     return 0;
