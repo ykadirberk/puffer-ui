@@ -642,6 +642,15 @@ interaction ui::interact(uiid id, rect area, bool enabled, bool focusable)
     enabled = enabled && c->disabled_depth == 0;
     in.disabled = !enabled;
 
+    // Every widget is a candidate hole in the native drag area (disabled and
+    // blocked ones too: the press must not turn into a window drag there).
+    {
+        const rect clip =
+            c->clip_depth > 0 ? c->clip_stack[c->clip_depth - 1] : rect{0.0f, 0.0f, 1.0e9f, 1.0e9f};
+        const rect seen = rect::intersect(area, clip);
+        if (seen.w > 0.0f && seen.h > 0.0f) c->st->caption_hits.push_back({id, seen});
+    }
+
     if (!enabled)
     {
         if (c->active == id) c->active = 0;

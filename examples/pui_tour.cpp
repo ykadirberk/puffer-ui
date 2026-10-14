@@ -722,7 +722,7 @@ static void ch_dock(ui &u, example_app &app, rect body)
 static void tour_extra_window(ui &u, example_app &app, i32 index)
 {
     const theme &th = u.th();
-    window &w = *example_window_for(app, SDL_GetWindowID(app.extras[index - 1].sdl));
+    window &w = *app.extras[index - 1].win; // valid while the window is open
     const rect client = rect::make(0.0f, 0.0f, w.area.w, w.area.h);
     u.draw_rect(client, th.panel_bg);
     rect chrome = client;

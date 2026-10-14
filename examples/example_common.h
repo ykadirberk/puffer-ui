@@ -118,6 +118,7 @@ struct example_window
 struct example_app
 {
     const char *name = "example";
+    sdl3_app boot; // the library bootstrap; the handles below are its, for short access
     SDL_Window *sdl_window = nullptr;
     SDL_Renderer *renderer = nullptr;
     render_device *device = nullptr;
@@ -302,7 +303,7 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
 
     // Library bootstrap: SDL window + renderer + device + surface + context +
     // window with the native chrome. Fonts and the theme stay harness-side.
-    sdl3_app boot;
+    sdl3_app &boot = app.boot;
     boot.hidden = app.selftest;
     boot.renderer_name = app.selftest ? "software" : nullptr;
     if (!sdl3_app_init(boot, title, app.width, app.height, 0, nullptr))
@@ -346,77 +347,32 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
     return true;
 }
 
-// An extra window over the same device (the `windows` example): creates the SDL
-// window, its surface and its core window, and registers it for event routing.
+// An extra window over the same device (the `windows` example): the library's
+// sdl3_app_open_window (SDL window + surface + core window + chrome + text
+// input), registered here so the run loop frames it and closes it on request.
 inline example_window *example_add_window(example_app &app, const char *title, i32 w, i32 h)
 {
     if (app.extra_count >= example_app::MAX_EXTRAS) return nullptr;
-    example_window &ew = app.extras[app.extra_count];
-    const SDL_WindowFlags flags =
-        SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE |
-        (app.selftest ? SDL_WINDOW_HIDDEN : static_cast<SDL_WindowFlags>(0));
-    ew.sdl = SDL_CreateWindow(title, w, h, flags);
-    if (!ew.sdl)
+    window *win = sdl3_app_open_window(app.boot, title, w, h);
+    if (!win)
     {
         std::printf("note: %s: second window unavailable: %s\n", app.name, SDL_GetError());
         return nullptr;
     }
-    ew.surface = app.device->create_surface(ew.sdl);
-    if (!ew.surface)
-    {
-        std::printf("note: %s: second surface unavailable (needs SHARED_DEVICE)\n", app.name);
-        SDL_DestroyWindow(ew.sdl);
-        ew.sdl = nullptr;
-        return nullptr;
-    }
-    ew.win = add_window(app.ctx, ew.sdl, ew.surface, example_client(ew.sdl));
-    if (ew.win) install_window_chrome(app.ctx, *ew.win); // native drag/resize/snap
-    if (!ew.win)
-    {
-        SDL_DestroyWindow(ew.sdl);
-        ew.sdl = nullptr;
-        ew.surface = nullptr;
-        return nullptr;
-    }
-    app.extra_count += 1;
+    example_window &ew = app.extras[app.extra_count++];
+    ew.sdl = static_cast<SDL_Window *>(win->handle);
+    ew.surface = win->surface;
+    ew.win = win; // stays valid until the window is closed
     return &ew;
 }
 
-// Unregisters and destroys an extra window. The device keeps the surface until
-// it is destroyed; call this right before shutdown (or accept the slot staying).
-// Re-fetches every extra window's core pointer. remove_window compacts the
-// context's window list by value, so pointers handed out by add_window are
-// invalidated for all later windows; the primary (windows[0]) never moves.
-inline void example_resync_windows(example_app &app)
-{
-    if (!app.ctx) return;
-    for (i32 i = 0; i < app.extra_count; ++i)
-    {
-        example_window &ew = app.extras[i];
-        ew.win = ew.sdl ? window_at(app.ctx, ew.sdl) : nullptr;
-    }
-}
-
+// Closes an extra window (between frames). The slot stays, emptied.
 inline void example_remove_window(example_app &app, example_window *ew)
 {
-    if (!ew) return;
-    if (ew->win)
-    {
-        remove_window(app.ctx, *ew->win);
-        ew->win = nullptr;
-        // remove_window compacts the context's window array, so every *other*
-        // extra's core-window pointer may have shifted: re-fetch them.
-        example_resync_windows(app);
-    }
-    // If the window is still registered (remove_window refuses while a frame is
-    // open), keep the SDL window alive and retry later instead of destroying
-    // the SDL window out from under a live context window.
-    if (ew->sdl && window_at(app.ctx, ew->sdl) == nullptr)
-    {
-        SDL_DestroyWindow(ew->sdl);
-        ew->sdl = nullptr;
-        ew->surface = nullptr;
-    }
+    if (!ew || !ew->win) return;
+    sdl3_app_close_window(app.boot, *ew->win);
+    if (window_at(app.ctx, ew->sdl)) return; // refused: a frame is open
+    *ew = example_window{};
 }
 
 // Core window for an SDL window id (primary or extra).
@@ -495,14 +451,12 @@ inline void example_script(example_app &app)
 inline int example_shutdown(example_app &app)
 {
     const i32 violations = app.ctx ? violation_count(app.ctx) : 0;
-    if (app.ctx) destroy_context(app.ctx);
-    if (app.device) destroy_sdl3_device(app.device);
-    if (app.renderer) SDL_DestroyRenderer(app.renderer);
-    for (i32 i = 0; i < app.extra_count; ++i)
-        if (app.extras[i].sdl) SDL_DestroyWindow(app.extras[i].sdl);
-    if (app.sdl_window) SDL_DestroyWindow(app.sdl_window);
-    SDL_Quit();
+    if (app.boot.inited)
+        sdl3_app_shutdown(app.boot); // every window, the device, the renderer, SDL
+    else
+        SDL_Quit();
     app.ctx = nullptr;
+    app.surface = nullptr;
     app.device = nullptr;
     app.renderer = nullptr;
     app.sdl_window = nullptr;
@@ -592,7 +546,6 @@ int example_run(const char *title, i32 w, i32 h, int argc, char **argv, FrameFn 
 
         if (app.extra_frame)
         {
-            example_resync_windows(app); // a same-loop close may have shifted pointers
             for (i32 i = 0; i < app.extra_count; ++i)
             {
                 example_window &ew = app.extras[i];

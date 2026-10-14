@@ -260,6 +260,10 @@ programs live in `examples/tutorial/` (`pui_tut_*` targets, built and
   (the titlebar's grab-anchor drag does the same: the host call only fires while
   the pointer actually moves).
   The demo HUD's `ui`/`sdl` split exists to attribute frame-time changes.
+- **The native caption is data, not geometry.** `window::caption` (drag
+  regions from `ui::titlebar` / `ui::window_drag_region`, minus every rect that
+  `interact` saw over them) is what the SDL hit-test drags by. Never hard-code
+  titlebar geometry in a backend: a widget on the bar would lose its clicks.
 - **Multi-window state is per-window.** A `window` owns its input queue, focus
   list, blur scratch, and active/drag widget state; the pointer position and the
   held left button are global. Feed pointer motion from window-local mouse events

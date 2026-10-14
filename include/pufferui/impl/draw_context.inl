@@ -189,7 +189,7 @@ inline void free_blur_store(context *c, blur_store *&bs)
 
 inline window *ensure_primary(context *c)
 {
-    if (c->window_count > 0) return &c->windows[0];
+    if (c->window_count > 0) return c->windows[0];
     return add_window(c, nullptr, c->surface, rect{0, 0, 0, 0});
 }
 
@@ -217,10 +217,10 @@ void destroy_context(context *c)
     c->focus_store = nullptr;
     for (i32 i = 0; i < c->window_count; ++i)
     {
-        window &w = c->windows[i];
-        delete w.focus_store;
-        w.focus_store = nullptr;
-        detail::free_blur_store(c, w.blur);
+        window *w = c->windows[i];
+        delete w->focus_store;
+        detail::free_blur_store(c, w->blur);
+        delete w;
     }
     detail::free_blur_store(c, c->blur);
     delete c->dl;
@@ -235,7 +235,7 @@ void set_device(context *c, render_device *device, render_surface *surface)
     c->device = device;
     c->surface = surface;
     for (i32 i = 0; i < c->window_count; ++i)
-        if (!c->windows[i].surface) c->windows[i].surface = surface;
+        if (!c->windows[i]->surface) c->windows[i]->surface = surface;
 }
 void set_theme(context *c, const theme &t)
 {
@@ -245,24 +245,29 @@ void set_theme(context *c, const theme &t)
 // ---- windows ----
 namespace detail
 {
-// The per-window root id: a pure function of the slot, so it can be re-derived
-// whenever remove_window renumbers the list.
-inline uiid window_root(i32 index)
+// The per-window root id: derived from a serial that is never reused, so a
+// window keeps its ids (and widget state) when others come and go, and a new
+// window never inherits a removed one's state.
+inline uiid window_root(u64 serial)
 {
-    return id_child(0x77696E646F770000ull, static_cast<uiid>(index) + 1);
+    return id_child(0x77696E646F770000ull, static_cast<uiid>(serial));
 }
 
-// Grow the heap-owned window list, keeping interior pointers valid.
+// Grow the list of window pointers (the windows themselves never move).
 inline void grow_windows(context *c)
 {
     const i32 new_cap = (c->window_capacity > 0) ? c->window_capacity * 2 : MAX_WINDOWS;
-    window *fresh = new window[new_cap];
+    window **fresh = new window *[new_cap];
     for (i32 i = 0; i < c->window_count; ++i) fresh[i] = c->windows[i];
-    if (c->current_window) c->current_window = fresh + (c->current_window - c->windows);
-    if (c->focused_win) c->focused_win = fresh + (c->focused_win - c->windows);
     delete[] c->windows;
     c->windows = fresh;
     c->window_capacity = new_cap;
+}
+
+// `w` is one of `c`'s registered windows.
+inline bool owns_window(const context *c, const window &w)
+{
+    return w.owner == c && w.index >= 0 && w.index < c->window_count && c->windows[w.index] == &w;
 }
 } // namespace detail
 
@@ -276,14 +281,13 @@ window *add_window(context *c, void *handle, render_surface *surface, rect clien
                        "a second window requires backend_caps::SHARED_DEVICE");
         return nullptr;
     }
-    window &w = c->windows[c->window_count];
-    w = window{};
+    window &w = *(c->windows[c->window_count] = new window());
     w.owner = c;
     w.handle = handle;
     w.surface = surface ? surface : c->surface;
     w.index = c->window_count;
     set_window_client(w, client);
-    w.root = detail::window_root(w.index);
+    w.root = detail::window_root(++c->window_serial);
     c->window_count += 1;
     if (!c->focused_win) focus_window(c, w);
     return &w;
@@ -296,12 +300,12 @@ void remove_window(context *c, window &w)
         PUFFERUI_CHECK(VIOL_REMOVE_WHILE_OPEN, false, "remove_window while a frame is open");
         return;
     }
-    if (&w < c->windows || &w >= c->windows + c->window_count) return;
-    const i32 i = static_cast<i32>(&w - c->windows);
-    i32 focus_index = c->focused_win ? static_cast<i32>(c->focused_win - c->windows) : -1;
+    if (!detail::owns_window(c, w)) return;
+    const i32 i = w.index;
+    const bool was_focused = c->focused_win == &w;
     delete w.focus_store;
-    w.focus_store = nullptr;
     detail::free_blur_store(c, w.blur);
+    delete &w;
     for (i32 j = i; j < c->window_count - 1; ++j) c->windows[j] = c->windows[j + 1];
     c->window_count -= 1;
 
@@ -334,31 +338,28 @@ void remove_window(context *c, window &w)
         }
     }
 
-    if (focus_index == i)
-        focus_index = (i < c->window_count) ? i : c->window_count - 1;
-    else if (focus_index > i)
-        focus_index -= 1;
-    for (i32 j = 0; j < c->window_count; ++j)
+    for (i32 j = 0; j < c->window_count; ++j) c->windows[j]->index = j;
+    if (was_focused)
     {
-        c->windows[j].owner = c;
-        c->windows[j].index = j;
-        c->windows[j].root = detail::window_root(j); // roots follow the index, so they stay unique
+        // Keyboard focus moves to the window that took the removed one's slot.
+        c->focused_win = c->window_count > 0
+                             ? c->windows[i < c->window_count ? i : c->window_count - 1]
+                             : nullptr;
+        for (i32 j = 0; j < c->window_count; ++j)
+            c->windows[j]->focused = (c->focused_win == c->windows[j]);
     }
-    c->focused_win = (focus_index >= 0 && c->window_count > 0) ? &c->windows[focus_index] : nullptr;
-    for (i32 j = 0; j < c->window_count; ++j)
-        c->windows[j].focused = (c->focused_win == &c->windows[j]);
 }
 
 window *window_at(context *c, void *handle)
 {
     for (i32 i = 0; i < c->window_count; ++i)
-        if (c->windows[i].handle == handle) return &c->windows[i];
+        if (c->windows[i]->handle == handle) return c->windows[i];
     return nullptr;
 }
 
 window *first_window(context *c)
 {
-    return c->window_count > 0 ? &c->windows[0] : nullptr;
+    return c->window_count > 0 ? c->windows[0] : nullptr;
 }
 
 void set_window_client(window &w, rect client)
@@ -382,9 +383,9 @@ void set_window_scale(window &w, f32 scale, const scale_opts &opts)
 
 void focus_window(context *c, window &w)
 {
-    if (&w < c->windows || &w >= c->windows + c->window_count) return;
+    if (!detail::owns_window(c, w)) return;
     c->focused_win = &w;
-    for (i32 i = 0; i < c->window_count; ++i) c->windows[i].focused = (&c->windows[i] == &w);
+    for (i32 i = 0; i < c->window_count; ++i) c->windows[i]->focused = (c->windows[i] == &w);
 }
 
 window *focused_window(context *c)
@@ -395,10 +396,10 @@ window *focused_window(context *c)
 rect desktop_rect(context *c)
 {
     if (c->window_count == 0) return c->screen;
-    rect u = c->windows[0].client;
+    rect u = c->windows[0]->client;
     for (i32 i = 1; i < c->window_count; ++i)
     {
-        const rect &r = c->windows[i].client;
+        const rect &r = c->windows[i]->client;
         const f32 x0 = min2(u.x, r.x), y0 = min2(u.y, r.y);
         const f32 x1 = max2(u.right(), r.right()), y1 = max2(u.bottom(), r.bottom());
         u = rect::make(x0, y0, x1 - x0, y1 - y0);
@@ -441,7 +442,7 @@ void begin_frame(context *c, window &w, f64 now, f64 dt)
         PUFFERUI_CHECK(VIOL_FRAME_ALREADY_OPEN, false, "begin_frame: another window frame is open");
         return;
     }
-    if (!(&w >= c->windows && &w < c->windows + c->window_count))
+    if (!detail::owns_window(c, w))
     {
         PUFFERUI_CHECK(VIOL_WINDOW_NOT_REGISTERED, false, "begin_frame: window is not registered");
         return;
@@ -473,6 +474,8 @@ void begin_frame(context *c, window &w, f64 now, f64 dt)
 
     c->st->widget_ids.clear();
     c->st->frame_ids.clear();
+    c->st->caption_drags.clear();
+    c->st->caption_hits.clear();
     c->press_claim = 0;
     c->press_claim_rect = rect{};
     c->current_region = 0;
@@ -609,6 +612,43 @@ inline void clear_input_edges(window_input &in)
 }
 } // namespace detail
 
+namespace detail
+{
+// The frame's drag regions, minus the widgets over them, become the window's
+// native caption until the next frame (see window_caption).
+inline void publish_caption(context *c, window &w)
+{
+    window_caption &cap = w.caption;
+    cap = window_caption{};
+    for (const ctx_stores::caption_rect &d : c->st->caption_drags)
+    {
+        if (cap.drag_count == window_caption::MAX_DRAG) break;
+        cap.drag[cap.drag_count++] = d.r;
+    }
+    if (cap.drag_count == 0) return;
+    for (const ctx_stores::caption_rect &h : c->st->caption_hits)
+    {
+        bool own = false, over = false;
+        for (const ctx_stores::caption_rect &d : c->st->caption_drags)
+        {
+            own = own || d.id == h.id; // the region's own hover interact
+            const rect x = rect::intersect(d.r, h.r);
+            over = over || (x.w > 0.0f && x.h > 0.0f);
+        }
+        if (own || !over) continue;
+        if (cap.hole_count < window_caption::MAX_HOLES)
+        {
+            cap.holes[cap.hole_count++] = h.r;
+            continue;
+        }
+        rect &last = cap.holes[window_caption::MAX_HOLES - 1]; // full: grow the last
+        const f32 x0 = min2(last.x, h.r.x), y0 = min2(last.y, h.r.y);
+        const f32 x1 = max2(last.right(), h.r.right()), y1 = max2(last.bottom(), h.r.bottom());
+        last = rect::make(x0, y0, x1 - x0, y1 - y0);
+    }
+}
+} // namespace detail
+
 void end_frame(context *c)
 {
     window *w = c->current_window;
@@ -694,6 +734,8 @@ void end_frame(context *c)
     if (w->surface) w->surface->present();
 
     if (!c->mouse_down) c->active = 0;
+
+    detail::publish_caption(c, *w);
 
     // Save this window's persistent state and its input (held keys, modifiers,
     // IME composition), with the per-frame edges cleared.

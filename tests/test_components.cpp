@@ -593,8 +593,13 @@ PUI_TEST(test_theme_lerp_slots)
     b.toast.width = a.toast.width + 100.0f;
     b.menu.bg = {255, 255, 255, 255};
     b.menu.blur = a.menu.blur + 20.0f;
+    b.titlebar.height = a.titlebar.height + 10.0f;
+    a.titlebar.bg = some(color{0, 0, 0, 255});
+    b.titlebar.bg = some(color{200, 0, 0, 255});
 
     const theme mid = theme_lerp(a, b, 0.5f);
+    CHECK(mid.titlebar.height > a.titlebar.height && mid.titlebar.height < b.titlebar.height);
+    CHECK(mid.titlebar.bg.set && mid.titlebar.bg.value.r > 0 && mid.titlebar.bg.value.r < 200);
     CHECK(mid.switch_ctrl.track_on.r > a.switch_ctrl.track_on.r &&
           mid.switch_ctrl.track_on.r < 255);
     CHECK(mid.tabs.underline.g > a.tabs.underline.g && mid.tabs.underline.g < 255);

@@ -558,23 +558,46 @@ One `render_device` serves several windows; each window needs its own
 input queue, focus list, active/drag widget, blur scratch. The pointer position
 and the held button are global.
 
+On the SDL3 bootstrap a window is one call: `sdl3_app_open_window(app, title,
+w, h)` creates the SDL window, its surface, the core window, the native chrome
+and text input; `sdl3_app_close_window(app, w)` undoes all of it (between
+frames). The pump routes every window's events; a close glyph only sets
+`window::close_requested`, so the app decides. A `window*` stays valid until
+that window is closed, whatever happens to the others:
+
 ```cpp
-window *win1 = add_window(ctx, sdl1, surface1, rect::make(0, 0, 800, 600));
-window *win2 = add_window(ctx, sdl2, device->create_surface(sdl2), rect::make(820, 40, 520, 420));
+g_second = sdl3_app_open_window(app.boot, "windows - second", 440, 320);
+// ...
+begin_frame(app.ctx, *app.win, app.now, app.dt);
+{
+    ui u(app.ctx);
+    window_content(u, 0, *app.win);
+}
+end_frame(app.ctx); // presents the primary window
 
-// frame them one after another
-begin_frame(ctx, *win1, now, dt);
-{ ui u(ctx); frame_a(u); }
-end_frame(ctx); // presents win1
+if (g_second)
+{
+    begin_frame(app.ctx, *g_second, app.now, app.dt);
+    {
+        ui u(app.ctx);
+        window_content(u, 1, *g_second);
+    }
+    end_frame(app.ctx); // presents the second window
+}
 
-begin_frame(ctx, *win2, now, dt);
-{ ui u(ctx); frame_b(u); }
-end_frame(ctx); // presents win2
+// Between frames: the second window's close glyph, the titlebar button.
+if (g_second && (g_second->close_requested || g_toggle))
+{
+    sdl3_app_close_window(app.boot, *g_second);
+    g_second = nullptr;
+}
 ```
 
-`set_window_client(w, rect)`, `remove_window(ctx, w)`, `focus_window(ctx, w)`,
-`focused_window(ctx)`, `desktop_rect(ctx)`, `set_global_mouse(ctx, x, y)`.
-Feed motion from window-local events so the coordinates match `window::client`.
+Lower level (any backend): `add_window(ctx, handle, surface, client)`,
+`remove_window(ctx, w)`, `render_device::destroy_surface`,
+`set_window_client(w, rect)`, `focus_window(ctx, w)`, `focused_window(ctx)`,
+`desktop_rect(ctx)`, `set_global_mouse(ctx, x, y)`. Feed motion from
+window-local events so the coordinates match `window::client`.
 
 ![pui_ex_windows: two windows over one device, sharing a counter](docs/img/readme/windows.png)
 
@@ -1005,8 +1028,35 @@ Run: `pui_ex_combo`. Full source: `examples/atomic/combo.cpp`.
 Examples (and any app) run **borderless**: the OS titlebar is replaced by a
 custom one drawn in the window's own frame, so the UI owns its whole surface.
 
-- **`ui.titlebar(window, rect&, title)`** — a draggable titlebar with
-  minimize / maximize / close glyph buttons and double-click maximize.
+- **`ui.titlebar(window, rect&, title, opts)`** — a draggable titlebar with
+  minimize / maximize / close glyph buttons and double-click maximize. It
+  returns `free`, the bar between the title and the buttons: widgets placed
+  there (or anywhere on the bar) get their clicks, and only the empty parts
+  drag the window. `titlebar_opts` hides buttons (`TITLEBAR_NO_MINIMIZE`,
+  `TITLEBAR_NO_MAXIMIZE`, `TITLEBAR_NO_CLOSE`, `TITLEBAR_NO_BUTTONS`) or the
+  drag (`TITLEBAR_NO_DRAG`) and takes a `titlebar_style` (height, button
+  widths, title size; colors follow the palette unless set - e.g.
+  `close_hover = some(color{196, 43, 28, 255})`). The theme's slot is
+  `theme::titlebar`.
+
+```cpp
+const titlebar_result tb =
+    u.titlebar(w, chrome, index == 0 ? "windows - primary" : "windows - second");
+if (index == 0)
+{
+    // A widget on the bar keeps its clicks; the rest of the bar still drags.
+    rect slot = tb.free;
+    const char *label = g_second ? "Close second" : "Open second";
+    const rect open_r = slot.cut_right(u.button_size(label).x).pad(0.0f, 4.0f);
+    if (u.button(open_r, label, "w_toggle"_id))
+        g_toggle = true; // windows open and close between frames
+}
+```
+
+- **`ui.window_drag_region(rect, id)`** — the building block for a fully
+  custom bar: the rect drags the window natively, minus every widget that
+  interacts over it.
+
   Platform actions go through a small interface the backend provides:
 
 ```cpp
@@ -1027,9 +1077,10 @@ app decides what that means (quit the app, remove the window, show a
 confirmation).
 
 - **Native window chrome** — the SDL3 glue installs a hit-test
-  (`install_window_chrome`): the bar minus its buttons maps to the system
-  caption (drag, Aero Snap with its preview, maximize on double-click), and
-  the 8px edge bands map to the native resize borders. Chrome needs no
+  (`install_window_chrome`): the last frame's drag regions minus every widget
+  over them (`window::caption`) map to the system caption (drag, Aero Snap
+  with its preview, maximize on double-click), and the 8px edge bands map to
+  the native resize borders. Chrome needs no
   per-frame work and keeps the OS behaviors users already know; without a
   host the bar still draws and reports clicks, but moving does nothing. A
   close click sets `window::close_requested` and the app decides what that

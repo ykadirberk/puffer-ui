@@ -877,6 +877,21 @@ struct panel_style
     f32 padding = 10.0f;
     bool shadow = true;
 };
+// The custom window titlebar (`ui::titlebar`). Unset colors follow the theme
+// palette (bg = panel_bg, hover = widget_hover, border = border, text = text,
+// text_dim = text_dim, close_hover = widget_hover), so a re-palette restyles
+// the bar too; set one to pin it (`close_hover = some(color{196, 43, 28, 255})`
+// gives the Windows red close button).
+struct titlebar_style
+{
+    opt<color> bg, hover, border, text, text_dim, close_hover;
+    f32 height = 34.0f;
+    f32 title_size = 13.0f;
+    f32 title_pad = 12.0f; // left of the title, and between title and `free`
+    f32 button_w = 36.0f;  // minimize / maximize
+    f32 close_w = 46.0f;
+};
+
 struct panel_override
 {
     opt<color> bg, titlebar_bg, titlebar_text, border, close;
@@ -1037,6 +1052,7 @@ struct theme
     i32 button_role_count = 0;
 
     panel_style panel;
+    titlebar_style titlebar; // ui::titlebar (custom window chrome)
     card_style card;
     scroll_style scrollbar;
 };
@@ -1137,6 +1153,9 @@ inline color theme_lerp_color(color a, color b, f32 t)
 // field to one line; discrete members - transitions, flags, fonts - stay `a`'s).
 #define PUI_LC(m) r.m = theme_lerp_color(a.m, b.m, t)
 #define PUI_LF(m) r.m = a.m + (b.m - a.m) * t
+// optional colors: interpolated when both themes set them, else `a`'s
+#define PUI_LO(m)                                                                                  \
+    (a.m.set && b.m.set) ? (void)(r.m.value = theme_lerp_color(a.m.value, b.m.value, t)) : (void)0
 inline theme theme_lerp(const theme &a, const theme &b, f32 t)
 {
     theme r = a;
@@ -1173,6 +1192,10 @@ inline theme theme_lerp(const theme &a, const theme &b, f32 t)
     PUI_LC(panel.bg), PUI_LC(panel.titlebar_bg), PUI_LC(panel.titlebar_text), PUI_LC(panel.border);
     PUI_LC(panel.close), PUI_LF(panel.radius), PUI_LF(panel.border_thickness);
     PUI_LF(panel.titlebar_h), PUI_LF(panel.padding);
+    PUI_LO(titlebar.bg), PUI_LO(titlebar.hover), PUI_LO(titlebar.border), PUI_LO(titlebar.text);
+    PUI_LO(titlebar.text_dim), PUI_LO(titlebar.close_hover), PUI_LF(titlebar.height);
+    PUI_LF(titlebar.title_size), PUI_LF(titlebar.title_pad), PUI_LF(titlebar.button_w);
+    PUI_LF(titlebar.close_w);
     PUI_LC(card.bg), PUI_LC(card.border), PUI_LF(card.radius), PUI_LF(card.border_thickness);
     PUI_LF(card.padding);
     PUI_LF(scrollbar.thickness), PUI_LF(scrollbar.margin), PUI_LF(scrollbar.min_thumb);
@@ -1209,6 +1232,7 @@ inline theme theme_lerp(const theme &a, const theme &b, f32 t)
 }
 #undef PUI_LC
 #undef PUI_LF
+#undef PUI_LO
 
 inline void set_button_role(theme &t, uiid id, button_override ov)
 {
@@ -1265,6 +1289,9 @@ struct render_device
         (void)native_window;
         return nullptr;
     }
+    // Releases a surface from create_surface (its window is going away). Call
+    // after remove_window and before destroying the native window.
+    virtual void destroy_surface(render_surface *surface) { (void)surface; }
 
     // Presentation vsync (best effort; backends without control ignore it).
     virtual void set_vsync(bool enabled) { (void)enabled; }
@@ -1470,7 +1497,28 @@ struct sdl3_app
 bool sdl3_app_init(sdl3_app &a, const char *title, i32 w, i32 h, int argc, char **argv);
 bool sdl3_app_pump(sdl3_app &a);
 void sdl3_app_tick(sdl3_app &a);
-void sdl3_app_shutdown(sdl3_app &a);
+void sdl3_app_shutdown(sdl3_app &a); // also closes every window still open
+
+// More windows over the same device and context, each a complete window:
+// SDL window (borderless + resizable) + surface + core window + native chrome
+// + text input. Frame each with its own begin_frame/end_frame after the
+// primary's. The returned pointer stays valid until the window is closed.
+//
+// The pump routes every window's events and keeps its size current. A click
+// on an extra window's close glyph (or the platform's close) only sets
+// `window::close_requested`; the app decides, usually with
+// `if (w->close_requested) { sdl3_app_close_window(app, *w); w = nullptr; }`.
+// Closing the primary window ends the app (sdl3_app_pump returns false).
+struct sdl3_window_opts
+{
+    i32 x = -1, y = -1;  // desktop position; -1 = the platform's default placement
+    bool hidden = false; // also forced by sdl3_app::hidden (offscreen runs)
+};
+window *sdl3_app_open_window(sdl3_app &a, const char *title, i32 w, i32 h,
+                             const sdl3_window_opts &opts = {});
+// Removes the window from the context and destroys its surface and SDL
+// window. Call between frames; the primary window is not closed this way.
+void sdl3_app_close_window(sdl3_app &a, window &w);
 
 // ---------------------------------------------------------------- context
 struct draw_list;
@@ -1542,6 +1590,32 @@ struct interaction_state
 
 struct context;
 
+// Where the platform may start a native window drag (caption), in the window's
+// local logical coordinates: inside a drag region and outside every hole.
+// Built during a frame - `ui::window_drag_region` adds regions, and every
+// widget that interacts over a region punches a hole, so a button placed on
+// the titlebar gets its clicks instead of the system - and published at
+// end_frame for the backend's hit-test (which runs between frames).
+struct window_caption
+{
+    static constexpr i32 MAX_DRAG = 4;
+    static constexpr i32 MAX_HOLES = 32; // beyond this the last hole grows to cover the rest
+    rect drag[MAX_DRAG]{};
+    i32 drag_count = 0;
+    rect holes[MAX_HOLES]{};
+    i32 hole_count = 0;
+
+    bool contains(f32 x, f32 y) const
+    {
+        bool in_drag = false;
+        for (i32 i = 0; i < drag_count && !in_drag; ++i) in_drag = drag[i].contains(x, y);
+        if (!in_drag) return false;
+        for (i32 i = 0; i < hole_count; ++i)
+            if (holes[i].contains(x, y)) return false;
+        return true;
+    }
+};
+
 struct window : interaction_state
 {
     f32 scale = 1.0f;       // framebuffer pixels per logical unit
@@ -1559,6 +1633,7 @@ struct window : interaction_state
     blur_store *blur = nullptr;        // impl-side per-window blur scratch
     focus_list *focus_store = nullptr; // impl-side per-window focus ring
     window_input in{};
+    window_caption caption{}; // the last frame's native drag area (see window_caption)
 };
 
 // Platform actions a custom titlebar needs from the native window. Backends
@@ -1590,6 +1665,25 @@ struct titlebar_result
     bool close_clicked = false;
     bool minimize_clicked = false;
     bool maximize_clicked = false;
+    rect bar{};  // the whole bar
+    rect free{}; // the bar between the title and the glyph buttons: put your own
+                 // widgets here (they get their clicks; the rest stays draggable)
+};
+
+enum titlebar_flags : u32
+{
+    TITLEBAR_NONE = 0,
+    TITLEBAR_NO_MINIMIZE = 1u << 0,
+    TITLEBAR_NO_MAXIMIZE = 1u << 1,
+    TITLEBAR_NO_CLOSE = 1u << 2,
+    TITLEBAR_NO_BUTTONS = TITLEBAR_NO_MINIMIZE | TITLEBAR_NO_MAXIMIZE | TITLEBAR_NO_CLOSE,
+    TITLEBAR_NO_DRAG = 1u << 3, // the bar does not move the window
+};
+
+struct titlebar_opts
+{
+    u32 flags = TITLEBAR_NONE;
+    const titlebar_style *style = nullptr; // nullptr = the theme's `titlebar`
 };
 
 // Platform "global mouse" queries may return a different coordinate space than
@@ -1670,9 +1764,12 @@ struct context : interaction_state, window_input
     rect screen{0, 0, 0, 0};
     rect desktop{0, 0, 0, 0}; // union of all window clients (desktop coords)
 
-    window *windows = nullptr; // heap-owned, grown on demand (start: MAX_WINDOWS)
+    // The registered windows, in registration order. Each window is its own
+    // allocation, so a `window*` stays valid until that window is removed.
+    window **windows = nullptr; // heap-owned list, grown on demand (start: MAX_WINDOWS)
     i32 window_capacity = 0;
     i32 window_count = 0;
+    u64 window_serial = 0;            // per-window root ids come from it (never reused)
     window *current_window = nullptr; // window whose frame is open (null between)
     window *focused_win = nullptr;    // receives keyboard input
     f32 mouse_global_x = 0.0f, mouse_global_y = 0.0f;
@@ -2054,10 +2151,24 @@ struct ui
     // minimize / maximize / close glyph buttons on the right. Native dragging
     // and resizing (the system's own Aero Snap, its preview, and
     // maximize-on-double-click) come from the platform through
-    // `install_window_chrome`; this widget only paints and handles the
-    // buttons. `bounds` shrinks by the bar's height (lay out below it). A
-    // close click sets `window::close_requested` for the app to act on.
-    titlebar_result titlebar(window &w, rect &bounds, std::string_view title);
+    // `install_window_chrome`; this widget paints, handles the buttons and
+    // declares the bar as the window's drag region. `bounds` shrinks by the
+    // bar's height (lay out below it). A close click sets
+    // `window::close_requested` for the app to act on.
+    //
+    // Widgets of your own go in `result.free` (or anywhere on the bar): any
+    // widget that interacts over the bar keeps its clicks; only the empty
+    // parts drag the window.
+    titlebar_result titlebar(window &w, rect &bounds, std::string_view title,
+                             const titlebar_opts &opts);
+    titlebar_result titlebar(window &w, rect &bounds, std::string_view title)
+    {
+        return titlebar(w, bounds, title, titlebar_opts{});
+    }
+    // The building block for a fully custom titlebar: `r` drags the current
+    // window natively (move, Aero Snap, double-click maximize) except where a
+    // widget interacts over it. Returns the region's hover state.
+    interaction window_drag_region(rect r, uiid id);
 
     // combo: a closed button showing `items[selected]`; clicking opens a dropdown
     // popup listing every item. Returns true when `selected` changed this frame.
@@ -2813,11 +2924,9 @@ bool set_font_fallbacks(context *c, std::span<const font_handle> fonts);
 // returns nullptr, never a silent degrade). `handle` is the native window and
 // is what event routing matches on.
 //
-// remove_window compacts the context's window list: every `window*` handed out
-// for a window AFTER the removed one is invalidated (it may point past the
-// list or at a different window, and using it is a reported violation).
-// Re-fetch pointers with `window_at(handle)` after any removal; the first
-// window's pointer never moves.
+// A `window*` stays valid until that window is removed (removing or adding
+// other windows never moves it), and a window keeps its root id - and with it
+// every widget's state - for its whole life.
 window *add_window(context *c, void *handle, render_surface *surface, rect client);
 void remove_window(context *c, window &w);
 window *window_at(context *c, void *handle);

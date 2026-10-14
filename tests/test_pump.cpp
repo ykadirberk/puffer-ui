@@ -320,6 +320,42 @@ int main()
     SDL_DestroyWindow(w2);
     SDL_Quit();
 
+    // sdl3_app_open_window / close_window: a complete extra window in one
+    // call, framed like the primary; pointers stay valid across a close.
+    {
+        SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "offscreen"); // SDL_Quit reset the hints
+        sdl3_app app;
+        app.hidden = true;
+        app.renderer_name = "software";
+        CHECK(sdl3_app_init(app, "primary", 320, 200, 0, nullptr));
+        window *tools = sdl3_app_open_window(app, "tools", 240, 160);
+        window *log = sdl3_app_open_window(app, "log", 240, 160);
+        CHECK(tools && log && tools != app.win && log != tools);
+        CHECK(app.ctx->window_count == 3);
+        CHECK(window_at(app.ctx, tools->handle) == tools);
+        CHECK(tools->area.w == 240.0f && tools->surface != app.surface);
+        for (window *w : {app.win, tools, log})
+        {
+            begin_frame(app.ctx, *w, 0.0, 0.016);
+            {
+                ui u(app.ctx);
+                rect page = w->area;
+                (void)u.titlebar(*w, page, "t");
+            }
+            end_frame(app.ctx);
+        }
+        sdl3_app_close_window(app, *tools); // the close-glyph workflow
+        CHECK(app.ctx->window_count == 2);
+        CHECK(window_at(app.ctx, log->handle) == log); // untouched by the close
+        begin_frame(app.ctx, *log, 0.016, 0.016);
+        end_frame(app.ctx);
+        sdl3_app_close_window(app, *app.win); // the primary is not closed this way
+        CHECK(app.ctx->window_count == 2);
+        CHECK(violation_count(app.ctx) == 0);
+        sdl3_app_shutdown(app); // closes `log` too
+        CHECK(!app.inited);
+    }
+
     if (g_failures == 0)
     {
         std::printf("all pump tests passed\n");

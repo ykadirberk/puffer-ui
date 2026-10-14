@@ -385,55 +385,54 @@ PUI_TEST(test_multi_window)
     }
 }
 
-PUI_TEST(test_window_pointer_invalidation)
+PUI_TEST(test_window_pointers_stay_valid)
 {
-    // remove_window compacts the window list, so pointers to later windows go
-    // stale. The contract: using such a pointer is a reported violation
-    // ("begin_frame: window is not registered"), and the correct workflow
-    // re-fetches with window_at(handle).
+    // Every window is its own allocation: removing (or adding) other windows
+    // never moves a window, so an app can hold `window*` for the window's
+    // whole life. Its root id - and so every widget's state - stays too.
     null_device nd;
     context *c = create_context(&nd, nullptr);
     set_violation_handler(c, capture_violation, nullptr);
     g_violation_events = 0;
     render_surface *sa = nd.create_surface();
     render_surface *sb = nd.create_surface();
-    (void)add_window(c, reinterpret_cast<void *>(1), sa, rect::make(0, 0, 200, 150));
+    window *wa = add_window(c, reinterpret_cast<void *>(1), sa, rect::make(0, 0, 200, 150));
     window *wb = add_window(c, reinterpret_cast<void *>(2), sb, rect::make(200, 0, 200, 150));
-    CHECK(wb != nullptr);
-    // A pointer captured before the removal (as an app would hold it).
-    window *stale = wb;
-    remove_window(c, *first_window(c));
-    // the first window goes away
-    CHECK(c->window_count == 1);
-    // The stale pointer no longer names a registered window: reported,
-    // and the frame is not opened (the end_frame afterwards is refused
-    // as well).
-    begin_frame(c, *stale, 0.016, 0.016);
-    CHECK(violation_was("begin_frame: window is not registered"));
-    CHECK(c->current_window == nullptr);
-    end_frame(c);
-    CHECK(violation_was("end_frame without begin_frame"));
-    // The documented recovery: re-fetch by handle - it now lives at
-    // index 0.
-    window *refetched = window_at(c, reinterpret_cast<void *>(2));
-    CHECK(refetched != nullptr && refetched != stale);
-    CHECK(refetched->index == 0);
-    begin_frame(c, *refetched, 0.032, 0.016);
-
+    CHECK(wa && wb);
+    const uiid root_b = wb->root;
+    focus_window(c, *wb);
+    begin_frame(c, *wb, 0.0, 0.016);
     {
         ui u(c);
-        const interaction in = u.interact("recovered"_id, rect::make(0, 0, 40, 40));
-        (void)in;
-        // a clean frame on the moved window     }
-        end_frame(c);
-        CHECK(violation_count(c) == 2);
-        // exactly the stale-pointer pair
-        CHECK(g_violation_events == 2);
-        destroy_context(c);
+        (void)u.interact("kept"_id, rect::make(0, 0, 40, 40));
     }
-    // ---- custom window chrome: titlebar + edges through a recorded
-    // host
-    // ----------
+    end_frame(c);
+    wb->focus = "kept"_id; // widget state on window B
+
+    remove_window(c, *wa);
+    CHECK(c->window_count == 1);
+    CHECK(window_at(c, reinterpret_cast<void *>(2)) == wb); // the same pointer
+    CHECK(first_window(c) == wb);
+    CHECK(wb->index == 0);
+    CHECK(wb->root == root_b);
+    CHECK(wb->focus == "kept"_id);
+    CHECK(focused_window(c) == wb);
+
+    // A window added after the removal never reuses a root.
+    window *wc = add_window(c, reinterpret_cast<void *>(3), sa, rect::make(0, 0, 200, 150));
+    CHECK(wc != nullptr && wc != wb);
+    CHECK(wc->root != root_b);
+    CHECK(window_at(c, reinterpret_cast<void *>(2)) == wb);
+
+    begin_frame(c, *wb, 0.032, 0.016); // a clean frame on the held pointer
+    {
+        ui u(c);
+        (void)u.interact("kept"_id, rect::make(0, 0, 40, 40));
+    }
+    end_frame(c);
+    CHECK(violation_count(c) == 0);
+    CHECK(g_violation_events == 0);
+    destroy_context(c);
 }
 
 PUI_TEST(test_titlebar)
@@ -502,6 +501,104 @@ PUI_TEST(test_titlebar)
     // caption; the library does not move windows from widget code).
     frame(0.080, 60, 16, true, true);
     CHECK(host.moves == 0);
+    CHECK(violation_count(c) == 0);
+    destroy_context(c);
+}
+
+// The native caption (what the platform hit-test drags by) is the titlebar's
+// strip minus every widget over it. It used to be a fixed 34px band minus the
+// three glyph buttons, so a button the app put on the bar never got a click:
+// the system took the press as a window drag.
+PUI_TEST(test_titlebar_widgets_keep_their_clicks)
+{
+    null_device nd;
+    context *c = create_context(&nd, nd.create_surface());
+    window *w = add_window(c, reinterpret_cast<void *>(1), nullptr, rect::make(0, 0, 400, 200));
+    i32 clicks = 0;
+    rect menu{}, free{};
+    const auto frame = [&](f64 t, f32 mx, f32 my, i32 button)
+    {
+        mouse_move(*w, mx, my);
+        if (button >= 0) mouse_button(*w, button == 1);
+        begin_frame(c, *w, t, 0.016);
+        {
+            ui u(c);
+            rect page = w->area;
+            const titlebar_result tb = u.titlebar(*w, page, "app");
+            free = tb.free;
+            rect slot = tb.free;
+            menu = slot.cut_right(60.0f);
+            if (u.button(menu, "Menu", "tb_menu"_id)) clicks += 1;
+        }
+        end_frame(c);
+    };
+    frame(0.0, 5, 100, -1);
+    const window_caption &cap = w->caption;
+    CHECK(cap.drag_count == 1);
+    CHECK(free.w > 0.0f && free.right() <= 400.0f - 46.0f - 36.0f * 2.0f);
+    CHECK(free.x > 12.0f); // after the title
+    // The empty bar drags; the app's button, the title-free gap's widget and
+    // the glyph buttons do not; nothing below the bar does.
+    CHECK(cap.contains(free.x + 2.0f, 17.0f));
+    CHECK(!cap.contains(menu.center_x(), menu.center_y()));
+    CHECK(!cap.contains(400.0f - 20.0f, 17.0f)); // close glyph
+    CHECK(!cap.contains(400.0f - 64.0f, 17.0f)); // maximize glyph
+    CHECK(!cap.contains(free.x + 2.0f, 60.0f));
+    // ...and the button gets its click.
+    frame(0.016, menu.center_x(), menu.center_y(), 1);
+    frame(0.032, menu.center_x(), menu.center_y(), 0);
+    CHECK(clicks == 1);
+
+    // A frame without a titlebar declares no caption.
+    begin_frame(c, *w, 0.048, 0.016);
+    end_frame(c);
+    CHECK(w->caption.drag_count == 0 && !w->caption.contains(free.x + 2.0f, 17.0f));
+    CHECK(violation_count(c) == 0);
+    destroy_context(c);
+}
+
+// titlebar_opts: buttons and dragging are optional, the style sizes the bar,
+// and window_drag_region builds a fully custom bar.
+PUI_TEST(test_titlebar_options)
+{
+    null_device nd;
+    context *c = create_context(&nd, nd.create_surface());
+    window *w = add_window(c, reinterpret_cast<void *>(1), nullptr, rect::make(0, 0, 400, 200));
+    titlebar_style tall = default_dark().titlebar;
+    tall.height = 48.0f;
+    tall.close_hover = some(color{196, 43, 28, 255});
+    begin_frame(c, *w, 0.0, 0.016);
+    {
+        ui u(c);
+        rect page = w->area;
+        const titlebar_result tb =
+            u.titlebar(*w, page, "", {.flags = TITLEBAR_NO_BUTTONS, .style = &tall});
+        CHECK(tb.bar.h == 48.0f);
+        CHECK(page.y == 48.0f);
+        CHECK(tb.free.right() == 400.0f - tall.title_pad); // no glyph buttons
+    }
+    end_frame(c);
+    CHECK(w->caption.contains(390.0f, 40.0f)); // the whole bar drags
+
+    begin_frame(c, *w, 0.016, 0.016);
+    {
+        ui u(c);
+        rect page = w->area;
+        (void)u.titlebar(*w, page, "fixed", {.flags = TITLEBAR_NO_DRAG});
+    }
+    end_frame(c);
+    CHECK(w->caption.drag_count == 0);
+
+    begin_frame(c, *w, 0.032, 0.016); // a custom bar: drag only on the left half
+    {
+        ui u(c);
+        (void)u.window_drag_region(rect::make(0, 0, 200, 30), "my_drag"_id);
+        (void)u.button(rect::make(150, 0, 40, 30), "x", "on_drag"_id);
+    }
+    end_frame(c);
+    CHECK(w->caption.contains(20.0f, 10.0f));
+    CHECK(!w->caption.contains(160.0f, 10.0f)); // the button
+    CHECK(!w->caption.contains(300.0f, 10.0f)); // outside the region
     CHECK(violation_count(c) == 0);
     destroy_context(c);
 }
@@ -1056,7 +1153,7 @@ PUI_TEST(test_window_roots_stay_unique)
     CHECK(c->window_count == 3);
     for (i32 i = 0; i < c->window_count; ++i)
         for (i32 j = i + 1; j < c->window_count; ++j)
-            CHECK(c->windows[i].root != c->windows[j].root);
+            CHECK(c->windows[i]->root != c->windows[j]->root);
     CHECK(violation_count(c) == 0);
     destroy_context(c);
 }

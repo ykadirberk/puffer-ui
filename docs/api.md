@@ -43,7 +43,9 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `bool double_field(rect r, f64 &value, uiid id, const field_opts &opts = {});`
 - `bool vector_field(rect r, std::span<f32> values, uiid id, const field_opts &opts = {});`
 - `popup_scope popup(uiid id, rect area, popup_flags flags = popup_flags::NONE);`
+- `titlebar_result titlebar(window &w, rect &bounds, std::string_view title, const titlebar_opts &opts);`
 - `titlebar_result titlebar(window &w, rect &bounds, std::string_view title);`
+- `interaction window_drag_region(rect r, uiid id);`
 - `bool combo(rect r, std::string_view label, const char *const *items, i32 item_count, i32 &selected, uiid id, f32 max_popup_height = 220.0f);`
 - `rect tooltip(rect anchor, uiid id, std::string_view tip);`
 - `i32 context_menu(uiid id, rect anchor, const char *const *item_labels, i32 item_count);`
@@ -85,7 +87,9 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `bool sdl3_app_init(sdl3_app &a, const char *title, i32 w, i32 h, int argc, char **argv);`
 - `bool sdl3_app_pump(sdl3_app &a);`
 - `void sdl3_app_tick(sdl3_app &a);`
-- `void sdl3_app_shutdown(sdl3_app &a);`
+- `void sdl3_app_shutdown(sdl3_app &a); // also closes every window still open // More windows over the same device and context, each a complete window: // SDL window (borderless + resizable) + surface + core window + native chrome // + text input. Frame each with its own begin_frame/end_frame after the // primary's. The returned pointer stays valid until the window is closed. // // The pump routes every window's events and keeps its size current. A click // on an extra window's close glyph (or the platform's close) only sets // `window::close_requested`; the app decides, usually with // `if (w->close_requested) { sdl3_app_close_window(app, *w); w = nullptr; }`. // Closing the primary window ends the app (sdl3_app_pump returns false). struct sdl3_window_opts;`
+- `window *sdl3_app_open_window(sdl3_app &a, const char *title, i32 w, i32 h, const sdl3_window_opts &opts = {});`
+- `void sdl3_app_close_window(sdl3_app &a, window &w);`
 - `void set_window_host(context *c, window_host *host);`
 - `window_host *window_host_of(context *c);`
 - `i32 resolve_track_sizes(f32 available, std::span<const track_size> tracks, f32 *out, i32 max_out);`

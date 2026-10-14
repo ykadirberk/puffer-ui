@@ -521,6 +521,15 @@ struct ctx_stores
     defer_store defers;
     flat_map<u8> frame_ids;    // per-frame region/scope ids (duplicate check)
     flat_map<rect> widget_ids; // debug: interacted widget ids -> first rect
+    // The open frame's native-caption inputs (published to window::caption at
+    // end_frame): drag regions and every interacted rect (the hole candidates).
+    struct caption_rect
+    {
+        uiid id = 0;
+        rect r{};
+    };
+    std::vector<caption_rect> caption_drags;
+    std::vector<caption_rect> caption_hits;
 };
 
 namespace detail

@@ -30,6 +30,12 @@ Optional overrides, and when they matter:
 
 - `begin_frame()` / `end_frame()` — bracket the whole frame across all windows.
 - `create_surface(native_window)` — needed for anything past the primary window.
+- `destroy_surface(surface)` — releases a closed window's surface (after
+  `remove_window`, before the native window goes away).
+- Native window chrome (`window_host::install_system_chrome`): map the
+  platform's caption hit-test to `window::caption.contains(x, y)` (local logical
+  coordinates). The core rebuilds it every frame from the titlebar's drag
+  region minus the widgets over it, so buttons on the bar keep their clicks.
 - `clear(color)` — called once per frame with the theme background. The default
   is a no-op, so a backend that does not clear will smear the previous frame.
 - `set_clip(const rect *)` — scissor in surface pixels; `nullptr` clears it.

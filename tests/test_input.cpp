@@ -373,7 +373,7 @@ PUI_TEST(test_keyboard_navigation)
     end_frame(c);
     const i32 plain_verts = nd.vertices;
 
-    c->windows[0].focus = "solo"_id; // the same button now owns keyboard focus
+    c->windows[0]->focus = "solo"_id; // the same button now owns keyboard focus
     begin_frame(c, 0.176, 0.016, rect::make(0, 0, 300, 200));
     {
         ui u(c);

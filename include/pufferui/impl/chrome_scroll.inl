@@ -5,10 +5,6 @@
 // ---- custom window chrome ---------------------------------------------------
 namespace detail
 {
-inline constexpr f32 TITLEBAR_H = 34.0f;
-inline constexpr f32 TITLE_BTN_W = 36.0f;
-inline constexpr f32 CLOSE_BTN_W = 46.0f;
-
 // Aero-style edge snap applied on titlebar-drag release: left/right = the
 // work-area half, top = maximize. The zone is re-derived from the release
 // point against the display the pointer is on, so a drag near a shared edge
@@ -16,14 +12,28 @@ inline constexpr f32 CLOSE_BTN_W = 46.0f;
 // window happens to be counted on. No-op without a host or a known work area.
 // (Defined with the other snap-assistant helpers below, outside `detail`.)
 
+// The titlebar's colors: the style's when set, else the theme palette.
+struct titlebar_colors
+{
+    color bg, hover, border, text, text_dim, close_hover;
+};
+inline titlebar_colors resolve_titlebar(const titlebar_style &s, const theme &t)
+{
+    const auto pick = [](const opt<color> &o, color fallback)
+    { return o.set ? o.value : fallback; };
+    return {pick(s.bg, t.panel_bg),       pick(s.hover, t.widget_hover),
+            pick(s.border, t.border),     pick(s.text, t.text),
+            pick(s.text_dim, t.text_dim), pick(s.close_hover, t.widget_hover)};
+}
+
 // A flat glyph button on the titlebar (hover highlight + hand cursor).
-inline bool title_button(ui &u, uiid id, rect r, u8 glyph, bool maximized)
+inline bool title_button(ui &u, uiid id, rect r, u8 glyph, bool maximized,
+                         const titlebar_colors &tc)
 {
     interaction in = u.interact(id, r);
     if (in.hovered) u.ctx->want_cursor = CURSOR_HAND;
-    if (in.hovered) u.draw_rect(r, u.th().widget_hover);
-    const theme &t = u.th();
-    const color ic = in.hovered ? t.text : t.text_dim;
+    if (in.hovered) u.draw_rect(r, glyph == 2 ? tc.close_hover : tc.hover);
+    const color ic = in.hovered ? tc.text : tc.text_dim;
     const f32 cx = r.center_x(), cy = r.center_y();
     if (glyph == 2) // close: an X
     {
@@ -52,51 +62,70 @@ inline bool title_button(ui &u, uiid id, rect r, u8 glyph, bool maximized)
 }
 } // namespace detail
 
-titlebar_result ui::titlebar(window &w, rect &bounds, std::string_view title)
+interaction ui::window_drag_region(rect r, uiid id)
+{
+    if (r.w > 0.0f && r.h > 0.0f) ctx->st->caption_drags.push_back({id, r});
+    return interact(id, r, true, false); // hover only: the platform owns the press
+}
+
+titlebar_result ui::titlebar(window &w, rect &bounds, std::string_view title,
+                             const titlebar_opts &opts)
 {
     context *c = ctx;
     const theme &t = c->active_theme;
+    const titlebar_style &s = opts.style ? *opts.style : t.titlebar;
+    const detail::titlebar_colors tc = detail::resolve_titlebar(s, t);
     titlebar_result out;
-    const rect bar = bounds.cut_top(detail::TITLEBAR_H);
+    const rect bar = bounds.cut_top(s.height);
+    out.bar = bar;
 
-    // The drag strip is the bar minus the buttons: the strips never overlap
-    // the buttons' rects (the stolen-press guardrail).
-    const f32 buttons_w = detail::CLOSE_BTN_W + detail::TITLE_BTN_W * 2.0f;
-    const rect drag = rect::make(bar.x, bar.y, max2(0.0f, bar.w - buttons_w), bar.h);
+    // Glyph buttons, flush with the bar's right edge (right to left).
+    rect rest = bar;
+    const bool has_close = !(opts.flags & TITLEBAR_NO_CLOSE);
+    const bool has_max = !(opts.flags & TITLEBAR_NO_MAXIMIZE);
+    const bool has_min = !(opts.flags & TITLEBAR_NO_MINIMIZE);
+    const rect close_r = has_close ? rest.cut_right(s.close_w) : rect{};
+    const rect max_r = has_max ? rest.cut_right(s.button_w) : rect{};
+    const rect min_r = has_min ? rest.cut_right(s.button_w) : rect{};
+
+    // The drag strip is the bar minus the buttons; widgets placed on it later
+    // this frame punch holes into the native caption (window_caption).
     const uiid root = w.root; // window-scoped ids: two windows never collide
-    interaction in = interact(id_child(root, "titlebar"_id), drag);
+    const uiid drag_id = id_child(root, "titlebar"_id);
+    const interaction in =
+        (opts.flags & TITLEBAR_NO_DRAG) ? interaction{} : window_drag_region(rest, drag_id);
     const bool maximized = w.maximized;
+    // Hovering the drag strip, not a widget placed on it (last frame's holes).
+    const bool strip_hover =
+        in.hovered && (w.caption.drag_count == 0 || w.caption.contains(c->mouse_x, c->mouse_y));
 
-    draw_rect(bar, t.panel_bg);
-    if (in.hovered) draw_rect(drag, t.widget_hover);
-    draw_rect(rect::make(bar.x, bar.bottom() - 1.0f, bar.w, 1.0f), t.border);
+    draw_rect(bar, tc.bg);
+    if (strip_hover) draw_rect(rest, tc.hover);
+    draw_rect(rect::make(bar.x, bar.bottom() - 1.0f, bar.w, 1.0f), tc.border);
+    rect free = rest.pad(s.title_pad, 0.0f);
     if (!title.empty())
     {
-        const rect label = drag.pad(12.0f, 0.0f);
-        text_scope ts = text_style(13.0f, t.font);
-        text_ellipsis(label, title, in.hovered ? t.text : t.text_dim, ALIGN_LEFT);
+        text_scope ts = text_style(s.title_size, t.font);
+        const rect label = free.cut_left(min2(text_width(title) + 1.0f, free.w));
+        text_ellipsis(label, title, strip_hover ? tc.text : tc.text_dim, ALIGN_LEFT);
+        (void)free.cut_left(s.title_pad);
     }
+    out.free = free;
 
-    // The three glyph buttons, flush with the bar's right edge.
-    const rect close_r =
-        rect::make(bar.right() - detail::CLOSE_BTN_W, bar.y, detail::CLOSE_BTN_W, bar.h);
-    const rect max_r =
-        rect::make(close_r.x - detail::TITLE_BTN_W, bar.y, detail::TITLE_BTN_W, bar.h);
-    const rect min_r = rect::make(max_r.x - detail::TITLE_BTN_W, bar.y, detail::TITLE_BTN_W, bar.h);
-    if (detail::title_button(*this, id_child(root, "tb_min"_id), min_r, 0, maximized))
+    if (has_min &&
+        detail::title_button(*this, id_child(root, "tb_min"_id), min_r, 0, maximized, tc))
     {
         out.minimize_clicked = true;
         if (c->host) c->host->minimize_window(w);
     }
-    if (detail::title_button(*this, id_child(root, "tb_max"_id), max_r, 1, maximized))
+    if (has_max &&
+        detail::title_button(*this, id_child(root, "tb_max"_id), max_r, 1, maximized, tc))
     {
         out.maximize_clicked = true;
-        if (c->host)
-        {
-            c->host->toggle_maximize(w);
-        }
+        if (c->host) c->host->toggle_maximize(w);
     }
-    if (detail::title_button(*this, id_child(root, "tb_close"_id), close_r, 2, maximized))
+    if (has_close &&
+        detail::title_button(*this, id_child(root, "tb_close"_id), close_r, 2, maximized, tc))
     {
         out.close_clicked = true;
         w.close_requested = true;

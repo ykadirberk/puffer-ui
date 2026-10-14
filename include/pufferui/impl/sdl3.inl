@@ -238,6 +238,38 @@ struct sdl3_device : render_device
         }
     }
 
+    // The slot stays (indices into texture copies stay put) but goes dead: its
+    // texture copies and its own renderer are released before the app
+    // destroys the SDL window.
+    void destroy_surface(render_surface *surface) override
+    {
+        sdl3_surface *s = nullptr;
+        for (usize i = 0; i < surfaces.size(); ++i)
+        {
+            if (surfaces[i] != surface) continue;
+            s = surfaces[i];
+            surfaces.erase(surfaces.begin() + static_cast<std::ptrdiff_t>(i));
+            break;
+        }
+        if (!s) return;
+        const i32 si = s->slot;
+        delete s;
+        if (si < 0 || si >= static_cast<i32>(slots.size())) return;
+        slot &sl = slots[static_cast<usize>(si)];
+        if (sl.scene) destroy_texture(sl.scene);
+        for (sdl3_texture *t : textures)
+        {
+            if (si >= static_cast<i32>(t->copies.size())) continue;
+            SDL_Texture *&copy = t->copies[static_cast<usize>(si)];
+            if (copy) SDL_DestroyTexture(copy);
+            copy = nullptr;
+        }
+        if (sl.owns_renderer && sl.renderer) SDL_DestroyRenderer(sl.renderer);
+        sl = slot{};
+        if (current_slot == si) current_slot = -1;
+        sync_vsync(); // the pacer may have been this window
+    }
+
     void ensure_scene(i32 slot_index, i32 w, i32 h)
     {
         if (slot_index < 0 || slot_index >= static_cast<i32>(slots.size())) return;
@@ -564,7 +596,7 @@ SDL_HitTestResult SDLCALL sdl3_chrome_hit_test(SDL_Window *win, const SDL_Point 
         // window keeps no resize bands (its state is fixed), but its caption
         // below stays draggable - the system restores it during the native
         // drag.
-        constexpr f32 edge = 8.0f, corner = 20.0f;
+        constexpr f32 edge = 8.0f;
         const bool left = lx <= edge, right = lx >= w->area.w - edge;
         const bool top = ly <= edge, bottom = ly >= w->area.h - edge;
         if (top && left) return SDL_HITTEST_RESIZE_TOPLEFT;
@@ -573,14 +605,20 @@ SDL_HitTestResult SDLCALL sdl3_chrome_hit_test(SDL_Window *win, const SDL_Point 
         if (bottom && right) return SDL_HITTEST_RESIZE_BOTTOMRIGHT;
         if (left) return SDL_HITTEST_RESIZE_LEFT;
         if (right) return SDL_HITTEST_RESIZE_RIGHT;
-        if (top) return SDL_HITTEST_RESIZE_TOP;
+        // A widget on the titlebar (a caption hole) reaches the top edge, as
+        // the system's own caption buttons do.
+        bool on_widget = false;
+        for (i32 i = 0; i < w->caption.hole_count && !on_widget; ++i)
+            on_widget = w->caption.holes[i].contains(lx, ly);
+        if (top && !on_widget) return SDL_HITTEST_RESIZE_TOP;
         if (bottom) return SDL_HITTEST_RESIZE_BOTTOM;
     }
-    // The bar minus the glyph buttons is the system caption. For a maximized
-    // window SDL keeps the WS_MAXIMIZEBOX style, so the system's move loop
-    // restores it when the caption is dragged.
-    const f32 buttons_w = detail::CLOSE_BTN_W + detail::TITLE_BTN_W * 2.0f;
-    if (ly <= detail::TITLEBAR_H && lx < w->area.w - buttons_w) return SDL_HITTEST_DRAGGABLE;
+    // The system caption is what the last frame declared: its drag regions
+    // (the titlebar strip, ui::window_drag_region) minus every widget over
+    // them, so buttons on the bar keep their clicks. For a maximized window
+    // SDL keeps the WS_MAXIMIZEBOX style, so the system's move loop restores
+    // it when the caption is dragged.
+    if (w->caption.contains(lx, ly)) return SDL_HITTEST_DRAGGABLE;
     return SDL_HITTEST_NORMAL;
 }
 
@@ -926,9 +964,61 @@ void sdl3_app_tick(sdl3_app &a)
     a.now += a.dt;
 }
 
+window *sdl3_app_open_window(sdl3_app &a, const char *title, i32 w, i32 h,
+                             const sdl3_window_opts &opts)
+{
+    if (!a.inited || !a.ctx || !a.device || !title || w <= 0 || h <= 0) return nullptr;
+    const bool hidden = opts.hidden || a.hidden;
+    const SDL_WindowFlags flags = SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE |
+                                  SDL_WINDOW_HIGH_PIXEL_DENSITY |
+                                  (hidden ? SDL_WINDOW_HIDDEN : static_cast<SDL_WindowFlags>(0));
+    SDL_Window *sdl = SDL_CreateWindow(title, w, h, flags);
+    if (!sdl) return nullptr;
+    if (opts.x >= 0 && opts.y >= 0) SDL_SetWindowPosition(sdl, opts.x, opts.y);
+    render_surface *surface = a.device->create_surface(sdl);
+    window *win = nullptr;
+    if (surface)
+    {
+        int x = 0, y = 0;
+        SDL_GetWindowPosition(sdl, &x, &y);
+        win = add_window(a.ctx, sdl, surface,
+                         rect::make(static_cast<f32>(x), static_cast<f32>(y), static_cast<f32>(w),
+                                    static_cast<f32>(h)));
+    }
+    if (!win) // no surface (single-window backend) or refused by add_window
+    {
+        if (surface) a.device->destroy_surface(surface);
+        SDL_DestroyWindow(sdl);
+        return nullptr;
+    }
+    install_window_chrome(a.ctx, *win); // native drag/resize/snap + the window's scale
+    if (!hidden) SDL_StartTextInput(sdl);
+    return win;
+}
+
+void sdl3_app_close_window(sdl3_app &a, window &w)
+{
+    if (!a.inited || !a.ctx || &w == a.win || w.owner != a.ctx) return;
+    SDL_Window *sdl = static_cast<SDL_Window *>(w.handle);
+    render_surface *surface = w.surface;
+    remove_window(a.ctx, w); // refused (and reported) while a frame is open
+    if (window_at(a.ctx, sdl)) return;
+    if (a.device && surface) a.device->destroy_surface(surface);
+    if (sdl) SDL_DestroyWindow(sdl);
+}
+
 void sdl3_app_shutdown(sdl3_app &a)
 {
     if (!a.inited) return;
+    // Extra windows first (the primary's renderer is the app's, below).
+    while (a.ctx && a.ctx->window_count > 0)
+    {
+        const i32 before = a.ctx->window_count;
+        window *last = a.ctx->windows[before - 1];
+        if (last == a.win) break;
+        sdl3_app_close_window(a, *last);
+        if (a.ctx->window_count == before) break; // refused (a frame is open)
+    }
     if (a.ctx) destroy_context(a.ctx);
     if (a.device) destroy_sdl3_device(a.device);
     if (a.sdl_renderer) SDL_DestroyRenderer(static_cast<SDL_Renderer *>(a.sdl_renderer));
