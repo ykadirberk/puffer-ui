@@ -866,8 +866,14 @@ bool sdl3_app_init(sdl3_app &a, const char *title, i32 w, i32 h, int argc, char 
     }
     a.surface = a.device->create_surface(static_cast<SDL_Window *>(a.sdl_window));
     a.ctx = a.surface ? create_context(a.device, a.surface) : nullptr;
+    // The client in desktop coordinates from the start: an app that places
+    // another window relative to this one (or anchors desktop-space panels)
+    // before the first move event must not see the origin instead.
+    int wx = 0, wy = 0;
+    SDL_GetWindowPosition(static_cast<SDL_Window *>(a.sdl_window), &wx, &wy);
     a.win = a.ctx ? add_window(a.ctx, a.sdl_window, a.surface,
-                               rect::make(0, 0, static_cast<f32>(w), static_cast<f32>(h)))
+                               rect::make(static_cast<f32>(wx), static_cast<f32>(wy),
+                                          static_cast<f32>(w), static_cast<f32>(h)))
                   : nullptr;
     if (!a.ctx || !a.win)
     {

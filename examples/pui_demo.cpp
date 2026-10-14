@@ -236,16 +236,12 @@ static void demo_dock_init(demo_state &s)
 }
 
 // --- pure projection + reducer --------------------------------------------
-static SDL_Window *g_window = nullptr;
-static SDL_Window *g_window2 = nullptr;
-static SDL_Renderer *g_renderer = nullptr;
-static render_device *g_device = nullptr;
-static render_surface *g_surface = nullptr;
-static render_surface *g_surface2 = nullptr;
+static sdl3_app g_app; // window 1 + renderer + device + context (the library's bootstrap)
 static context *g_ctx = nullptr;
 static font_handle g_font_bold = FONT_INVALID;
-static pui::window *g_win1 = nullptr;
-static pui::window *g_win2 = nullptr;
+static pui::window *g_win1 = nullptr; // valid for the whole run
+static pui::window *g_win2 = nullptr; // valid while window 2 is open
+static bool g_toggle_second = false;  // window 1's titlebar button asked to open/close it
 static u64 g_freq = 1;
 static u64 g_last = 0;
 static int g_hover = -1;
@@ -370,42 +366,32 @@ static void demo_draw_frame_hud(ui &u, const pui::window &w)
     }
 }
 
+// Window 2 opens to the right of window 1, kept on window 1's display.
+static pui::window *demo_open_second()
+{
+    constexpr i32 W = 520, H = 420;
+    const rect c1 = g_win1->client;
+    SDL_Rect usable{};
+    SDL_GetDisplayUsableBounds(SDL_GetDisplayForWindow(static_cast<SDL_Window *>(g_win1->handle)),
+                               &usable);
+    i32 x = static_cast<i32>(c1.right()) + 16;
+    if (usable.w > 0 && x + W > usable.x + usable.w) x = usable.x + usable.w - W;
+    return sdl3_app_open_window(g_app, "PufferUI (next) - window 2", W, H,
+                                {.x = x, .y = static_cast<i32>(c1.y) + 40});
+}
+
 SDL_AppResult SDL_AppInit(void **, int, char **)
 {
-    if (!SDL_Init(SDL_INIT_VIDEO)) return SDL_APP_FAILURE;
+    // Window 1, its renderer, the shared device, the context, the native
+    // chrome, the bundled font and the clipboard: one call.
+    if (!sdl3_app_init(g_app, "PufferUI (next) - window 1", 900, 600, 0, nullptr))
+        return SDL_APP_FAILURE;
+    g_ctx = g_app.ctx;
+    g_win1 = g_app.win;
+    g_app.device->set_vsync(g_vsync); // the HUD toggles this at runtime
+    SDL_StartTextInput(static_cast<SDL_Window *>(g_app.sdl_window));
 
-    g_window = SDL_CreateWindow("PufferUI (next) - window 1", 900, 600,
-                                SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE);
-    if (!g_window) return SDL_APP_FAILURE;
-
-    g_renderer = SDL_CreateRenderer(g_window, nullptr);
-    if (!g_renderer) return SDL_APP_FAILURE;
-
-    g_device = create_sdl3_device(g_renderer);
-    if (!g_device) return SDL_APP_FAILURE;
-    g_device->set_vsync(g_vsync); // the HUD toggles this at runtime
-    g_surface = g_device->create_surface(g_window);
-
-    // A real second window over the same device: the device creates its renderer
-    // and mirrors the shared textures (SDL textures are renderer-scoped).
-    // g_window2 = SDL_CreateWindow("PufferUI (next) - window 2", 520, 420, SDL_WINDOW_RESIZABLE);
-    if (g_window2)
-    {
-        const rect c1 = demo_window_client(g_window);
-        SDL_SetWindowPosition(g_window2, static_cast<int>(c1.right()) + 16,
-                              static_cast<int>(c1.y) + 40);
-        g_surface2 = g_device->create_surface(g_window2);
-    }
-
-    SDL_StartTextInput(g_window);
-    if (g_window2) SDL_StartTextInput(g_window2);
-
-    g_ctx = create_context(g_device, g_surface);
-
-    font_handle font = load_font(g_ctx, PUFFERUI_ASSET_DIR "/fonts/DejaVuSans.ttf");
-    if (font == FONT_INVALID) font = load_font(g_ctx, "assets/fonts/DejaVuSans.ttf");
-    if (font == FONT_INVALID) font = load_font(g_ctx, "C:/Windows/Fonts/segoeui.ttf");
-    if (font == FONT_INVALID) font = load_font(g_ctx, "C:/Windows/Fonts/arial.ttf");
+    const font_handle font = g_app.font;
     g_font_bold = load_font(g_ctx, PUFFERUI_ASSET_DIR "/fonts/DejaVuSans-Bold.ttf");
     if (g_font_bold == FONT_INVALID) g_font_bold = font;
 
@@ -420,15 +406,12 @@ SDL_AppResult SDL_AppInit(void **, int, char **)
                                     .hover_bg = some(color{210, 70, 70, 255})});
     t.button.transition = transition{.duration = 0.10f, .curve = easing::EASE_OUT};
     set_theme(g_ctx, t);
-    set_clipboard(g_ctx, sdl3_system_clipboard());
     demo_dock_init(g_state);
 
-    g_win1 = add_window(g_ctx, g_window, g_surface, demo_window_client(g_window));
-    if (g_win1) install_window_chrome(g_ctx, *g_win1); // native drag/resize/snap
-    if (g_window2 && g_surface2)
-        g_win2 = add_window(g_ctx, g_window2, g_surface2, demo_window_client(g_window2));
-    if (g_win2) install_window_chrome(g_ctx, *g_win2);
-    if (g_win1) focus_window(g_ctx, *g_win1);
+    // Window 2: SDL window + surface on the shared device + core window +
+    // native chrome + text input, in one call.
+    g_win2 = demo_open_second();
+    focus_window(g_ctx, *g_win1);
 
     // Anchor the floating panels inside window 1's client area.
     if (g_win1)
@@ -446,22 +429,15 @@ SDL_AppResult SDL_AppInit(void **, int, char **)
     return SDL_APP_CONTINUE;
 }
 
-static pui::window *demo_core_window(SDL_WindowID id)
-{
-    SDL_Window *w = SDL_GetWindowFromID(id);
-    return w ? window_at(g_ctx, w) : nullptr;
-}
-
 SDL_AppResult SDL_AppEvent(void *, SDL_Event *e)
 {
     // The library routes every SDL event to the right window: pointer, left +
     // right buttons, wheel, keys, text input, IME preedit, focus and window
-    // geometry. The demo only decides the quit policy and counts for the HUD.
+    // geometry. A close request only marks its window (window::close_requested);
+    // SDL_AppIterate applies the policy. The demo counts motion for the HUD.
     if (e->type == SDL_EVENT_MOUSE_MOTION) ++g_ev_motion;
     const bool quit = sdl3_route(g_ctx, e);
-    if (quit) return SDL_APP_SUCCESS;
-    if (e->type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) return SDL_APP_SUCCESS;
-    return SDL_APP_CONTINUE;
+    return quit ? SDL_APP_SUCCESS : SDL_APP_CONTINUE;
 }
 static void demo_refresh_client(pui::window &w)
 {
@@ -604,7 +580,15 @@ static dock_action demo_frame_main(pui::window &w, const demo_state::view_t &v, 
 
         // Window chrome for the borderless window: custom titlebar + edges.
         rect chrome = screen;
-        (void)u.titlebar(w, chrome, "PufferUI (next) - window 1");
+        const titlebar_result tb = u.titlebar(w, chrome, "PufferUI (next) - window 1");
+        {
+            // A button on the titlebar: it keeps its clicks, the rest of the bar
+            // still drags the window. Windows open/close between frames.
+            rect slot = tb.free;
+            const char *label = g_win2 ? "Close window 2" : "Open window 2";
+            const rect r = slot.cut_right(u.button_size(label).x).pad(0.0f, 4.0f);
+            if (u.button(r, label, "demo_win2_toggle"_id)) g_toggle_second = true;
+        }
 
         region root = u.region(chrome, "root"_id);
         u.draw_rect(root.area(), th.bg);
@@ -841,6 +825,29 @@ static dock_action demo_frame_second(pui::window &w, const demo_state::view_t &v
     return out;
 }
 
+static void demo_collect_panels(const dock_node &n, uiid *out, i32 &count, i32 cap)
+{
+    for (i32 i = 0; i < n.panel_count && count < cap; ++i) out[count++] = n.panels[i];
+    if (n.a) demo_collect_panels(*n.a, out, count, cap);
+    if (n.b) demo_collect_panels(*n.b, out, count, cap);
+}
+
+// Window 2 is closing: its docked panels move into window 1's tree (nothing is
+// lost) and floating panels that sat over it return to their window-1 anchors.
+static void demo_rehome_second(demo_state &s, const pui::window &w1)
+{
+    uiid panels[32];
+    i32 count = 0;
+    demo_collect_panels(s.dock_second, panels, count, 32);
+    for (i32 i = 0; i < count; ++i)
+        if (dock_node *leaf = demo_dock_first_leaf(s.dock_root))
+            demo_dock_add_center(*leaf, panels[i]);
+    s.dock_second = dock_node{};
+    s.dock_second.kind = DOCK_LEAF;
+    if (!demo_intersects(w1, s.float_bounds)) s.float_bounds = s.float_home;
+    if (!demo_intersects(w1, s.inspector_bounds)) s.inspector_bounds = s.inspector_home;
+}
+
 SDL_AppResult SDL_AppIterate(void *)
 {
     const u64 counter = SDL_GetPerformanceCounter();
@@ -876,21 +883,22 @@ SDL_AppResult SDL_AppIterate(void *)
     if (dock1.active) demo_dock_apply(g_state, dock1);
     if (dock2.active) demo_dock_apply(g_state, dock2);
 
-    // The custom titlebar's close button only sets the window's close request;
-    // the run loop turns it into action (mirrors the OS chrome's policy):
-    // closing window 1 quits, closing window 2 removes it from the dock set.
-    // remove_window refuses while a frame is open; both frames are closed here.
+    // A close glyph (or the platform's close) only sets the window's close
+    // request; the policy runs here, between frames: closing window 1 quits,
+    // closing window 2 closes it (its panels move to window 1). Window 1's
+    // titlebar button toggles window 2 the same way.
     if (g_win1->close_requested) return SDL_APP_SUCCESS;
-    if (g_win2 && g_win2->close_requested)
+    if (g_win2 && (g_win2->close_requested || g_toggle_second))
     {
-        remove_window(g_ctx, *g_win2);
+        demo_rehome_second(g_state, *g_win1);
+        sdl3_app_close_window(g_app, *g_win2); // g_win1 stays valid
         g_win2 = nullptr;
-        // remove_window compacts the context's window array: re-fetch window 1
-        // (the pointer may have shifted), and hide the SDL window - its SDL
-        // resources are freed by SDL_AppQuit.
-        g_win1 = g_window ? window_at(g_ctx, g_window) : nullptr;
-        if (g_window2) SDL_HideWindow(g_window2);
     }
+    else if (!g_win2 && g_toggle_second)
+    {
+        g_win2 = demo_open_second();
+    }
+    g_toggle_second = false;
 
     // Only touch the window title when it actually changes: SetWindowText is a
     // per-frame OS call once the condition is true, and it shows up at high
@@ -904,7 +912,7 @@ SDL_AppResult SDL_AppIterate(void *)
     if (g_title_last != title)
     {
         g_title_last = title;
-        SDL_SetWindowTitle(g_window, title);
+        SDL_SetWindowTitle(static_cast<SDL_Window *>(g_app.sdl_window), title);
     }
 
     return SDL_APP_CONTINUE;
@@ -912,9 +920,5 @@ SDL_AppResult SDL_AppIterate(void *)
 
 void SDL_AppQuit(void *, SDL_AppResult)
 {
-    if (g_ctx) destroy_context(g_ctx);
-    if (g_device) destroy_sdl3_device(g_device); // frees surfaces + window-2 renderer
-    if (g_renderer) SDL_DestroyRenderer(g_renderer);
-    if (g_window2) SDL_DestroyWindow(g_window2);
-    if (g_window) SDL_DestroyWindow(g_window);
+    sdl3_app_shutdown(g_app); // window 2 (if open), the context, device, renderer, window 1
 }

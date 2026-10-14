@@ -328,6 +328,25 @@ int main()
         app.hidden = true;
         app.renderer_name = "software";
         CHECK(sdl3_app_init(app, "primary", 320, 200, 0, nullptr));
+        {
+            // The primary's client is in desktop coordinates from the start
+            // (it was registered at the origin, so a window placed relative to
+            // it before the first move event landed in the wrong spot).
+            int x = 0, y = 0;
+            SDL_GetWindowPosition(static_cast<SDL_Window *>(app.sdl_window), &x, &y);
+            CHECK(app.win->client.x == static_cast<f32>(x) &&
+                  app.win->client.y == static_cast<f32>(y));
+        }
+        window *placed = sdl3_app_open_window(app, "placed", 200, 100, {.x = 300, .y = 220});
+        CHECK(placed != nullptr);
+        if (placed)
+        {
+            int x = 0, y = 0;
+            SDL_GetWindowPosition(static_cast<SDL_Window *>(placed->handle), &x, &y);
+            CHECK(placed->client.x == static_cast<f32>(x) &&
+                  placed->client.y == static_cast<f32>(y));
+            sdl3_app_close_window(app, *placed);
+        }
         window *tools = sdl3_app_open_window(app, "tools", 240, 160);
         window *log = sdl3_app_open_window(app, "log", 240, 160);
         CHECK(tools && log && tools != app.win && log != tools);
