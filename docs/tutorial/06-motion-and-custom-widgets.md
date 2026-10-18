@@ -79,11 +79,11 @@ wander:
 
 <!-- src: examples/tutorial/step06_motion.cpp -->
 ```cpp
-glass_background(u, page, u.ctx->now);     // the scene drifts with the frame clock ...
+glass_background(u, page, u.now());        // the scene drifts with the frame clock ...
 u.request_redraw();                        // ... so keep frames coming even when idle
 ```
 
-`u.ctx->now` is the frame time in seconds (the same number as `app.now`).
+`u.now()` is the frame time in seconds (the same number as `app.now`).
 
 The second line deserves attention. PufferUI can **sleep when nothing changes**
 — the loop waits for input instead of redrawing 60 times a second, so an idle app
@@ -330,7 +330,7 @@ inline void todo_row(ui &u, rect bounds, todo_item &t, unsigned &remove_id, bool
     const f32 k = u.appear(u.local("in"), 0.32f);
     bounds.y += (1.0f - k) * 10.0f;
 
-    const bool hot = bounds.contains(u.ctx->mouse_x, u.ctx->mouse_y);
+    const bool hot = bounds.contains(u.mouse().x, u.mouse().y);
     if (hot) u.draw_rounded_rect(bounds.pad(3.0f, 2.0f), color{255, 255, 255, 16}, 14.0f);
     u.draw_line(bounds.x + 18.0f, bounds.bottom() - 0.5f, bounds.right() - 18.0f,
                 bounds.bottom() - 0.5f, color{255, 255, 255, static_cast<u8>(22.0f * k)}, 1.0f);

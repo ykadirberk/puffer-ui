@@ -1189,3 +1189,27 @@ PUI_TEST(test_dock_tab_drag_name_is_interned)
     CHECK(c->dock_panel_name != nullptr && std::strcmp(c->dock_panel_name, "Tab") == 0);
     destroy_context(c);
 }
+
+// r106: on a platform without a native hit-test the host restores the OS frame
+// (window::os_frame); the custom titlebar then draws and cuts nothing, and no
+// drag region is declared.
+PUI_TEST(test_titlebar_stands_down_for_an_os_frame)
+{
+    null_device nd;
+    context *c = create_context(&nd, nd.create_surface());
+    window *w = add_window(c, reinterpret_cast<void *>(1), nullptr, rect::make(0, 0, 300, 200));
+    w->os_frame = true;
+    begin_frame(c, *w, 0.0, 0.016);
+    {
+        ui u(c);
+        rect page = w->area;
+        const titlebar_result tb = u.titlebar(*w, page, "framed");
+        CHECK(page.y == 0.0f && page.h == 200.0f); // nothing cut
+        CHECK(tb.bar.w == 0.0f && tb.free.w == 0.0f);
+    }
+    end_frame(c);
+    CHECK(w->caption.drag_count == 0);
+    CHECK(nd.draw_calls == 0); // nothing painted
+    CHECK(violation_count(c) == 0);
+    destroy_context(c);
+}

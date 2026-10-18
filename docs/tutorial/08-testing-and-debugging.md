@@ -77,8 +77,8 @@ u.draw_rounded_rect(suspect_rect, color{255, 0, 0, 70}, 0);   // a translucent r
 and to print a few values on screen with `u.textf`. Other handy facts:
 
 * `u.hot_id()` — the id of the widget the pointer is over this frame.
-* `u.ctx->focus` — the id that has keyboard focus.
-* `u.ctx->mouse_x / mouse_y` — the pointer, in window coordinates.
+* `u.focused_id()` — the id that has keyboard focus.
+* `u.mouse()` — the pointer, in window coordinates.
 * A widget that "does nothing" is usually **overlapped by another** that claims the
   press (the topmost, last-drawn one wins), or **disabled by a popup above it**
   (`in.blocked`).

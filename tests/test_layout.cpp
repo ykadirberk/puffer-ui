@@ -497,3 +497,101 @@ PUI_TEST(test_row_cut_right_no_overlap)
     CHECK(r.remaining().right() <= right.x + 0.001f);
     // leftover sits between them }
 }
+
+// r103: rows of different heights in a scroll view: only the rows that can
+// paint run, at their prefix-summed positions; nested lists keep their own sums.
+PUI_TEST(test_virtual_list_variable_heights)
+{
+    tf_env env(300, 200);
+    const auto height_of = [](i32 i) { return i % 3 == 0 ? 60.0f : 20.0f; };
+    std::vector<i32> drawn;
+    std::vector<rect> rows;
+    const auto frame = [&](f64 t)
+    {
+        drawn.clear();
+        rows.clear();
+        env.frame(t,
+                  [&](ui &u)
+                  {
+                      scroll_view sv = u.scroll(rect::make(0, 0, 300, 100), "vl"_id,
+                                                scroll_options{.padding = 0.0f});
+                      sv.virtual_list(
+                          1000, height_of,
+                          [&](ui &uu, i32 i, rect r)
+                          {
+                              drawn.push_back(i);
+                              rows.push_back(r);
+                              if (i == 0) // a nested list: its own sums
+                              {
+                                  scroll_view inner =
+                                      uu.scroll(r, "inner"_id, scroll_options{.padding = 0.0f});
+                                  inner.virtual_list(
+                                      5, [](i32) { return 10.0f; }, [](ui &, i32, rect) {});
+                              }
+                          });
+                  });
+    };
+    frame(0.0);
+    frame(0.016); // the content height is known from the second frame on
+    // 0 (60) + 1 (20) + 2 (20) fill 100 px: three rows, nothing more.
+    CHECK(drawn.size() == 3 && drawn[0] == 0 && drawn[2] == 2);
+    CHECK(rows[1].y == 60.0f && rows[1].h == 20.0f && rows[2].y == 80.0f);
+    // Scroll into the middle: the first row is found by search, not by walking.
+    begin_frame(env.c, 0.032, 0.016, rect::make(0, 0, 300, 200));
+    {
+        ui u(env.c);
+        scroll_view sv =
+            u.scroll(rect::make(0, 0, 300, 100), "vl"_id, scroll_options{.padding = 0.0f});
+        sv.scroll_to(100.0f * 30.0f + 10.0f); // 30 groups of (60 + 20 + 20) = 3000
+        sv.virtual_list(1000, height_of, [&](ui &, i32 i, rect) { drawn.push_back(i); });
+    }
+    end_frame(env.c);
+    frame(0.048);
+    CHECK(!drawn.empty() && drawn.front() == 90); // row 90 spans 3000..3060
+    CHECK(drawn.size() <= 5);
+}
+
+// r108: with a heights version the row offsets are kept between frames: rows
+// are measured once per version, a grown count measures only the new rows, and
+// the rows land exactly where the per-frame sums put them.
+PUI_TEST(test_virtual_list_kept_heights)
+{
+    tf_env env(300, 200);
+    i32 calls = 0;
+    std::vector<rect> rows;
+    const auto frame = [&](f64 t, i32 count, u64 version, f32 scroll)
+    {
+        rows.clear();
+        env.frame(t,
+                  [&](ui &u)
+                  {
+                      scroll_view sv = u.scroll(rect::make(0, 0, 300, 100), "kept"_id,
+                                                scroll_options{.padding = 0.0f});
+                      if (scroll >= 0.0f) sv.scroll_to(scroll);
+                      sv.virtual_list(
+                          count,
+                          [&](i32 i)
+                          {
+                              ++calls;
+                              return i % 3 == 0 ? 60.0f : 20.0f;
+                          },
+                          [&](ui &, i32, rect r) { rows.push_back(r); },
+                          {.heights_version = version});
+                  });
+    };
+    frame(0.0, 1000, 1, -1.0f);
+    CHECK(calls == 1000);
+    frame(0.016, 1000, 1, 3010.0f); // scrolled: nothing is measured again
+    frame(0.024, 1000, 1, -1.0f);
+    CHECK(calls == 1000);
+    CHECK(!rows.empty() && rows[0].y == -10.0f); // row 90 at 3000, 10 px above the view
+    frame(0.032, 1200, 1, -1.0f);                // grown: only the 200 new rows
+    CHECK(calls == 1200);
+    frame(0.048, 1200, 2, -1.0f); // a new version measures everything again
+    CHECK(calls == 2400);
+    frame(0.064, 800, 2, -1.0f); // shrunk: nothing to measure
+    CHECK(calls == 2400);
+    frame(0.080, 800, 0, -1.0f); // version 0: every row, every frame
+    frame(0.096, 800, 0, -1.0f);
+    CHECK(calls == 4000);
+}

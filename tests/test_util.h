@@ -137,6 +137,9 @@ struct recorder_host : window_host
     }
 };
 
+// Declared ahead so the helpers below find it for any draw callable (a lambda
+// from an anonymous namespace has no ADL path to it).
+template <typename DrawFn> inline void tf_frame(context *c, f64 t, DrawFn &&draw);
 template <typename DrawFn> inline void tf_click(context *c, f32 x, f32 y, f64 t, DrawFn &&draw)
 {
     mouse_move(c, x, y);

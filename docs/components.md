@@ -140,9 +140,10 @@ A table with a pinned header, optional resizable columns, and a virtualized body
 
 | | |
 | --- | --- |
-| `comp::table(u, area, headers, rows, cell_draw, table_props{.id, .row_key, .columns, .state})` | Returns row/column activation, stable record key, sort/selection changes and modifier intent; `if (res)` = a row was activated |
+| `comp::table(u, area, headers, rows, cell_draw, table_props{.id, .row_key, .columns, .state, .order, .column_menu, .horizontal, .sticky_first})` | Returns row/column activation, stable record key, sort/selection changes, `columns_changed` and modifier intent; `if (res)` = a row was activated |
 | Theme slot | `theme::table` (`header_bg`, `row_bg`, `row_alt`, `row_hover`, `header_text`, `text`, `border`, `row_h`, `header_h`) |
 | Notes | The body is a `scroll_view` + `virtual_list`: only visible rows are submitted; clicking resolves the column from the pointer; Enter/Space activates the focused row |
+| Columns | `table_column::hidden` hides one (right-clicking a header toggles it; one column always stays); an app-owned `.order` permutation is the display order and a header drag moves a column in it; `.horizontal` scrolls sideways (Shift+wheel, the bar) when the columns are wider than the area, `.sticky_first` keeps the first shown column in place; `cell_draw` always gets the column's own index |
 
 ## `comp::command_palette`
 
@@ -177,6 +178,8 @@ styles. `selectable`, `tree_node`, and `drag_value` resolve `theme::button` or a
 | `tree_node` | App-owned `bool open`, depth, leaf/selected flags; `{toggled, selected, in}` | `pui_ex_tree` |
 | `drag_value` | `double&`, speed/min/max; `{changed, in}` | `pui_ex_numeric` |
 | `color_edit` | `color&`, optional alpha channel; `{changed, in}` | `pui_ex_colors` |
+| `color_picker` | `color&`; HSV square, hue/alpha bars, hex, eyedropper (`backend_caps::READ_PIXELS`); `{changed, in}` | `pui_ex_pickers` |
+| `date_picker` | `date&`, `first_weekday`; a month grid popup; `{changed, in}` | `pui_ex_pickers` |
 | `form_field` | Label width + help/error message; returns editor rect | `pui_ex_numeric` |
 
 Tables now take optional `.row_key`, `.columns`, and `.state`. The record key

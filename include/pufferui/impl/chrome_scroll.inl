@@ -72,10 +72,11 @@ titlebar_result ui::titlebar(window &w, rect &bounds, std::string_view title,
                              const titlebar_opts &opts)
 {
     context *c = ctx;
+    titlebar_result out;
+    if (w.os_frame) return out; // the OS draws the bar; the layout keeps its height
     const theme &t = c->active_theme;
     const titlebar_style &s = opts.style ? *opts.style : t.titlebar;
     const detail::titlebar_colors tc = detail::resolve_titlebar(s, t);
-    titlebar_result out;
     const rect bar = bounds.cut_top(s.height);
     out.bar = bar;
 
@@ -190,6 +191,7 @@ bool ui::slider_float(rect r, std::string_view label, f32 &value, f32 min_value,
         text(inner, buf, t.text, ALIGN_RIGHT);
     }
     if (in.focused) detail::focus_ring(*this, r, t.radius);
+    a11y(id, r, {.role = a11y_role::SLIDER, .name = label, .value = buf});
     return changed;
 }
 
@@ -290,6 +292,11 @@ bool ui::combo(rect r, std::string_view label, const char *const *items, i32 ite
         detail::thick_line(*this, {cx - 4.0f, cy - 1.5f}, {cx, cy + 2.5f}, 3.0f, cc);
         detail::thick_line(*this, {cx, cy + 2.5f}, {cx + 4.0f, cy - 1.5f}, 3.0f, cc);
     }
+    a11y(id, r,
+         {.role = a11y_role::COMBO,
+          .name = label,
+          .value = shown,
+          .state = was_open ? A11Y_EXPANDED : 0u});
     PUFFERUI_CHECK(VIOL_COMBO_EMPTY, item_count > 0, "combo needs at least one item");
     if (item_count <= 0) return false;
     if (c->disabled_depth > 0)
@@ -368,7 +375,7 @@ bool ui::combo(rect r, std::string_view label, const char *const *items, i32 ite
         const f32 list_h = item_count * row_h + static_cast<f32>(item_count - 1) * gap;
         const f32 h =
             clampf(list_h + pad * 2.0f, row_h + pad * 2.0f, max2(row_h, max_popup_height));
-        const rect screen = c->screen;
+        const rect screen = detail::popup_space(c); // the display when overlays exist
         const f32 w = clampf(widest, r.w, screen.w);
         // Below the header by default; flip above when there is no room below.
         f32 x = clampf(r.x, screen.x, max2(screen.x, screen.right() - w));
@@ -505,7 +512,7 @@ i32 ui::context_menu(uiid id, rect anchor, const char *const *item_labels, i32 i
         const f32 pad = 6.0f;
         const f32 menu_w = tw + pad * 2.0f + 16.0f;
         const f32 menu_h = rows_h + pad * 2.0f;
-        const rect screen = c->screen;
+        const rect screen = detail::popup_space(c); // the display when overlays exist
         f32 x = c->context_menu_x;
         f32 y = c->context_menu_y;
         x = clampf(x, screen.x + 2.0f, max2(screen.x + 2.0f, screen.right() - menu_w - 2.0f));
@@ -924,6 +931,61 @@ void scroll_view::virtual_list(i32 count, f32 item_height, function_ref<void(ui 
                                     content_.w, item_height);
         fn(*u_, index, row);
     }
+}
+
+void scroll_view::virtual_list(i32 count, function_ref<f32(i32)> height_of,
+                               function_ref<void(ui &, i32, rect)> fn,
+                               const virtual_list_opts &opts)
+{
+    if (!u_) return;
+    if (count <= 0 || !height_of)
+    {
+        set_content_height(0.0f);
+        return;
+    }
+    // Row tops as prefix sums. The vector is borrowed for the call (a nested
+    // list inside `fn` gets its own) and handed back: no allocation after warm-up.
+    // Kept offsets (a heights version) skip the rows measured under that version.
+    ctx_stores &stores = *u_->ctx->st;
+    ctx_stores::kept_rows *kept =
+        opts.heights_version != 0 ? &stores.row_tops_kept[id_] : nullptr; // nodes stay put
+    std::vector<f32> tops = std::move(kept ? kept->tops : stores.row_tops);
+    usize known = 0; // rows whose offsets are still valid
+    if (kept && kept->version == opts.heights_version && !tops.empty())
+        known = std::min(tops.size() - 1, static_cast<usize>(count));
+    tops.resize(static_cast<usize>(count) + 1);
+    tops[0] = 0.0f;
+    for (usize i = known; i < static_cast<usize>(count); ++i)
+        tops[i + 1] = tops[i] + max2(0.0f, height_of(static_cast<i32>(i)));
+    set_content_height(tops[static_cast<usize>(count)]);
+
+    // The first row whose bottom lies below the viewport top, then rows until
+    // one starts below the viewport bottom.
+    const f32 off = offset();
+    i32 lo = 0, hi = count - 1;
+    while (lo < hi)
+    {
+        const i32 mid = (lo + hi) / 2;
+        if (tops[static_cast<usize>(mid) + 1] <= off)
+            lo = mid + 1;
+        else
+            hi = mid;
+    }
+    for (i32 i = lo; i < count; ++i)
+    {
+        const f32 top = tops[static_cast<usize>(i)];
+        if (top >= off + viewport_.h) break;
+        const f32 h = tops[static_cast<usize>(i) + 1] - top;
+        if (h <= 0.0f) continue;
+        fn(*u_, i, rect::make(content_.x, content_.y + top, content_.w, h));
+    }
+    if (kept)
+    {
+        kept->version = opts.heights_version;
+        kept->tops = std::move(tops);
+    }
+    else
+        stores.row_tops = std::move(tops);
 }
 
 // ---- interactive splitters ----

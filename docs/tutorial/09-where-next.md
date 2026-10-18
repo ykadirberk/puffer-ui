@@ -32,7 +32,7 @@ ones that interest you.
 |---|---|
 | `sdl3_app_init / _pump / _tick / _shutdown` | window + context bootstrap, events, clock, cleanup |
 | `begin_frame(ctx, win, now, dt)` … `end_frame(ctx)` | one frame; `ui u(ctx)` inside |
-| `u.ctx->now`, `u.ctx->dt` | frame clock |
+| `u.now()`, `u.dt()` | frame clock |
 | `u.request_redraw()` | "something moved: do not sleep" |
 | `u.titlebar(win, rect&, title)` | custom titlebar; shrinks the rect |
 

@@ -80,7 +80,9 @@ inline bool paint_bounds(const context *c, rect &out)
     rect r{};
     if (c->current_window)
     {
-        r = c->screen;
+        // A popup recording into an overlay paints its own rect, which lies
+        // (partly) outside the window by definition.
+        r = c->overlay_depth > 0 ? c->overlay_area : c->screen;
         bounded = true;
     }
     if (c->clip_depth > 0)
@@ -152,6 +154,172 @@ inline void dl_add(context *c, const vertex *verts, i32 vcount, const i32 *idx, 
 
 } // namespace detail
 
+// ---- popup overlays (window_host::open_overlay) ----
+namespace detail
+{
+inline overlay_entry *find_overlay(context *c, const window *w, uiid id)
+{
+    for (overlay_entry *e : c->st->overlays)
+        if (e->parent == w && e->id == id) return e;
+    return nullptr;
+}
+
+// Where popups may be placed: the display's usable area when overlays are
+// available, else the window.
+inline rect popup_space(context *c)
+{
+    rect r{};
+    window *w = c->current_window;
+    if (!w || !c->host || !c->popup_overlays || c->overlay_depth > 0) return c->screen;
+    for (const overlay_entry *e : c->st->overlays)
+        if (e->parent == w && e->failed) return c->screen; // the host could not: stay inside
+    if (c->host->popup_bounds(*w, r) && r.w > 0.0f && r.h > 0.0f) return r;
+    return c->screen;
+}
+
+// Starts recording a spilling popup into its overlay; false = draw in-window.
+inline bool overlay_begin(context *c, uiid id, rect area)
+{
+    window *w = c->current_window;
+    if (!w || !c->host || !c->popup_overlays || c->overlay_depth > 0 || !c->device || !c->dl)
+        return false;
+    if (area.w <= 0.0f || area.h <= 0.0f) return false;
+    overlay_entry *e = find_overlay(c, w, id);
+    if (!e)
+    {
+        e = new overlay_entry();
+        e->parent = w;
+        e->id = id;
+        e->failed = !c->host->open_overlay(*w, area, e->h) || !e->h.surface;
+        e->placed = area;
+        c->st->overlays.push_back(e);
+    }
+    e->used = true;
+    if (e->failed) return false; // the host cannot: in-window (retried after it closes)
+    if (e->placed.x != area.x || e->placed.y != area.y || e->placed.w != area.w ||
+        e->placed.h != area.h)
+    {
+        c->host->move_overlay(*w, area, e->h);
+        e->placed = area;
+    }
+    e->area = area;
+    e->rec.reset(area.x * w->scale, area.y * w->scale); // the overlay's origin, pixels
+    e->rec.real = c->device;
+    dl_flush(c); // what was drawn so far belongs to the window
+    c->st->overlay_real = c->device;
+    c->device = &e->rec;
+    c->dl->clip_known = false; // re-issue clip/texture state into the recorder
+    c->dl->tex_known = false;
+    c->overlay_depth = 1;
+    c->overlay_area = area;
+    return true;
+}
+
+inline void overlay_end(context *c)
+{
+    if (c->overlay_depth == 0) return;
+    dl_flush(c);
+    c->device = c->st->overlay_real;
+    c->st->overlay_real = nullptr;
+    c->dl->clip_known = false;
+    c->dl->tex_known = false;
+    c->overlay_depth = 0;
+}
+
+inline void overlay_close(context *c, overlay_entry *e)
+{
+    if (c->host && e->h.native && e->parent) c->host->close_overlay(*e->parent, e->h);
+    delete e;
+}
+
+// After `w` presented: replay its overlays onto their surfaces; close the ones
+// no popup drew this frame.
+inline void overlays_present(context *c, window &w)
+{
+    std::vector<overlay_entry *> &list = c->st->overlays;
+    for (usize i = 0; i < list.size();)
+    {
+        overlay_entry *e = list[i];
+        if (e->parent != &w)
+        {
+            ++i;
+            continue;
+        }
+        if (!e->used)
+        {
+            overlay_close(c, e);
+            list.erase(list.begin() + static_cast<std::ptrdiff_t>(i));
+            continue;
+        }
+        e->used = false;
+        if (!e->failed && c->device && e->h.surface)
+        {
+            render_device &dev = *c->device;
+            e->h.surface->make_current(dev);
+            dev.clear(color{0, 0, 0, 0}); // transparent around rounded corners
+            e->rec.replay(dev);
+            e->h.surface->present();
+        }
+        ++i;
+    }
+}
+
+// Closes `w`'s overlays (every overlay when `w` is null).
+inline void overlays_close(context *c, const window *w)
+{
+    std::vector<overlay_entry *> &list = c->st->overlays;
+    for (usize i = 0; i < list.size();)
+    {
+        if (w && list[i]->parent != w)
+        {
+            ++i;
+            continue;
+        }
+        overlay_close(c, list[i]);
+        list.erase(list.begin() + static_cast<std::ptrdiff_t>(i));
+    }
+}
+} // namespace detail
+
+void set_accessibility(context *c, bool enabled)
+{
+    if (c) c->a11y_enabled = enabled;
+}
+
+i32 a11y_count(const window &w)
+{
+    return w.a11y ? static_cast<i32>(w.a11y->nodes.size()) : 0;
+}
+
+a11y_node_view a11y_node(const window &w, i32 index)
+{
+    a11y_node_view v;
+    if (!w.a11y || index < 0 || index >= static_cast<i32>(w.a11y->nodes.size())) return v;
+    const a11y_tree::node &n = w.a11y->nodes[static_cast<usize>(index)];
+    v.id = n.id;
+    v.role = n.role;
+    v.bounds = n.bounds;
+    v.state = n.state;
+    v.name = n.name;
+    v.value = n.value;
+    return v;
+}
+
+void a11y_focus(window &w, uiid id)
+{
+    if (w.owner && w.owner->current_window == &w)
+        w.owner->focus_request = id;
+    else
+        w.focus_request = id;
+}
+
+void set_popup_overlays(context *c, bool enabled)
+{
+    if (!c) return;
+    c->popup_overlays = enabled;
+    if (!enabled && !c->current_window) detail::overlays_close(c, nullptr);
+}
+
 // ---- context ----
 context *create_context(render_device *device, render_surface *surface)
 {
@@ -207,6 +375,7 @@ void destroy_context(context *c)
             if (c->device && page.tex) c->device->destroy_texture(page.tex);
         delete c->ts;
     }
+    detail::overlays_close(c, nullptr);
     delete c->st;
     delete[] c->popups;
     delete[] c->prev_popups;
@@ -218,6 +387,8 @@ void destroy_context(context *c)
     for (i32 i = 0; i < c->window_count; ++i)
     {
         window *w = c->windows[i];
+        if (w->on_a11y_detach) w->on_a11y_detach(*w);
+        delete w->a11y;
         delete w->focus_store;
         detail::free_blur_store(c, w->blur);
         delete w;
@@ -303,6 +474,9 @@ void remove_window(context *c, window &w)
     if (!detail::owns_window(c, w)) return;
     const i32 i = w.index;
     const bool was_focused = c->focused_win == &w;
+    detail::overlays_close(c, &w);
+    if (w.on_a11y_detach) w.on_a11y_detach(w);
+    delete w.a11y;
     delete w.focus_store;
     detail::free_blur_store(c, w.blur);
     delete &w;
@@ -357,6 +531,26 @@ window *window_at(context *c, void *handle)
     return nullptr;
 }
 
+i32 window_count(const context *c)
+{
+    return c ? c->window_count : 0;
+}
+
+window *window_by_index(context *c, i32 index)
+{
+    return c && index >= 0 && index < c->window_count ? c->windows[index] : nullptr;
+}
+
+#define PUI_STR2(x) #x
+#define PUI_STR(x) PUI_STR2(x)
+const char *version()
+{
+    return PUI_STR(PUFFERUI_VERSION_MAJOR) "." PUI_STR(PUFFERUI_VERSION_MINOR) "." PUI_STR(
+        PUFFERUI_VERSION_PATCH) "." PUI_STR(PUFFERUI_VERSION_TWEAK);
+}
+#undef PUI_STR
+#undef PUI_STR2
+
 window *first_window(context *c)
 {
     return c->window_count > 0 ? c->windows[0] : nullptr;
@@ -391,6 +585,224 @@ void focus_window(context *c, window &w)
 window *focused_window(context *c)
 {
     return c->focused_win;
+}
+
+i32 days_in_month(i32 year, i32 month)
+{
+    static const i32 days[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    if (month < 1 || month > 12) return 0;
+    const bool leap = (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
+    return days[month - 1] + (month == 2 && leap ? 1 : 0);
+}
+
+i32 weekday(date d)
+{
+    // Sakamoto's method (0 = Sunday), shifted so Monday is 0.
+    static const i32 t[12] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
+    i32 y = d.year - (d.month < 3 ? 1 : 0);
+    const i32 sunday0 = (y + y / 4 - y / 100 + y / 400 + t[(d.month - 1) % 12] + d.day) % 7;
+    return (sunday0 + 6) % 7;
+}
+
+date add_days(date d, i32 days)
+{
+    while (days > 0)
+    {
+        const i32 left = days_in_month(d.year, d.month) - d.day;
+        if (days <= left)
+        {
+            d.day += days;
+            return d;
+        }
+        days -= left + 1;
+        d.day = 1;
+        if (++d.month > 12)
+        {
+            d.month = 1;
+            ++d.year;
+        }
+    }
+    while (days < 0)
+    {
+        if (-days < d.day)
+        {
+            d.day += days;
+            return d;
+        }
+        days += d.day;
+        if (--d.month < 1)
+        {
+            d.month = 12;
+            --d.year;
+        }
+        d.day = days_in_month(d.year, d.month);
+    }
+    return d;
+}
+
+date add_months(date d, i32 months)
+{
+    i32 m = d.year * 12 + (d.month - 1) + months;
+    d.year = m >= 0 ? m / 12 : -((-m + 11) / 12);
+    d.month = m - d.year * 12 + 1;
+    const i32 dim = days_in_month(d.year, d.month);
+    if (d.day > dim) d.day = dim;
+    return d;
+}
+
+hsv_color to_hsv(color c)
+{
+    const f32 r = c.r / 255.0f, g = c.g / 255.0f, b = c.b / 255.0f;
+    const f32 mx = max2(r, max2(g, b)), mn = min2(r, min2(g, b));
+    const f32 d = mx - mn;
+    hsv_color out;
+    out.v = mx;
+    out.s = mx > 0.0f ? d / mx : 0.0f;
+    if (d > 0.0f)
+    {
+        f32 h = mx == r ? (g - b) / d : mx == g ? 2.0f + (b - r) / d : 4.0f + (r - g) / d;
+        h *= 60.0f;
+        if (h < 0.0f) h += 360.0f;
+        out.h = h;
+    }
+    return out;
+}
+
+color from_hsv(hsv_color c, u8 alpha)
+{
+    const f32 h = std::fmod(std::fmod(c.h, 360.0f) + 360.0f, 360.0f) / 60.0f;
+    const f32 s = clampf(c.s, 0.0f, 1.0f), v = clampf(c.v, 0.0f, 1.0f);
+    const i32 i = static_cast<i32>(h) % 6;
+    const f32 f = h - std::floor(h);
+    const f32 p = v * (1.0f - s), q = v * (1.0f - s * f), t = v * (1.0f - s * (1.0f - f));
+    f32 r = v, g = t, b = p;
+    switch (i)
+    {
+    case 1:
+        r = q, g = v, b = p;
+        break;
+    case 2:
+        r = p, g = v, b = t;
+        break;
+    case 3:
+        r = p, g = q, b = v;
+        break;
+    case 4:
+        r = t, g = p, b = v;
+        break;
+    case 5:
+        r = v, g = p, b = q;
+        break;
+    default:
+        break;
+    }
+    const auto to8 = [](f32 x) { return static_cast<u8>(clampf(x, 0.0f, 1.0f) * 255.0f + 0.5f); };
+    return color{to8(r), to8(g), to8(b), alpha};
+}
+
+window_state get_window_state(const window &w)
+{
+    window_state s;
+    s.x = static_cast<i32>(w.client.x);
+    s.y = static_cast<i32>(w.client.y);
+    s.w = static_cast<i32>(w.client.w);
+    s.h = static_cast<i32>(w.client.h);
+    s.maximized = w.maximized;
+    return s;
+}
+
+std::string save_window_state(const window_state &s)
+{
+    char buf[96];
+    std::snprintf(buf, sizeof(buf), "%d %d %d %d %d", s.x, s.y, s.w, s.h, s.maximized ? 1 : 0);
+    return buf;
+}
+
+bool load_window_state(std::string_view text, window_state &out)
+{
+    i64 v[5]{};
+    i32 n = 0;
+    usize i = 0;
+    while (n < 5)
+    {
+        while (i < text.size() && text[i] == ' ') ++i;
+        if (i >= text.size()) break;
+        bool neg = false;
+        if (text[i] == '-')
+        {
+            neg = true;
+            ++i;
+        }
+        if (i >= text.size() || text[i] < '0' || text[i] > '9') return false;
+        i64 x = 0;
+        while (i < text.size() && text[i] >= '0' && text[i] <= '9' && x < 100000000)
+            x = x * 10 + (text[i++] - '0');
+        v[n++] = neg ? -x : x;
+    }
+    while (i < text.size() && (text[i] == ' ' || text[i] == '\n' || text[i] == '\r')) ++i;
+    if (n != 5 || i != text.size() || v[2] <= 0 || v[3] <= 0 || v[4] < 0 || v[4] > 1) return false;
+    out.x = static_cast<i32>(v[0]);
+    out.y = static_cast<i32>(v[1]);
+    out.w = static_cast<i32>(v[2]);
+    out.h = static_cast<i32>(v[3]);
+    out.maximized = v[4] == 1;
+    return true;
+}
+
+rect clamp_to_displays(rect r, std::span<const rect> displays)
+{
+    if (displays.empty()) return r;
+    // Visible enough to grab: a 64x32 piece (the titlebar's worth) on a display.
+    for (const rect &d : displays)
+    {
+        const rect x = rect::intersect(r, d);
+        if (x.w >= min2(64.0f, r.w) && x.h >= min2(32.0f, r.h)) return r;
+    }
+    const rect &d = displays[0];
+    const f32 w = min2(r.w, d.w), h = min2(r.h, d.h);
+    return rect::make(d.x + (d.w - w) * 0.5f, d.y + (d.h - h) * 0.5f, w, h);
+}
+
+void deliver_file_dialog(context *c, uiid id, const char *const *paths, i32 count)
+{
+    if (!c) return;
+    ctx_stores::dialog_entry e;
+    e.id = id;
+    e.cancelled = count <= 0 || !paths;
+    for (i32 i = 0; !e.cancelled && i < count; ++i)
+    {
+        if (!paths[i]) break;
+        e.paths.append(paths[i]);
+        e.paths.push_back('\0');
+        e.count += 1;
+    }
+    for (ctx_stores::dialog_entry &old : c->st->dialogs)
+        if (old.id == id)
+        {
+            old = std::move(e); // a newer result for the same id wins
+            return;
+        }
+    c->st->dialogs.push_back(std::move(e));
+}
+
+dialog_result take_file_dialog(context *c, uiid id)
+{
+    dialog_result r;
+    if (!c) return r;
+    std::vector<ctx_stores::dialog_entry> &list = c->st->dialogs;
+    for (usize i = 0; i < list.size(); ++i)
+    {
+        if (list[i].id != id) continue;
+        c->st->dialog_taken = std::move(list[i].paths);
+        r.done = true;
+        r.cancelled = list[i].cancelled;
+        r.count = list[i].count;
+        r.paths_ = c->st->dialog_taken.data();
+        r.len_ = static_cast<i32>(c->st->dialog_taken.size());
+        list.erase(list.begin() + static_cast<std::ptrdiff_t>(i));
+        return r;
+    }
+    return r;
 }
 
 rect desktop_rect(context *c)
@@ -476,6 +888,7 @@ void begin_frame(context *c, window &w, f64 now, f64 dt)
     c->st->frame_ids.clear();
     c->st->caption_drags.clear();
     c->st->caption_hits.clear();
+    c->st->a11y_frame.count = 0;
     c->press_claim = 0;
     c->press_claim_rect = rect{};
     c->current_region = 0;
@@ -521,6 +934,13 @@ void begin_frame(context *c, window &w, f64 now, f64 dt)
     }
     c->popup_click_outside = false;
     c->popup_click_id = 0;
+    if (c->popup_dismiss && c->prev_popup_depth > 0)
+    {
+        // The window lost focus to another app: the top popup closes as if
+        // clicked outside (native menus do the same).
+        c->popup_click_outside = true;
+        c->popup_click_id = c->prev_popups[c->prev_popup_depth - 1].id;
+    }
     c->in_popup = false;
     c->popup_layer_depth = 0;
     c->panel_stack_depth = 0;
@@ -609,6 +1029,10 @@ inline void clear_input_edges(window_input &in)
     std::memset(in.key_released, 0, sizeof(in.key_released));
     in.text_len = 0;
     in.text_input[0] = '\0';
+    in.drop_count = 0;
+    in.drop_len = 0;
+    in.popup_dismiss = false;
+    in.a11y_invoke = 0;
 }
 } // namespace detail
 
@@ -720,6 +1144,21 @@ void end_frame(context *c)
     }
 
     detail::dl_flush(c);
+    // Eyedropper samples: the frame is complete in the scene target now.
+    if (!c->st->pixel_requests.empty())
+    {
+        render_surface *surf = w->surface ? w->surface : c->surface;
+        texture_handle scene = surf ? surf->scene_target() : nullptr;
+        for (const ctx_stores::pixel_request &r : c->st->pixel_requests)
+        {
+            u8 px[4]{};
+            const i32 x = static_cast<i32>(r.at.x * w->scale),
+                      y = static_cast<i32>(r.at.y * w->scale);
+            if (c->device && scene && c->device->read_pixels(scene, x, y, 1, 1, px))
+                c->st->pixel_results[r.id] = color{px[0], px[1], px[2], px[3]};
+        }
+        c->st->pixel_requests.clear();
+    }
     if (c->device)
     {
         c->device->set_clip(nullptr);
@@ -732,10 +1171,19 @@ void end_frame(context *c)
         c->device->end_frame();
     }
     if (w->surface) w->surface->present();
+    detail::overlays_present(c, *w); // spilled popups, after their window
 
     if (!c->mouse_down) c->active = 0;
 
     detail::publish_caption(c, *w);
+    if (c->a11y_enabled)
+    {
+        if (!w->a11y) w->a11y = new a11y_tree();
+        a11y_tree &frame = c->st->a11y_frame;
+        frame.nodes.resize(frame.count);  // what this frame recorded
+        w->a11y->nodes.swap(frame.nodes); // the previous nodes become next frame's slots
+        if (w->on_a11y) w->on_a11y(*w);
+    }
 
     // Save this window's persistent state and its input (held keys, modifiers,
     // IME composition), with the per-frame edges cleared.

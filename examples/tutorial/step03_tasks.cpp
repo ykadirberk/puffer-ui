@@ -22,7 +22,7 @@ static void draw_input(ui &u, rect r, app_state &s)
 
     // text_field edits `s.draft` in place. It has no "submitted" result, so
     // remember whether it had focus before the call and look for Enter after.
-    const bool was_focused = u.ctx->focus == "draft"_id;
+    const bool was_focused = u.focused_id() == "draft"_id;
     (void)u.text_field(in, s.draft, "draft"_id);
     bool submit = u.button(add_r, "Add", "add"_id);
     if (was_focused && u.key_pressed(key::ENTER)) submit = true;
@@ -30,7 +30,7 @@ static void draw_input(ui &u, rect r, app_state &s)
     if (submit && todo_add(s.list, s.draft))
     {
         s.draft.clear();
-        u.ctx->focus_request = "draft"_id; // put the caret back in the field
+        u.request_focus("draft"_id); // put the caret back in the field
     }
 }
 

@@ -382,11 +382,11 @@ static void draw_input(ui &u, rect r, app_state &s)
     rect in = r.pad(8.0f);
     const rect add_r = in.cut_right(86.0f);
     (void)in.cut_right(2.0f); // the field and the button sit almost flush: one split control
-    const bool was_focused = u.ctx->focus == "draft"_id;
+    const bool was_focused = u.focused_id() == "draft"_id;
     // round only the field's left side; the button below rounds the right
     (void)u.text_field(in, s.draft, "draft"_id,
                        field_opts{.radii = some(corner_radii::left(14.0f))});
-    if (s.draft.empty() && u.ctx->focus != "draft"_id) // a placeholder, drawn by hand
+    if (s.draft.empty() && u.focused_id() != "draft"_id) // a placeholder, drawn by hand
         u.text(in.pad(u.th().padding * 0.5f + 2.0f, 0.0f), "What needs doing?", u.th().text_dim,
                ALIGN_LEFT);
     // the built-in button takes per-corner radii through its override struct
@@ -396,7 +396,7 @@ static void draw_input(ui &u, rect r, app_state &s)
     if (submit && todo_add(s.list, s.draft))
     {
         s.draft.clear();
-        u.ctx->focus_request = "draft"_id;
+        u.request_focus("draft"_id);
     }
 }
 ```

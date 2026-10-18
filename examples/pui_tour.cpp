@@ -754,6 +754,11 @@ static void ch_windows(ui &u, example_app &app, rect body)
            th.text_dim, ALIGN_LEFT);
     u.text(col.next(16.0f), "needs backend_caps::SHARED_DEVICE (the SDL3 device reports it)",
            th.text_dim, ALIGN_LEFT);
+    u.text(col.next(16.0f),
+           "sdl3_app_open_window / close_window: one call each; window* stays valid", th.text_dim,
+           ALIGN_LEFT);
+    u.text(col.next(16.0f), "widgets on a titlebar (titlebar_result::free) keep their clicks",
+           th.text_dim, ALIGN_LEFT);
 }
 
 static texture_handle g_tour_tex = nullptr;
@@ -1169,7 +1174,8 @@ static void ch_app_tools(ui &u, example_app &app, rect body)
     static i32 saves = 0;
     static uiid records[] = {101, 202, 303};
     static comp::table_state state;
-    static comp::table_column columns[] = {{180}, {0}};
+    static comp::table_column columns[] = {{180}, {160}, {220}};
+    static i32 order[] = {0, 1, 2}; // drag a header to reorder; right-click to hide
     column rows(body, u.spacing());
     u.checkbox(rows.next(u.control_h()), "Enable commands and table", enabled, "tools_enabled"_id);
     u.text_field(rows.next(u.control_h()), path, "tools_path"_id, {.read_only = true});
@@ -1181,23 +1187,140 @@ static void ch_app_tools(ui &u, example_app &app, rect body)
     }
     u.textf(rows.next(u.control_h()), u.th().text_dim, ALIGN_LEFT,
             "Saved %d times; framebuffer scale %.2f", saves, app.win->scale);
-    const char *headers[] = {"Record", "Value"};
+    const char *headers[] = {"Record", "Value", "Notes"};
     const auto key_for = [](i32 row) { return records[row]; };
-    const auto result =
-        comp::table(u, rows.next(u.control_h() * 5), headers, 3,
-                    [](ui &view, rect cell, i32 row, i32 col)
-                    {
-                        view.textf(cell, view.th().text, ALIGN_LEFT, "%llu",
-                                   static_cast<unsigned long long>(records[row] * (col ? 10 : 1)));
-                    },
-                    {.id = "tools_table"_id,
-                     .enabled = enabled,
-                     .row_key = key_for,
-                     .columns = columns,
-                     .state = &state});
+    const auto result = comp::table(
+        u, rows.next(u.control_h() * 5), headers, 3,
+        [](ui &view, rect cell, i32 row, i32 col)
+        {
+            if (col == 2)
+                view.text(cell, "drag headers, right-click them, Shift+wheel", view.th().text_dim);
+            else
+                view.textf(cell, view.th().text, ALIGN_LEFT, "%llu",
+                           static_cast<unsigned long long>(records[row] * (col ? 10 : 1)));
+        },
+        {.id = "tools_table"_id,
+         .enabled = enabled,
+         .row_key = key_for,
+         .columns = columns,
+         .state = &state,
+         .order = order,
+         .horizontal = true,
+         .sticky_first = true});
     if (result.sort_changed)
         std::sort(std::begin(records), std::end(records),
                   [](uiid a, uiid b) { return state.descending ? a > b : a < b; });
+}
+
+// r100: pictures, OS drops, the platform file dialog, a remembered window.
+static void ch_files(ui &u, example_app &app, rect body)
+{
+    static image_handle picture;
+    static std::string last = "nothing yet";
+    const theme &th = u.th();
+    if (!picture.valid())
+    {
+        // a generated 32x20 picture (an app would call sdl3_load_image)
+        static u8 px[32 * 20 * 4];
+        for (i32 i = 0; i < 32 * 20; ++i)
+        {
+            const bool on = ((i % 32) / 4 + (i / 32) / 4) % 2 == 0;
+            px[i * 4 + 0] = on ? 86 : 30;
+            px[i * 4 + 1] = on ? 156 : 34;
+            px[i * 4 + 2] = on ? 255 : 42;
+            px[i * 4 + 3] = 255;
+        }
+        picture = create_image(app.ctx, 32, 20, px);
+    }
+    column col(body, u.spacing());
+    rect fits = col.next(80.0f);
+    row r(fits, u.spacing());
+    const image_fit modes[3] = {FIT_CONTAIN, FIT_COVER, FIT_STRETCH};
+    const char *names[3] = {"contain", "cover", "stretch"};
+    for (i32 i = 0; i < 3; ++i)
+    {
+        rect cell = r.next(120.0f);
+        rect label = cell.cut_bottom(u.line_height());
+        u.draw_rect(cell, th.widget_bg);
+        (void)u.image(cell, picture, {.fit = modes[i], .radius = i == 1 ? th.radius : 0.0f});
+        u.text(label, names[i], th.text_dim, ALIGN_CENTER);
+    }
+    rect actions = col.next(u.control_h());
+    if (u.button(actions.cut_left(u.button_size("Open...").x), "Open...", "tour_open"_id,
+                 {.role = "primary"_id}))
+        sdl3_file_dialog(app.ctx, "tour_dialog"_id, {.allow_many = true, .parent = app.win});
+    const dialog_result picked = take_file_dialog(app.ctx, "tour_dialog"_id);
+    if (picked.done) last = picked.cancelled ? "dialog cancelled" : picked.path(0);
+    // the whole chapter accepts files dragged from the OS
+    const drop_result drop = u.drop_target(body, "tour_drop"_id);
+    if (drop.dropped) last = drop.item(0);
+    if (drop.hovering) u.draw_rect(body, color{86, 156, 255, 30});
+    u.textf(col.next(u.line_height()), th.text, ALIGN_LEFT, "last file: %s", last.c_str());
+    u.textf(col.next(u.line_height()), th.text_dim, ALIGN_LEFT, "window state: %s",
+            save_window_state(get_window_state(*app.win)).c_str());
+    u.text(col.next(u.line_height()), "drop files anywhere here; the dialog is asynchronous",
+           th.text_dim, ALIGN_LEFT);
+}
+
+// r102: multi-line text.
+static void ch_textarea(ui &u, example_app &, rect body)
+{
+    static std::string notes = "Multi-line text:\nEnter starts a new line, Up/Down keep the "
+                               "column, a triple click selects a line, long lines wrap.";
+    rect status = body.cut_bottom(u.control_h());
+    (void)u.text_area(body, notes, "tour_notes"_id);
+    const editor_info at = u.editor_info("tour_notes"_id);
+    u.textf(status, u.th().text_dim, ALIGN_LEFT, "Ln %d, Col %d  (u.editor_info)", at.line + 1,
+            at.column + 1);
+}
+
+// r107: HSV color with an eyedropper, and dates.
+static void ch_pickers(ui &u, example_app &, rect body)
+{
+    static color tint{86, 156, 255, 255};
+    static date due{2026, 10, 15};
+    column col(body, u.spacing());
+    (void)comp::color_picker(u, col.next(min2(body.h * 0.6f, 180.0f)), tint, {.id = "tour_hsv"_id});
+    rect field = col.next(u.control_h());
+    (void)comp::date_picker(u, field.cut_left(min2(field.w, 200.0f)), due, {.id = "tour_due"_id});
+}
+
+// r106: what a screen reader sees (Windows: UI Automation, on by default).
+static void ch_a11y(ui &u, example_app &app, rect body)
+{
+    static bool wrap = true;
+    set_accessibility(app.ctx, true); // a screen reader's first query does this on its own
+    const theme &th = u.th();
+    rect left = body.cut_left(body.w * 0.45f);
+    (void)body.cut_left(u.spacing() * 2.0f);
+    column col(left, u.spacing());
+    if (u.button(col.next(u.control_h()), "Announce me", "tour_a11y_btn"_id)) g_clicks += 1;
+    (void)u.checkbox(col.next(u.control_h()), "A checkbox", wrap, "tour_a11y_cb"_id);
+    const rect custom = col.next(u.control_h());
+    const interaction in = u.interact("tour_a11y_custom"_id, custom);
+    if (in.hovered) u.set_cursor(CURSOR_HAND);
+    u.draw_rounded_rect(custom, in.hovered ? th.accent_hover : th.accent, th.radius);
+    u.text(custom, "custom widget", th.bg, ALIGN_CENTER);
+    u.a11y("tour_a11y_custom"_id, custom, {.role = a11y_role::BUTTON, .name = "Custom widget"});
+    column tree(body, 2.0f);
+    const window &w = *u.current_window();
+    i32 shown = 0;
+    for (i32 i = 0; i < a11y_count(w) && shown < 8; ++i)
+    {
+        const a11y_node_view n = a11y_node(w, i);
+        if (n.name.empty() && n.value.empty()) continue;
+        const rect line = tree.next(u.line_height());
+        if (line.h <= 0.0f) break;
+        static const char *const ROLES[] = {"none",  "button", "checkbox", "radio", "switch",
+                                            "field", "area",   "slider",   "combo", "list item",
+                                            "tab",   "text",   "group"};
+        const usize role = static_cast<usize>(n.role);
+        u.textf(line, (n.state & A11Y_FOCUSED) ? th.text : th.text_dim, ALIGN_LEFT, "%-9s %.*s%s",
+                role < sizeof(ROLES) / sizeof(ROLES[0]) ? ROLES[role] : "?",
+                static_cast<int>(n.name.size()), n.name.data(),
+                (n.state & A11Y_CHECKED) ? "  [checked]" : "");
+        ++shown;
+    }
 }
 
 static const tour_chapter CHAPTERS[] = {
@@ -1211,6 +1334,10 @@ static const tour_chapter CHAPTERS[] = {
      ch_text},
     {"Widgets", "Buttons", "roles, overrides, style_scope", "pui_ex_buttons", ch_buttons},
     {"Widgets", "Inputs", "text_field / number_field, focus, Enter", "pui_ex_inputs", ch_inputs},
+    {"Widgets", "Text area", "multi-line editing, wrap, caret position", "pui_ex_textarea",
+     ch_textarea},
+    {"Widgets", "Pickers", "HSV color with an eyedropper, date picker", "pui_ex_pickers",
+     ch_pickers},
     {"Widgets", "Editor controls", "Numeric, color and tree components", "pui_ex_numeric",
      ch_editors},
     {"Widgets", "App tools", "Control states, shortcuts, keyed tables and display scaling",
@@ -1227,8 +1354,8 @@ static const tour_chapter CHAPTERS[] = {
      ch_components},
     {"Layers", "Popups & menus", "flags, close requests, modal, focus trap", "pui_ex_popups",
      ch_popups},
-    {"Layers", "Combo & context menus", "combo, delayed tooltips, right-press menu", "pui_ex_combo",
-     ch_menus},
+    {"Layers", "Combo & context menus", "combo, tooltips, right-press menu, past the window edge",
+     "pui_ex_combo", ch_menus},
     {"Layers", "Docking", "tabs, splits, drag-to-dock, undock", "pui_ex_dock", ch_dock},
     {"Layers", "Multi-window", "one device, several windows, shared model", "pui_ex_windows",
      ch_windows},
@@ -1238,6 +1365,10 @@ static const tour_chapter CHAPTERS[] = {
     {"Visuals", "Animation", "tween, spring, smooth, appear, reduced motion", "pui_ex_animation",
      ch_animation},
     {"Visuals", "Theme", "live colors, metrics, roles, fonts", "pui_ex_theme", ch_theme},
+    {"Platform", "Files", "pictures, OS drops, file dialog, window state", "pui_ex_files",
+     ch_files},
+    {"Platform", "Accessibility", "screen readers: the node tree, UI Automation", "pui_ex_a11y",
+     ch_a11y},
     {"Custom", "Custom widgets", "interact + primitives, interaction fields", "pui_ex_custom",
      ch_custom},
     {"Custom", "Headless & backends", "null_device, violations, custom render_device",
@@ -1253,7 +1384,7 @@ static void tour_frame(ui &u, example_app &app)
 
     // Window chrome: the custom titlebar replaces the OS decoration. The bar's
     // title IS the page title; the chapter line rides in the drag strip.
-    window &w = *u.ctx->current_window;
+    window &w = *u.current_window();
     rect chrome = client;
     (void)u.titlebar(w, chrome, "PufferUI tour");
 

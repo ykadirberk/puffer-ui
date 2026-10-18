@@ -121,3 +121,34 @@ jobs:
       - name: External core consumers
         run: python3 tools/check_consumers.py
 
+
+      - name: Example selftests (offscreen)
+        run: cmake --build out/build/linux --target examples_selftest
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Ninja
+        run: brew install ninja
+
+      - name: Configure (debug)
+        run: cmake -B out/build/macos -G Ninja -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Build (core, SDL suites)
+        run: cmake --build out/build/macos --target pui_core_tests pui_pump_tests pui_golden_tests
+
+      - name: Core tests
+        run: out/build/macos/Debug/pui_core_tests
+
+      - name: SDL offscreen suites
+        run: out/build/macos/Debug/pui_pump_tests && out/build/macos/Debug/pui_golden_tests
+
+      - name: Example selftests (offscreen)
+        run: cmake --build out/build/macos --target examples_selftest
+
+      - name: External core consumers
+        run: python3 tools/check_consumers.py

@@ -15,6 +15,7 @@ struct sdl3_texture
     i32 w = 0, h = 0;
     bool target = false;               // render target (no CPU mirror)
     bool streaming = false;            // CPU-mirrored (atlas, images)
+    bool linear = false;               // set_texture_filter: pictures sample linearly
     std::vector<u8> pixels;            // streaming: RGBA mirror
     std::vector<SDL_Texture *> copies; // one per device slot
 };
@@ -128,7 +129,8 @@ struct sdl3_device : render_device
             if (tex)
             {
                 SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
-                SDL_SetTextureScaleMode(tex, SDL_SCALEMODE_NEAREST);
+                SDL_SetTextureScaleMode(tex,
+                                        t->linear ? SDL_SCALEMODE_LINEAR : SDL_SCALEMODE_NEAREST);
                 if (!t->pixels.empty()) SDL_UpdateTexture(tex, nullptr, t->pixels.data(), t->w * 4);
             }
         }
@@ -156,7 +158,8 @@ struct sdl3_device : render_device
     backend_caps caps() const override
     {
         return backend_caps::RENDER_TARGETS | backend_caps::SCISSOR |
-               backend_caps::STREAMING_TEXTURES | backend_caps::SHARED_DEVICE;
+               backend_caps::STREAMING_TEXTURES | backend_caps::SHARED_DEVICE |
+               backend_caps::READ_PIXELS;
     }
 
     render_surface *create_surface(void *native_window) override
@@ -425,6 +428,39 @@ struct sdl3_device : render_device
             if (c) SDL_UpdateTexture(c, &sub, rgba, w * 4);
     }
 
+    bool read_pixels(texture_handle target, i32 x, i32 y, i32 w, i32 h, u8 *rgba) override
+    {
+        SDL_Renderer *ren = renderer();
+        sdl3_texture *t = reinterpret_cast<sdl3_texture *>(target);
+        if (!ren || !t || !rgba || w <= 0 || h <= 0) return false;
+        if (x < 0 || y < 0 || x + w > t->w || y + h > t->h) return false;
+        SDL_Texture *prev = SDL_GetRenderTarget(ren);
+        SDL_SetRenderTarget(ren, resolve(t));
+        const SDL_Rect r{x, y, w, h};
+        SDL_Surface *s = SDL_RenderReadPixels(ren, &r);
+        SDL_SetRenderTarget(ren, prev);
+        if (!s) return false;
+        SDL_Surface *c = SDL_ConvertSurface(s, SDL_PIXELFORMAT_RGBA32);
+        SDL_DestroySurface(s);
+        if (!c) return false;
+        for (i32 row = 0; row < h; ++row)
+            std::memcpy(rgba + static_cast<usize>(row) * w * 4,
+                        static_cast<const u8 *>(c->pixels) + static_cast<usize>(row) * c->pitch,
+                        static_cast<usize>(w) * 4);
+        SDL_DestroySurface(c);
+        return true;
+    }
+
+    void set_texture_filter(texture_handle handle, bool linear) override
+    {
+        sdl3_texture *t = reinterpret_cast<sdl3_texture *>(handle);
+        if (!t || t->target) return;
+        t->linear = linear;
+        for (SDL_Texture *c : t->copies)
+            if (c)
+                SDL_SetTextureScaleMode(c, linear ? SDL_SCALEMODE_LINEAR : SDL_SCALEMODE_NEAREST);
+    }
+
     void destroy_texture(texture_handle handle) override
     {
         sdl3_texture *t = reinterpret_cast<sdl3_texture *>(handle);
@@ -664,9 +700,122 @@ struct sdl3_window_host : window_host
         SDL_Window *win = static_cast<SDL_Window *>(w.handle);
         if (!win) return;
         SDL_SetWindowResizable(win, true);
-        SDL_SetWindowHitTest(win, sdl3_chrome_hit_test, w.owner);
+        const char *driver = SDL_GetCurrentVideoDriver();
+        const bool headless =
+            driver && (std::strcmp(driver, "offscreen") == 0 || std::strcmp(driver, "dummy") == 0);
+        if (!SDL_SetWindowHitTest(win, sdl3_chrome_hit_test, w.owner) && !headless)
+        {
+            // No native hit-test on this platform (some Wayland/X11 setups):
+            // a borderless window could not be moved at all, so it gets its OS
+            // frame back and the custom titlebar stands down.
+            SDL_SetWindowBordered(win, true);
+            w.os_frame = true;
+        }
+    }
+
+    // Popups may use the usable area of the display the window is on - when
+    // the video driver has popup windows at all (the offscreen driver does
+    // not). SDL has no query for it, so the first call probes once with a
+    // hidden 1x1 popup.
+    bool popup_bounds(window &w, rect &local) override
+    {
+        SDL_Window *win = static_cast<SDL_Window *>(w.handle);
+        if (!win) return false;
+        static const char *probed_driver = nullptr;
+        static bool supported = false;
+        const char *driver = SDL_GetCurrentVideoDriver();
+        if (driver != probed_driver)
+        {
+            probed_driver = driver;
+            SDL_Window *probe =
+                SDL_CreatePopupWindow(win, 0, 0, 1, 1, SDL_WINDOW_POPUP_MENU | SDL_WINDOW_HIDDEN);
+            supported = probe != nullptr;
+            if (probe) SDL_DestroyWindow(probe);
+        }
+        if (!supported) return false;
+        SDL_Rect b{};
+        if (!SDL_GetDisplayUsableBounds(SDL_GetDisplayForWindow(win), &b)) return false;
+        const f32 s = w.input_scale;
+        local = rect::make((static_cast<f32>(b.x) - w.client.x) / s,
+                           (static_cast<f32>(b.y) - w.client.y) / s, static_cast<f32>(b.w) / s,
+                           static_cast<f32>(b.h) / s);
+        return true;
+    }
+
+    // A popup-menu window that never takes focus (keys stay with the parent),
+    // transparent around rounded corners, and placed exactly where asked (no
+    // SDL constraint shift: input is translated by the same offset).
+    bool open_overlay(window &parent, rect local, overlay_handle &out) override
+    {
+        SDL_Window *pw = static_cast<SDL_Window *>(parent.handle);
+        context *c = parent.owner;
+        if (!pw || !c || !c->device) return false;
+        const f32 s = parent.input_scale;
+        const SDL_PropertiesID props = SDL_CreateProperties();
+        SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_PARENT_POINTER, pw);
+        SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_MENU_BOOLEAN, true);
+        SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_FOCUSABLE_BOOLEAN, false);
+        SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_TRANSPARENT_BOOLEAN, true);
+        SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, true);
+        SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_CONSTRAIN_POPUP_BOOLEAN, false);
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER,
+                              static_cast<Sint64>(local.x * s));
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER,
+                              static_cast<Sint64>(local.y * s));
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER,
+                              static_cast<Sint64>(local.w * s + 0.5f));
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER,
+                              static_cast<Sint64>(local.h * s + 0.5f));
+        SDL_Window *ow = SDL_CreateWindowWithProperties(props);
+        SDL_DestroyProperties(props);
+        if (!ow) return false;
+        render_surface *surf = c->device->create_surface(ow);
+        if (!surf)
+        {
+            SDL_DestroyWindow(ow);
+            return false;
+        }
+        out.native = ow;
+        out.surface = surf;
+        return true;
+    }
+
+    void move_overlay(window &parent, rect local, overlay_handle &h) override
+    {
+        SDL_Window *ow = static_cast<SDL_Window *>(h.native);
+        if (!ow) return;
+        const f32 s = parent.input_scale;
+        SDL_SetWindowPosition(ow, static_cast<int>(local.x * s), static_cast<int>(local.y * s));
+        SDL_SetWindowSize(ow, static_cast<int>(local.w * s + 0.5f),
+                          static_cast<int>(local.h * s + 0.5f));
+    }
+
+    void close_overlay(window &parent, overlay_handle &h) override
+    {
+        context *c = parent.owner;
+        if (c && c->device && h.surface) c->device->destroy_surface(h.surface);
+        if (h.native) SDL_DestroyWindow(static_cast<SDL_Window *>(h.native));
+        h = overlay_handle{};
     }
 };
+
+// The core window an SDL window's pointer events belong to: the window itself,
+// or - for a popup overlay - its parent, with the overlay's offset (platform
+// units) to add so the events land in the parent's local coordinates.
+window *sdl3_pointer_window(context *c, SDL_Window *sdl, f32 &dx, f32 &dy)
+{
+    dx = dy = 0.0f;
+    if (!sdl) return nullptr;
+    if (window *w = window_at(c, sdl)) return w;
+    for (const overlay_entry *e : c->st->overlays)
+    {
+        if (e->h.native != sdl || !e->parent) continue;
+        dx = e->placed.x * e->parent->input_scale;
+        dy = e->placed.y * e->parent->input_scale;
+        return e->parent;
+    }
+    return nullptr;
+}
 
 window_host *sdl3_host_instance()
 {
@@ -679,6 +828,47 @@ void sdl3_sync_scale(window &w, SDL_Window *sdl)
     const f32 density = SDL_GetWindowPixelDensity(sdl);
     const f32 scale = SDL_GetWindowDisplayScale(sdl);
     if (density > 0.0f) set_window_scale(w, scale, {.input_scale = scale / density});
+}
+
+// A finished file dialog travels from SDL's callback (any thread) to the
+// routing thread as a user event; the payload owns copies of the paths.
+struct sdl3_dialog_payload
+{
+    context *ctx = nullptr;
+    uiid id = 0;
+    bool failed = false;
+    std::vector<std::string> paths;
+    // SDL reads the filters until the callback runs: the payload owns them.
+    std::vector<std::string> filter_text;
+    std::vector<SDL_DialogFileFilter> filters;
+    std::string location;
+};
+u32 sdl3_dialog_event_type = 0;
+
+void sdl3_finish_dialog(context *c, sdl3_dialog_payload *p)
+{
+    if (!p) return;
+    if (p->ctx == c) // a dialog of another (or a destroyed) context is dropped
+    {
+        std::vector<const char *> list;
+        for (const std::string &s : p->paths) list.push_back(s.c_str());
+        const i32 n = p->failed ? -1 : static_cast<i32>(list.size());
+        deliver_file_dialog(c, p->id, list.data(), n);
+    }
+    delete p;
+}
+
+void SDLCALL sdl3_dialog_callback(void *userdata, const char *const *files, int)
+{
+    sdl3_dialog_payload *p = static_cast<sdl3_dialog_payload *>(userdata);
+    if (!files)
+        p->failed = true;
+    else
+        for (const char *const *f = files; *f; ++f) p->paths.emplace_back(*f);
+    SDL_Event ev{};
+    ev.type = sdl3_dialog_event_type;
+    ev.user.data1 = p;
+    if (!SDL_PushEvent(&ev)) delete p;
 }
 } // namespace
 
@@ -705,6 +895,14 @@ bool sdl3_route_impl(context *c, SDL_Event *e)
     {
         SDL_Window *sdl = SDL_GetWindowFromID(e->window.windowID);
         if (window *w = sdl ? window_at(c, sdl) : nullptr) focus_window(c, *w);
+        break;
+    }
+    case SDL_EVENT_WINDOW_FOCUS_LOST:
+    {
+        // Another app (or another of our windows) took focus: the window's
+        // open popup closes, like a native menu.
+        SDL_Window *sdl = SDL_GetWindowFromID(e->window.windowID);
+        if (window *w = sdl ? window_at(c, sdl) : nullptr) dismiss_popups(*w);
         break;
     }
     case SDL_EVENT_WINDOW_RESIZED:
@@ -736,17 +934,18 @@ bool sdl3_route_impl(context *c, SDL_Event *e)
     }
     case SDL_EVENT_MOUSE_MOTION:
     {
-        SDL_Window *sdl = SDL_GetWindowFromID(e->motion.windowID);
-        if (window *w = sdl ? window_at(c, sdl) : nullptr) mouse_move(*w, e->motion.x, e->motion.y);
+        f32 dx = 0.0f, dy = 0.0f;
+        if (window *w = sdl3_pointer_window(c, SDL_GetWindowFromID(e->motion.windowID), dx, dy))
+            mouse_move(*w, e->motion.x + dx, e->motion.y + dy);
         break;
     }
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
     case SDL_EVENT_MOUSE_BUTTON_UP:
     {
-        SDL_Window *sdl = SDL_GetWindowFromID(e->button.windowID);
-        window *w = sdl ? window_at(c, sdl) : nullptr;
+        f32 dx = 0.0f, dy = 0.0f;
+        window *w = sdl3_pointer_window(c, SDL_GetWindowFromID(e->button.windowID), dx, dy);
         if (!w) break;
-        mouse_move(*w, e->button.x, e->button.y); // buttons carry coordinates
+        mouse_move(*w, e->button.x + dx, e->button.y + dy); // buttons carry coordinates
         const bool down = e->type == SDL_EVENT_MOUSE_BUTTON_DOWN;
         if (e->button.button == SDL_BUTTON_LEFT)
             mouse_button(*w, down);
@@ -756,8 +955,9 @@ bool sdl3_route_impl(context *c, SDL_Event *e)
     }
     case SDL_EVENT_MOUSE_WHEEL:
     {
-        SDL_Window *sdl = SDL_GetWindowFromID(e->wheel.windowID);
-        if (window *w = sdl ? window_at(c, sdl) : nullptr) mouse_wheel(*w, e->wheel.x, e->wheel.y);
+        f32 dx = 0.0f, dy = 0.0f;
+        if (window *w = sdl3_pointer_window(c, SDL_GetWindowFromID(e->wheel.windowID), dx, dy))
+            mouse_wheel(*w, e->wheel.x, e->wheel.y);
         break;
     }
     case SDL_EVENT_KEY_DOWN:
@@ -801,6 +1001,23 @@ bool sdl3_route_impl(context *c, SDL_Event *e)
         if (window *w = sdl ? window_at(c, sdl) : nullptr) text_input_event(*w, e->text.text);
         break;
     }
+    case SDL_EVENT_DROP_BEGIN:
+    case SDL_EVENT_DROP_POSITION:
+    case SDL_EVENT_DROP_FILE:
+    case SDL_EVENT_DROP_TEXT:
+    case SDL_EVENT_DROP_COMPLETE:
+    {
+        SDL_Window *sdl = SDL_GetWindowFromID(e->drop.windowID);
+        window *w = sdl ? window_at(c, sdl) : nullptr;
+        if (!w) break;
+        const drop_kind kind = e->type == SDL_EVENT_DROP_BEGIN      ? drop_kind::BEGIN
+                               : e->type == SDL_EVENT_DROP_POSITION ? drop_kind::POSITION
+                               : e->type == SDL_EVENT_DROP_FILE     ? drop_kind::FILE
+                               : e->type == SDL_EVENT_DROP_TEXT     ? drop_kind::TEXT
+                                                                    : drop_kind::COMPLETE;
+        drop_event(*w, kind, e->drop.x, e->drop.y, e->drop.data);
+        break;
+    }
     case SDL_EVENT_TEXT_EDITING:
     {
         SDL_Window *sdl = SDL_GetWindowFromID(e->edit.windowID);
@@ -809,6 +1026,8 @@ bool sdl3_route_impl(context *c, SDL_Event *e)
         break;
     }
     default:
+        if (sdl3_dialog_event_type != 0 && e->type == sdl3_dialog_event_type)
+            sdl3_finish_dialog(c, static_cast<sdl3_dialog_payload *>(e->user.data1));
         break;
     }
     return false;
@@ -890,6 +1109,7 @@ bool sdl3_app_init(sdl3_app &a, const char *title, i32 w, i32 h, int argc, char 
         return false;
     }
     install_window_chrome(a.ctx, *a.win); // native drag/resize/snap
+    (void)sdl3_enable_uia(*a.win);        // screen readers (Windows); no cost until queried
 
     // The base font: the bundled DejaVu set when it can be found (system fonts
     // are the fallback), then a working base theme. Apps override with
@@ -999,6 +1219,7 @@ window *sdl3_app_open_window(sdl3_app &a, const char *title, i32 w, i32 h,
     }
     install_window_chrome(a.ctx, *win); // native drag/resize/snap + the window's scale
     if (!hidden) SDL_StartTextInput(sdl);
+    (void)sdl3_enable_uia(*win); // screen readers (Windows); no cost until queried
     return win;
 }
 
@@ -1011,6 +1232,93 @@ void sdl3_app_close_window(sdl3_app &a, window &w)
     if (window_at(a.ctx, sdl)) return;
     if (a.device && surface) a.device->destroy_surface(surface);
     if (sdl) SDL_DestroyWindow(sdl);
+}
+
+image_handle sdl3_load_image(context *c, const char *path)
+{
+    if (!c || !path) return {};
+    SDL_Surface *loaded = SDL_LoadSurface(path);
+    if (!loaded) return {};
+    SDL_Surface *s = SDL_ConvertSurface(loaded, SDL_PIXELFORMAT_RGBA32);
+    SDL_DestroySurface(loaded);
+    if (!s) return {};
+    // Rows may be padded (pitch); create_image takes tight RGBA8 rows.
+    std::vector<u8> px(static_cast<usize>(s->w) * static_cast<usize>(s->h) * 4);
+    const usize row = static_cast<usize>(s->w) * 4;
+    for (i32 y = 0; y < s->h; ++y)
+        std::memcpy(px.data() + static_cast<usize>(y) * row,
+                    static_cast<const u8 *>(s->pixels) + static_cast<usize>(y) * s->pitch, row);
+    const image_handle img = create_image(c, s->w, s->h, px.data());
+    SDL_DestroySurface(s);
+    return img;
+}
+
+void sdl3_file_dialog(context *c, uiid id, const file_dialog_opts &opts)
+{
+    if (!c) return;
+    if (sdl3_dialog_event_type == 0) sdl3_dialog_event_type = SDL_RegisterEvents(1);
+    if (sdl3_dialog_event_type == 0)
+    {
+        deliver_file_dialog(c, id, nullptr, -1); // no event slot: report a failure
+        return;
+    }
+    auto *p = new sdl3_dialog_payload();
+    p->ctx = c;
+    p->id = id;
+    p->filter_text.reserve(opts.filters.size() * 2); // stable c_str() pointers below
+    for (const file_filter &f : opts.filters)
+    {
+        p->filter_text.emplace_back(f.name ? f.name : "");
+        p->filter_text.emplace_back(f.pattern ? f.pattern : "*");
+    }
+    for (usize i = 0; i < opts.filters.size(); ++i)
+        p->filters.push_back({p->filter_text[i * 2].c_str(), p->filter_text[i * 2 + 1].c_str()});
+    if (opts.default_location) p->location = opts.default_location;
+    const char *loc = opts.default_location ? p->location.c_str() : nullptr;
+    SDL_Window *parent = opts.parent ? static_cast<SDL_Window *>(opts.parent->handle) : nullptr;
+    const int nf = static_cast<int>(p->filters.size());
+    const SDL_DialogFileFilter *fl = nf > 0 ? p->filters.data() : nullptr;
+    switch (opts.kind)
+    {
+    case file_dialog_kind::OPEN:
+        SDL_ShowOpenFileDialog(sdl3_dialog_callback, p, parent, fl, nf, loc, opts.allow_many);
+        break;
+    case file_dialog_kind::SAVE:
+        SDL_ShowSaveFileDialog(sdl3_dialog_callback, p, parent, fl, nf, loc);
+        break;
+    case file_dialog_kind::FOLDER:
+        SDL_ShowOpenFolderDialog(sdl3_dialog_callback, p, parent, loc, opts.allow_many);
+        break;
+    }
+}
+
+void sdl3_apply_window_state(window &w, const window_state &s)
+{
+    SDL_Window *sdl = static_cast<SDL_Window *>(w.handle);
+    if (!sdl || s.w <= 0 || s.h <= 0) return;
+    // Usable display rects, the primary display first (the clamp's fallback).
+    std::vector<rect> displays;
+    int n = 0;
+    SDL_DisplayID *ids = SDL_GetDisplays(&n);
+    const SDL_DisplayID primary = SDL_GetPrimaryDisplay();
+    for (int pass = 0; pass < 2 && ids; ++pass)
+        for (int i = 0; i < n; ++i)
+        {
+            if ((ids[i] == primary) != (pass == 0)) continue;
+            SDL_Rect b{};
+            if (SDL_GetDisplayUsableBounds(ids[i], &b))
+                displays.push_back(rect::make(static_cast<f32>(b.x), static_cast<f32>(b.y),
+                                              static_cast<f32>(b.w), static_cast<f32>(b.h)));
+        }
+    SDL_free(ids);
+    const rect r = clamp_to_displays(rect::make(static_cast<f32>(s.x), static_cast<f32>(s.y),
+                                                static_cast<f32>(s.w), static_cast<f32>(s.h)),
+                                     displays);
+    if (SDL_GetWindowFlags(sdl) & SDL_WINDOW_MAXIMIZED) SDL_RestoreWindow(sdl);
+    SDL_SetWindowSize(sdl, static_cast<int>(r.w), static_cast<int>(r.h));
+    SDL_SetWindowPosition(sdl, static_cast<int>(r.x), static_cast<int>(r.y));
+    set_window_client(w, r); // the core sees it now; the pump confirms it later
+    if (s.maximized) SDL_MaximizeWindow(sdl);
 }
 
 void sdl3_app_shutdown(sdl3_app &a)

@@ -1101,6 +1101,46 @@ PUI_TEST(test_text_glyphs_on_whole_pixels)
     destroy_context(c);
 }
 
+// r108: a run that leaves the paint area stops at the first glyph whose box
+// (and every later one's) starts past the right edge. What reaches the device
+// must be exactly what the glyph-by-glyph cull produced: a long run draws the
+// same quads as a prefix of it that already ends well past the edge, combining
+// marks (zero advance, negative bearing) included.
+PUI_TEST(test_text_run_past_the_edge_draws_what_its_prefix_draws)
+{
+    vertex_log_device dev;
+    context *c = create_context(&dev, dev.create_surface());
+    if (tf_needs_font(c))
+    {
+        destroy_context(c);
+        return;
+    }
+    std::string prefix, run;
+    for (i32 i = 0; i < 40; ++i) prefix += "AVe\xCC\x81 "; // e + combining acute
+    run = prefix;
+    for (i32 i = 0; i < 400; ++i) run += "Wavy e\xCC\x81 ";
+    for (const f32 x : {0.0f, 10.3f, -50.0f})
+    {
+        f32 prefix_w = 0.0f;
+        begin_frame(c, 0.0, 0.016, rect::make(0, 0, 400, 200));
+        {
+            ui u(c);
+            prefix_w = u.text_width(prefix);
+        }
+        end_frame(c);
+        CHECK(x + prefix_w > 400.0f + 40.0f); // the prefix itself crosses the edge
+        const std::vector<vertex> a = text_quads(dev, c, rect::make(x, 20, 9000, 26), run.c_str());
+        const std::vector<vertex> b =
+            text_quads(dev, c, rect::make(x, 20, 9000, 26), prefix.c_str());
+        CHECK(!a.empty() && a.size() == b.size());
+        bool same = a.size() == b.size();
+        for (usize i = 0; same && i < a.size(); ++i)
+            same = a[i].x == b[i].x && a[i].y == b[i].y && a[i].u == b[i].u && a[i].v == b[i].v;
+        CHECK(same);
+    }
+    destroy_context(c);
+}
+
 PUI_TEST(test_text_kerning_places_the_second_glyph)
 {
     // Kerning moves a glyph relative to the one BEFORE it. "V" inside "AV" must
@@ -1190,4 +1230,327 @@ PUI_TEST(test_text_field_home_end_shortcuts)
     type("!", 0.70);
     CHECK(value == "A!");
     CHECK(violation_count(c) == 0);
+}
+
+// r103: a long-running app that shows many text sizes no longer grows the glyph
+// atlas forever. With a budget the least recently drawn page is recycled; a
+// page drawn in the current frame is never taken (the budget bends instead),
+// and text whose page was recycled re-rasterizes when it is drawn again.
+PUI_TEST(test_text_atlas_budget_recycles_pages)
+{
+    tf_env env(600, 400);
+    context *c = env.c;
+    if (tf_needs_font(c)) return;
+    set_text_atlas_budget(c, 2);
+    const char *glyphs = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const auto draw_at = [&](f64 t, f32 size)
+    {
+        env.frame(t,
+                  [&](ui &u)
+                  {
+                      text_scope ts = u.text_style(size, u.th().font);
+                      u.text(rect::make(0, 0, 100000, size * 1.5f), glyphs, color::white(),
+                             ALIGN_LEFT);
+                  });
+    };
+    i32 most = 0;
+    for (i32 i = 0; i < 12; ++i) // a dozen large sizes: ~1 page each
+    {
+        draw_at(0.1 * i, 90.0f + 4.0f * static_cast<f32>(i));
+        most = text_atlas_pages(c) > most ? text_atlas_pages(c) : most;
+    }
+    CHECK(most <= 3); // the budget (+1 while one frame needs more than it)
+    CHECK(env.nd.textures <= 3);
+    // The first size again: its page was recycled long ago; it draws (no
+    // violations, glyph quads submitted) by rasterizing again.
+    const i32 before = env.nd.vertices;
+    (void)before;
+    draw_at(2.0, 90.0f);
+    CHECK(env.nd.vertices > 0);
+    // Unlimited keeps every page (the old behavior).
+    set_text_atlas_budget(c, 0);
+    for (i32 i = 0; i < 4; ++i) draw_at(3.0 + 0.1 * i, 200.0f + 4.0f * static_cast<f32>(i));
+    CHECK(text_atlas_pages(c) > 3);
+}
+
+namespace
+{
+// Keeps every texture's pixels and every glyph quad, so a test can check that a
+// drawn quad samples the bitmap of the glyph it stands for.
+struct atlas_device : null_device
+{
+    struct tex_store
+    {
+        texture_handle h;
+        i32 w, h_px;
+        std::vector<u8> px;
+    };
+    std::vector<tex_store> texs;
+    struct quad
+    {
+        texture_handle tex;
+        vertex v[4];
+    };
+    std::vector<quad> quads;
+    texture_handle create_texture(i32 w, i32 h, const u8 *rgba) override
+    {
+        const texture_handle t = null_device::create_texture(w, h, rgba);
+        texs.push_back({t, w, h, std::vector<u8>(static_cast<usize>(w) * h * 4, 0)});
+        return t;
+    }
+    void update_texture(texture_handle t, i32 x, i32 y, i32 w, i32 h, const u8 *rgba) override
+    {
+        for (tex_store &s : texs)
+            if (s.h == t)
+                for (i32 r = 0; r < h; ++r)
+                    std::memcpy(&s.px[(static_cast<usize>(y + r) * s.w + x) * 4],
+                                rgba + static_cast<usize>(r) * w * 4, static_cast<usize>(w) * 4);
+    }
+    void draw(texture_handle tex, const vertex *v, i32 vc, const i32 *idx, i32 ic) override
+    {
+        for (i32 i = 0; i + 3 < vc; i += 4) // glyph quads arrive as 4-vertex groups
+            quads.push_back({tex, {v[i], v[i + 1], v[i + 2], v[i + 3]}});
+        null_device::draw(tex, v, vc, idx, ic);
+    }
+    // The alpha coverage a quad samples (its uv rectangle in its texture).
+    std::vector<u8> coverage(const quad &q) const
+    {
+        for (const tex_store &s : texs)
+        {
+            if (s.h != q.tex) continue;
+            const i32 x0 = static_cast<i32>(q.v[0].u * s.w + 0.5f);
+            const i32 y0 = static_cast<i32>(q.v[0].v * s.h_px + 0.5f);
+            const i32 x1 = static_cast<i32>(q.v[2].u * s.w + 0.5f);
+            const i32 y1 = static_cast<i32>(q.v[2].v * s.h_px + 0.5f);
+            std::vector<u8> out;
+            for (i32 y = y0; y < y1; ++y)
+                for (i32 x = x0; x < x1; ++x)
+                    out.push_back(s.px[(static_cast<usize>(y) * s.w + x) * 4 + 3]);
+            return out;
+        }
+        return {};
+    }
+};
+
+// The glyph quads (and their coverage) of `s` drawn at (x, 10) in one frame.
+std::vector<std::vector<u8>> glyph_coverage(atlas_device &dev, context *c, const char *s, f32 x,
+                                            f32 size, std::vector<vertex> *corners = nullptr)
+{
+    dev.quads.clear();
+    begin_frame(c, 0.0, 0.016, rect::make(0, 0, 4000, 400));
+    {
+        ui u(c);
+        text_scope ts = u.text_style(size, u.th().font);
+        u.text(rect::make(x, 10, 100000, size * 1.5f), s, color::white(), ALIGN_LEFT);
+    }
+    end_frame(c);
+    std::vector<std::vector<u8>> out;
+    for (const atlas_device::quad &q : dev.quads)
+    {
+        if (q.v[2].x - q.v[0].x <= 0.0f) continue;
+        out.push_back(dev.coverage(q));
+        if (corners) corners->push_back(q.v[0]);
+    }
+    return out;
+}
+} // namespace
+
+// r109: per-glyph liveness checks run only while a run may hold copies from a
+// recycled atlas page. A run cached before pages were recycled must still draw
+// every glyph - including the sub-pixel copies it cached back then - from the
+// right bitmap, on the frame it returns and on the frames after (when the checks
+// are skipped again).
+PUI_TEST(test_text_cached_run_survives_atlas_recycling)
+{
+    atlas_device dev, ref_dev;
+    context *c = create_context(&dev, dev.create_surface());
+    context *ref = create_context(&ref_dev, ref_dev.create_surface());
+    if (tf_needs_font(c) || tf_needs_font(ref))
+    {
+        destroy_context(c);
+        destroy_context(ref);
+        return;
+    }
+    set_text_atlas_budget(c, 2);
+    const char *s = "Quartz glyph jinx: AVAWAY fiords 0123456789";
+    const f32 size = 90.0f;
+    // Cache the run and some of its sub-pixel copies, then recycle every page.
+    (void)glyph_coverage(dev, c, s, 10.25f, size);
+    (void)glyph_coverage(dev, c, s, 10.5f, size);
+    const char *other = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    for (i32 i = 1; i <= 12; ++i) (void)glyph_coverage(dev, c, other, 0.0f, size + 6.0f * i);
+    // Back at other pen offsets, then the cached ones again.
+    for (const f32 x : {10.0f, 10.25f, 10.5f, 10.75f, 10.25f})
+    {
+        std::vector<vertex> at, ref_at;
+        const std::vector<std::vector<u8>> got = glyph_coverage(dev, c, s, x, size, &at);
+        const std::vector<std::vector<u8>> want = glyph_coverage(ref_dev, ref, s, x, size, &ref_at);
+        CHECK(got.size() == want.size() && !got.empty());
+        bool same = got.size() == want.size();
+        for (usize i = 0; same && i < got.size(); ++i)
+            same = got[i] == want[i] && at[i].x == ref_at[i].x && at[i].y == ref_at[i].y;
+        CHECK(same);
+    }
+    destroy_context(c);
+    destroy_context(ref);
+}
+
+// r109: a run whose bin-0 copies stay live (drawn every frame) while the page
+// holding some of its sub-pixel copies is recycled: the checked frame must drop
+// those copies, or a later unchecked frame draws them from a reused page.
+PUI_TEST(test_text_stale_subpixel_copies_are_dropped)
+{
+    atlas_device dev, ref_dev;
+    context *c = create_context(&dev, dev.create_surface());
+    context *ref = create_context(&ref_dev, ref_dev.create_surface());
+    if (tf_needs_font(c) || tf_needs_font(ref))
+    {
+        destroy_context(c);
+        destroy_context(ref);
+        return;
+    }
+    set_text_atlas_budget(c, 2);
+    const char *s = "Quartz glyph jinx: AVAWAY fiords 0123456789";
+    const char *other = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    const auto frame = [&](atlas_device &d, context *cx, i32 i)
+    {
+        d.quads.clear();
+        begin_frame(cx, 0.016 * i, 0.016, rect::make(0, 0, 4000, 400));
+        {
+            ui u(cx);
+            {
+                text_scope ts = u.text_style(100.0f + 7.0f * static_cast<f32>(i), u.th().font);
+                u.text(rect::make(0, 200, 100000, 180), other, color::white(), ALIGN_LEFT);
+            }
+            text_scope ts = u.text_style(90.0f, u.th().font);
+            u.text(rect::make(10.0f, 10, 100000, 135), s, color::white(), ALIGN_LEFT);
+            if (i % 3 == 0) // sub-pixel copies made now and then, drawn only then
+            {
+                const f32 x = 10.25f + 0.25f * static_cast<f32>((i / 3) % 3);
+                u.text(rect::make(x, 10, 100000, 135), s, color::white(), ALIGN_LEFT);
+            }
+        }
+        end_frame(cx);
+        std::vector<std::vector<u8>> out;
+        for (const atlas_device::quad &q : d.quads)
+            if (q.v[2].x - q.v[0].x > 0.0f) out.push_back(d.coverage(q));
+        return out;
+    };
+    bool same = true;
+    for (i32 i = 0; i < 30 && same; ++i)
+    {
+        const std::vector<std::vector<u8>> got = frame(dev, c, i);
+        const std::vector<std::vector<u8>> want = frame(ref_dev, ref, i);
+        same = got == want;
+    }
+    CHECK(same);
+    destroy_context(c);
+    destroy_context(ref);
+}
+
+// r104: the shaper seam. A custom shaper substitutes and kerns; measuring and
+// drawing both go through it (one layout), and removing it restores the
+// built-in shaping.
+namespace
+{
+struct swap_a_shaper : text_shaper
+{
+    f32 extra = 0.0f;
+    i32 calls = 0;
+    bool shape(context *, font_handle, f32, std::string_view text,
+               function_ref<void(const shaped_glyph &)> emit) override
+    {
+        ++calls;
+        if (text == "pass") return false; // the built-in way for this one
+        usize i = 0;
+        bool first = true;
+        while (i < text.size())
+        {
+            const u32 cp = utf8_decode(text, i);
+            if (cp == UTF8_END) break;
+            emit({cp == 'a' ? static_cast<u32>('b') : cp, first ? 0.0f : extra});
+            first = false;
+        }
+        return true;
+    }
+};
+
+struct coverage_device : null_device
+{
+    u64 alpha_sum = 0;
+    void update_texture(texture_handle, i32, i32, i32 w, i32 h, const u8 *rgba) override
+    {
+        for (i32 n = 0; n < w * h; ++n) alpha_sum += rgba[n * 4 + 3];
+    }
+};
+} // namespace
+
+PUI_TEST(test_text_shaper_seam)
+{
+    tf_env env;
+    context *c = env.c;
+    if (tf_needs_font(c)) return;
+    swap_a_shaper sh;
+    f32 aaa = 0.0f, bbb = 0.0f, plain = 0.0f;
+    {
+        ui u(c);
+        plain = u.text_width("aaa");
+        bbb = u.text_width("bbb");
+    }
+    set_text_shaper(c, &sh);
+    {
+        ui u(c);
+        aaa = u.text_width("aaa"); // shaped as "bbb"
+    }
+    CHECK(aaa == bbb);
+    CHECK(sh.calls >= 1);
+    sh.extra = 5.0f;
+    set_text_shaper(c, &sh); // installing again clears the cached layouts
+    f32 kerned = 0.0f, passed = 0.0f, pass_plain = 0.0f;
+    {
+        ui u(c);
+        kerned = u.text_width("bbb");
+        passed = u.text_width("pass");
+    }
+    CHECK(kerned == bbb + 10.0f); // two gaps
+    env.frame(0.0,
+              [&](ui &u) { u.text(rect::make(0, 0, 200, 20), "aaa", color::white(), ALIGN_LEFT); });
+    set_text_shaper(c, nullptr);
+    {
+        ui u(c);
+        CHECK(u.text_width("aaa") == plain); // back to the built-in shaping
+        pass_plain = u.text_width("pass");
+    }
+    CHECK(passed == pass_plain); // `false` from the shaper fell back
+}
+
+PUI_TEST(test_text_gamma_densifies_coverage)
+{
+    u64 sums[2]{};
+    const f32 gammas[2] = {1.0f, 1.6f};
+    for (i32 k = 0; k < 2; ++k)
+    {
+        coverage_device dev;
+        context *c = create_context(&dev, dev.create_surface());
+        const font_handle fh = load_font(c, PUFFERUI_ASSET_DIR "/fonts/DejaVuSans.ttf");
+        if (fh == FONT_INVALID)
+        {
+            destroy_context(c);
+            return;
+        }
+        theme t = default_dark();
+        t.font = fh;
+        t.text_gamma = gammas[k];
+        set_theme(c, t);
+        begin_frame(c, 0.0, 0.016, rect::make(0, 0, 300, 100));
+        {
+            ui u(c);
+            u.text(rect::make(0, 0, 300, 20), "Thin strokes at small sizes", color::white(),
+                   ALIGN_LEFT);
+        }
+        end_frame(c);
+        sums[k] = dev.alpha_sum;
+        destroy_context(c);
+    }
+    CHECK(sums[0] > 0 && sums[1] > sums[0]); // the curve fills partial coverage
 }

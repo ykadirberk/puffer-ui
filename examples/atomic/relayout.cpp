@@ -116,7 +116,7 @@ static void relayout_frame(ui &u, example_app &app)
             {
                 // exits: keep heading to the last target while shrinking away
                 r = u.animate_rect(key, u.motion_info(key).target, {.origin = origin});
-                k = 1.0f - clampf(static_cast<f32>((u.ctx->now - it.leaving) / EXIT_S), 0.0f, 1.0f);
+                k = 1.0f - clampf(static_cast<f32>((u.now() - it.leaving) / EXIT_S), 0.0f, 1.0f);
                 if (k <= 0.0f) remove = i;
             }
             else
@@ -133,7 +133,7 @@ static void relayout_frame(ui &u, example_app &app)
             if (d.w < 1.0f || d.h < 1.0f) continue;
             const interaction in = u.interact(u.local("hit"), d, it.leaving < 0.0, false);
             if (in.hovered) u.set_cursor(CURSOR_HAND);
-            if (in.clicked) it.leaving = u.ctx->now;
+            if (in.clicked) it.leaving = u.now();
             // speed shows as a lighter edge: motion_info reports the velocity
             const vec2 v = u.motion_info(key).velocity;
             const f32 speed = clampf(std::sqrt(v.x * v.x + v.y * v.y) / 1500.0f, 0.0f, 1.0f);

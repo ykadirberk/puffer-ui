@@ -24,7 +24,7 @@ static i32 g_clicks = 0;
 // What every frame draws. Reads state, writes model fields from widgets.
 static void draw_page(ui &u, const char *subtitle)
 {
-    window &w = *u.ctx->current_window;
+    window &w = *u.current_window();
     const theme &th = u.th();
     const rect client = rect::make(0.0f, 0.0f, w.area.w, w.area.h);
     u.draw_rect(client, th.bg);

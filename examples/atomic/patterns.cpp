@@ -72,7 +72,7 @@ static void toast_update(ui &u, f32 dt)
     for (i32 i = 0; i < g_toast_count;)
     {
         toast_entry &t = g_toasts[i];
-        const f64 now = u.ctx->now;
+        const f64 now = u.now();
         if (t.born < 0.0) t.born = now;
         const bool expired = (now - t.born) > 4.0;
         if (expired || t.leaving) t.leaving = true;
@@ -130,7 +130,7 @@ static void tooltip_for(ui &u, rect target, uiid id, const char *text)
     // First tooltip waits; while you move between them they open instantly.
     if (g_tip_last != id)
     {
-        const f64 now = u.ctx->now;
+        const f64 now = u.now();
         const bool another_recent = g_tip_shown_at >= 0.0 && (now - g_tip_shown_at) < 1.2;
         if (!another_recent && g_tip_shown_at >= 0.0 && (now - g_tip_shown_at) < 0.6) return;
         if (g_tip_shown_at < 0.0 && g_tip_wait_start < 0.0) g_tip_wait_start = now;
@@ -411,7 +411,7 @@ static void card_feedback(ui &u, rect r, const theme &th)
 // ---------------------------------------------------------------- card: loading
 static void card_loading(ui &u, rect r, const theme &th)
 {
-    const f64 now = u.ctx->now;
+    const f64 now = u.now();
     column c(r, 6.0f);
     if (g_load && !g_load_done && (now - g_load_start) > 1.2) g_load_done = true;
     row b(c.next(30.0f), 10.0f);
@@ -476,7 +476,7 @@ static void card_loading(ui &u, rect r, const theme &th)
 // ---------------------------------------------------------------- card: misc
 static void card_misc(ui &u, rect r, const theme &th)
 {
-    const f64 now = u.ctx->now;
+    const f64 now = u.now();
     column c(r, 6.0f);
     // Accordion: chevron rotates, body height animates.
     {

@@ -45,6 +45,8 @@ switch_result switch_toggle(ui &u, rect area, std::string_view label, bool &valu
         u.text(rect::make(track.right() + u.spacing(), area.y,
                           max2(0.0f, area.right() - track.right() - u.spacing()), area.h),
                label, u.th().text, ALIGN_LEFT);
+    u.a11y(p.id, area,
+           {.role = a11y_role::SWITCH, .name = label, .state = value ? A11Y_CHECKED : 0u});
     return out;
 }
 
@@ -90,6 +92,10 @@ radio_result radio_group(ui &u, rect area, std::span<const char *const> labels, 
         if (in.focused) detail::focus_ring(u, dot.pad(-2.0f), radius + 2.0f);
         u.text(rect::make(dot.right() + st.gap, row.y, max2(0.0f, row.w - d - st.gap), row.h),
                labels[i] ? labels[i] : "", u.th().text, ALIGN_LEFT);
+        u.a11y(item_id, row,
+               {.role = a11y_role::RADIO,
+                .name = labels[i] ? labels[i] : "",
+                .state = on ? A11Y_CHECKED : 0u});
     }
     return out;
 }
@@ -147,6 +153,10 @@ segmented_result segmented(ui &u, rect area, std::span<const char *const> labels
         }
         if (in.focused) detail::focus_ring(u, seg, rr);
         u.text(seg, labels[i] ? labels[i] : "", on ? st.text_selected : st.text, ALIGN_CENTER);
+        u.a11y(item_id, seg,
+               {.role = a11y_role::RADIO,
+                .name = labels[i] ? labels[i] : "",
+                .state = on ? A11Y_CHECKED : 0u});
     }
     return out;
 }
@@ -183,6 +193,10 @@ tabs_result tab_bar(ui &u, rect area, std::span<const char *const> labels, i32 &
                             tween{st.anim.duration, st.anim.curve, true});
         u.draw_rect(rect::make(tab.x, tab.bottom() - st.underline_h, tab.w, st.underline_h), ul);
         if (in.focused) detail::focus_ring(u, tab, st.radius);
+        u.a11y(item_id, tab,
+               {.role = a11y_role::TAB,
+                .name = labels[i] ? labels[i] : "",
+                .state = on ? A11Y_SELECTED : 0u});
     }
     return out;
 }
@@ -372,64 +386,226 @@ table_result table(ui &u, rect area, std::span<const char *const> headers, i32 r
 {
     table_result out{};
     auto disabled = u.disabled(!p.enabled);
+    context *c = u.ctx;
     table_style st = p.style ? *p.style : u.th().table;
 
     const f32 row_h = p.row_h > 0.0f ? p.row_h : st.row_h;
     const f32 header_h = p.header_h > 0.0f ? p.header_h : st.header_h;
     const i32 cols = static_cast<i32>(headers.size());
-    std::vector<f32> widths(static_cast<usize>(cols));
+    const auto col_of = [&](i32 col) -> table_column *
+    { return col < static_cast<i32>(p.columns.size()) ? &p.columns[col] : nullptr; };
+
+    // The shown columns in display order.
+    const bool ordered = static_cast<i32>(p.order.size()) == cols;
+    std::vector<i32> shown;
+    for (i32 k = 0; k < cols; ++k)
+    {
+        const i32 col = ordered ? p.order[k] : k;
+        if (col < 0 || col >= cols) continue;
+        if (const table_column *tc = col_of(col); tc && tc->hidden) continue;
+        shown.push_back(col);
+    }
+
+    // Widths: set ones as given, the rest share what is left (scrolling
+    // tables keep every column at least its minimum).
+    std::vector<f32> widths(static_cast<usize>(cols), 0.0f);
     f32 fixed = 0.0f;
     i32 flexible = 0;
-    for (i32 c = 0; c < cols; ++c)
+    for (i32 col : shown)
     {
-        const f32 w = c < static_cast<i32>(p.columns.size()) ? p.columns[c].width : 0.0f;
+        const f32 w = col_of(col) ? col_of(col)->width : 0.0f;
         if (w > 0.0f)
+        {
             fixed += w;
+            widths[col] = w;
+        }
         else
             ++flexible;
-        widths[c] = max2(0.0f, w);
     }
-    for (f32 &w : widths)
-        if (w == 0.0f) w = flexible ? max2(0.0f, area.w - fixed) / flexible : 0.0f;
+    for (i32 col : shown)
+        if (widths[col] == 0.0f)
+        {
+            const f32 share = flexible ? max2(0.0f, area.w - fixed) / flexible : 0.0f;
+            const f32 floor_w =
+                p.horizontal ? (col_of(col) ? col_of(col)->min_width : 40.0f) : 0.0f;
+            widths[col] = max2(share, floor_w);
+        }
+    f32 total = 0.0f;
+    for (i32 col : shown) total += widths[col];
+
+    // Sideways scrolling: Shift+wheel (or a horizontal wheel) over the table,
+    // or the bar under it.
+    const f32 max_x = (p.horizontal && total > area.w) ? total - area.w : 0.0f;
+    f32 &xoff = c->st->splits.offsets[id_child(p.id, "hscroll"_id)];
+    if (max_x > 0.0f && area.contains(c->mouse_x, c->mouse_y))
+    {
+        f32 dx = c->wheel_x;
+        if (c->shift_down) dx += c->wheel_y;
+        if (dx != 0.0f)
+        {
+            xoff -= dx * 40.0f;
+            c->wheel_x = 0.0f;
+            if (c->shift_down) c->wheel_y = 0.0f; // not a vertical scroll too
+        }
+    }
+    xoff = clampf(xoff, 0.0f, max_x);
+    const bool sticky = p.sticky_first && max_x > 0.0f && !shown.empty();
+    const f32 sticky_w = sticky ? widths[shown[0]] : 0.0f;
+    std::vector<f32> xs(shown.size());
+    {
+        f32 run = 0.0f;
+        for (usize k = 0; k < shown.size(); ++k)
+        {
+            xs[k] = (k == 0 && sticky) ? area.x : area.x + run - xoff;
+            run += widths[shown[k]];
+        }
+    }
+    // Where a column's cells may show: the sticky one its own place, the
+    // others the area right of it.
+    const auto visible_part = [&](usize k, rect cell)
+    {
+        if (k == 0 && sticky) return cell;
+        return rect::intersect(
+            cell, rect::make(area.x + sticky_w, cell.y, max2(0.0f, area.w - sticky_w), cell.h));
+    };
 
     rect body = area;
     const rect head = body.cut_top(header_h);
     u.draw_rect(head, st.header_bg);
-    f32 x = head.x;
-    for (i32 c = 0; c < cols; ++c)
+    ctx_stores::comp_state &drag = c->st->comps[id_child(p.id, "hdrag"_id)];
+    for (usize k = 0; k < shown.size(); ++k)
     {
-        const rect cell =
-            rect::make(x, head.y, min2(widths[c], max2(0.0f, head.right() - x)), head.h);
-        if (p.state && (c >= static_cast<i32>(p.columns.size()) || p.columns[c].sortable))
+        const i32 col = shown[k];
+        const rect cell = rect::make(xs[k], head.y, widths[col], head.h);
+        const rect vis = visible_part(k, rect::intersect(cell, head));
+        if (vis.w <= 0.0f) continue;
+        const uiid hid = id_child(p.id, static_cast<uiid>(col) ^ "header"_id);
+        const bool sortable = p.state && (!col_of(col) || col_of(col)->sortable);
+        const auto act = detail::widget_activate(u, hid, vis.pad(3.0f, 0.0f), p.enabled);
+        if (act.in.activated && ordered) // a press may become a column drag
         {
-            const auto act =
-                detail::widget_activate(u, id_child(p.id, static_cast<uiid>(c) ^ "header"_id),
-                                        cell.pad(3.0f, 0.0f), p.enabled);
-            if (act.activated)
-            {
-                p.state->descending = p.state->sort_column == c && !p.state->descending;
-                p.state->sort_column = c;
-                out.sort_changed = true;
-            }
+            drag.open = true;
+            drag.flag = false;
+            drag.a = col;
+            drag.x = c->mouse_x;
         }
-        u.text_ellipsis(rect::make(cell.x + 8.0f, cell.y, max2(0.0f, cell.w - 12.0f), cell.h),
-                        headers[c] ? headers[c] : "", st.header_text, ALIGN_LEFT);
-        if (c < static_cast<i32>(p.columns.size()) && c + 1 < cols)
+        if (act.activated && sortable && !drag.flag)
         {
-            const uiid resize_id = id_child(p.id, static_cast<uiid>(c) ^ "resize"_id);
+            p.state->descending = p.state->sort_column == col && !p.state->descending;
+            p.state->sort_column = col;
+            out.sort_changed = true;
+        }
+        {
+            region clip = u.region(vis, hid ^ "clip"_id);
+            u.text_ellipsis(rect::make(cell.x + 8.0f, cell.y, max2(0.0f, cell.w - 12.0f), cell.h),
+                            headers[col] ? headers[col] : "", st.header_text, ALIGN_LEFT);
+        }
+        u.a11y(hid, vis, {.role = a11y_role::BUTTON, .name = headers[col] ? headers[col] : ""});
+        if (col_of(col) && k + 1 < shown.size())
+        {
+            const uiid resize_id = id_child(p.id, static_cast<uiid>(col) ^ "resize"_id);
             const rect grip{cell.right() - 3.0f, cell.y, 6.0f, cell.h};
             const auto in = u.interact(resize_id, grip, p.enabled, false);
             if (in.hovered || in.held) u.set_cursor(CURSOR_HRESIZE);
-            f32 &anchor = u.ctx->st->splits.offsets[resize_id];
-            if (in.activated) anchor = u.ctx->mouse_x - widths[c];
+            f32 &anchor = c->st->splits.offsets[resize_id];
+            if (in.activated) anchor = c->mouse_x - widths[col];
             if (in.held)
-                p.columns[c].width =
-                    max2(max2(1.0f, p.columns[c].min_width), u.ctx->mouse_x - anchor);
+                col_of(col)->width = max2(max2(1.0f, col_of(col)->min_width), c->mouse_x - anchor);
         }
-        x += widths[c];
     }
     if (st.border.a > 0)
         u.draw_rect(rect::make(head.x, head.bottom() - 1.0f, head.w, 1.0f), st.border);
+
+    // Dragging a header: an insertion mark while it moves, the order changes
+    // on release.
+    if (drag.open)
+    {
+        usize target = shown.size();
+        for (usize k = 0; k < shown.size(); ++k)
+            if (c->mouse_x < xs[k] + widths[shown[k]] * 0.5f)
+            {
+                target = k;
+                break;
+            }
+        if (c->mouse_down)
+        {
+            if (std::fabs(c->mouse_x - drag.x) > 6.0f) drag.flag = true;
+            if (drag.flag)
+            {
+                const f32 mx = target < shown.size() ? xs[target]
+                               : xs.empty()          ? area.x
+                                                     : xs.back() + widths[shown.back()];
+                u.draw_rect(rect::make(mx - 1.0f, head.y, 2.0f, head.h), u.th().accent);
+            }
+        }
+        else
+        {
+            if (drag.flag && ordered)
+            {
+                const i32 moving = drag.a;
+                const i32 before = target < shown.size() ? shown[target] : -1;
+                if (moving != before)
+                {
+                    std::vector<i32> next;
+                    for (i32 v : p.order)
+                        if (v != moving) next.push_back(v);
+                    auto at = before < 0 ? next.end() : std::find(next.begin(), next.end(), before);
+                    next.insert(at, moving);
+                    for (i32 k = 0; k < cols; ++k) p.order[k] = next[static_cast<usize>(k)];
+                    out.columns_changed = true;
+                }
+            }
+            drag.open = false;
+            drag.flag = false;
+        }
+    }
+
+    // Right-click on the header: show or hide columns (one stays shown).
+    if (p.column_menu && !p.columns.empty())
+    {
+        std::vector<std::string> labels;
+        std::vector<const char *> ptrs;
+        for (i32 col = 0; col < cols; ++col)
+        {
+            const bool hidden = col_of(col) && col_of(col)->hidden;
+            labels.push_back(std::string(hidden ? "    " : "\xE2\x9C\x93 ") +
+                             (headers[col] ? headers[col] : ""));
+        }
+        for (const std::string &l : labels) ptrs.push_back(l.c_str());
+        const i32 pick = u.context_menu(id_child(p.id, "columns"_id), head, ptrs.data(), cols);
+        if (pick >= 0 && col_of(pick))
+        {
+            table_column &tc = *col_of(pick);
+            if (tc.hidden || shown.size() > 1)
+            {
+                tc.hidden = !tc.hidden;
+                out.columns_changed = true;
+            }
+        }
+    }
+
+    // The sideways bar.
+    if (max_x > 0.0f)
+    {
+        const scroll_style &sb = u.th().scrollbar;
+        const rect track = body.cut_bottom(sb.thickness + sb.margin * 2.0f).pad(sb.margin);
+        const f32 thumb_w = max2(sb.min_thumb, track.w * (area.w / total));
+        const f32 travel = max2(0.0f, track.w - thumb_w);
+        const rect thumb = rect::make(track.x + travel * (xoff / max_x), track.y, thumb_w, track.h);
+        const uiid tid = id_child(p.id, "hthumb"_id);
+        const interaction in = u.interact(tid, thumb, p.enabled, false);
+        if (in.hovered || in.held) u.set_cursor(CURSOR_HAND);
+        ctx_stores::comp_state &ts = c->st->comps[tid];
+        if (in.activated) ts.x = c->mouse_x - thumb.x;
+        if (in.held && travel > 0.0f)
+            xoff = clampf((c->mouse_x - ts.x - track.x) / travel * max_x, 0.0f, max_x);
+        u.draw_rounded_rect(track, sb.track, sb.radius);
+        u.draw_rounded_rect(thumb,
+                            in.held      ? sb.thumb_active
+                            : in.hovered ? sb.thumb_hover
+                                         : sb.thumb,
+                            sb.radius);
+    }
 
     scroll_view sv =
         u.scroll(body, id_child(p.id, "body"_id), scroll_options{0.0f, SCROLL_OVERLAY});
@@ -453,22 +629,19 @@ table_result table(ui &u, rect area, std::span<const char *const> headers, i32 r
                     out.selection_changed = p.state->selected != record;
                     p.state->selected = record;
                 }
-                // the column comes from the click position (keyboard: the first)
-                out.clicked_col = 0;
-                f32 edge = row_rect.x;
+                // the column comes from the click position (keyboard: the first shown)
+                out.clicked_col = shown.empty() ? 0 : shown[0];
                 if (in.clicked)
-                    for (i32 c = 0; c < cols; ++c)
+                    for (usize k = 0; k < shown.size(); ++k)
                     {
-                        edge += widths[c];
-                        if (uu.ctx->mouse_x < edge)
+                        const rect cv = visible_part(
+                            k, rect::make(xs[k], row_rect.y, widths[shown[k]], row_rect.h));
+                        if (cv.w > 0.0f && cv.contains(uu.ctx->mouse_x, uu.ctx->mouse_y))
                         {
-                            out.clicked_col = c;
+                            out.clicked_col = shown[k];
                             break;
                         }
                     }
-                out.clicked_col = out.clicked_col < 0       ? 0
-                                  : out.clicked_col >= cols ? cols - 1
-                                                            : out.clicked_col;
             }
             if (in.focused) out.focused_row = row;
 
@@ -476,19 +649,17 @@ table_result table(ui &u, rect area, std::span<const char *const> headers, i32 r
                                  ? st.row_hover
                                  : (row % 2 ? st.row_alt : st.row_bg);
             uu.draw_rect(row_rect, bg);
-            f32 cell_x = row_rect.x;
-            for (i32 c = 0; c < cols; ++c)
+            for (usize k = 0; k < shown.size(); ++k)
             {
-                const rect cell =
-                    rect::make(cell_x, row_rect.y,
-                               min2(widths[c], max2(0.0f, row_rect.right() - cell_x)), row_rect.h);
-                cell_x += widths[c];
-                if (cell.w <= 0.0f) continue;
-                auto clip = uu.region(cell, static_cast<uiid>(c) + 1);
+                const i32 col = shown[k];
+                const rect cell = rect::make(xs[k], row_rect.y, widths[col], row_rect.h);
+                const rect vis = visible_part(k, rect::intersect(cell, row_rect));
+                if (vis.w <= 0.0f) continue;
+                auto clip = uu.region(vis, static_cast<uiid>(col) + 1);
                 if (cell_draw)
                     cell_draw(uu,
                               rect::make(cell.x + 8.0f, cell.y, max2(0.0f, cell.w - 12.0f), cell.h),
-                              row, c);
+                              row, col);
             }
         });
     sv.set_content_height(static_cast<f32>(row_count) * row_h);
@@ -507,6 +678,8 @@ selectable_result selectable(ui &u, rect area, std::string_view label, const sel
                         s.radius);
     u.text_ellipsis(area.pad(s.pad_x, 0), label, s.text);
     if (act.in.focused) detail::focus_ring(u, area, s.radius);
+    u.a11y(p.id, area,
+           {.role = a11y_role::LIST_ITEM, .name = label, .state = p.selected ? A11Y_SELECTED : 0u});
     return {act.activated, act.in};
 }
 
@@ -605,6 +778,348 @@ edit_result color_edit(ui &u, rect area, color &value, const color_props &p)
         {
             *channels[i] = static_cast<u8>(v + 0.5f);
             out.changed = true;
+        }
+    }
+    return out;
+}
+
+namespace
+{
+// Vertex-colored quad: c0..c3 at the corners TL, TR, BR, BL.
+void gradient_quad(ui &u, rect r, color c0, color c1, color c2, color c3)
+{
+    vertex v[4] = {
+        {r.x, r.y, 0, 0, c0},
+        {r.right(), r.y, 0, 0, c1},
+        {r.right(), r.bottom(), 0, 0, c2},
+        {r.x, r.bottom(), 0, 0, c3},
+    };
+    const i32 idx[6] = {0, 1, 2, 0, 2, 3};
+    u.draw_triangles(nullptr, v, 4, idx, 6);
+}
+
+void checker(ui &u, rect r, f32 cell)
+{
+    u.draw_rect(r, color{200, 200, 200, 255});
+    for (f32 y = r.y; y < r.bottom(); y += cell)
+        for (f32 x = r.x + (static_cast<i32>((y - r.y) / cell) % 2 ? cell : 0.0f); x < r.right();
+             x += cell * 2.0f)
+            u.draw_rect(rect::make(x, y, min2(cell, r.right() - x), min2(cell, r.bottom() - y)),
+                        color{150, 150, 150, 255});
+}
+
+// A vertical bar or a square the pointer drags (and the keys nudge).
+interaction drag_surface(ui &u, uiid id, rect r, const char *name)
+{
+    const interaction in = u.interact(id, r);
+    if (in.hovered || in.held) u.set_cursor(CURSOR_HAND);
+    if (in.focused) detail::focus_ring(u, r, 2.0f);
+    u.a11y(id, r, {.role = a11y_role::SLIDER, .name = name});
+    return in;
+}
+} // namespace
+
+edit_result color_picker(ui &u, rect area, color &value, const color_picker_props &p)
+{
+    auto disabled = u.disabled(!p.enabled);
+    context *c = u.ctx;
+    const theme &th = u.th();
+    edit_result out;
+    ctx_stores::comp_state &st = c->st->comps[p.id];
+
+    // HSV of the value; hue (and saturation at black) remembered when lost.
+    hsv_color h = to_hsv(value);
+    if (st.x >= 0.0f && (h.s <= 0.0f || h.v <= 0.0f)) h.h = st.x;
+    if (st.y >= 0.0f && h.v <= 0.0f) h.s = st.y;
+    const auto apply = [&](hsv_color nh, u8 a)
+    {
+        const color nc = from_hsv(nh, a);
+        st.x = nh.h;
+        st.y = nh.s;
+        h = nh;
+        if (nc.r != value.r || nc.g != value.g || nc.b != value.b || nc.a != value.a)
+        {
+            value = nc;
+            out.changed = true;
+        }
+    };
+
+    const f32 gap = u.spacing();
+    const f32 bar_w = max2(12.0f, u.control_h() * 0.6f);
+    const f32 side =
+        max2(0.0f, min2(area.h, area.w - (bar_w + gap) * (p.alpha ? 2.0f : 1.0f) - gap - 90.0f));
+    rect a = rect::make(area.x, area.y, area.w, side); // a true square; bars match its height
+    const rect sq = a.cut_left(side);
+    (void)a.cut_left(gap);
+    const rect hue = a.cut_left(bar_w);
+    (void)a.cut_left(gap);
+    rect alpha_r{};
+    if (p.alpha)
+    {
+        alpha_r = a.cut_left(bar_w);
+        (void)a.cut_left(gap);
+    }
+    rect info = a;
+
+    // saturation (x) / value (y)
+    {
+        const uiid sid = id_child(p.id, "sv"_id);
+        const interaction in = drag_surface(u, sid, sq, "Saturation and value");
+        if (in.held && sq.w > 0.0f && sq.h > 0.0f)
+            apply({h.h, clampf((c->mouse_x - sq.x) / sq.w, 0.0f, 1.0f),
+                   1.0f - clampf((c->mouse_y - sq.y) / sq.h, 0.0f, 1.0f)},
+                  value.a);
+        if (in.focused)
+        {
+            hsv_color k = h;
+            if (u.key_pressed(key::LEFT)) k.s -= 0.02f;
+            if (u.key_pressed(key::RIGHT)) k.s += 0.02f;
+            if (u.key_pressed(key::UP)) k.v += 0.02f;
+            if (u.key_pressed(key::DOWN)) k.v -= 0.02f;
+            k.s = clampf(k.s, 0.0f, 1.0f);
+            k.v = clampf(k.v, 0.0f, 1.0f);
+            if (k.s != h.s || k.v != h.v)
+            {
+                for (key kk : {key::LEFT, key::RIGHT, key::UP, key::DOWN}) u.consume_key(kk);
+                apply(k, value.a);
+            }
+        }
+        const color pure = from_hsv({h.h, 1.0f, 1.0f});
+        gradient_quad(u, sq, color{255, 255, 255, 255}, pure, pure, color{255, 255, 255, 255});
+        gradient_quad(u, sq, color{0, 0, 0, 0}, color{0, 0, 0, 0}, color{0, 0, 0, 255},
+                      color{0, 0, 0, 255});
+        const f32 mx = sq.x + h.s * sq.w, my = sq.y + (1.0f - h.v) * sq.h;
+        detail::rounded_ring(u, rect::make(mx - 6.0f, my - 6.0f, 12.0f, 12.0f),
+                             h.v > 0.5f ? color{0, 0, 0, 255} : color{255, 255, 255, 255}, 6.0f,
+                             2.0f);
+    }
+
+    // hue (top 0 .. bottom 360)
+    {
+        const uiid hid = id_child(p.id, "hue"_id);
+        const interaction in = drag_surface(u, hid, hue, "Hue");
+        if (in.held && hue.h > 0.0f)
+            apply({clampf((c->mouse_y - hue.y) / hue.h, 0.0f, 1.0f) * 359.9f, h.s, h.v}, value.a);
+        if (in.focused && (u.key_pressed(key::UP) || u.key_pressed(key::DOWN)))
+        {
+            const f32 step = u.key_pressed(key::UP) ? -2.0f : 2.0f;
+            u.consume_key(key::UP);
+            u.consume_key(key::DOWN);
+            apply({std::fmod(h.h + step + 360.0f, 360.0f), h.s, h.v}, value.a);
+        }
+        for (i32 i = 0; i < 6; ++i)
+        {
+            const rect seg = rect::make(hue.x, hue.y + hue.h * i / 6.0f, hue.w, hue.h / 6.0f);
+            const color top = from_hsv({60.0f * i, 1.0f, 1.0f});
+            const color bottom = from_hsv({60.0f * (i + 1), 1.0f, 1.0f});
+            gradient_quad(u, seg, top, top, bottom, bottom);
+        }
+        const f32 y = hue.y + h.h / 360.0f * hue.h;
+        u.draw_rect(rect::make(hue.x - 2.0f, y - 1.5f, hue.w + 4.0f, 3.0f), th.text);
+    }
+
+    // alpha (top opaque .. bottom transparent)
+    if (p.alpha)
+    {
+        const uiid aid = id_child(p.id, "alpha"_id);
+        const interaction in = drag_surface(u, aid, alpha_r, "Alpha");
+        if (in.held && alpha_r.h > 0.0f)
+            apply(h,
+                  static_cast<u8>(
+                      (1.0f - clampf((c->mouse_y - alpha_r.y) / alpha_r.h, 0.0f, 1.0f)) * 255.0f +
+                      0.5f));
+        if (in.focused && (u.key_pressed(key::UP) || u.key_pressed(key::DOWN)))
+        {
+            const i32 step = u.key_pressed(key::UP) ? 5 : -5;
+            u.consume_key(key::UP);
+            u.consume_key(key::DOWN);
+            apply(h, static_cast<u8>(clampf(value.a + static_cast<f32>(step), 0.0f, 255.0f)));
+        }
+        checker(u, alpha_r, 6.0f);
+        color top = value, bottom = value;
+        top.a = 255;
+        bottom.a = 0;
+        gradient_quad(u, alpha_r, top, top, bottom, bottom);
+        const f32 y = alpha_r.y + (1.0f - value.a / 255.0f) * alpha_r.h;
+        u.draw_rect(rect::make(alpha_r.x - 2.0f, y - 1.5f, alpha_r.w + 4.0f, 3.0f), th.text);
+    }
+
+    // preview, hex, eyedropper
+    {
+        column col(info, gap);
+        const rect swatch = col.next(u.control_h() * 1.5f);
+        checker(u, swatch, 6.0f);
+        u.draw_rect(swatch, value);
+        char hex[16];
+        std::snprintf(hex, sizeof(hex), "#%02X%02X%02X%02X", value.r, value.g, value.b, value.a);
+        u.text(col.next(u.line_height()), hex, th.text, ALIGN_LEFT);
+        const uiid pick_id = id_child(p.id, "pick"_id);
+        color sampled{};
+        if (u.take_sampled_pixel(pick_id, sampled))
+        {
+            sampled.a = value.a;
+            apply(to_hsv(sampled), value.a);
+            if (to_hsv(sampled).s > 0.0f) st.x = to_hsv(sampled).h;
+        }
+        const bool can_pick =
+            p.eyedropper && c->device && has_cap(c->device->caps(), backend_caps::READ_PIXELS);
+        if (can_pick)
+        {
+            if (u.button(col.next(u.control_h()), st.flag ? "Click a pixel..." : "Eyedropper",
+                         id_child(p.id, "eyedropper"_id)))
+                st.flag = !st.flag;
+            if (st.flag)
+            {
+                // While picking, a window-wide popup layer takes the next click
+                // so nothing under the pointer reacts to it.
+                popup_scope pick =
+                    u.popup(id_child(p.id, "pickmode"_id), c->screen, POPUP_CLOSE_ON_ESCAPE);
+                const interaction any = u.interact(id_child(p.id, "pickarea"_id), c->screen);
+                if (any.hovered) u.set_cursor(CURSOR_HAND);
+                if (pick.close_requested) st.flag = false;
+                if (any.clicked)
+                {
+                    u.sample_pixel(pick_id, u.mouse());
+                    st.flag = false;
+                }
+            }
+        }
+    }
+    return out;
+}
+
+edit_result date_picker(ui &u, rect area, date &value, const date_picker_props &p)
+{
+    auto disabled = u.disabled(!p.enabled);
+    context *c = u.ctx;
+    const theme &th = u.th();
+    edit_result out;
+    ctx_stores::comp_state &st = c->st->comps[p.id];
+    if (st.a == 0) // the month shown starts at the value's
+    {
+        st.a = value.year;
+        st.b = value.month;
+    }
+    const auto set = [&](date d)
+    {
+        if (d.day < 1 || d.month < 1) return;
+        if (!(d == value))
+        {
+            value = d;
+            out.changed = true;
+        }
+        st.a = d.year;
+        st.b = d.month;
+    };
+
+    // the field
+    const detail::activation act = detail::widget_activate(u, p.id, area, p.enabled);
+    out.in = act.in;
+    if (act.activated) st.open = !st.open;
+    u.draw_rounded_rect(area, act.in.hovered ? th.widget_hover : th.widget_bg, th.radius);
+    char label[32];
+    std::snprintf(label, sizeof(label), "%04d-%02d-%02d", value.year, value.month, value.day);
+    u.text(area.pad(u.padding() * 0.5f, 0.0f), label, th.text, ALIGN_LEFT);
+    u.text(area.pad(u.padding() * 0.5f, 0.0f), st.open ? "\xE2\x96\xB4" : "\xE2\x96\xBE",
+           th.text_dim, ALIGN_RIGHT);
+    if (act.in.focused) detail::focus_ring(u, area, th.radius);
+    u.a11y(p.id, area,
+           {.role = a11y_role::COMBO,
+            .name = "Date",
+            .value = label,
+            .state = st.open ? A11Y_EXPANDED : 0u});
+    if (!st.open || !p.enabled) return out;
+
+    // the month grid
+    const f32 cell = max2(u.control_h(), 26.0f);
+    const f32 pad = u.spacing();
+    const f32 w = cell * 7.0f + pad * 2.0f, h = cell * 8.0f + pad * 2.0f;
+    const rect space = detail::popup_space(c);
+    f32 y = area.bottom() + 4.0f;
+    if (y + h > space.bottom() && area.y - h - 4.0f >= space.y) y = area.y - h - 4.0f;
+    const f32 x = clampf(area.x, space.x, max2(space.x, space.right() - w));
+    const rect box = rect::make(x, y, w, h);
+    popup_scope pop = u.popup(id_child(p.id, "grid"_id), box,
+                              POPUP_CLOSE_ON_CLICK_OUTSIDE | POPUP_CLOSE_ON_ESCAPE);
+    if (pop.close_requested)
+    {
+        st.open = false;
+        return out;
+    }
+    // keyboard: the selection moves, the view follows
+    if (u.key_pressed(key::LEFT)) set(add_days(value, -1));
+    if (u.key_pressed(key::RIGHT)) set(add_days(value, 1));
+    if (u.key_pressed(key::UP)) set(add_days(value, -7));
+    if (u.key_pressed(key::DOWN)) set(add_days(value, 7));
+    if (u.key_pressed(key::PAGE_UP)) set(add_months(value, -1));
+    if (u.key_pressed(key::PAGE_DOWN)) set(add_months(value, 1));
+    for (key k : {key::LEFT, key::RIGHT, key::UP, key::DOWN, key::PAGE_UP, key::PAGE_DOWN})
+        u.consume_key(k);
+    if (u.key_pressed(key::ENTER))
+    {
+        u.consume_key(key::ENTER);
+        st.open = false;
+    }
+
+    u.draw_rounded_rect(box, th.panel_bg, th.radius);
+    detail::rounded_ring(u, box, th.border, th.radius, 1.0f);
+    column col(box.pad(pad), 0.0f);
+    rect head = col.next(cell);
+    const date shown{st.a, st.b, 1};
+    if (u.button(head.cut_left(cell), "\xE2\x80\xB9", id_child(p.id, "prev"_id)))
+    {
+        const date m = add_months(shown, -1);
+        st.a = m.year;
+        st.b = m.month;
+    }
+    if (u.button(head.cut_right(cell), "\xE2\x80\xBA", id_child(p.id, "next"_id)))
+    {
+        const date m = add_months(shown, 1);
+        st.a = m.year;
+        st.b = m.month;
+    }
+    static const char *const MONTHS[12] = {"January",   "February", "March",    "April",
+                                           "May",       "June",     "July",     "August",
+                                           "September", "October",  "November", "December"};
+    char title[32];
+    std::snprintf(title, sizeof(title), "%s %d", MONTHS[(st.b - 1 + 12) % 12], st.a);
+    u.text(head, title, th.text, ALIGN_CENTER);
+    static const char *const DAYS[7] = {"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"};
+    const i32 first = ((p.first_weekday % 7) + 7) % 7;
+    {
+        row names(col.next(cell), 0.0f);
+        for (i32 i = 0; i < 7; ++i)
+            u.text(names.next(cell), DAYS[(first + i) % 7], th.text_dim, ALIGN_CENTER);
+    }
+    // the first cell: the week of the 1st, starting at `first_weekday`
+    const date d1{st.a, st.b, 1};
+    date day = add_days(d1, -(((weekday(d1) - first) % 7 + 7) % 7));
+    for (i32 r = 0; r < 6; ++r)
+    {
+        row week(col.next(cell), 0.0f);
+        for (i32 i = 0; i < 7; ++i, day = add_days(day, 1))
+        {
+            const rect dc = week.next(cell).pad(1.0f);
+            const uiid did =
+                id_child(p.id, static_cast<uiid>(day.year * 10000 + day.month * 100 + day.day));
+            const detail::activation da = detail::widget_activate(u, did, dc);
+            const bool in_month = day.month == st.b;
+            const bool selected = day == value;
+            if (selected)
+                u.draw_rounded_rect(dc, th.accent, th.radius);
+            else if (da.in.hovered)
+                u.draw_rounded_rect(dc, th.widget_hover, th.radius);
+            char num[4];
+            std::snprintf(num, sizeof(num), "%d", day.day);
+            u.text(dc, num, selected ? th.bg : in_month ? th.text : th.text_dim, ALIGN_CENTER);
+            u.a11y(
+                did, dc,
+                {.role = a11y_role::BUTTON, .name = num, .state = selected ? A11Y_SELECTED : 0u});
+            if (da.activated)
+            {
+                set(day);
+                st.open = false;
+            }
         }
     }
     return out;
@@ -868,10 +1383,8 @@ bool ui::checkbox(rect r, std::string_view label, bool &value, uiid id)
     // Keyboard activation: Enter or Space toggles the focused checkbox.
     if (in.focused) detail::focus_ring(*this, box_r, max2(0.0f, t.radius * 0.75f));
 
-    if (detail::key_activate(*this, in) || in.clicked)
-    {
-        value = !value;
-        return true;
-    }
-    return false;
+    const bool toggled = detail::key_activate(*this, in) || in.clicked;
+    if (toggled) value = !value;
+    a11y(id, r, {.role = a11y_role::CHECKBOX, .name = label, .state = value ? A11Y_CHECKED : 0u});
+    return toggled;
 }

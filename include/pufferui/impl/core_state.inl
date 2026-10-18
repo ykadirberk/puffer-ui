@@ -215,6 +215,8 @@ struct glyph
     f32 xoff = 0, yoff = 0, advance = 0; // xoff/yoff: whole pixels from the pen / baseline
     f32 w = 0, h = 0;                    // the bitmap's size in whole pixels
     f32 u0 = 0, v0 = 0, u1 = 0, v1 = 0;
+    i32 page = -1; // the atlas page holding the bitmap (-1: none, e.g. a space)
+    u32 gen = 0;   // that page's generation when packed (stale once it is recycled)
 };
 
 struct font_data
@@ -342,6 +344,7 @@ struct text_store
 {
     std::vector<font_data> fonts;
     std::vector<font_handle> fallbacks;
+    text_shaper *shaper = nullptr; // set_text_shaper; nullptr = built-in
 
     // (font, size, codepoint, subpixel bin) as a struct key: fields never alias
     // (a codepoint can exceed any packing multiplier). `sub` is the glyph's horizontal offset in
@@ -354,6 +357,7 @@ struct text_store
         u32 cp;
         i32 sub;
         i32 density_q;
+        i32 gamma_q; // theme::text_gamma, hundredths
         bool operator==(const glyph_key &) const = default;
     };
     struct glyph_key_hash
@@ -365,6 +369,7 @@ struct text_store
             h = h * 0x9E3779B97F4A7C15ull + static_cast<u64>(k.cp);
             h = h * 0x9E3779B97F4A7C15ull + static_cast<u64>(k.sub);
             h = h * 0x9E3779B97F4A7C15ull + static_cast<u64>(k.density_q);
+            h = h * 0x9E3779B97F4A7C15ull + static_cast<u64>(k.gamma_q);
             h ^= h >> 33;
             h *= 0xff51afd7ed558ccdull;
             h ^= h >> 33;
@@ -388,6 +393,16 @@ struct text_store
     struct text_layout
     {
         f32 width = 0.0f;
+        // For the draw loop's early exit: the smallest left bearing of a glyph
+        // with a bitmap (never above 0), and whether the pen only moves right
+        // (no advance + kerning step below zero) - then once a glyph's box
+        // starts past the paint area, every later one does too.
+        f32 min_xoff = 0.0f;
+        bool forward = true;
+        // text_store::recycled when every glyph copy here (and every sub-bin
+        // copy marked in `have`) was last known to be live: while no atlas page
+        // has been recycled since, the draw loop needs no per-glyph checks.
+        i32 epoch = -1;
         std::vector<cached_glyph> gs;
     };
     direct_cache<text_layout, 4096> layout_cache;
@@ -395,13 +410,74 @@ struct text_store
     // Glyph atlases. One 1024x1024 page holds a full UI set; pages spill when
     // it fills, so non-Latin vocabularies scale (each glyph carries its own
     // page's texture, and batching already flushes on texture change).
+    // With a page budget (set_text_atlas_budget) the least recently drawn page
+    // is recycled instead of growing: its generation bumps, so cached glyph
+    // copies that still point at it are noticed and re-fetched.
     struct atlas_page
     {
         texture_handle tex = nullptr;
         i32 shelf_x = 0, shelf_y = 0, shelf_h = 0;
+        u64 last_used = 0; // the frame that last drew (or packed) a glyph of it
+        u32 gen = 0;
     };
     std::vector<atlas_page> atlases;
     i32 atlas_w = 0, atlas_h = 0;
+    i32 cur_page = 0; // the page new glyphs are packed into
+    i32 budget = 16;  // pages kept before recycling (0: unlimited)
+    i32 recycled = 0; // pages recycled so far (stats)
+};
+
+// The visual lines of a multi-line buffer (ui::text_area): byte ranges without
+// the newline; a wrapped paragraph contributes several. Rebuilt only when what
+// they were built from (`key`: the buffer's edit generation and size, the wrap
+// width, the font) changes - an idle area costs nothing per frame.
+struct text_lines
+{
+    struct line
+    {
+        usize begin = 0, end = 0;
+        i32 para = 1; // the 1-based paragraph it belongs to (the line-number gutter)
+    };
+    struct source
+    {
+        u32 gen = 0; // edit_state::gen
+        usize size = 0;
+        f32 width = -1.0f; // the wrap width (-1: no wrap)
+        f32 text_size = 0.0f, scale = 0.0f;
+        font_handle font = FONT_INVALID;
+        bool operator==(const source &) const = default;
+    };
+    // One codepoint of a paragraph being wrapped (the wrap's scratch).
+    struct metric
+    {
+        usize at;    // byte offset of the codepoint
+        f32 kern_in; // kerning from the previous codepoint of the paragraph
+        f32 advance;
+    };
+    // Advances and kerning pairs memoized for one rebuild (same font and size
+    // throughout, so a hit returns exactly what the lookup would): a document's
+    // few hundred distinct pairs replace a glyph-map and kern-table lookup per
+    // codepoint. Cleared at the start of every rebuild.
+    struct metric_memo
+    {
+        static constexpr u32 PAIRS = 2048, CPS = 512;
+        u32 a[PAIRS], b[PAIRS];
+        f32 kern[PAIRS];
+        u32 cp[CPS];
+        f32 advance[CPS];
+        void clear()
+        {
+            for (u32 &x : a) x = UTF8_END;
+            for (u32 &x : cp) x = UTF8_END;
+        }
+    };
+    std::vector<line> lines;
+    source key{};
+    bool built = false;
+    // The paragraph count, for the gutter before the lines are laid out.
+    i32 paragraphs = 1;
+    source para_key{};
+    bool para_counted = false;
 };
 
 struct edit_state
@@ -409,7 +485,10 @@ struct edit_state
     std::string buffer;
     usize caret = 0;
     usize anchor = 0;
-    f32 scroll_x = 0.0f; // keeps the caret inside the visible field
+    f32 scroll_x = 0.0f;  // keeps the caret inside the visible field
+    f32 sticky_x = -1.0f; // text_area: the column Up/Down keep (-1: take the caret's)
+    text_lines layout;    // text_area: cached visual lines
+    u32 gen = 0;          // text_area: bumped whenever the buffer's content changes
     bool focused = false;
     bool dragging = false;     // mouse drag-select
     bool pending_drag = false; // pressed inside the selection: may become a move drag
@@ -509,10 +588,134 @@ struct scroll_store
     std::unordered_map<uiid, entry> map;
 };
 
+// Records what a popup draws while it lives in a host overlay window: draws and
+// clips are kept - shifted into the overlay's pixels as they arrive (`ox`, `oy`:
+// the overlay's origin in the parent's framebuffer) - and replayed as they are
+// onto the overlay's surface at end_frame; texture work (the glyph atlas may
+// grow mid-popup) goes straight to the real device. Render-target effects
+// (blur) are skipped inside overlays.
+struct overlay_recorder : render_device
+{
+    render_device *real = nullptr;
+    struct cmd
+    {
+        bool is_clip = false;
+        bool clip_on = false;
+        rect clip{};
+        texture_handle tex = nullptr;
+        i32 v0 = 0, vn = 0, i0 = 0, in = 0;
+    };
+    std::vector<cmd> cmds;
+    std::vector<vertex> verts;
+    std::vector<i32> idx;
+    f32 ox = 0.0f, oy = 0.0f;
+
+    void reset(f32 origin_x, f32 origin_y)
+    {
+        cmds.clear();
+        verts.clear();
+        idx.clear();
+        ox = origin_x;
+        oy = origin_y;
+    }
+    backend_caps caps() const override { return real ? real->caps() : backend_caps::SCISSOR; }
+    texture_handle create_texture(i32 w, i32 h, const u8 *rgba) override
+    {
+        return real ? real->create_texture(w, h, rgba) : nullptr;
+    }
+    void update_texture(texture_handle t, i32 x, i32 y, i32 w, i32 h, const u8 *rgba) override
+    {
+        if (real) real->update_texture(t, x, y, w, h, rgba);
+    }
+    void destroy_texture(texture_handle t) override
+    {
+        if (real) real->destroy_texture(t);
+    }
+    void set_texture_filter(texture_handle t, bool linear) override
+    {
+        if (real) real->set_texture_filter(t, linear);
+    }
+    void set_cursor(cursor c) override
+    {
+        if (real) real->set_cursor(c);
+    }
+    void set_clip(const rect *clip) override
+    {
+        cmd c;
+        c.is_clip = true;
+        c.clip_on = clip != nullptr;
+        if (clip) c.clip = rect{clip->x - ox, clip->y - oy, clip->w, clip->h};
+        cmds.push_back(c);
+    }
+    void draw(texture_handle tex, const vertex *v, i32 vn, const i32 *ix, i32 in) override
+    {
+        cmd c;
+        c.tex = tex;
+        c.v0 = static_cast<i32>(verts.size());
+        c.vn = vn;
+        c.i0 = static_cast<i32>(idx.size());
+        c.in = in;
+        verts.insert(verts.end(), v, v + vn);
+        for (vertex *p = verts.data() + c.v0, *end = p + vn; p != end; ++p)
+        {
+            p->x -= ox;
+            p->y -= oy;
+        }
+        idx.insert(idx.end(), ix, ix + in);
+        cmds.push_back(c);
+    }
+    // Onto the overlay, as recorded (already in its pixels): no copies.
+    void replay(render_device &dev) const
+    {
+        for (const cmd &c : cmds)
+        {
+            if (c.is_clip)
+                dev.set_clip(c.clip_on ? &c.clip : nullptr);
+            else
+                dev.draw(c.tex, verts.data() + c.v0, c.vn, idx.data() + c.i0, c.in);
+        }
+        dev.set_clip(nullptr);
+    }
+};
+
+// A popup hosted in an OS overlay window (window_host::open_overlay).
+struct overlay_entry
+{
+    window *parent = nullptr;
+    uiid id = 0;
+    window_host::overlay_handle h{};
+    rect area{};         // local logical, the popup's rect
+    rect placed{};       // where the host window currently is (local logical)
+    bool used = false;   // drawn this frame (unused overlays close at end_frame)
+    bool failed = false; // the host could not open it: the popup draws in-window
+    overlay_recorder rec;
+};
+
+struct a11y_tree
+{
+    struct node
+    {
+        uiid id = 0;
+        a11y_role role = a11y_role::NONE;
+        rect bounds{};
+        u32 state = A11Y_NONE;
+        std::string name, value;
+    };
+    std::vector<node> nodes;
+    // The open frame's node count (the scratch tree only): nodes past it are
+    // slots kept from earlier frames, reused so their strings keep their
+    // capacity instead of being reallocated every frame.
+    usize count = 0;
+};
+
 // Every keyed store lives in one struct: created with the context, freed with
 // one `delete`, reached without casts. A new store is one member here.
 struct ctx_stores
 {
+    // Popup overlays; heap-allocated so a recorder's address stays put while
+    // it stands in for the device.
+    std::vector<overlay_entry *> overlays;
+    render_device *overlay_real = nullptr; // the device while a recorder stands in
     edit_store edits;
     anim_store anim;
     rect_store rects; // u.animate_rect
@@ -530,6 +733,45 @@ struct ctx_stores
     };
     std::vector<caption_rect> caption_drags;
     std::vector<caption_rect> caption_hits;
+    // Finished file dialogs waiting for take_file_dialog (few at a time).
+    struct dialog_entry
+    {
+        uiid id = 0;
+        std::string paths; // NUL-separated
+        i32 count = 0;
+        bool cancelled = false;
+    };
+    std::vector<dialog_entry> dialogs;
+    std::vector<f32> row_tops; // scroll_view::virtual_list(height_of) scratch
+    // virtual_list(height_of) offsets kept per list (virtual_list_opts::heights_version)
+    struct kept_rows
+    {
+        u64 version = 0;
+        std::vector<f32> tops; // tops[i]: row i's offset; one entry per measured row + 1
+    };
+    std::unordered_map<uiid, kept_rows> row_tops_kept;
+    std::vector<text_lines::metric> wrap_metrics; // text_area word wrap scratch
+    text_lines::metric_memo wrap_memo;            // ... and its per-rebuild memo
+    a11y_tree a11y_frame;                         // the open frame's accessibility nodes
+    // ui::sample_pixel requests (read at end_frame) and their results.
+    struct pixel_request
+    {
+        uiid id = 0;
+        vec2 at{};
+    };
+    std::vector<pixel_request> pixel_requests;
+    std::unordered_map<uiid, color> pixel_results;
+    // Small per-widget state of the components (open flags, a viewed month,
+    // a remembered hue): a component owns the meaning of the fields.
+    struct comp_state
+    {
+        bool open = false;
+        bool flag = false;
+        i32 a = 0, b = 0;
+        f32 x = -1.0f, y = -1.0f;
+    };
+    std::unordered_map<uiid, comp_state> comps;
+    std::string dialog_taken; // backs the last dialog_result handed out
 };
 
 namespace detail

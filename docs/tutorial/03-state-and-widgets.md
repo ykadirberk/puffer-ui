@@ -133,7 +133,7 @@ static void draw_input(ui &u, rect r, app_state &s)
 
     // text_field edits `s.draft` in place. It has no "submitted" result, so
     // remember whether it had focus before the call and look for Enter after.
-    const bool was_focused = u.ctx->focus == "draft"_id;
+    const bool was_focused = u.focused_id() == "draft"_id;
     (void)u.text_field(in, s.draft, "draft"_id);
     bool submit = u.button(add_r, "Add", "add"_id);
     if (was_focused && u.key_pressed(key::ENTER)) submit = true;
@@ -141,7 +141,7 @@ static void draw_input(ui &u, rect r, app_state &s)
     if (submit && todo_add(s.list, s.draft))
     {
         s.draft.clear();
-        u.ctx->focus_request = "draft"_id; // put the caret back in the field
+        u.request_focus("draft"_id); // put the caret back in the field
     }
 }
 ```
@@ -160,10 +160,10 @@ Reading it:
   the frame it is clicked**. That is the whole event model: a click is an `if`.
 * **Enter to submit.** A text field has no "submitted" result — it commits (and
   loses focus) when you press Enter. So the code asks, *before* calling the field,
-  whether it already had focus (`u.ctx->focus == "draft"_id`), then checks
+  whether it already had focus (`u.focused_id() == "draft"_id`), then checks
   whether Enter was pressed this frame (`u.key_pressed(key::ENTER)`). Both
   conditions together mean "Enter was pressed inside the field".
-* **`u.ctx->focus_request = id`** asks for keyboard focus on that widget, applied
+* **`u.request_focus(id)`** asks for keyboard focus on that widget, applied
   at the start of the next frame. After adding a task the code requests focus back
   on the field so you can keep typing.
 

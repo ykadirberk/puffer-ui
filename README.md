@@ -514,8 +514,22 @@ if (menu_open)
 ```
 
 Flags: `POPUP_CLOSE_ON_ESCAPE`, `POPUP_CLOSE_ON_CLICK_OUTSIDE`, `POPUP_MODAL`
-(blocks the base UI entirely). Popups are layered in creation order; the layer
-stack grows on demand, so nesting depth is not capped.
+(blocks the base UI entirely), `POPUP_IN_WINDOW` (see below). Popups are layered
+in creation order; the layer stack grows on demand, so nesting depth is not capped.
+
+**Past the window edge.** A popup whose rect leaves the window (a combo near
+the bottom, a context menu by the right edge) is drawn into an OS popup window
+the host provides (`window_host::open_overlay`; the SDL3 host uses
+`SDL_CreatePopupWindow`: no taskbar entry, never takes focus). Combo dropdowns
+and context menus are placed within the display's usable area when overlays
+are available, inside the window otherwise. Nothing changes for the app: the
+popup keeps its id, layer and input (the pump translates the overlay's pointer
+events into the window's coordinates), and when the window loses focus the
+open popup closes like a native menu (`dismiss_popups`). `POPUP_IN_WINDOW`
+keeps one popup inside; `set_popup_overlays(ctx, false)` turns overlays off.
+Blur does not render inside an overlay (it has no scene to sample). Hosts
+without popup windows (headless, SDL's offscreen driver) keep every popup in
+its window.
 
 ![pui_ex_popups: menus and a modal dialog](docs/img/readme/popups.png)
 
@@ -1154,6 +1168,16 @@ sv.virtual_list(5000, 26.0f, [](ui &u, i32 index, rect row) {
   past the end, and a partial row straddles each viewport edge.
 - **Content height is derived**, so the gutter and the scroll extent both
   follow from `count * item_height`.
+- **Rows of different heights**: `sv.virtual_list(count, height_of, fn)` takes
+  a `f32(i32)` height per row. The heights are summed every frame (one call per
+  row) and the first visible row is found by binary search, so `fn` still runs
+  only for rows that can paint. For long lists pass
+  `{.heights_version = v}`: the sums are kept between frames and rows are
+  measured again only when `v` changes (bump it when a measured row's height
+  changes; a grown count measures just the new rows).
+- **Skip work for what cannot show**: `u.is_visible(rect)` is the same test the
+  draw list uses (client area and active clip); call it before building an
+  expensive off-screen widget.
 - **Only visible widgets exist this frame** — they are the ones in the Tab
   ring, and their keyed state (animation, scroll, edits) purges after the
   usual idle retention when scrolled away.
@@ -1256,10 +1280,16 @@ after the table returns. Cell callbacks run in a row/column ID scope and clip.
 `clicked_key`, `extend_selection` and `toggle_selection` let an application
 maintain its own range or multi-selection model.
 
+Columns can be hidden (`table_column::hidden`; right-clicking a header toggles
+them), reordered (pass an app-owned `.order` permutation; dragging a header
+moves its column) and scrolled sideways (`.horizontal`, with `.sticky_first`
+keeping the first shown column in place; Shift+wheel or the bar). `cell_draw`
+always receives the column's own index, whatever the display order.
+
 ```cpp
 static comp::table_state state;
-static comp::table_column columns[] = {{200}, {120}};
-static uiid records[] = {101, 202, 303};
+static comp::table_column columns[] = {{140}, {120}, {160}, {260}, {200}};
+static i32 order[] = {0, 1, 2, 3, 4}; // display order: drag a header to change it
 ```
 
 ### 31. Tree rows and selection
@@ -1335,6 +1365,129 @@ The primary font wins, followed by fallbacks with the requested glyph.
 Measurement, kerning and subpixel rasterization use the same chosen font.
 This adds glyph coverage, not complex-script shaping or BiDi.
 
+`theme::text_gamma` shapes glyph coverage at rasterization (1 = linear, the
+default; around 1.3 gives small light-on-dark text denser, crisper strokes).
+`set_text_shaper(ctx, shaper)` replaces the built-in codepoint-by-codepoint
+shaping with an app's `text_shaper` (substitutions and kerning; one glyph per
+codepoint so carets keep working).
+
+Glyphs live in 1024x1024 atlas pages. `set_text_atlas_budget(ctx, pages)`
+(default 16, 0 = unlimited) bounds them for long sessions with many sizes: when
+a new glyph needs room past the budget, the least recently drawn page is
+recycled and its glyphs re-rasterize on their next draw. A page drawn in the
+current frame is never taken, so text is never dropped; `text_atlas_pages(ctx)`
+reports the count.
+
+### 35. Pictures, drops, file dialogs and window state
+
+![Files](docs/img/readme/files.png)
+
+Run: `pui_ex_files`
+
+- **Pictures.** The core takes decoded RGBA8 (`create_image(ctx, w, h, rgba)`,
+  linear-filtered); `sdl3_load_image(ctx, path)` decodes BMP, PNG and JPEG
+  through SDL. `u.image(r, img, {.fit, .tint, .radius})` draws it:
+  `FIT_CONTAIN` letterboxes, `FIT_COVER` crops, `FIT_STRETCH` fills; a radius
+  clips the corners. `fit_image` is the same math for custom drawing.
+- **OS drag-and-drop.** The SDL pump routes `SDL_EVENT_DROP_*` to the window
+  under the drag (other hosts call `drop_event`). `u.drop_target(r, id)` reports
+  `hovering` while a drag is over `r` and the items (`item(i)`, `is_file(i)`)
+  in the frame they are released there; the first target that contains the
+  drop point takes them.
+- **File dialogs.** `sdl3_file_dialog(ctx, id, {.kind, .filters, .allow_many,
+  .parent})` opens the platform dialog; it is asynchronous, so poll
+  `take_file_dialog(ctx, id)` each frame: it is `done` once, with the paths or
+  `cancelled`.
+- **Window state.** `save_window_state(get_window_state(w))` gives a short
+  string; `load_window_state` + `sdl3_apply_window_state` reopen the window
+  there, moved onto a connected display if its monitor is gone
+  (`clamp_to_displays`).
+
+```cpp
+const dialog_result picked = take_file_dialog(app.ctx, "open_dialog"_id);
+if (picked.done && !picked.cancelled)
+    for (i32 i = 0; i < picked.count; ++i) add_picture(app, picked.path(i));
+(void)bar.cut_left(u.spacing() * 2.0f);
+u.text(bar, g_status, th.text_dim, ALIGN_LEFT);
+
+// The whole body is a drop target; it lights up while a drag is over it.
+const drop_result drop = u.drop_target(content, "drop_area"_id);
+if (drop.dropped)
+    for (i32 i = 0; i < drop.count; ++i)
+        if (drop.is_file(i)) add_picture(app, drop.item(i));
+```
+
+### 36. Multi-line text
+
+![Text area](docs/img/readme/textarea.png)
+
+Run: `pui_ex_textarea`
+
+`u.text_area(r, value, id, {.wrap, .read_only, .line_numbers})` edits text on
+the same path as `text_field` (the focused buffer is authoritative; undo,
+clipboard, IME and text drags work the same). Enter starts a new line;
+Up/Down/PageUp/PageDown keep the caret's column; Home/End act on the line
+(Ctrl: the document); a triple click selects a line. The area scrolls with the
+wheel and its own scrollbar and keeps the caret in view. Only the visible rows
+are drawn and the line layout is cached until the text or the width changes,
+so a read-only 10,000-line log costs about a millisecond a frame (see
+`docs/perf.md`). `u.editor_info(id)` reports the caret (`line`, `column`,
+selection) for a status bar.
+
+```cpp
+rect notes =
+    example_section(u, left, "Notes", "wrap on; Enter starts a new line", app.font_bold);
+rect status = notes.cut_bottom(u.control_h());
+(void)u.text_area(notes, g_notes, "notes"_id);
+const editor_info at = u.editor_info("notes"_id);
+```
+
+### 37. Accessibility
+
+![Accessibility](docs/img/readme/a11y.png)
+
+Run: `pui_ex_a11y`
+
+Built-in widgets and components describe themselves to assistive technology:
+role, name, value and state (`a11y_info`). On Windows the SDL3 bootstrap
+exposes every window to UI Automation (`sdl3_enable_uia`), so Narrator, NVDA
+and JAWS can read and operate a PufferUI app: buttons are invoked, checkboxes
+and switches toggled, fields and sliders read. Recording costs nothing until
+a client first asks; `set_accessibility(ctx, true)` turns it on yourself (for
+an adapter of your own on another platform: read `a11y_count` / `a11y_node`
+per window and act with `a11y_invoke` / `a11y_focus`). A custom widget adds
+one call after its `interact`:
+
+```cpp
+const rect swatch = col.next(u.control_h() * 1.5f);
+const interaction in = u.interact("swatch"_id, swatch);
+if (in.hovered) u.set_cursor(CURSOR_HAND);
+if (in.clicked) g_presses += 1;
+u.draw_rounded_rect(swatch, in.hovered ? th.accent_hover : th.accent, th.radius);
+u.text(swatch, "Custom swatch", th.bg, ALIGN_CENTER);
+u.a11y("swatch"_id, swatch, {.role = a11y_role::BUTTON, .name = "Custom swatch"});
+```
+
+### 38. Color and date pickers
+
+![Pickers](docs/img/readme/pickers.png)
+
+Run: `pui_ex_pickers`
+
+`comp::color_picker(u, area, color&, {.id, .alpha, .eyedropper})` edits in
+HSV: a saturation/value square, hue and alpha bars, the hex value, and an
+eyedropper that samples any pixel of the window when the device can read
+pixels (`backend_caps::READ_PIXELS`; `u.sample_pixel` / `take_sampled_pixel`
+are the plumbing). The hue survives grey and black. `comp::date_picker(u,
+area, date&, {.id, .first_weekday})` opens a month grid; arrows move a day or
+a week, PageUp/PageDown a month, Enter closes. `days_in_month`, `weekday`,
+`add_days`, `add_months`, `to_hsv` and `from_hsv` are free functions.
+
+```cpp
+(void)comp::color_picker(u, colors.cut_top(min2(colors.h, 190.0f)), g_color,
+                         {.id = "accent"_id});
+```
+
 ## Examples index
 
 | Target | Capability |
@@ -1345,6 +1498,10 @@ This adds glyph coverage, not complex-script shaping or BiDi.
 | `pui_ex_numeric` | Integer/double/vector fields, dragging, form rows |
 | `pui_ex_colors` | RGBA channel editing |
 | `pui_ex_dpi` | Logical units and display density |
+| `pui_ex_files` | Pictures, OS drag-and-drop, file dialogs, remembered window |
+| `pui_ex_textarea` | Multi-line editing: notes with wrap, a read-only log |
+| `pui_ex_a11y` | The accessibility tree; describing a custom widget |
+| `pui_ex_pickers` | HSV color picker with an eyedropper, date picker |
 
 | Target | Source | Shows |
 | --- | --- | --- |

@@ -218,6 +218,83 @@ void ui::draw_image(const skin_image &img, rect dst)
     draw_triangles(img.tex, v, 4, idx, 6);
 }
 
+rect fit_image(rect area, f32 img_w, f32 img_h, image_fit fit, rect &uv)
+{
+    uv = rect{0.0f, 0.0f, 1.0f, 1.0f};
+    if (img_w <= 0.0f || img_h <= 0.0f || area.w <= 0.0f || area.h <= 0.0f) return area;
+    if (fit == FIT_STRETCH) return area;
+    const f32 sx = area.w / img_w, sy = area.h / img_h;
+    if (fit == FIT_CONTAIN)
+    {
+        const f32 s = min2(sx, sy);
+        const f32 w = img_w * s, h = img_h * s;
+        return rect::make(area.x + (area.w - w) * 0.5f, area.y + (area.h - h) * 0.5f, w, h);
+    }
+    // FIT_COVER: the area stays; the visible part of the image shrinks.
+    const f32 s = max2(sx, sy);
+    const f32 vw = area.w / (img_w * s), vh = area.h / (img_h * s); // visible fraction
+    uv = rect{(1.0f - vw) * 0.5f, (1.0f - vh) * 0.5f, vw, vh};
+    return area;
+}
+
+rect ui::image(rect r, const image_handle &img, const image_opts &opts)
+{
+    if (!img.valid() || r.w <= 0.0f || r.h <= 0.0f) return rect{r.x, r.y, 0.0f, 0.0f};
+    PUFFERUI_CHECK(VIOL_INVALID_RECT, r.is_valid(), "image with invalid rect");
+    rect uv{};
+    const rect dst = fit_image(r, static_cast<f32>(img.w), static_cast<f32>(img.h), opts.fit, uv);
+    if (detail::outside_paint(ctx, dst)) return dst;
+    if (!ctx->dl) return dst;
+    if (opts.radius <= 0.0f) // square: one crisp quad
+    {
+        vertex v[4] = {
+            {dst.x, dst.y, uv.x, uv.y, opts.tint},
+            {dst.right(), dst.y, uv.right(), uv.y, opts.tint},
+            {dst.right(), dst.bottom(), uv.right(), uv.bottom(), opts.tint},
+            {dst.x, dst.bottom(), uv.x, uv.bottom(), opts.tint},
+        };
+        i32 q[6] = {0, 1, 2, 0, 2, 3};
+        draw_triangles(img.tex, v, 4, q, 6);
+        return dst;
+    }
+    std::vector<vertex> &verts = ctx->dl->scratch_v;
+    std::vector<i32> &idx = ctx->dl->scratch_i;
+    verts.clear();
+    idx.clear();
+    // The rounded fan maps every point to its texel, so rounded corners clip
+    // the picture instead of drawing over it.
+    const f32 rad = clampf(opts.radius, 0.0f, min2(dst.w, dst.h) * 0.5f);
+    detail::build_rounded_fan(
+        dst, corner_radii::all(rad), opts.tint,
+        [&](f32 x, f32 y, f32 &u, f32 &v)
+        {
+            u = uv.x + (x - dst.x) / dst.w * uv.w;
+            v = uv.y + (y - dst.y) / dst.h * uv.h;
+        },
+        verts, idx);
+    draw_triangles(img.tex, verts.data(), static_cast<i32>(verts.size()), idx.data(),
+                   static_cast<i32>(idx.size()));
+    return dst;
+}
+
+image_handle create_image(context *c, i32 w, i32 h, const u8 *rgba)
+{
+    image_handle img;
+    if (!c || !c->device || w <= 0 || h <= 0 || !rgba) return img;
+    img.tex = c->device->create_texture(w, h, rgba);
+    if (!img.tex) return img;
+    c->device->set_texture_filter(img.tex, true);
+    img.w = w;
+    img.h = h;
+    return img;
+}
+
+void destroy_image(context *c, image_handle &img)
+{
+    if (c && c->device && img.tex) c->device->destroy_texture(img.tex);
+    img = image_handle{};
+}
+
 void ui::draw_nine_slice(const skin_image &img, rect dst)
 {
     if (!img.valid() || dst.w <= 0.0f || dst.h <= 0.0f) return;
@@ -514,6 +591,7 @@ void ui::blur(rect r, f32 blur_radius, const corner_radii &radii_in, f32 alpha)
 {
     context *c = ctx;
     if (blur_radius < 0.5f || alpha <= 0.0f) return;
+    if (c->overlay_depth > 0) return; // an overlay has no scene of its own to sample
     render_surface *surf = c->current_window ? c->current_window->surface : c->surface;
     if (!c->device || !surf) return;
     PUFFERUI_CHECK(VIOL_INVALID_RECT, r.is_valid(), "blur with invalid rect");

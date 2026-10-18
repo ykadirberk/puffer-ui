@@ -280,6 +280,7 @@ inline bool ensure_atlas(context *c, text_store *ts)
     page.tex = c->device->create_texture(1024, 1024, nullptr);
     if (!page.tex) return false;
     ts->atlases.push_back(page);
+    ts->cur_page = 0;
     ts->atlas_w = 1024;
     ts->atlas_h = 1024;
     // Reserve the (0,0) texel as pure white: solid geometry samples it (see
@@ -306,14 +307,61 @@ inline font_handle font_for(context *c, font_handle primary, u32 cp)
     return primary;
 }
 
+inline i32 gamma_q(const context *c)
+{
+    return static_cast<i32>(c->active_theme.text_gamma * 100.0f + 0.5f);
+}
+
 inline u64 layout_key(context *c, font_handle font, f32 size, std::string_view text)
 {
-    const u64 original =
-        (static_cast<u64>(static_cast<u32>(font)) << 48) ^
-        (static_cast<u64>(static_cast<u32>(static_cast<i32>(size * 4.0f) & 0xFFFF)) << 32) ^
-        hash(text);
-    return c->render_scale == 1.0f ? original
-                                   : id_child(original, static_cast<uiid>(c->render_scale * 1024));
+    u64 key = (static_cast<u64>(static_cast<u32>(font)) << 48) ^
+              (static_cast<u64>(static_cast<u32>(static_cast<i32>(size * 4.0f) & 0xFFFF)) << 32) ^
+              hash(text);
+    // Identity in the common case (the goldens' keys stay put); a scale, a
+    // coverage curve or a shaper of its own makes a different layout.
+    if (c->render_scale != 1.0f) key = id_child(key, static_cast<uiid>(c->render_scale * 1024));
+    if (gamma_q(c) != 100) key = id_child(key, static_cast<uiid>(gamma_q(c)) + 0x67616D00ull);
+    return key;
+}
+
+// A cached glyph copy is stale when its page has been recycled since.
+inline bool glyph_live(const text_store *ts, const glyph &g)
+{
+    return !g.tex || (g.page >= 0 && g.page < static_cast<i32>(ts->atlases.size()) &&
+                      ts->atlases[static_cast<usize>(g.page)].gen == g.gen);
+}
+
+// Reuses the least recently drawn page for new glyphs - never one used in this
+// frame, whose quads may still be queued. False when every page is in use now.
+inline bool recycle_atlas_page(context *c, text_store *ts)
+{
+    i32 victim = -1;
+    u64 oldest = ~0ull;
+    for (i32 i = 0; i < static_cast<i32>(ts->atlases.size()); ++i)
+    {
+        const text_store::atlas_page &p = ts->atlases[static_cast<usize>(i)];
+        if (p.last_used >= c->frame) continue;
+        if (p.last_used < oldest)
+        {
+            oldest = p.last_used;
+            victim = i;
+        }
+    }
+    if (victim < 0) return false;
+    text_store::atlas_page &p = ts->atlases[static_cast<usize>(victim)];
+    p.gen += 1;
+    p.shelf_x = p.shelf_y = victim == 0 ? 1 : 0; // page 0 keeps its white texel at (0,0)
+    p.shelf_h = 0;
+    for (auto it = ts->glyphs.begin(); it != ts->glyphs.end();)
+    {
+        if (it->second.page == victim)
+            it = ts->glyphs.erase(it);
+        else
+            ++it;
+    }
+    ts->cur_page = victim;
+    ts->recycled += 1;
+    return true;
 }
 
 inline glyph get_glyph(context *c, i32 font_index, f32 size, u32 cp, i32 sub = 0)
@@ -321,8 +369,8 @@ inline glyph get_glyph(context *c, i32 font_index, f32 size, u32 cp, i32 sub = 0
     text_store *ts = c->ts;
     font_index = font_for(c, font_index, cp);
     const f32 density = c->render_scale;
-    text_store::glyph_key key{font_index, static_cast<i32>(size * 4.0f), cp, sub,
-                              static_cast<i32>(density * 1024)};
+    text_store::glyph_key key{font_index, static_cast<i32>(size * 4.0f),    cp,
+                              sub,        static_cast<i32>(density * 1024), gamma_q(c)};
     auto it = ts->glyphs.find(key);
     if (it != ts->glyphs.end()) return it->second;
 
@@ -345,33 +393,53 @@ inline glyph get_glyph(context *c, i32 font_index, f32 size, u32 cp, i32 sub = 0
 
     if (bitmap && gw > 0 && gh > 0 && ensure_atlas(c, ts))
     {
-        // Pack into the current page; spill to a new page when full.
-        if (ts->atlases.back().shelf_x + gw + 1 > ts->atlas_w)
+        // Pack into the current page; when it is full, recycle the least
+        // recently drawn page (at the budget) or open a fresh one. The glyph is
+        // never silently dropped: past the budget a page is added when every
+        // page is in use this frame.
+        text_store::atlas_page *cur = &ts->atlases[static_cast<usize>(ts->cur_page)];
+        if (cur->shelf_x + gw + 1 > ts->atlas_w)
         {
-            ts->atlases.back().shelf_y += ts->atlases.back().shelf_h;
-            ts->atlases.back().shelf_h = 0;
-            ts->atlases.back().shelf_x = 0;
+            cur->shelf_y += cur->shelf_h;
+            cur->shelf_h = 0;
+            cur->shelf_x = 0;
         }
-        if (gh > ts->atlases.back().shelf_h)
+        if (gh > cur->shelf_h)
         {
-            ts->atlases.back().shelf_y += ts->atlases.back().shelf_h;
-            ts->atlases.back().shelf_h = gh;
-            ts->atlases.back().shelf_x = 0;
+            cur->shelf_y += cur->shelf_h;
+            cur->shelf_h = gh;
+            cur->shelf_x = 0;
         }
-        if (ts->atlases.back().shelf_y + gh > ts->atlas_h)
+        if (cur->shelf_y + gh > ts->atlas_h)
         {
-            // Page full: a fresh atlas. The glyph is never silently dropped.
-            text_store::atlas_page page;
-            page.tex = c->device->create_texture(ts->atlas_w, ts->atlas_h, nullptr);
-            ts->atlases.push_back(page);
+            const bool at_budget =
+                ts->budget > 0 && static_cast<i32>(ts->atlases.size()) >= ts->budget;
+            if (!(at_budget && recycle_atlas_page(c, ts)))
+            {
+                text_store::atlas_page fresh;
+                fresh.tex = c->device->create_texture(ts->atlas_w, ts->atlas_h, nullptr);
+                ts->atlases.push_back(fresh);
+                ts->cur_page = static_cast<i32>(ts->atlases.size()) - 1;
+            }
+            cur = &ts->atlases[static_cast<usize>(ts->cur_page)];
+            cur->shelf_h = gh;
         }
-        text_store::atlas_page &page = ts->atlases.back();
+        text_store::atlas_page &page = *cur;
         const i32 px = page.shelf_x, py = page.shelf_y;
         page.shelf_x += gw + 1;
+        page.last_used = c->frame;
+        // The coverage curve (theme::text_gamma) as a lookup table.
+        u8 curve[256];
+        const f32 inv = 1.0f / max2(0.1f, c->active_theme.text_gamma);
+        for (i32 v = 0; v < 256; ++v)
+            curve[v] =
+                gamma_q(c) == 100
+                    ? static_cast<u8>(v)
+                    : static_cast<u8>(std::pow(static_cast<f32>(v) / 255.0f, inv) * 255.0f + 0.5f);
         std::vector<u8> rgba(static_cast<usize>(gw) * gh * 4);
         for (i32 n = 0; n < gw * gh; ++n)
         {
-            u8 a = bitmap[n];
+            u8 a = curve[bitmap[n]];
             rgba[n * 4 + 0] = 255;
             rgba[n * 4 + 1] = 255;
             rgba[n * 4 + 2] = 255;
@@ -379,6 +447,8 @@ inline glyph get_glyph(context *c, i32 font_index, f32 size, u32 cp, i32 sub = 0
         }
         c->device->update_texture(page.tex, px, py, gw, gh, rgba.data());
         g.tex = page.tex;
+        g.page = ts->cur_page;
+        g.gen = page.gen;
         g.u0 = static_cast<f32>(px) / ts->atlas_w;
         g.v0 = static_cast<f32>(py) / ts->atlas_h;
         g.u1 = static_cast<f32>(px + gw) / ts->atlas_w;
@@ -405,7 +475,59 @@ inline f32 kern_advance(context *c, font_handle fh, f32 size, u32 a, u32 b)
            scale;
 }
 
+// The glyph run of `s`: the installed shaper's, or codepoint by codepoint with
+// kerning pairs. Shared by measuring and drawing (one cache entry serves both).
+inline text_store::text_layout build_layout(context *c, font_handle fh, f32 size,
+                                            std::string_view s)
+{
+    text_store::text_layout built;
+    // Fresh copies; a page recycled while they are fetched leaves the epoch
+    // behind, so the first draw checks them.
+    const i32 epoch = c->ts->recycled;
+    const auto add = [&](u32 cp, f32 kern_in)
+    {
+        text_store::cached_glyph e;
+        e.kern_in = kern_in;
+        e.cp = cp;
+        e.g = get_glyph(c, fh, size, cp);
+        // Two separate additions, in this order: float associativity would drift
+        // the pen by ULPs, visible as edge coverage changes in the golden scenes.
+        built.width += e.kern_in;
+        built.width += e.g.advance;
+        if (!built.gs.empty() && built.gs.back().g.advance + e.kern_in < 0.0f)
+            built.forward = false;
+        if (e.g.w > 0.0f) built.min_xoff = min2(built.min_xoff, e.g.xoff);
+        built.gs.push_back(e);
+    };
+    if (c->ts->shaper &&
+        c->ts->shaper->shape(c, fh, size, s, [&](const shaped_glyph &g) { add(g.cp, g.kern_in); }))
+    {
+        built.epoch = epoch;
+        return built;
+    }
+    built = {};
+    usize i = 0;
+    u32 prev = 0;
+    while (i < s.size())
+    {
+        const u32 cp = utf8_decode(s, i);
+        if (cp == UTF8_END) break;
+        add(cp, kern_advance(c, fh, size, prev, cp));
+        prev = cp;
+    }
+    built.epoch = epoch;
+    return built;
+}
 } // namespace detail
+
+void set_text_shaper(context *c, text_shaper *shaper)
+{
+    if (!c) return;
+    if (!c->ts) c->ts = new text_store();
+    c->ts->shaper = shaper;
+    for (auto &slot : c->ts->layout_cache.slots) slot.tag = 0;
+    c->redraw_requested = true;
+}
 
 bool set_font_fallbacks(context *c, std::span<const font_handle> fonts)
 {
@@ -417,6 +539,18 @@ bool set_font_fallbacks(context *c, std::span<const font_handle> fonts)
     for (auto &slot : c->ts->layout_cache.slots) slot.tag = 0;
     c->redraw_requested = true;
     return true;
+}
+
+void set_text_atlas_budget(context *c, i32 pages)
+{
+    if (!c) return;
+    if (!c->ts) c->ts = new text_store(); // before the first load_font is fine too
+    c->ts->budget = pages < 0 ? 0 : pages;
+}
+
+i32 text_atlas_pages(const context *c)
+{
+    return c && c->ts ? static_cast<i32>(c->ts->atlases.size()) : 0;
 }
 
 bool ui::has_glyph(u32 cp)
@@ -467,25 +601,7 @@ f32 ui::text_width(std::string_view s)
     const u64 key = detail::layout_key(c, fh, c->active_theme.text_size, s);
     if (text_store::text_layout *lay = c->ts->layout_cache.find(key)) return lay->width;
 
-    text_store::text_layout built;
-    usize i = 0;
-    u32 prev = 0;
-    while (i < s.size())
-    {
-        u32 cp = utf8_decode(s, i);
-        if (cp == UTF8_END) break;
-        text_store::cached_glyph e;
-        e.kern_in = detail::kern_advance(c, fh, c->active_theme.text_size, prev, cp);
-        e.cp = cp;
-        e.g = detail::get_glyph(c, fh, c->active_theme.text_size, cp);
-        // Two separate additions, in this order: float associativity would drift
-        // the pen by ULPs, visible as edge coverage changes in the golden scenes.
-        built.width += e.kern_in;
-        built.width += e.g.advance;
-        built.gs.push_back(e);
-        prev = cp;
-    }
-    c->ts->layout_cache.put(key, built);
+    c->ts->layout_cache.put(key, detail::build_layout(c, fh, c->active_theme.text_size, s));
     if (text_store::text_layout *lay = c->ts->layout_cache.find(key)) return lay->width;
     return 0.0f;
 }
@@ -525,23 +641,7 @@ void ui::text(rect r, std::string_view s, color c, align a)
     text_store::text_layout *lay = cc->ts->layout_cache.find(key);
     if (!lay)
     {
-        text_store::text_layout built;
-        usize i = 0;
-        u32 prev = 0;
-        while (i < s.size())
-        {
-            u32 cp = utf8_decode(s, i);
-            if (cp == UTF8_END) break;
-            text_store::cached_glyph e;
-            e.kern_in = detail::kern_advance(cc, fh, size, prev, cp);
-            e.cp = cp;
-            e.g = detail::get_glyph(cc, fh, size, cp);
-            built.width += e.kern_in; // two additions: same order as before
-            built.width += e.g.advance;
-            built.gs.push_back(e);
-            prev = cp;
-        }
-        cc->ts->layout_cache.put(key, built);
+        cc->ts->layout_cache.put(key, detail::build_layout(cc, fh, size, s));
         lay = cc->ts->layout_cache.find(key);
         if (!lay) return; // cache full? rebuild path guarantees a hit; paranoia
     }
@@ -586,6 +686,24 @@ void ui::text(rect r, std::string_view s, color c, align a)
             base_y - up >= pb.bottom() || base_y + down <= pb.y)
             return;
     }
+    // Only a run that reaches past the right edge can end early (see below).
+    const bool may_exit = bounded && lay->forward && pen + width + size >= pb.right();
+    // Glyph copies go stale only when an atlas page is recycled (a budget was
+    // reached). While none was since the run was last validated, skip the
+    // per-glyph checks; otherwise check every glyph this loop reaches, and
+    // when that was all of them, the run is current again.
+    text_store *ts = cc->ts;
+    i32 seen = ts->recycled;
+    bool checking = lay->epoch != seen;
+    bool all_checked = true;
+    const auto fetched = [&]() // after any get_glyph: it may have recycled a page
+    {
+        if (ts->recycled == seen) return;
+        seen = ts->recycled;
+        checking = true;
+        all_checked = false; // glyphs passed earlier went unchecked
+    };
+    i32 stamped = -1; // the page last given this frame's LRU stamp
     for (text_store::cached_glyph &e : lay->gs)
     {
         pen += e.kern_in;
@@ -597,19 +715,40 @@ void ui::text(rect r, std::string_view s, color c, align a)
             ix += 1.0f;
         }
         ix /= density;
+        // The bin-0 bitmap's box; a sub-pixel bin's bitmap differs from it by
+        // under a pixel, so GLYPH_BIN_SLACK on every side keeps it inside.
+        constexpr f32 GLYPH_BIN_SLACK = 1.0f;
+        // Past the right edge for good: with a pen that only moves right, no
+        // later glyph's box can start left of this one's leftmost possible box,
+        // so the rest of the run would be culled glyph by glyph below.
+        if (may_exit && ix + lay->min_xoff - GLYPH_BIN_SLACK >= pb.right())
+        {
+            all_checked = false;
+            break;
+        }
         if (bounded && e.g.w > 0.0f)
         {
-            // The bin-0 bitmap's box; a sub-pixel bin's bitmap differs from it by
-            // under a pixel, so GLYPH_BIN_SLACK on every side keeps it inside.
-            constexpr f32 GLYPH_BIN_SLACK = 1.0f;
             const f32 x0 = ix + e.g.xoff - GLYPH_BIN_SLACK;
             const f32 y0 = base_y + e.g.yoff - GLYPH_BIN_SLACK;
             const f32 w = e.g.w + 2.0f * GLYPH_BIN_SLACK, h = e.g.h + 2.0f * GLYPH_BIN_SLACK;
             if (x0 >= pb.right() || x0 + w <= pb.x || y0 >= pb.bottom() || y0 + h <= pb.y)
             {
+                all_checked = false;
                 pen += e.g.advance;
                 continue;
             }
+        }
+        if (checking)
+        {
+            if (!detail::glyph_live(ts, e.g)) // its page was recycled: fetch it again
+            {
+                e.g = detail::get_glyph(cc, fh, size, e.cp);
+                e.have = 0;
+                fetched();
+            }
+            for (i32 b = 1; b < 4; ++b) // and forget sub-bin copies that went stale
+                if ((e.have & (1u << b)) && !detail::glyph_live(ts, e.sub[b - 1]))
+                    e.have = static_cast<u8>(e.have & ~(1u << b));
         }
         const glyph *gp = &e.g;
         if (bin > 0)
@@ -618,12 +757,18 @@ void ui::text(rect r, std::string_view s, color c, align a)
             {
                 e.sub[bin - 1] = detail::get_glyph(cc, fh, size, e.cp, bin);
                 e.have = static_cast<u8>(e.have | (1u << bin));
+                fetched();
             }
             gp = &e.sub[bin - 1];
         }
         const glyph &g = *gp;
         if (g.tex)
         {
+            if (g.page != stamped) // LRU stamp, once per page and run
+            {
+                ts->atlases[static_cast<usize>(g.page)].last_used = cc->frame;
+                stamped = g.page;
+            }
             detail::dl_prepare(cc, g.tex, clip);
             const f32 gx = ix + g.xoff;
             const f32 gy = base_y + g.yoff;
@@ -638,6 +783,7 @@ void ui::text(rect r, std::string_view s, color c, align a)
         }
         pen += e.g.advance;
     }
+    if (checking && all_checked && ts->recycled == seen) lay->epoch = seen;
 }
 
 // Truncates with a trailing ellipsis (U+2026) when the line does not fit.

@@ -6,14 +6,19 @@ the rest are accepted for now.
 
 ## Text
 
-- **No complex-script shaping** — no BiDi/RTL, no ligatures, no HarfBuzz.
-  Kerning uses stb's supported GPOS pair adjustments, falling back to `kern`.
-  `set_font_fallbacks` supplies ordered per-glyph fallback; it does not shape text.
-- Glyph atlases never evict (pages are added when full) *(deferred: a surfaced LRU policy)*.
+- **No complex-script shaping built in** — no BiDi/RTL, no ligatures, no
+  HarfBuzz (a standing decision). Kerning uses stb's supported GPOS pair
+  adjustments, falling back to `kern`. `set_font_fallbacks` supplies ordered
+  per-glyph fallback; `set_text_shaper` lets an app plug in substitution and
+  kerning of its own (one glyph per codepoint, so editing still works).
+- Glyph atlas pages are recycled least-recently-drawn first past
+  `set_text_atlas_budget` (default 16 pages); a recycled page's glyphs
+  re-rasterize on their next draw. Eviction is per page, not per glyph.
 - Fractional font sizes quantize to quarter pixels for cache keys.
 - Glyphs are rasterized unhinted (stb_truetype) at four horizontal subpixel
-  offsets; small text is evenly spaced but slightly soft. A contrast/gamma curve
-  on the coverage or an SDF/hinting backend would sharpen it *(not planned yet)*.
+  offsets; small text is evenly spaced but slightly soft. `theme::text_gamma`
+  (1 = linear, the default) applies a coverage curve at rasterization: around
+  1.3 makes thin light-on-dark strokes denser. No hinting or SDF backend.
 
 ## Scale
 
@@ -32,25 +37,25 @@ the rest are accepted for now.
 
 ## API surface
 
-- `context` has public mutable fields — treat them as unstable API;
-  there is no accessor surface yet *(deferred)*.
-- `remove_window` invalidates `window*` pointers for windows after the
-  removed one (documented; re-fetch via `window_at`) *(deferred: stable
-  window ids)*.
+- `context` still has public mutable fields; they are not stable API. Read
+  frame state through `ui` (`u.now()`, `u.mouse()`, `u.mods()`,
+  `u.focused_id()`, `u.clip_rect()`, ...) and the free functions
+  (`window_count`, `window_by_index`); see CHANGELOG.md for the policy.
 - Deferred menu labels are copied per frame (cheap, but a very long menu
   pays a copy), so the caller's strings need not outlive the call.
-- `combo`/`context_menu` still take `const char *const*` + count; the
-  `pui::comp` components take spans.
+- `combo`/`context_menu` take spans too (the pointer + count forms remain).
 
 ## Widgets
 
 - The core widget set is deliberately small; switch, radio, segmented, tabs,
   accordion, drawer, toast, table, command palette and section live in
   `pui::comp` (see `docs/components.md`).
-- No multiline text editor or date picker. Tree rows and selectable rows are
-  available; the app owns expansion and selection. Tables support stable keys,
-  resizable widths and sort requests, but not column reordering/hiding or horizontal scrolling.
-- Color editing currently uses RGBA sliders; there is no HSV picker or eyedropper.
+- Tree rows and selectable rows are available; the app owns expansion and
+  selection. Tables support stable keys, resizable widths, sort requests,
+  column hiding/reordering, horizontal scrolling and a sticky first column.
+- The eyedropper samples the app's own window, not the rest of the desktop.
+- Pictures: the core takes decoded RGBA8; file decoding is the SDL glue's
+  (`sdl3_load_image`: BMP, PNG, JPEG). No GIF/WebP/SVG, no animation.
 
 ## Platform
 
@@ -61,4 +66,6 @@ the rest are accepted for now.
   bootstrap only.
 - DPI converts logical layout to framebuffer geometry and rasterizes glyphs at
   the window density. SDL follows scale-change events; custom hosts supply scale.
-  Touch/pen input remains mouse-shaped; platform accessibility adapters are absent.
+  Touch/pen input remains mouse-shaped. Accessibility: a Windows UI Automation
+  adapter exists (flat tree; invoke/toggle/read value; values are read-only to
+  assistive technology); macOS/Linux adapters are not written yet.

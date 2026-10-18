@@ -79,11 +79,11 @@ inline void todo_input(ui &u, rect r, todo_app &app)
 
     // text_field has no "submitted" result: remember whether it had focus
     // before the call, then look for Enter (the field commits on Enter itself).
-    const bool was_focused = u.ctx->focus == ID_DRAFT;
+    const bool was_focused = u.focused_id() == ID_DRAFT;
     // round only the field's left side; the button below rounds the right
     (void)u.text_field(in, app.draft, ID_DRAFT,
                        field_opts{.radii = some(corner_radii::left(14.0f))});
-    if (app.draft.empty() && u.ctx->focus != ID_DRAFT)
+    if (app.draft.empty() && u.focused_id() != ID_DRAFT)
         u.text(in.pad(th.padding * 0.5f + 2.0f, 0.0f), "What needs doing?", th.text_dim,
                ALIGN_LEFT);
 
@@ -94,7 +94,7 @@ inline void todo_input(ui &u, rect r, todo_app &app)
     {
         app.draft.clear();
         app.dirty = true;
-        u.ctx->focus_request = ID_DRAFT; // keep typing: put the caret back in the field
+        u.request_focus(ID_DRAFT); // keep typing: put the caret back in the field
     }
 }
 
@@ -121,7 +121,7 @@ inline void todo_row(ui &u, rect bounds, todo_item &t, unsigned &remove_id, bool
     const f32 k = u.appear(u.local("in"), 0.32f);
     bounds.y += (1.0f - k) * 10.0f;
 
-    const bool hot = bounds.contains(u.ctx->mouse_x, u.ctx->mouse_y);
+    const bool hot = bounds.contains(u.mouse().x, u.mouse().y);
     if (hot) u.draw_rounded_rect(bounds.pad(3.0f, 2.0f), color{255, 255, 255, 16}, 14.0f);
     u.draw_line(bounds.x + 18.0f, bounds.bottom() - 0.5f, bounds.right() - 18.0f,
                 bounds.bottom() - 0.5f, color{255, 255, 255, static_cast<u8>(22.0f * k)}, 1.0f);
@@ -222,13 +222,13 @@ inline void todo_footer(ui &u, rect r, todo_app &app)
 inline void todo_draw(ui &u, window &win, todo_app &app)
 {
     rect page = win.area;
-    glass_background(u, page, u.ctx->now);     // the scene drifts with the frame clock ...
+    glass_background(u, page, u.now());        // the scene drifts with the frame clock ...
     u.request_redraw();                        // ... so keep frames coming even when idle
     (void)u.titlebar(win, page, "Glass Todo"); // `page` shrinks by the bar's height
 
     if (app.autofocus)
     {
-        u.ctx->focus_request = ID_DRAFT;
+        u.request_focus(ID_DRAFT);
         app.autofocus = false;
     }
 

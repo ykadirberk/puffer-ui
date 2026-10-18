@@ -9,7 +9,15 @@ if (POLICY CMP0141)
   endif()
 endif()
 
-project ("PufferUI" VERSION 0.1.0.1)
+# The version lives in the header (PUFFERUI_VERSION_*): read it from there.
+file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/include/pufferui/pufferui.h" PUI_VERSION_LINES
+     REGEX "^#define PUFFERUI_VERSION_(MAJOR|MINOR|PATCH|TWEAK) [0-9]+$")
+foreach(part MAJOR MINOR PATCH TWEAK)
+  string(REGEX MATCH "PUFFERUI_VERSION_${part} ([0-9]+)" _m "${PUI_VERSION_LINES}")
+  set(PUI_VERSION_${part} "${CMAKE_MATCH_1}")
+endforeach()
+project ("PufferUI" VERSION
+         ${PUI_VERSION_MAJOR}.${PUI_VERSION_MINOR}.${PUI_VERSION_PATCH}.${PUI_VERSION_TWEAK})
 set(PUFFERUI_TOP_LEVEL OFF)
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(PUFFERUI_TOP_LEVEL ON)
@@ -84,6 +92,9 @@ function(pui_add_library name)
   if(A_SDL3)
     target_compile_definitions(${name} PUBLIC PUFFERUI_ENABLE_SDL3)
     target_link_libraries(${name} PUBLIC $<BUILD_INTERFACE:SDL3::SDL3> $<INSTALL_INTERFACE:SDL3::SDL3>)
+    if(WIN32) # the UI Automation adapter (impl/uia_windows.inl)
+      target_link_libraries(${name} PUBLIC uiautomationcore comctl32 ole32 oleaut32)
+    endif()
   endif()
 endfunction()
 
@@ -133,6 +144,8 @@ pui_add_exe(pui_core_tests SOURCES
     tests/test_render.cpp
     tests/test_components.cpp
     tests/test_ergonomics.cpp
+    tests/test_platform.cpp
+    tests/test_textarea.cpp
     tests/test_motion.cpp)
 
 # Headless frame-cost measurement of the core (layout + interact + draw-list
@@ -169,7 +182,7 @@ set(PUFFERUI_EXAMPLE_NAMES
     hello bootstrap rect cursors tracks grid ids text buttons inputs widgets
     panels scroll popups dock windows drawing blur animation theme custom
     patterns expander combo keyboard components vlist overflow relayout
-    controls tables tree numeric colors dpi)
+    controls tables tree numeric colors dpi files textarea a11y pickers)
 
 # Headless examples: no SDL, no window (they still get the bundled font path).
 set(PUFFERUI_HEADLESS_EXAMPLES headless renderer)
@@ -240,7 +253,7 @@ configure_package_config_file(
     INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/pufferui")
 write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/pufferuiConfigVersion.cmake"
-    VERSION 0.1.0.1
+    VERSION ${PROJECT_VERSION}
     COMPATIBILITY SameMajorVersion)
 
 install(FILES

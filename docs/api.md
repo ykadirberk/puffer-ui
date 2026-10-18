@@ -9,6 +9,8 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `region region(rect area, uiid key, bool push_clip = true);`
 - `vec2 button_size(std::string_view label);`
 - `vec2 text_size(std::string_view s);`
+- `u32 mods() const // MOD_SHIFT | MOD_CTRL | MOD_ALT | MOD_SUPER held now;`
+- `rect clip_rect() const;`
 - `bool shortcut(key_chord chord, const shortcut_opts &opts = {});`
 - `interaction interact(uiid id, rect area, bool enabled = true, bool focusable = true);`
 - `f32 text_width(std::string_view s);`
@@ -38,6 +40,9 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `dock_action dock_space(uiid id, rect area, dock_node &root, function_ref<void(uiid, rect, bool)> draw_panel);`
 - `bool text_field(rect r, std::string &value, uiid id);`
 - `bool text_field(rect r, std::string &value, uiid id, const field_opts &opts);`
+- `bool text_area(rect r, std::string &value, uiid id, const text_area_opts &opts = {});`
+- `editor_info editor_info(uiid id) const;`
+- `f32 scroll_offset(uiid id) const;`
 - `bool number_field(rect r, f32 &value, uiid id, const char *fmt = "%.2f");`
 - `bool int_field(rect r, i64 &value, uiid id, const field_opts &opts = {});`
 - `bool double_field(rect r, f64 &value, uiid id, const field_opts &opts = {});`
@@ -46,9 +51,14 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `titlebar_result titlebar(window &w, rect &bounds, std::string_view title, const titlebar_opts &opts);`
 - `titlebar_result titlebar(window &w, rect &bounds, std::string_view title);`
 - `interaction window_drag_region(rect r, uiid id);`
+- `void sample_pixel(uiid id, vec2 at);`
+- `bool take_sampled_pixel(uiid id, color &out);`
+- `void a11y(uiid id, rect r, const a11y_info &info);`
 - `bool combo(rect r, std::string_view label, const char *const *items, i32 item_count, i32 &selected, uiid id, f32 max_popup_height = 220.0f);`
+- `bool combo(rect r, std::string_view label, std::span<const char *const> items, i32 &selected, uiid id, f32 max_popup_height = 220.0f);`
 - `rect tooltip(rect anchor, uiid id, std::string_view tip);`
 - `i32 context_menu(uiid id, rect anchor, const char *const *item_labels, i32 item_count);`
+- `i32 context_menu(uiid id, rect anchor, std::span<const char *const> items);`
 - `void draw_triangles(texture_handle tex, const vertex *vertices, i32 vertex_count, const i32 *indices, i32 index_count);`
 - `void draw_rect(rect r, color c);`
 - `void draw_line(f32 x0, f32 y0, f32 x1, f32 y1, color c, f32 thickness = 1.0f);`
@@ -56,6 +66,8 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `void draw_rounded_rect(rect r, color c, const corner_radii &radii);`
 - `void draw_image(const skin_image &img, rect dst);`
 - `void draw_nine_slice(const skin_image &img, rect dst);`
+- `rect image(rect r, const image_handle &img, const image_opts &opts = {});`
+- `drop_result drop_target(rect r, uiid id);`
 - `f32 animate(uiid key, f32 target, const tween &spec);`
 - `f32 animate(uiid key, f32 target, const spring &spec);`
 - `f32 animate_global(uiid key, f32 target, const tween &spec);`
@@ -79,6 +91,13 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `void report_violation(violation_code code, const char *condition, const char *message, const char *file, int line, bool fatal);`
 - `void set_violation_handler(context *c, violation_handler handler, void *user);`
 - `constexpr u64 hash(std::string_view s);`
+- `i32 days_in_month(i32 year, i32 month);`
+- `i32 weekday(date d); // 0 = Monday .. 6 = Sunday date add_days(date d, i32 days);`
+- `date add_months(date d, i32 months); // the day clamps to the new month // ---- HSV (comp::color_picker) ---- struct hsv_color;`
+- `hsv_color to_hsv(color c);`
+- `color from_hsv(hsv_color c, u8 alpha = 255);`
+- `rect fit_image(rect area, f32 img_w, f32 img_h, image_fit fit, rect &uv);`
+- `std::string save_window_state(const window_state &s); // "x y w h maximized" bool load_window_state(std::string_view text, window_state &out); // false: malformed // `r` moved (and shrunk) so that it is visible on one of `displays` (usable // desktop rects): kept as is when a usable part already shows, else centered on // the first display. An app restores a saved rect through this. rect clamp_to_displays(rect r, std::span<const rect> displays);`
 - `render_device *create_sdl3_device(void *sdl_renderer);`
 - `void destroy_sdl3_device(render_device *device);`
 - `bool sdl3_route(context *c, void *sdl_event);`
@@ -90,6 +109,10 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `void sdl3_app_shutdown(sdl3_app &a); // also closes every window still open // More windows over the same device and context, each a complete window: // SDL window (borderless + resizable) + surface + core window + native chrome // + text input. Frame each with its own begin_frame/end_frame after the // primary's. The returned pointer stays valid until the window is closed. // // The pump routes every window's events and keeps its size current. A click // on an extra window's close glyph (or the platform's close) only sets // `window::close_requested`; the app decides, usually with // `if (w->close_requested) { sdl3_app_close_window(app, *w); w = nullptr; }`. // Closing the primary window ends the app (sdl3_app_pump returns false). struct sdl3_window_opts;`
 - `window *sdl3_app_open_window(sdl3_app &a, const char *title, i32 w, i32 h, const sdl3_window_opts &opts = {});`
 - `void sdl3_app_close_window(sdl3_app &a, window &w);`
+- `image_handle sdl3_load_image(context *c, const char *path);`
+- `void sdl3_file_dialog(context *c, uiid id, const file_dialog_opts &opts = {});`
+- `void sdl3_apply_window_state(window &w, const window_state &s);`
+- `bool sdl3_enable_uia(window &w);`
 - `void set_window_host(context *c, window_host *host);`
 - `window_host *window_host_of(context *c);`
 - `i32 resolve_track_sizes(f32 available, std::span<const track_size> tracks, f32 *out, i32 max_out);`
@@ -107,8 +130,14 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `void set_device(context *c, render_device *device, render_surface *surface);`
 - `void set_theme(context *c, const theme &t);`
 - `font_handle load_font(context *c, const char *path);`
+- `void set_text_shaper(context *c, text_shaper *shaper);`
+- `void set_text_atlas_budget(context *c, i32 pages);`
+- `i32 text_atlas_pages(const context *c);`
 - `bool set_font_fallbacks(context *c, std::span<const font_handle> fonts);`
 - `window *add_window(context *c, void *handle, render_surface *surface, rect client);`
+- `i32 window_count(const context *c);`
+- `window *window_by_index(context *c, i32 index);`
+- `const char *version();`
 - `void remove_window(context *c, window &w);`
 - `window *window_at(context *c, void *handle);`
 - `window *first_window(context *c);`
@@ -128,6 +157,16 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `void ime_event(window &w, const char *preedit, i32 cursor);`
 - `void mods_event(window &w, bool shift, bool ctrl, bool alt = false, bool super = false);`
 - `void mouse_wheel(window &w, f32 dx, f32 dy);`
+- `void set_accessibility(context *c, bool enabled);`
+- `i32 a11y_count(const window &w);`
+- `a11y_node_view a11y_node(const window &w, i32 index); // last frame, submission order void a11y_invoke(window &w, uiid id); // the widget reports a click (buttons, toggles) void a11y_focus(window &w, uiid id); // keyboard focus moves to the widget // The window's open popup closes as if clicked outside (the SDL pump calls it // when the window loses focus to another app, like native menus do). void dismiss_popups(window &w);`
+- `void set_popup_overlays(context *c, bool enabled);`
+- `void drop_event(window &w, drop_kind kind, f32 x, f32 y, const char *data = nullptr);`
+- `image_handle create_image(context *c, i32 w, i32 h, const u8 *rgba);`
+- `void destroy_image(context *c, image_handle &img); // resets `img` // ---- file dialogs (see file_dialog_opts) ---- // A host delivers a finished dialog here (count < 0: cancelled or failed);`
+- `void deliver_file_dialog(context *c, uiid id, const char *const *paths, i32 count);`
+- `dialog_result take_file_dialog(context *c, uiid id);`
+- `window_state get_window_state(const window &w);`
 - `void mouse_move(context *c, f32 x, f32 y);`
 - `void mouse_button(context *c, bool down);`
 - `void mouse_button(context *c, pointer_button b, bool down);`
@@ -146,6 +185,8 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `tree_result tree_node(ui &u, rect area, std::string_view label, bool &open, const tree_props &p = {});`
 - `edit_result drag_value(ui &u, rect area, std::string_view label, f64 &value, const drag_value_props &p = {});`
 - `edit_result color_edit(ui &u, rect area, color &value, const color_props &p = {});`
+- `edit_result color_picker(ui &u, rect area, color &value, const color_picker_props &p = {});`
+- `edit_result date_picker(ui &u, rect area, date &value, const date_picker_props &p = {});`
 - `rect form_field(ui &u, rect area, std::string_view label, const form_props &p = {});`
 - `vec2 switch_size(ui &u, std::string_view label);`
 - `switch_result switch_toggle(ui &u, rect area, std::string_view label, bool &value, const switch_props &p = {});`

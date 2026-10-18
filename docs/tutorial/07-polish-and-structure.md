@@ -138,7 +138,7 @@ if (submit && todo_add(app.list, app.draft))
 {
     app.draft.clear();
     app.dirty = true;
-    u.ctx->focus_request = ID_DRAFT; // keep typing: put the caret back in the field
+    u.request_focus(ID_DRAFT); // keep typing: put the caret back in the field
 }
 ```
 
@@ -181,7 +181,7 @@ frame:
 ```cpp
 if (app.autofocus)
 {
-    u.ctx->focus_request = ID_DRAFT;
+    u.request_focus(ID_DRAFT);
     app.autofocus = false;
 }
 ```
@@ -256,13 +256,13 @@ For reference, the whole frame function — every chapter's idea in one place:
 inline void todo_draw(ui &u, window &win, todo_app &app)
 {
     rect page = win.area;
-    glass_background(u, page, u.ctx->now);     // the scene drifts with the frame clock ...
+    glass_background(u, page, u.now());        // the scene drifts with the frame clock ...
     u.request_redraw();                        // ... so keep frames coming even when idle
     (void)u.titlebar(win, page, "Glass Todo"); // `page` shrinks by the bar's height
 
     if (app.autofocus)
     {
-        u.ctx->focus_request = ID_DRAFT;
+        u.request_focus(ID_DRAFT);
         app.autofocus = false;
     }
 
@@ -304,7 +304,7 @@ inline void todo_draw(ui &u, window &win, todo_app &app)
 ## Try it
 
 1. Add a **keyboard shortcut**: Ctrl+Shift+Delete clears completed tasks. Check
-   `u.key_pressed(key::DEL)`, with `u.ctx->ctrl_down` and `u.ctx->shift_down` for the
+   `u.key_pressed(key::DEL)`, with `u.mods()` (`MOD_CTRL`, `MOD_SHIFT`) for the
    modifiers. Where does the call belong — the UI, or the model? (The *key check* is
    UI; the clearing is `todo_clear_done`, which already exists.)
 2. Save to a path from the command line: `todos.txt` is hard-coded in `main`.

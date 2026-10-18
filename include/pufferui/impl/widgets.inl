@@ -194,6 +194,7 @@ bool ui::button(rect r, std::string_view label, uiid id, uiid role_id, button_ov
     }
     text(r, label, s.text, ALIGN_CENTER);
     if (in.focused) detail::focus_ring(*this, r, rad);
+    a11y(id, r, {.role = a11y_role::BUTTON, .name = label});
     return detail::key_activate(*this, in) || in.clicked; // Enter/Space clicks a focused button
 }
 

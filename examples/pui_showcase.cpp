@@ -20,6 +20,8 @@
 //   pui_showcase              Ctrl+Space: command palette, Ctrl+Up/Down: pages
 //   pui_showcase --page N     start on page N (0..4)
 //   pui_showcase --light      start in the light theme;  --no-hud  hide the perf card
+//   pui_showcase --perf       print the average UI build / frame times at exit
+//   pui_showcase --a11y       accessibility recording on (what a screen reader enables)
 #include "example_common.h"
 #include "tutorial/glass.h"
 
@@ -316,7 +318,7 @@ static f32 frand(showcase &s)
 
 static vec2 pointer(ui &u)
 {
-    return vec2{u.ctx->mouse_x, u.ctx->mouse_y};
+    return vec2{u.mouse().x, u.mouse().y};
 }
 
 // ============================================================ drawing helpers
@@ -643,7 +645,7 @@ static void glass_panel(ui &u, rect r, f32 radius, f32 strength = 1.0f, f32 blur
 {
     if (r.w < 3.0f || r.h < 3.0f || strength <= 0.01f) return;
     const f32 L = g_app.light;
-    const rect clip_r = u.ctx->clip_depth > 0 ? u.ctx->clip_stack[u.ctx->clip_depth - 1] : r;
+    const rect clip_r = u.clip_rect();
     const rect vis = rect::intersect(r, clip_r);
     if (vis.w < 3.0f || vis.h < 3.0f) return;
     // a corner that the clip cuts away is square in the blurred patch
@@ -820,11 +822,11 @@ static void notify(ui &u, showcase &s, const char *text, u32 kind)
         s.history_at[i] = s.history_at[i - 1];
     }
     std::snprintf(s.history[0], sizeof(s.history[0]), "%s", text);
-    s.history_at[0] = u.ctx->now;
+    s.history_at[0] = u.now();
     if (s.history_count < 6) s.history_count += 1;
     s.unread += 1;
     s.badge_serial += 1;
-    s.bell_at = u.ctx->now;
+    s.bell_at = u.now();
 }
 
 static void set_page(showcase &s, i32 p, f64 now)
@@ -1001,7 +1003,7 @@ static i32 clip_convex(const vec2 *poly, i32 n, const vec2 *clip, i32 m, vec2 *o
 // rectangular clip region would let the disc spill into the square corners).
 static void draw_ripples(ui &u, showcase &s, uiid owner, rect b, f32 radius)
 {
-    const f64 now = u.ctx->now;
+    const f64 now = u.now();
     const f32 reach = max2(b.w, b.h) * 1.15f;
     vec2 shape[4 * (ROUND_SEG + 1)];
     i32 shape_n = 0;
@@ -1047,8 +1049,8 @@ static bool pill_button(ui &u, rect r, const char *label, uiid id, const pill_op
     // ripples start at the press point (the center for a keyboard press), stored
     // relative to the button so they stay put while the page scrolls
     if (in.activated)
-        s.ripples.push_back(ripple{id, {u.ctx->mouse_x - r.x, u.ctx->mouse_y - r.y}, u.ctx->now});
-    if (hit && !in.clicked) s.ripples.push_back(ripple{id, {r.w * 0.5f, r.h * 0.5f}, u.ctx->now});
+        s.ripples.push_back(ripple{id, {u.mouse().x - r.x, u.mouse().y - r.y}, u.now()});
+    if (hit && !in.clicked) s.ripples.push_back(ripple{id, {r.w * 0.5f, r.h * 0.5f}, u.now()});
     const f32 hv = u.smooth(id_child(id, "hv"_id), in.hovered ? 1.0f : 0.0f, 0.06f);
     const f32 pr =
         u.animate(id_child(id, "pr"_id), in.pressed ? 1.0f : 0.0f, spring{700.0f, 0.55f});
@@ -1117,13 +1119,13 @@ static bool fancy_slider(ui &u, rect r, const char *label, f32 &value, f32 lo, f
     const f32 before = value;
     if (in.focused && (u.key_pressed(key::LEFT) || u.key_pressed(key::RIGHT)))
     {
-        const f32 step = range * (u.ctx->shift_down ? 0.01f : 0.05f);
+        const f32 step = range * ((u.mods() & MOD_SHIFT) ? 0.01f : 0.05f);
         value += u.key_pressed(key::RIGHT) ? step : -step;
         u.consume_key(key::LEFT);
         u.consume_key(key::RIGHT);
     }
     if ((in.activated || in.pressed) && track.w > 0.0f)
-        value = lo + (u.ctx->mouse_x - track.x) / track.w * range;
+        value = lo + (u.mouse().x - track.x) / track.w * range;
     value = clampf(value, lo, hi);
 
     char buf[32];
@@ -1266,8 +1268,8 @@ static void draw_backdrop(ui &u, showcase &s, rect r)
            fade(mixc({80, 255, 200, 255}, {255, 255, 255, 255}, L), 0.22f), 0.0f);
     aurora(u, r, t * 0.8f, 0.62f, r.h * 0.12f, fade(s.accent_c, 0.2f), 2.4f);
     // a soft spotlight that follows the pointer
-    const f32 mx = u.smooth("bg_mx"_id, u.ctx->mouse_x, 0.12f);
-    const f32 my = u.smooth("bg_my"_id, u.ctx->mouse_y, 0.12f);
+    const f32 mx = u.smooth("bg_mx"_id, u.mouse().x, 0.12f);
+    const f32 my = u.smooth("bg_my"_id, u.mouse().y, 0.12f);
     glass_glow(u, {mx, my}, 300.0f, fade(s.accent_c, 0.14f + 0.06f * L));
 }
 
@@ -1429,7 +1431,7 @@ static void draw_topbar(ui &u, showcase &s, rect bar)
     }
 
     // bell: wiggles when a notification lands, badge pops with the count
-    const f32 since = static_cast<f32>(u.ctx->now - s.bell_at);
+    const f32 since = static_cast<f32>(u.now() - s.bell_at);
     const f32 wiggle = since < 1.4f && !s.reduced_motion
                            ? std::sin(since * 22.0f) * 0.45f * std::exp(-since * 3.5f)
                            : 0.0f;
@@ -1565,7 +1567,7 @@ static void draw_sidebar(ui &u, showcase &s, rect area, bool open_target, bool n
                 fill_circle(u, {ix + 11.0f, r.center_y() - 10.0f}, 4.0f * bump, COLUMN_COLORS[1]);
         }
         if (it.focused) outline(u, grow(r, 1.0f), 14.0f, th.focus_border, 1.5f);
-        if (it.clicked || kb_hit(u, it)) set_page(s, i, u.ctx->now);
+        if (it.clicked || kb_hit(u, it)) set_page(s, i, u.now());
         if (label_k < 0.5f) (void)u.tooltip(r, id_child(nid, "tip"_id), PAGE_NAMES[i]);
     }
 
@@ -1722,7 +1724,7 @@ static void chart_card(ui &u, showcase &s, rect target, vec2 origin, f32 k)
         "ov_speed"_id, s.chart_range == 0 ? 3.0f : (s.chart_range == 1 ? 0.8f : 0.25f), 0.3f);
     const f32 amp = u.smooth("ov_amp"_id,
                              s.chart_range == 0 ? 1.0f : (s.chart_range == 1 ? 0.7f : 1.4f), 0.25f);
-    if (s.motion_on) s.chart_phase += speed * static_cast<f32>(u.ctx->dt);
+    if (s.motion_on) s.chart_phase += speed * static_cast<f32>(u.dt());
     const f32 reveal = s.reduced_motion ? 1.0f : ease(easing::EASE_OUT, sat((s.age - 0.3f) / 0.7f));
 
     constexpr i32 N = 64;
@@ -1748,7 +1750,7 @@ static void chart_card(ui &u, showcase &s, rect target, vec2 origin, f32 k)
     // hover: a crosshair and a bubble that glides after the pointer
     const interaction hin = u.interact("ov_plot_hit"_id, plot, !s.blocked, false);
     const f32 show = u.smooth("ov_bub"_id, hin.hovered ? 1.0f : 0.0f, 0.06f);
-    i32 idx = static_cast<i32>((u.ctx->mouse_x - plot.x) / step + frac + 0.5f);
+    i32 idx = static_cast<i32>((u.mouse().x - plot.x) / step + frac + 0.5f);
     idx = idx < 1 ? 1 : (idx > N - 2 ? N - 2 : idx);
     const f32 bx = u.smooth("ov_bx"_id, a[idx].x, 0.04f);
     const f32 by = u.smooth("ov_by"_id, a[idx].y, 0.04f);
@@ -1834,7 +1836,7 @@ static void bars_card(ui &u, showcase &s, rect target, vec2 origin, f32 k)
     if (s.bar_range != s.bar_range_seen)
     {
         s.bar_range_seen = s.bar_range;
-        bars_retarget(s, u.ctx->now);
+        bars_retarget(s, u.now());
     }
     card_title(u, head, "Launch cadence", "each bar retargets a beat after its neighbor");
     (void)in.cut_top(10.0f);
@@ -1845,10 +1847,10 @@ static void bars_card(ui &u, showcase &s, rect target, vec2 origin, f32 k)
     static const char *const year[12] = {"J", "F", "M", "A", "M", "J",
                                          "J", "A", "S", "O", "N", "D"};
     const f32 slot = plot.w / 12.0f;
-    const f32 since = static_cast<f32>(u.ctx->now - s.bars_at);
+    const f32 since = static_cast<f32>(u.now() - s.bars_at);
     const f32 reveal = s.reduced_motion ? 1.0f : sat((s.age - 0.2f) / 0.6f);
-    const bool over = plot.contains(u.ctx->mouse_x, u.ctx->mouse_y) && !s.blocked;
-    const i32 hot = over ? static_cast<i32>((u.ctx->mouse_x - plot.x) / max2(slot, 1.0f)) : -1;
+    const bool over = plot.contains(u.mouse().x, u.mouse().y) && !s.blocked;
+    const i32 hot = over ? static_cast<i32>((u.mouse().x - plot.x) / max2(slot, 1.0f)) : -1;
     for (i32 i = 0; i < 12; ++i)
     {
         // the stagger: bar i switches to its new target 35 ms after bar i-1
@@ -1928,7 +1930,7 @@ static void feed_card(ui &u, showcase &s, rect target, vec2 origin, f32 k)
             u.text(rect::make(av.x - 14.0f, av.y - 14.0f, 28.0f, 28.0f), init,
                    fade(color{20, 16, 40, 255}, alpha), ALIGN_CENTER);
         }
-        const f32 ago = static_cast<f32>(u.ctx->now - e.at);
+        const f32 ago = static_cast<f32>(u.now() - e.at);
         char t[24];
         if (ago < 5.0f)
             std::snprintf(t, sizeof(t), "now");
@@ -1967,7 +1969,7 @@ static void orbit_art(ui &u, showcase &s, rect r)
 static void launch(ui &u, showcase &s, vec2 at)
 {
     burst(s, at, 140, 900.0f);
-    randomize_metrics(s, u.ctx->now);
+    randomize_metrics(s, u.now());
     notify(u, s, "Launch sequence complete - metrics refreshed", 1);
 }
 
@@ -1995,7 +1997,7 @@ static f32 page_overview(ui &u, showcase &s, rect area, vec2 origin)
             const rect tr = in.cut_top(38.0f);
             const std::string_view sv(greeting, static_cast<usize>(shown));
             u.text(tr, sv, th.text, ALIGN_LEFT);
-            if (shown < n || std::fmod(u.ctx->now, 1.0) < 0.5) // the caret blinks once typing ends
+            if (shown < n || std::fmod(u.now(), 1.0) < 0.5) // the caret blinks once typing ends
             {
                 const f32 cx = tr.x + u.text_width(sv) + 3.0f;
                 u.draw_rect(rect::make(cx, tr.y + 6.0f, 2.5f, tr.h - 12.0f), s.accent_c);
@@ -2010,7 +2012,7 @@ static f32 page_overview(ui &u, showcase &s, rect area, vec2 origin)
         if (pill_button(u, lb, "Launch", "ov_launch"_id, {.icon = ICON_ROCKET, .primary = true}))
             launch(u, s, {lb.center_x(), lb.center_y()});
         if (pill_button(u, btns.next(140.0f), "Randomize", "ov_rand"_id, {.icon = ICON_SHUFFLE}))
-            randomize_metrics(s, u.ctx->now);
+            randomize_metrics(s, u.now());
         if (art) orbit_art(u, s, art_r);
     }
 
@@ -2316,7 +2318,7 @@ static f32 page_layout(ui &u, showcase &s, rect area, vec2 origin)
                 if (t.dying >= 0.0) continue;
                 const bool pick = s.lab_selected == 0 || t.id == s.lab_selected;
                 if (!pick) continue;
-                t.dying = u.ctx->now;
+                t.dying = u.now();
                 if (t.id == s.lab_selected) s.lab_selected = 0;
                 break;
             }
@@ -2356,8 +2358,8 @@ static f32 page_layout(ui &u, showcase &s, rect area, vec2 origin)
             if (tl.dying >= 0.0)
             {
                 shown = u.animate_rect(key, u.motion_info(key).target, {.origin = io});
-                scale = 1.0f - ease(easing::EASE_IN,
-                                    sat(static_cast<f32>(u.ctx->now - tl.dying) / dying_s));
+                scale = 1.0f -
+                        ease(easing::EASE_IN, sat(static_cast<f32>(u.now() - tl.dying) / dying_s));
                 u.request_redraw();
             }
             else
@@ -2402,11 +2404,11 @@ static f32 page_layout(ui &u, showcase &s, rect area, vec2 origin)
         if (menu_tile >= 0)
         {
             if (menu_pick == 3)
-                s.tiles[static_cast<usize>(menu_tile)].dying = u.ctx->now;
+                s.tiles[static_cast<usize>(menu_tile)].dying = u.now();
             else
                 lab_menu_pick(s, static_cast<usize>(menu_tile), menu_pick);
         }
-        const f64 now = u.ctx->now;
+        const f64 now = u.now();
         std::erase_if(s.tiles,
                       [&](const lab_tile &t) { return t.dying >= 0.0 && now - t.dying > dying_s; });
     }
@@ -2490,7 +2492,7 @@ static void board_card_draw(ui &u, showcase &s, const board_card &c, rect r, f32
 static f32 page_board(ui &u, showcase &s, rect area, vec2 origin)
 {
     const theme &th = u.th();
-    const f64 now = u.ctx->now;
+    const f64 now = u.now();
     column col(area, 16.0f);
     const bool narrow = area.w < 760.0f;
 
@@ -2516,9 +2518,9 @@ static f32 page_board(ui &u, showcase &s, rect area, vec2 origin)
         const rect add_r = fr.cut_right(96.0f);
         (void)fr.cut_right(8.0f);
         const uiid fid = "bd_field"_id;
-        const bool was_focused = u.ctx->focus == fid;
+        const bool was_focused = u.focused_id() == fid;
         (void)u.text_field(fr, s.draft, fid, field_opts{.radii = some(corner_radii::all(18.0f))});
-        if (s.draft.empty() && u.ctx->focus != fid)
+        if (s.draft.empty() && u.focused_id() != fid)
             u.text(fr.pad(14.0f, 0.0f), "Name a new mission...", th.text_dim, ALIGN_LEFT);
         bool submit =
             pill_button(u, add_r, "Add", "bd_add"_id, {.icon = ICON_PLUS, .primary = true});
@@ -2548,11 +2550,11 @@ static f32 page_board(ui &u, showcase &s, rect area, vec2 origin)
     s.drop_index = -1;
     if (live)
     {
-        const f32 mx = u.ctx->mouse_x;
+        const f32 mx = u.mouse().x;
         s.drop_col = 0;
         for (i32 c = 0; c < 3; ++c)
             if (mx >= col_x(c) - gap * 0.5f) s.drop_col = c;
-        const f32 probe_y = u.ctx->mouse_y - s.grab.y + CARD_H * 0.5f - body_y;
+        const f32 probe_y = u.mouse().y - s.grab.y + CARD_H * 0.5f - body_y;
         f32 y = 0.0f;
         i32 idx = 0;
         for (const board_card &c : s.cards)
@@ -2661,7 +2663,7 @@ static f32 page_board(ui &u, showcase &s, rect area, vec2 origin)
         rect r{};
         if (is_drag)
         {
-            r = rect::make(u.ctx->mouse_x - s.grab.x, u.ctx->mouse_y - s.grab.y, inner_w,
+            r = rect::make(u.mouse().x - s.grab.x, u.mouse().y - s.grab.y, inner_w,
                            card_height(s, c, now));
             (void)u.animate_rect(key, r, {.origin = origin, .snap = true});
             drag_r = r;
@@ -2678,7 +2680,7 @@ static f32 page_board(ui &u, showcase &s, rect area, vec2 origin)
         {
             s.drag_id = c.id;
             s.drag_live = false;
-            s.grab = {u.ctx->mouse_x - r.x, u.ctx->mouse_y - r.y};
+            s.grab = {u.mouse().x - r.x, u.mouse().y - r.y};
             s.press = pointer(u);
         }
         if (it.clicked && !s.drag_live) s.expanded = s.expanded == c.id ? 0 : c.id;
@@ -2698,9 +2700,8 @@ static f32 page_board(ui &u, showcase &s, rect area, vec2 origin)
     if (live && dragged)
     {
         // lifted: bigger shadow, a little scale, and a tilt-like sway from the pointer's speed
-        const f32 sway =
-            u.smooth("bd_sway"_id,
-                     (u.ctx->mouse_x - u.smooth("bd_mx"_id, u.ctx->mouse_x, 0.08f)) * 0.02f, 0.05f);
+        const f32 sway = u.smooth(
+            "bd_sway"_id, (u.mouse().x - u.smooth("bd_mx"_id, u.mouse().x, 0.08f)) * 0.02f, 0.05f);
         const rect lifted = shifted(scaled(drag_r, 1.04f, 1.04f), sway * 6.0f, -4.0f);
         board_card_draw(u, s, *dragged, lifted, 1.0f, 1.0f, 1.0f);
         u.set_cursor(CURSOR_HAND);
@@ -2710,9 +2711,9 @@ static f32 page_board(ui &u, showcase &s, rect area, vec2 origin)
     // drag state machine: arm on press, go live past a 5 px threshold, drop on release
     if (s.drag_id != 0)
     {
-        const f32 dx = u.ctx->mouse_x - s.press.x, dy = u.ctx->mouse_y - s.press.y;
-        if (u.ctx->mouse_down && !s.drag_live && dx * dx + dy * dy > 25.0f) s.drag_live = true;
-        if (!u.ctx->mouse_down)
+        const f32 dx = u.mouse().x - s.press.x, dy = u.mouse().y - s.press.y;
+        if (u.mouse_down() && !s.drag_live && dx * dx + dy * dy > 25.0f) s.drag_live = true;
+        if (!u.mouse_down())
         {
             if (s.drag_live && dragged && s.drop_col >= 0)
             {
@@ -2830,11 +2831,11 @@ static void fx_lens(ui &u, showcase &s, rect in)
         const rect lens = rect::make(lx, ly, lw, lh);
         const interaction it = u.interact("fx_lens"_id, lens, !s.blocked);
         if (it.hovered || it.pressed) u.set_cursor(CURSOR_HAND);
-        if (it.activated) s.lens_anchor = {u.ctx->mouse_x - tx, u.ctx->mouse_y - ty};
+        if (it.activated) s.lens_anchor = {u.mouse().x - tx, u.mouse().y - ty};
         if (it.pressed)
         {
-            s.lens.x = sat((u.ctx->mouse_x - s.lens_anchor.x - stage.x) / max2(1.0f, stage.w - lw));
-            s.lens.y = sat((u.ctx->mouse_y - s.lens_anchor.y - stage.y) / max2(1.0f, stage.h - lh));
+            s.lens.x = sat((u.mouse().x - s.lens_anchor.x - stage.x) / max2(1.0f, stage.w - lw));
+            s.lens.y = sat((u.mouse().y - s.lens_anchor.y - stage.y) / max2(1.0f, stage.h - lh));
         }
         const f32 hv = u.smooth("fx_lens_hv"_id, (it.hovered || it.pressed) ? 1.0f : 0.0f, 0.06f);
         soft_shadow(u, lens, 18.0f, 10.0f + 8.0f * hv, 0.7f, 6.0f);
@@ -2859,7 +2860,7 @@ static void fx_ripples(ui &u, showcase &s, rect in)
     if (pill_button(u, c.next(42.0f), "Fireworks", "fx_fireworks"_id, {.icon = ICON_ROCKET}))
         for (i32 i = 0; i < 3; ++i)
         {
-            s.fireworks_at[i] = u.ctx->now + 0.25 * static_cast<f64>(i);
+            s.fireworks_at[i] = u.now() + 0.25 * static_cast<f64>(i);
             s.fireworks_pos[i] = {in.x + in.w * (0.2f + 0.6f * frand(s)),
                                   in.y + in.h * (0.2f + 0.3f * frand(s))};
         }
@@ -2884,7 +2885,7 @@ static void fx_radial(ui &u, showcase &s, rect in)
     const rect wheel =
         rect::make(c.x - R1 - 10.0f, c.y - R1 - 10.0f, (R1 + 10.0f) * 2.0f, (R1 + 10.0f) * 2.0f);
     const interaction it = u.interact("fx_wheel"_id, wheel, !s.blocked);
-    const f32 dx = u.ctx->mouse_x - c.x, dy = u.ctx->mouse_y - c.y;
+    const f32 dx = u.mouse().x - c.x, dy = u.mouse().y - c.y;
     const f32 dist = std::sqrt(dx * dx + dy * dy);
     const bool center_hot = it.hovered && dist <= R0 + 2.0f;
     i32 hot = -1;
@@ -2955,7 +2956,7 @@ static void fx_magnet_tilt(ui &u, showcase &s, rect in)
     // magnetic: the button leans toward a nearby pointer
     {
         const vec2 c{left.center_x(), left.center_y()};
-        const f32 dx = u.ctx->mouse_x - c.x, dy = u.ctx->mouse_y - c.y;
+        const f32 dx = u.mouse().x - c.x, dy = u.mouse().y - c.y;
         const f32 dist = std::sqrt(dx * dx + dy * dy);
         const f32 field = 120.0f;
         const bool near = dist < field && !s.blocked;
@@ -2981,10 +2982,10 @@ static void fx_magnet_tilt(ui &u, showcase &s, rect in)
         const interaction it = u.interact("fx_tilt"_id, hit, !s.blocked, false);
         const f32 nx =
             u.smooth("fx_tilt_x"_id,
-                     it.hovered ? clampf((u.ctx->mouse_x - c.x) / hw, -1.0f, 1.0f) : 0.0f, 0.08f);
+                     it.hovered ? clampf((u.mouse().x - c.x) / hw, -1.0f, 1.0f) : 0.0f, 0.08f);
         const f32 ny =
             u.smooth("fx_tilt_y"_id,
-                     it.hovered ? clampf((u.ctx->mouse_y - c.y) / hh, -1.0f, 1.0f) : 0.0f, 0.08f);
+                     it.hovered ? clampf((u.mouse().y - c.y) / hh, -1.0f, 1.0f) : 0.0f, 0.08f);
         const f32 hv = u.smooth("fx_tilt_hv"_id, it.hovered ? 1.0f : 0.0f, 0.08f);
         const f32 sx[4] = {-1.0f, 1.0f, 1.0f, -1.0f}, sy[4] = {-1.0f, -1.0f, 1.0f, 1.0f};
         vec2 q[4], sh[4];
@@ -3265,7 +3266,7 @@ static f32 page_motion(ui &u, showcase &s, rect area, vec2 origin)
                         {.icon = ICON_ROCKET, .primary = true}))
         {
             s.kick = !s.kick;
-            s.kick_at = u.ctx->now;
+            s.kick_at = u.now();
         }
 
         // the response plot
@@ -3285,7 +3286,7 @@ static f32 page_motion(ui &u, showcase &s, rect area, vec2 origin)
             spring_curve(s, plot, lo, hi, T, pts, 150);
             area_under(u, pts, 150, y0, fade(s.accent_c, 0.3f), fade(s.accent_c, 0.0f));
             stroke(u, pts, 150, mixc(s.accent_c, color::white(), 0.2f), 2.4f);
-            const f32 el = static_cast<f32>(u.ctx->now - s.kick_at);
+            const f32 el = static_cast<f32>(u.now() - s.kick_at);
             if (el < T)
             {
                 const i32 i = static_cast<i32>(clampf(el / T, 0.0f, 1.0f) * 149.0f);
@@ -3304,12 +3305,12 @@ static f32 page_motion(ui &u, showcase &s, rect area, vec2 origin)
             u.draw_rounded_rect(track_r.pad(0.0f, 18.0f), fade(th.text, 0.08f), 5.0f);
             const f32 x =
                 u.animate("mo_ball"_id, s.kick ? 1.0f : 0.0f, spring{s.stiff, s.damp, s.mass});
-            const f32 dt = max2(static_cast<f32>(u.ctx->dt), 1e-4f);
+            const f32 dt = max2(static_cast<f32>(u.dt()), 1e-4f);
             const f32 vel = (x - s.ball_prev) / dt;
             s.ball_prev = x;
             const vec2 p{track_r.x + 18.0f + x * (track_r.w - 36.0f), track_r.center_y()};
             // one trail sample per 1/60 s of real time: the same length at any fps
-            s.trail_acc += static_cast<f32>(u.ctx->dt);
+            s.trail_acc += static_cast<f32>(u.dt());
             for (i32 n = 0; s.trail_acc >= 1.0f / 60.0f && n < 10; ++n)
             {
                 s.trail_acc -= 1.0f / 60.0f;
@@ -3348,11 +3349,11 @@ static f32 page_motion(ui &u, showcase &s, rect area, vec2 origin)
         rect head = in.cut_top(40.0f);
         if (pill_button(u, head.cut_right(110.0f).pad(0.0f, 2.0f), "Replay", "mo_replay"_id,
                         {.icon = ICON_SHUFFLE}))
-            s.curves_at = u.ctx->now;
+            s.curves_at = u.now();
         card_title(u, head, "Easing curves", "ease(curve, t) - the curves tween{} uses");
         (void)in.cut_top(10.0f);
         const grid_cursor gc = auto_fit_grid(in, 5, 170.0f, 186.0f, 12.0f);
-        f32 ph = static_cast<f32>(u.ctx->now - s.curves_at);
+        f32 ph = static_cast<f32>(u.now() - s.curves_at);
         ph = std::fmod(ph, 2.4f);
         const f32 tt = sat(ph / 1.4f);
         u.request_redraw();
@@ -3397,12 +3398,12 @@ static f32 page_motion(ui &u, showcase &s, rect area, vec2 origin)
                         {.icon = ICON_WAVE, .primary = true}))
         {
             s.wave = !s.wave;
-            s.wave_at = u.ctx->now;
+            s.wave_at = u.now();
         }
         card_title(u, head, "Stagger", "the same spring per dot, retargeted 35 ms apart");
         const i32 n = 28;
         vec2 pts[28];
-        const f32 since = static_cast<f32>(u.ctx->now - s.wave_at);
+        const f32 since = static_cast<f32>(u.now() - s.wave_at);
         for (i32 i = 0; i < n; ++i)
         {
             const bool on = since >= 0.035f * static_cast<f32>(i) ? s.wave : !s.wave;
@@ -3502,7 +3503,7 @@ static void draw_notes(ui &u, showcase &s)
         rect tr = r.pad(30.0f, 4.0f, 8.0f, 4.0f);
         text_scope ts = u.text_style(13.0f);
         u.text_ellipsis(tr.cut_top(20.0f), s.history[i], fade(th.text, ki), ALIGN_LEFT);
-        const i32 ago = static_cast<i32>(u.ctx->now - s.history_at[i]);
+        const i32 ago = static_cast<i32>(u.now() - s.history_at[i]);
         if (ago < 2)
             u.text(tr, "just now", fade(th.text_dim, ki), ALIGN_LEFT);
         else
@@ -3635,7 +3636,7 @@ static const comp::palette_command COMMANDS[] = {{"Go to Overview", "page"},
 static void run_command(ui &u, showcase &s, i32 i, rect screen)
 {
     if (i >= 0 && i < PAGE_COUNT)
-        set_page(s, i, u.ctx->now);
+        set_page(s, i, u.now());
     else if (i == 5)
         s.theme_mode ^= 1;
     else if (i == 6)
@@ -3656,7 +3657,7 @@ static void run_command(ui &u, showcase &s, i32 i, rect screen)
 
 static void draw_particles(ui &u, showcase &s)
 {
-    const f32 dt = clampf(static_cast<f32>(u.ctx->dt), 0.0f, 0.05f);
+    const f32 dt = clampf(static_cast<f32>(u.dt()), 0.0f, 0.05f);
     for (particle &p : s.particles)
     {
         p.age += dt;
@@ -3682,7 +3683,7 @@ static void draw_particles(ui &u, showcase &s)
     if (!s.particles.empty()) u.request_redraw();
 
     // a soft ring wherever the pointer presses
-    const f64 now = u.ctx->now;
+    const f64 now = u.now();
     for (const pulse &pl : s.pulses)
     {
         const f32 k = static_cast<f32>((now - pl.born) / 0.45);
@@ -3863,6 +3864,16 @@ static void selftest_script(showcase &s, example_app &app, f64 now)
 // file:line; the selftest still fails on any.
 static u32 g_fuzz = 0;
 static bool g_no_hud = false; // --no-hud: screenshots without the performance card
+static bool g_a11y = false;   // --a11y: record the accessibility tree every frame
+// --perf: UI build and start-to-start frame times, after a 60-frame warm-up
+struct perf_totals
+{
+    f64 build_ms = 0.0, frame_ms = 0.0, worst_build_ms = 0.0;
+    i32 frames = 0, seen = 0;
+    u64 last_start = 0;
+};
+static bool g_perf = false;
+static perf_totals g_perf_totals;
 static void fuzz_input(showcase &s, example_app &app)
 {
     static bool held = false;
@@ -3915,7 +3926,8 @@ static void showcase_frame(ui &u, example_app &app)
 {
     const u64 build_t0 = SDL_GetPerformanceCounter(); // the HUD's cpu figure
     showcase &s = g_app;
-    const f64 now = u.ctx->now;
+    if (g_a11y) set_accessibility(u.ctx, true);
+    const f64 now = u.now();
     if (s.font == FONT_INVALID)
     {
         s.font = app.font;
@@ -3927,14 +3939,15 @@ static void showcase_frame(ui &u, example_app &app)
     if (g_fuzz != 0) fuzz_input(s, app);
 
     // ---- keyboard shortcuts
-    if (u.ctx->ctrl_down && u.key_pressed(key::SPACE))
+    if ((u.mods() & MOD_CTRL) && u.key_pressed(key::SPACE))
     {
         u.consume_key(key::SPACE);
         s.palette_open = !s.palette_open;
         s.palette = comp::palette_state{}; // a fresh query, highlight and scroll
         s.palette_serial += 1;
     }
-    if (u.ctx->ctrl_down && !s.palette_open && (u.key_pressed(key::UP) || u.key_pressed(key::DOWN)))
+    if ((u.mods() & MOD_CTRL) && !s.palette_open &&
+        (u.key_pressed(key::UP) || u.key_pressed(key::DOWN)))
     {
         set_page(s, s.page + (u.key_pressed(key::DOWN) ? 1 : -1), now);
         u.consume_key(key::UP);
@@ -3948,15 +3961,15 @@ static void showcase_frame(ui &u, example_app &app)
 
     // ---- per-frame model ticks
     s.motion_on = s.ambient && !s.reduced_motion;
-    if (s.motion_on) s.clock += static_cast<f32>(u.ctx->dt);
+    if (s.motion_on) s.clock += static_cast<f32>(u.dt());
     s.age = static_cast<f32>(now - s.page_since);
     // frame timing for the HUD: history + quarter-second averages (readable numbers)
-    s.ft_hist[s.ft_head] = static_cast<f32>(u.ctx->dt * 1000.0);
+    s.ft_hist[s.ft_head] = static_cast<f32>(u.dt() * 1000.0);
     s.ft_head = (s.ft_head + 1) % showcase::FT_N;
     s.ft_count = s.ft_count < showcase::FT_N ? s.ft_count + 1 : s.ft_count;
-    s.fps_acc_t += u.ctx->dt;
+    s.fps_acc_t += u.dt();
     s.fps_acc_build += static_cast<f64>(s.build_ms);
-    s.fps_acc_max = u.ctx->dt > s.fps_acc_max ? u.ctx->dt : s.fps_acc_max;
+    s.fps_acc_max = u.dt() > s.fps_acc_max ? u.dt() : s.fps_acc_max;
     s.fps_acc_n += 1;
     if (s.fps_acc_t >= 0.25)
     {
@@ -3995,7 +4008,7 @@ static void showcase_frame(ui &u, example_app &app)
             s.fireworks_at[i] = -1.0;
             burst(s, s.fireworks_pos[i], 70, 520.0f);
         }
-    if (u.ctx->mouse_pressed) s.pulses.push_back(pulse{pointer(u), now});
+    if (u.mouse_pressed()) s.pulses.push_back(pulse{pointer(u), now});
 
     // ---- theme: light/dark, accent and density all animate, then apply
     u.set_reduced_motion(s.reduced_motion);
@@ -4008,7 +4021,7 @@ static void showcase_frame(ui &u, example_app &app)
     s.blocked = s.drawer_open || s.palette_open || s.notes_open;
 
     // ---- shell layout
-    window &win = *u.ctx->current_window;
+    window &win = *u.current_window();
     const rect client = win.area;
     draw_backdrop(u, s, client);
     rect page = client;
@@ -4026,8 +4039,7 @@ static void showcase_frame(ui &u, example_app &app)
         const i32 p = s.page;
         f32 &target = s.scroll_target[p];
         const f32 max_scroll = max2(0.0f, s.content_h[p] + top_pad + 28.0f - work.h);
-        if (!s.blocked && work.contains(u.ctx->mouse_x, u.ctx->mouse_y))
-            target -= u.ctx->wheel_y * 90.0f;
+        if (!s.blocked && work.contains(u.mouse().x, u.mouse().y)) target -= u.wheel().y * 90.0f;
         target = clampf(target, 0.0f, max_scroll);
         const f32 off = u.smooth(id_child("scroll"_id, static_cast<uiid>(p)), target,
                                  0.07f); // smooth scrolling
@@ -4076,15 +4088,15 @@ static void showcase_frame(ui &u, example_app &app)
             if (it.hovered || it.pressed) u.set_cursor(CURSOR_HAND);
             if (it.activated)
             {
-                s.scroll_anchor_y = u.ctx->mouse_y;
+                s.scroll_anchor_y = u.mouse().y;
                 s.scroll_anchor_t = target;
             }
             if (it.pressed && track.h > th_h)
-                target = clampf(s.scroll_anchor_t + (u.ctx->mouse_y - s.scroll_anchor_y) *
-                                                        max_scroll / (track.h - th_h),
+                target = clampf(s.scroll_anchor_t + (u.mouse().y - s.scroll_anchor_y) * max_scroll /
+                                                        (track.h - th_h),
                                 0.0f, max_scroll);
-            const bool near = work.contains(u.ctx->mouse_x, u.ctx->mouse_y) &&
-                              u.ctx->mouse_x > work.right() - 40.0f;
+            const bool near =
+                work.contains(u.mouse().x, u.mouse().y) && u.mouse().x > work.right() - 40.0f;
             const f32 vis = u.smooth(
                 "page_sbar_vis"_id,
                 (it.hovered || it.pressed || near || std::fabs(off - target) > 1.0f) ? 1.0f : 0.25f,
@@ -4124,6 +4136,19 @@ static void showcase_frame(ui &u, example_app &app)
     draw_particles(u, s);
     s.build_ms = static_cast<f32>(static_cast<f64>(SDL_GetPerformanceCounter() - build_t0) *
                                   1000.0 / static_cast<f64>(SDL_GetPerformanceFrequency()));
+    if (g_perf)
+    {
+        perf_totals &p = g_perf_totals;
+        const f64 freq = static_cast<f64>(SDL_GetPerformanceFrequency());
+        if (p.seen++ >= 60 && p.last_start != 0)
+        {
+            p.build_ms += s.build_ms;
+            p.frame_ms += static_cast<f64>(build_t0 - p.last_start) * 1000.0 / freq;
+            p.worst_build_ms = std::max(p.worst_build_ms, static_cast<f64>(s.build_ms));
+            p.frames += 1;
+        }
+        p.last_start = build_t0;
+    }
 }
 
 int main(int argc, char **argv)
@@ -4135,9 +4160,18 @@ int main(int argc, char **argv)
         if (i + 1 < argc && std::strcmp(argv[i], "--fuzz") == 0)
             g_fuzz = static_cast<u32>(std::atoi(argv[i + 1]));
         if (std::strcmp(argv[i], "--no-hud") == 0) g_no_hud = true;
+        if (std::strcmp(argv[i], "--perf") == 0) g_perf = true;
+        if (std::strcmp(argv[i], "--a11y") == 0) g_a11y = true;
         if (std::strcmp(argv[i], "--light") == 0) g_app.theme_mode = 1; // start in the light theme
     }
     if (g_fuzz) g_app.rng = g_fuzz * 2654435761u + 1u;
     seed(g_app);
-    return example_run("showcase", 1360, 860, argc, argv, showcase_frame);
+    const int rc = example_run("showcase", 1360, 860, argc, argv, showcase_frame);
+    if (g_perf && g_perf_totals.frames > 0)
+    {
+        const perf_totals &p = g_perf_totals;
+        std::printf("perf frames=%d build_avg=%.3fms build_worst=%.3fms frame_avg=%.3fms\n",
+                    p.frames, p.build_ms / p.frames, p.worst_build_ms, p.frame_ms / p.frames);
+    }
+    return rc;
 }

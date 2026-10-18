@@ -18,6 +18,14 @@
 // constants/enumerators UPPER_SNAKE_CASE.
 // ============================================================================
 
+// The library version - the one place it is written (CMake reads it from here;
+// CHANGELOG.md says what changed). Same major version = source compatible;
+// deprecated API keeps working for one minor version with a warning.
+#define PUFFERUI_VERSION_MAJOR 0
+#define PUFFERUI_VERSION_MINOR 1
+#define PUFFERUI_VERSION_PATCH 0
+#define PUFFERUI_VERSION_TWEAK 1
+
 #include <cstdint>
 #include <cstddef>
 #include <string>
@@ -650,6 +658,27 @@ struct field_opts
     bool read_only = false; // selection and copy remain available
 };
 
+// Where an editor's caret is (u.editor_info): for status bars ("Ln 3, Col 5"),
+// tools and tests. Offsets are bytes into the buffer; line/column count
+// paragraphs and codepoints from 0.
+struct editor_info
+{
+    bool focused = false;
+    usize caret = 0, anchor = 0;
+    i32 line = 0, column = 0;
+    i32 visual_lines = 0; // text_area: laid-out rows (wrapped paragraphs count each row)
+};
+
+// Options for ui::text_area (multi-line editing).
+struct text_area_opts
+{
+    bool wrap = true;          // soft-wrap at the width (false: scroll horizontally)
+    bool read_only = false;    // logs: selection, copy and scrolling stay available
+    bool line_numbers = false; // a gutter with the line number of every paragraph
+    bool enabled = true;
+    opt<corner_radii> radii;
+};
+
 // ---- toggle controls (the pui::comp library) --------------------------------
 // Style structs + per-instance overrides for the built-in toggles. The theme
 // carries one slot each (`theme::switch_ctrl` / `radio` / `segmented`);
@@ -953,6 +982,9 @@ enum class popup_flags : u32
     CLOSE_ON_ESCAPE = 1 << 0,
     CLOSE_ON_CLICK_OUTSIDE = 1 << 1,
     MODAL = 1 << 2,
+    // Stay inside the window even when the host could put the popup in its own
+    // OS window (see window_host::open_overlay).
+    IN_WINDOW = 1 << 3,
 };
 inline constexpr popup_flags operator|(popup_flags a, popup_flags b)
 {
@@ -965,6 +997,7 @@ inline constexpr bool has_flag(popup_flags flags, popup_flags bit)
 inline constexpr popup_flags POPUP_CLOSE_ON_ESCAPE = popup_flags::CLOSE_ON_ESCAPE;
 inline constexpr popup_flags POPUP_CLOSE_ON_CLICK_OUTSIDE = popup_flags::CLOSE_ON_CLICK_OUTSIDE;
 inline constexpr popup_flags POPUP_MODAL = popup_flags::MODAL;
+inline constexpr popup_flags POPUP_IN_WINDOW = popup_flags::IN_WINDOW;
 
 // ---------------------------------------------------------------- theming
 inline constexpr i32 MAX_BUTTON_ROLES = 16;
@@ -1013,6 +1046,9 @@ struct theme
     f32 icon_size = 16.0f;
     font_handle font = FONT_INVALID;
     f32 text_size = 15.0f;
+    // Glyph coverage curve: 1 = linear (stb's antialiasing as rasterized); above
+    // 1 thin strokes get denser, so small light-on-dark text reads crisper.
+    f32 text_gamma = 1.0f;
 
     color selection = {60, 120, 200, 140};
     // Semantic tokens: the palette components read for surfaces, text
@@ -1056,6 +1092,27 @@ struct theme
     card_style card;
     scroll_style scrollbar;
 };
+
+// ---- calendar dates (comp::date_picker) ----
+struct date
+{
+    i32 year = 2000, month = 1, day = 1; // month 1..12, day 1..31
+    bool operator==(const date &) const = default;
+};
+i32 days_in_month(i32 year, i32 month);
+i32 weekday(date d); // 0 = Monday .. 6 = Sunday
+date add_days(date d, i32 days);
+date add_months(date d, i32 months); // the day clamps to the new month
+
+// ---- HSV (comp::color_picker) ----
+struct hsv_color
+{
+    f32 h = 0.0f; // degrees, 0..360
+    f32 s = 0.0f; // 0..1
+    f32 v = 0.0f; // 0..1
+};
+hsv_color to_hsv(color c);
+color from_hsv(hsv_color c, u8 alpha = 255);
 
 // A friendlier default palette: a layered dark ramp (background < surface <
 // elevated), a soft outline, generous radii and an 8px rhythm.
@@ -1168,6 +1225,7 @@ inline theme theme_lerp(const theme &a, const theme &b, f32 t)
     PUI_LC(tokens.outline);
     PUI_LF(radius), PUI_LF(border_thickness), PUI_LF(focus_border_thickness), PUI_LF(spacing);
     PUI_LF(padding), PUI_LF(control_h), PUI_LF(control_h_small), PUI_LF(icon_size);
+    PUI_LF(text_gamma);
 
     PUI_LC(button.bg), PUI_LC(button.hover_bg), PUI_LC(button.active_bg), PUI_LC(button.border);
     PUI_LC(button.text), PUI_LF(button.radius), PUI_LF(button.border_thickness);
@@ -1262,6 +1320,7 @@ enum class backend_caps : u32
     SCISSOR = 1 << 1,
     STREAMING_TEXTURES = 1 << 2,
     SHARED_DEVICE = 1 << 3, // one device may serve multiple windows
+    READ_PIXELS = 1 << 4,   // read_pixels works (eyedroppers, screenshots)
 };
 inline constexpr backend_caps operator|(backend_caps a, backend_caps b)
 {
@@ -1299,6 +1358,13 @@ struct render_device
     virtual texture_handle create_texture(i32 w, i32 h, const u8 *rgba) = 0;
     virtual void update_texture(texture_handle tex, i32 x, i32 y, i32 w, i32 h, const u8 *rgba) = 0;
     virtual void destroy_texture(texture_handle tex) = 0;
+    // Sampling for a texture: nearest (the glyph atlas, pixel art) or linear
+    // (pictures drawn at other sizes). Best effort; the default ignores it.
+    virtual void set_texture_filter(texture_handle tex, bool linear)
+    {
+        (void)tex;
+        (void)linear;
+    }
 
     virtual texture_handle create_target(i32 w, i32 h)
     {
@@ -1307,6 +1373,18 @@ struct render_device
         return nullptr;
     }
     virtual void destroy_target(texture_handle tex) { destroy_texture(tex); }
+    // Copies a `w x h` block of a render target (the surface's scene target)
+    // into `rgba` (RGBA8). Reports backend_caps::READ_PIXELS when it works.
+    virtual bool read_pixels(texture_handle target, i32 x, i32 y, i32 w, i32 h, u8 *rgba)
+    {
+        (void)target;
+        (void)x;
+        (void)y;
+        (void)w;
+        (void)h;
+        (void)rgba;
+        return false;
+    }
     virtual void blit(texture_handle src, const rect *src_rect, texture_handle dst,
                       const rect *dst_rect)
     {
@@ -1359,6 +1437,21 @@ struct null_surface : render_surface
 // `shared = false` to model a single-window backend in gating tests.
 struct null_device : render_device
 {
+    // `readable`: read_pixels answers with `pixel` (tests of sampling code).
+    bool readable = false;
+    color pixel{0, 0, 0, 0};
+    bool read_pixels(texture_handle, i32, i32, i32 w, i32 h, u8 *rgba) override
+    {
+        if (!readable || !rgba) return false;
+        for (i32 i = 0; i < w * h; ++i)
+        {
+            rgba[i * 4 + 0] = pixel.r;
+            rgba[i * 4 + 1] = pixel.g;
+            rgba[i * 4 + 2] = pixel.b;
+            rgba[i * 4 + 3] = pixel.a;
+        }
+        return true;
+    }
     null_surface my_surface;
     static constexpr i32 MAX_EXTRA_SURFACES = 7;
     null_surface extra[MAX_EXTRA_SURFACES];
@@ -1379,6 +1472,7 @@ struct null_device : render_device
         backend_caps b =
             backend_caps::RENDER_TARGETS | backend_caps::SCISSOR | backend_caps::STREAMING_TEXTURES;
         if (shared) b = b | backend_caps::SHARED_DEVICE;
+        if (readable) b = b | backend_caps::READ_PIXELS;
         return b;
     }
     void begin_frame() override
@@ -1424,6 +1518,143 @@ struct null_device : render_device
         last_texture = tex;
     }
 };
+
+// ---------------------------------------------------------------- images
+// A picture on the device: RGBA8 pixels uploaded once, drawn with `ui::image`.
+// The core does not decode files; `sdl3_load_image` (BMP/PNG/JPEG through SDL)
+// or any decoder hands it pixels via `create_image`.
+struct image_handle
+{
+    texture_handle tex = nullptr;
+    i32 w = 0, h = 0; // pixels
+    bool valid() const { return tex != nullptr && w > 0 && h > 0; }
+};
+
+enum image_fit : u8
+{
+    FIT_CONTAIN, // the whole image, letterboxed (aspect kept)
+    FIT_COVER,   // fills the rect, cropped (aspect kept)
+    FIT_STRETCH, // fills the rect, distorted
+};
+
+struct image_opts
+{
+    image_fit fit = FIT_CONTAIN;
+    color tint = {255, 255, 255, 255};
+    f32 radius = 0.0f; // rounded corners (clips the picture)
+};
+
+// Where an `img_w x img_h` image lands inside `area` for `fit`, and which part
+// of it shows there (`uv`, normalized: x, y, w, h).
+rect fit_image(rect area, f32 img_w, f32 img_h, image_fit fit, rect &uv);
+
+// ---------------------------------------------------------------- OS drops
+// Drag-and-drop from the OS (Explorer, Finder, a browser) onto a window. The
+// SDL3 glue routes SDL_EVENT_DROP_*; other hosts call `drop_event`.
+enum class drop_kind : u8
+{
+    BEGIN,    // a drag entered the window
+    POSITION, // it moved (x, y window-local, platform units)
+    FILE,     // one file was released (data = UTF-8 path)
+    TEXT,     // text was released (data = UTF-8 text)
+    COMPLETE, // the drag ended (after the items, or without any: cancelled/left)
+};
+
+// What `ui::drop_target` saw this frame. Items stay readable for the frame.
+struct drop_result
+{
+    bool hovering = false; // an OS drag is over the target
+    bool dropped = false;  // items were released over it this frame
+    i32 count = 0;
+    const char *items_ = nullptr; // NUL-separated, each prefixed 'f' (file) or 't' (text)
+    i32 len_ = 0;
+
+    // The i-th item: a file path or dropped text (UTF-8); "" when out of range.
+    const char *item(i32 i) const
+    {
+        const char *p = entry(i);
+        return p ? p + 1 : "";
+    }
+    bool is_file(i32 i) const
+    {
+        const char *p = entry(i);
+        return p && *p == 'f';
+    }
+    const char *entry(i32 i) const // the i-th entry, kind byte first; nullptr out of range
+    {
+        const char *p = items_;
+        for (i32 n = 0; p && p < items_ + len_; ++n)
+        {
+            if (n == i) return p;
+            while (*p) ++p;
+            ++p;
+        }
+        return nullptr;
+    }
+};
+
+// ---------------------------------------------------------------- file dialogs
+// The platform's open/save/folder dialogs are asynchronous: start one with an
+// id (sdl3_file_dialog), then poll `take_file_dialog(ctx, id)` each frame; it
+// reports `done` once, in the frame after the user closed the dialog.
+struct file_filter
+{
+    const char *name = "";    // "Images"
+    const char *pattern = ""; // "png;jpg;jpeg" ("*" = all)
+};
+
+enum class file_dialog_kind : u8
+{
+    OPEN,
+    SAVE,
+    FOLDER,
+};
+
+struct window;
+struct file_dialog_opts
+{
+    file_dialog_kind kind = file_dialog_kind::OPEN;
+    std::span<const file_filter> filters{};
+    const char *default_location = nullptr;
+    bool allow_many = false;
+    window *parent = nullptr; // modal to this window when the platform supports it
+};
+
+struct dialog_result
+{
+    bool done = false;      // the dialog closed (reported once)
+    bool cancelled = false; // closed without a choice (or failed)
+    i32 count = 0;
+    const char *paths_ = nullptr; // NUL-separated, valid until the next take
+    i32 len_ = 0;
+
+    const char *path(i32 i) const
+    {
+        const char *p = paths_;
+        for (i32 n = 0; p && p < paths_ + len_; ++n)
+        {
+            if (n == i) return p;
+            while (*p) ++p;
+            ++p;
+        }
+        return "";
+    }
+};
+
+// ---------------------------------------------------------------- window state
+// Where a window was, so an app can reopen it there. Desktop coordinates (the
+// space of window::client).
+struct window_state
+{
+    i32 x = 0, y = 0, w = 0, h = 0;
+    bool maximized = false;
+};
+std::string save_window_state(const window_state &s);             // "x y w h maximized"
+bool load_window_state(std::string_view text, window_state &out); // false: malformed
+// `r` moved (and shrunk) so that it is visible on one of `displays` (usable
+// desktop rects): kept as is when a usable part already shows, else centered on
+// the first display. An app restores a saved rect through this.
+rect clamp_to_displays(rect r, std::span<const rect> displays);
 
 // SDL3 device + surface. Returns nullptr when PufferUI was built without
 // PUFFERUI_ENABLE_SDL3. Owned by the caller.
@@ -1520,6 +1751,21 @@ window *sdl3_app_open_window(sdl3_app &a, const char *title, i32 w, i32 h,
 // window. Call between frames; the primary window is not closed this way.
 void sdl3_app_close_window(sdl3_app &a, window &w);
 
+// BMP / PNG / JPEG through SDL, uploaded with create_image. Invalid handle on
+// failure (SDL_GetError says why).
+image_handle sdl3_load_image(context *c, const char *path);
+// Opens the platform dialog; its result arrives through take_file_dialog(c, id)
+// once the user closes it. Keep the context alive until then.
+void sdl3_file_dialog(context *c, uiid id, const file_dialog_opts &opts = {});
+// Moves/sizes the SDL window to `s` (clamped onto a connected display) and
+// maximizes it when `s.maximized`.
+void sdl3_apply_window_state(window &w, const window_state &s);
+// Windows: exposes the window to UI Automation (Narrator, NVDA, JAWS);
+// recording turns on with the first client query. sdl3_app_init and
+// sdl3_app_open_window call it. Elsewhere returns false (nodes are still
+// recorded with set_accessibility, for an adapter of the app's own).
+bool sdl3_enable_uia(window &w);
+
 // ---------------------------------------------------------------- context
 struct draw_list;
 struct text_store;
@@ -1546,6 +1792,7 @@ struct panel_entry
 inline constexpr i32 MAX_WINDOWS = 8;
 
 struct ctx_stores; // keyed UI state (edit/anim/scroll/split/defer + id sets)
+struct a11y_tree;  // a window's published accessibility nodes
 struct focus_list; // the keyboard focus ring (per window)
 struct blur_store; // blur scratch targets (per window)
 
@@ -1571,6 +1818,63 @@ struct window_input
     bool ctrl_down = false;
     bool alt_down = false;
     bool super_down = false;
+    bool popup_dismiss = false; // dismiss_popups: the open popup closes as if clicked outside
+    uiid a11y_invoke = 0;       // a11y_invoke: that widget reports a click this frame
+    // OS drag-and-drop over this window (drop_event): the drag's position is
+    // held state, the released items are a per-frame edge.
+    bool drop_active = false;         // a drag is over the window
+    f32 drop_x = 0.0f, drop_y = 0.0f; // its position, window-local logical units
+    i32 drop_count = 0;               // items released this frame
+    char drop_items[4096]{};          // NUL-separated, each prefixed 'f' or 't'
+    i32 drop_len = 0;
+};
+
+// ---------------------------------------------------------------- accessibility
+// What assistive technology (a screen reader) learns about a widget: its role,
+// name, value and state. Widgets record it each frame through `ui::a11y` while
+// accessibility is on (`set_accessibility`; off by default, then it costs
+// nothing); a platform adapter reads the last frame's nodes per window.
+enum class a11y_role : u8
+{
+    NONE,
+    BUTTON,
+    CHECKBOX,
+    RADIO,
+    SWITCH,
+    TEXT_FIELD,
+    TEXT_AREA,
+    SLIDER,
+    COMBO,
+    LIST_ITEM,
+    TAB,
+    TEXT,
+    GROUP,
+};
+enum a11y_state : u32
+{
+    A11Y_NONE = 0,
+    A11Y_FOCUSED = 1u << 0,
+    A11Y_CHECKED = 1u << 1,
+    A11Y_DISABLED = 1u << 2,
+    A11Y_SELECTED = 1u << 3,
+    A11Y_EXPANDED = 1u << 4,
+    A11Y_READ_ONLY = 1u << 5,
+};
+struct a11y_info
+{
+    a11y_role role = a11y_role::NONE;
+    std::string_view name{};  // the label a screen reader speaks
+    std::string_view value{}; // a field's text, a slider's value, a combo's choice
+    u32 state = A11Y_NONE;    // focused/disabled are added from the frame
+};
+// A node of a window's last published frame (the strings live until the next).
+struct a11y_node_view
+{
+    uiid id = 0;
+    a11y_role role = a11y_role::NONE;
+    rect bounds{}; // window-local logical units
+    u32 state = A11Y_NONE;
+    std::string_view name{}, value{};
 };
 
 // Per-window interaction state that survives between that window's frames. The
@@ -1628,12 +1932,22 @@ struct window : interaction_state
     uiid root = 0;           // per-window root region id (unique)
     i32 index = 0;
     bool focused = false;
-    bool close_requested = false;      // the titlebar's close button or the platform asked
-    bool maximized = false;            // reflected by the host / event pump
+    bool close_requested = false; // the titlebar's close button or the platform asked
+    bool maximized = false;       // reflected by the host / event pump
+    // The platform cannot drag a borderless window by a custom titlebar (no
+    // native hit-test): the host gave the window its OS frame back and
+    // ui::titlebar draws nothing (the OS bar does the job).
+    bool os_frame = false;
     blur_store *blur = nullptr;        // impl-side per-window blur scratch
     focus_list *focus_store = nullptr; // impl-side per-window focus ring
     window_input in{};
-    window_caption caption{}; // the last frame's native drag area (see window_caption)
+    window_caption caption{};  // the last frame's native drag area (see window_caption)
+    a11y_tree *a11y = nullptr; // impl-side: the last frame's accessibility nodes
+    // Called after a frame published its nodes (a platform adapter raises its
+    // events here); `a11y_user` is the adapter's.
+    void (*on_a11y)(window &w) = nullptr;
+    void (*on_a11y_detach)(window &w) = nullptr; // the core window is going away
+    void *a11y_user = nullptr;
 };
 
 // Platform actions a custom titlebar needs from the native window. Backends
@@ -1656,6 +1970,43 @@ struct window_host
     // chrome geometry onto platform hit-testing override it; a no-op host
     // leaves the window with no native drag/resize.
     virtual void install_system_chrome(window &w) { (void)w; }
+
+    // Popups that leave the window (a combo near the bottom edge, a context
+    // menu by the right edge) live in an OS overlay window the host provides:
+    // no taskbar entry, never activated, positioned relative to the parent.
+    // `popup_bounds` is where popups may go, in the window's local logical
+    // coordinates (its display's usable area); false keeps every popup inside
+    // the window (the default, and what a headless host does).
+    struct overlay_handle
+    {
+        void *native = nullptr;            // the platform window
+        render_surface *surface = nullptr; // its surface on the shared device
+    };
+    virtual bool popup_bounds(window &w, rect &local)
+    {
+        (void)w;
+        (void)local;
+        return false;
+    }
+    // `local` is the popup rect in the parent's local logical coordinates.
+    virtual bool open_overlay(window &parent, rect local, overlay_handle &out)
+    {
+        (void)parent;
+        (void)local;
+        (void)out;
+        return false;
+    }
+    virtual void move_overlay(window &parent, rect local, overlay_handle &h)
+    {
+        (void)parent;
+        (void)local;
+        (void)h;
+    }
+    virtual void close_overlay(window &parent, overlay_handle &h)
+    {
+        (void)parent;
+        (void)h;
+    }
 };
 
 // What the titlebar widget did this frame (besides platform actions through
@@ -1747,6 +2098,11 @@ struct context : interaction_state, window_input
     focus_list *focus_store = nullptr; // the open window's focus ring
     cursor want_cursor = cursor::ARROW;
     window_host *host = nullptr; // platform actions for custom titlebars
+    // Popups that spill out of the window go to host overlays (set_popup_overlays).
+    bool popup_overlays = true;
+    bool a11y_enabled = false; // set_accessibility
+    i32 overlay_depth = 0;     // > 0 while a popup records into an overlay
+    rect overlay_area{};       // that popup's rect (local logical): its paint bounds
 
     // Layout-overflow reporting (see set_report_layout_overflow). Off by default.
     bool report_layout_overflow = false;
@@ -1924,6 +2280,16 @@ struct scroll_options
     u32 flags = SCROLL_NONE;
 };
 
+// scroll_view::virtual_list with per-row heights.
+struct virtual_list_opts
+{
+    // 0: every row's height is asked every frame. Otherwise the row offsets are
+    // kept for this list (keyed by the scroll view's id) and re-measured only
+    // when the version changes; a grown count measures just the new rows. Bump
+    // it whenever a row that was already measured changes height.
+    u64 heights_version = 0;
+};
+
 struct popup_scope;
 struct panel_scope;
 struct text_scope;
@@ -2054,6 +2420,29 @@ struct ui
 
     const theme &th() const { return ctx->active_theme; }
 
+    // ---- this frame's inputs and clock (the stable way to read them; the
+    // context's fields are not a stable API) ----
+    vec2 mouse() const { return vec2{ctx->mouse_x, ctx->mouse_y}; } // window-local, logical
+    bool mouse_down() const { return ctx->mouse_down; }
+    bool mouse_pressed() const { return ctx->mouse_pressed; }   // the press edge
+    bool mouse_released() const { return ctx->mouse_released; } // the release edge
+    vec2 wheel() const { return vec2{ctx->wheel_x, ctx->wheel_y}; }
+    u32 mods() const // MOD_SHIFT | MOD_CTRL | MOD_ALT | MOD_SUPER held now
+    {
+        return (ctx->shift_down ? MOD_SHIFT : 0u) | (ctx->ctrl_down ? MOD_CTRL : 0u) |
+               (ctx->alt_down ? MOD_ALT : 0u) | (ctx->super_down ? MOD_SUPER : 0u);
+    }
+    f64 now() const { return ctx->now; } // the frame's time (begin_frame's `now`)
+    f64 dt() const { return ctx->dt; }
+    uiid focused_id() const { return ctx->focus; }           // keyboard focus (0: none)
+    void request_focus(uiid id) { ctx->focus_request = id; } // applies next frame
+    window *current_window() const { return ctx->current_window; }
+    // The active clip (the window area when nothing clips).
+    rect clip_rect() const
+    {
+        return ctx->clip_depth > 0 ? ctx->clip_stack[ctx->clip_depth - 1] : ctx->screen;
+    }
+
     bool key_pressed(key k) const { return ctx->key_pressed[static_cast<i32>(k)]; }
     bool key_down(key k) const { return ctx->key_down[static_cast<i32>(k)]; }
     // Mark a pressed key as handled so nothing later in the frame reacts to it.
@@ -2139,6 +2528,17 @@ struct ui
     // With options: `.radii = some(corner_radii::left(14))` rounds only the left
     // side, so a field can sit flush against a button.
     bool text_field(rect r, std::string &value, uiid id, const field_opts &opts);
+    // Multi-line editing: Enter starts a new line, Up/Down/PageUp/PageDown and
+    // per-line Home/End move the caret (Ctrl+Home/End: the document), triple
+    // click selects a line, the wheel and a scrollbar scroll. Same model rules
+    // as text_field (the focused buffer is authoritative). Only the visible
+    // lines are drawn; the line layout is cached until text or width change.
+    bool text_area(rect r, std::string &value, uiid id, const text_area_opts &opts = {});
+    // The caret of a text_field / text_area (zeroes for an id never edited).
+    editor_info editor_info(uiid id) const;
+    // A scroll view's offset (u.scroll(..., id); a text_area's own view is
+    // id_child(id, "scroll"_id)).
+    f32 scroll_offset(uiid id) const;
     bool number_field(rect r, f32 &value, uiid id, const char *fmt = "%.2f");
     bool int_field(rect r, i64 &value, uiid id, const field_opts &opts = {});
     bool double_field(rect r, f64 &value, uiid id, const field_opts &opts = {});
@@ -2169,6 +2569,15 @@ struct ui
     // window natively (move, Aero Snap, double-click maximize) except where a
     // widget interacts over it. Returns the region's hover state.
     interaction window_drag_region(rect r, uiid id);
+    // Eyedropper plumbing: ask for the pixel at `at` (window-local logical) of
+    // this frame's finished image; `take_sampled_pixel(id, out)` delivers it
+    // from the next frame on (false while none, or when the device cannot read
+    // pixels - see backend_caps::READ_PIXELS).
+    void sample_pixel(uiid id, vec2 at);
+    bool take_sampled_pixel(uiid id, color &out);
+    // Describes a widget to assistive technology (built-in widgets and
+    // components already do; custom widgets call it with their interact rect).
+    void a11y(uiid id, rect r, const a11y_info &info);
 
     // combo: a closed button showing `items[selected]`; clicking opens a dropdown
     // popup listing every item. Returns true when `selected` changed this frame.
@@ -2176,6 +2585,12 @@ struct ui
     // taller than `popup_height` (0 = size to content, up to `max_popup_height`).
     bool combo(rect r, std::string_view label, const char *const *items, i32 item_count,
                i32 &selected, uiid id, f32 max_popup_height = 220.0f);
+    bool combo(rect r, std::string_view label, std::span<const char *const> items, i32 &selected,
+               uiid id, f32 max_popup_height = 220.0f)
+    {
+        return combo(r, label, items.data(), static_cast<i32>(items.size()), selected, id,
+                     max_popup_height);
+    }
 
     // tooltip: draws a small dark tooltip under `anchor` while the widget `id`
     // is hovered. First tooltip waits ~0.5 s; moving between widgets within
@@ -2190,6 +2605,10 @@ struct ui
     // Returns the picked item index, or -1 while nothing was picked. The app
     // keeps no open flag: the menu state lives under `id`.
     i32 context_menu(uiid id, rect anchor, const char *const *item_labels, i32 item_count);
+    i32 context_menu(uiid id, rect anchor, std::span<const char *const> items)
+    {
+        return context_menu(id, anchor, items.data(), static_cast<i32>(items.size()));
+    }
 
     // primitives
     void draw_triangles(texture_handle tex, const vertex *vertices, i32 vertex_count,
@@ -2203,6 +2622,14 @@ struct ui
     // images: one stretched quad, or a 9-slice patch (skins, custom widgets)
     void draw_image(const skin_image &img, rect dst);
     void draw_nine_slice(const skin_image &img, rect dst);
+    // A picture (create_image / sdl3_load_image) fitted into `r`; returns the
+    // rect it covers (letterboxed for FIT_CONTAIN).
+    rect image(rect r, const image_handle &img, const image_opts &opts = {});
+
+    // An OS drag-and-drop target: hovering while a drag is over `r`, the items
+    // when they are released there. The first target containing the drop point
+    // takes the items (submission order), so nested targets go inner first.
+    drop_result drop_target(rect r, uiid id);
 
     // ---- animation (keys are region-scoped unless suffixed `_global`) ----
     // Call every frame; returns the current value moving toward `target`.
@@ -2306,6 +2733,30 @@ struct color_props
     bool alpha = true;
 };
 edit_result color_edit(ui &u, rect area, color &value, const color_props &p = {});
+
+// An HSV picker: a saturation/value square, a hue bar, an alpha bar, the hex
+// value and (when the device can read pixels) an eyedropper that samples any
+// pixel of the window. The hue is remembered while the color is grey or black.
+// Keyboard: the square moves with the arrows, the bars with Up/Down.
+struct color_picker_props
+{
+    uiid id = 0;
+    bool enabled = true;
+    bool alpha = true;
+    bool eyedropper = true;
+};
+edit_result color_picker(ui &u, rect area, color &value, const color_picker_props &p = {});
+
+// A date field: shows `value`, opens a month grid below (above when there is
+// no room). Keyboard while open: arrows move a day/week, PageUp/PageDown a
+// month, Enter or Escape closes; prev/next buttons change the month shown.
+struct date_picker_props
+{
+    uiid id = 0;
+    bool enabled = true;
+    i32 first_weekday = 0; // 0 = Monday (ISO) .. 6 = Sunday
+};
+edit_result date_picker(ui &u, rect area, date &value, const date_picker_props &p = {});
 struct form_props
 {
     f32 label_width = 0.0f;     // 0 = measure label + padding
@@ -2507,6 +2958,7 @@ struct table_column
     f32 width = 0.0f; // 0 = share remaining width
     f32 min_width = 40.0f;
     bool sortable = true;
+    bool hidden = false; // not shown (the header's right-click menu toggles it)
 };
 struct table_state
 {
@@ -2524,6 +2976,13 @@ struct table_props
     function_ref<uiid(i32)> row_key;    // stable record identity; unset = index + 1
     std::span<table_column> columns;    // optional app-owned widths, resized in place
     table_state *state = nullptr;       // optional selection and sort request
+    // Optional app-owned display order (a permutation of the column indices);
+    // dragging a header moves its column in it. `cell_draw` always receives
+    // the column's own index.
+    std::span<i32> order{};
+    bool column_menu = true;   // right-click a header: show or hide columns (needs `columns`)
+    bool horizontal = false;   // scroll sideways when the columns are wider than the area
+    bool sticky_first = false; // with `horizontal`: the first shown column stays put
 };
 struct table_result
 {
@@ -2535,6 +2994,7 @@ struct table_result
     bool selection_changed = false;
     bool extend_selection = false; // Shift: app may extend its selection from an anchor
     bool toggle_selection = false; // Ctrl: app may toggle this key in its selection set
+    bool columns_changed = false;  // the order or a column's visibility changed
     explicit operator bool() const { return clicked_row >= 0; }
 };
 // A uniform-column table over `area` (headers pinned, body scrolls with
@@ -2598,6 +3058,7 @@ struct popup_scope
     rect area_{};
     bool open = true;
     bool close_requested = false;
+    bool overlay_ = false; // drawing into a host overlay window
 
     popup_scope(ui &u, uiid id, rect area, popup_flags flags);
     ~popup_scope();
@@ -2708,6 +3169,13 @@ struct scroll_view
     // (no separate set_content_height call); irregular rows keep using manual
     // slicing with content().
     void virtual_list(i32 count, f32 item_height, function_ref<void(ui &, i32, rect)> fn);
+    // Rows of different heights (`height_of(i)`): the content height and the
+    // visible slice come from prefix sums (one height_of call per row per
+    // frame, a binary search for the first visible row); `fn` still runs only
+    // for rows that can paint. With `opts.heights_version` set the sums are
+    // kept between frames, so a long list costs only its visible rows.
+    void virtual_list(i32 count, function_ref<f32(i32)> height_of,
+                      function_ref<void(ui &, i32, rect)> fn, const virtual_list_opts &opts = {});
 };
 
 // ---------------------------------------------------------------- cursors
@@ -2915,6 +3383,33 @@ void set_device(context *c, render_device *device, render_surface *surface);
 void set_theme(context *c, const theme &t);
 
 font_handle load_font(context *c, const char *path);
+
+// ---- text shaping (docs/seams.md section 2) ----
+// A shaper turns UTF-8 into the glyphs a run draws: which codepoint of the font
+// each one shows (substitutions) and the extra advance before it (kerning).
+// The built-in shaper is codepoint by codepoint with stb's kerning pairs; an
+// app can install its own (an icon-font ligature table, a shaping engine of
+// its choice). Editing maps carets codepoint by codepoint, so a shaper should
+// emit one glyph per input codepoint.
+struct shaped_glyph
+{
+    u32 cp = 0;         // the codepoint to draw (after substitution)
+    f32 kern_in = 0.0f; // extra advance before it, in logical pixels
+};
+struct text_shaper
+{
+    virtual ~text_shaper() = default;
+    // Emits the glyphs of `text` in order; false = shape it the built-in way.
+    virtual bool shape(context *c, font_handle font, f32 size, std::string_view text,
+                       function_ref<void(const shaped_glyph &)> emit) = 0;
+};
+// nullptr restores the built-in shaper. The text layout cache is cleared.
+void set_text_shaper(context *c, text_shaper *shaper);
+// Glyph atlas pages (1024x1024 RGBA each) kept before the least recently drawn
+// one is recycled; 0 = unlimited. Default 16. A page drawn in the current frame
+// is never recycled, so the budget may be exceeded briefly rather than drop text.
+void set_text_atlas_budget(context *c, i32 pages);
+i32 text_atlas_pages(const context *c);
 // Copied into the context. Primary font wins; fallbacks are tried in order.
 bool set_font_fallbacks(context *c, std::span<const font_handle> fonts);
 
@@ -2928,6 +3423,11 @@ bool set_font_fallbacks(context *c, std::span<const font_handle> fonts);
 // other windows never moves it), and a window keeps its root id - and with it
 // every widget's state - for its whole life.
 window *add_window(context *c, void *handle, render_surface *surface, rect client);
+// The registered windows in registration order (index 0 is the primary).
+i32 window_count(const context *c);
+window *window_by_index(context *c, i32 index);
+// The library version the program was built against: "MAJOR.MINOR.PATCH.TWEAK".
+const char *version();
 void remove_window(context *c, window &w);
 window *window_at(context *c, void *handle);
 window *first_window(context *c);
@@ -2975,6 +3475,35 @@ void text_input_event(window &w, const char *utf8);
 void ime_event(window &w, const char *preedit, i32 cursor);
 void mods_event(window &w, bool shift, bool ctrl, bool alt = false, bool super = false);
 void mouse_wheel(window &w, f32 dx, f32 dy);
+// Accessibility (see a11y_info): record widget nodes each frame (off by
+// default) and act on behalf of assistive technology in the window's next frame.
+void set_accessibility(context *c, bool enabled);
+i32 a11y_count(const window &w);
+a11y_node_view a11y_node(const window &w, i32 index); // last frame, submission order
+void a11y_invoke(window &w, uiid id); // the widget reports a click (buttons, toggles)
+void a11y_focus(window &w, uiid id);  // keyboard focus moves to the widget
+// The window's open popup closes as if clicked outside (the SDL pump calls it
+// when the window loses focus to another app, like native menus do).
+void dismiss_popups(window &w);
+// Popups that leave the window use host overlay windows when the host offers
+// them (on by default); false keeps every popup inside its window.
+void set_popup_overlays(context *c, bool enabled);
+// OS drag-and-drop (see drop_kind); x, y in platform units like mouse_move.
+void drop_event(window &w, drop_kind kind, f32 x, f32 y, const char *data = nullptr);
+
+// ---- images ----
+// RGBA8, row-major, `w * h * 4` bytes; linear-filtered on the device.
+image_handle create_image(context *c, i32 w, i32 h, const u8 *rgba);
+void destroy_image(context *c, image_handle &img); // resets `img`
+
+// ---- file dialogs (see file_dialog_opts) ----
+// A host delivers a finished dialog here (count < 0: cancelled or failed);
+// the SDL3 glue does it for sdl3_file_dialog.
+void deliver_file_dialog(context *c, uiid id, const char *const *paths, i32 count);
+dialog_result take_file_dialog(context *c, uiid id);
+
+// The window's current state (client rect + maximized) for save_window_state.
+window_state get_window_state(const window &w);
 
 // Single-window convenience: routes to the primary window.
 void mouse_move(context *c, f32 x, f32 y);
@@ -3037,5 +3566,29 @@ namespace pui
 #include "impl/draw_primitives.inl"
 #include "impl/sdl3.inl"
 } // namespace pui
+
+// The Windows UI Automation adapter comes last: the Windows headers' macros
+// (near, far, min, max, ...) must not reach any code above.
+#if defined(PUFFERUI_ENABLE_SDL3) && defined(_WIN32) && !defined(PUFFERUI_NO_UIA)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#include <ole2.h>
+#include <uiautomation.h>
+#include <commctrl.h>
+#include "impl/uia_windows.inl"
+#elif defined(PUFFERUI_ENABLE_SDL3)
+namespace pui
+{
+bool sdl3_enable_uia(window &)
+{
+    return false; // no adapter on this platform yet (the nodes are still recorded)
+}
+} // namespace pui
+#endif
 
 #endif // PUFFERUI_IMPLEMENTATION

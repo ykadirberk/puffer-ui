@@ -260,6 +260,12 @@ programs live in `examples/tutorial/` (`pui_tut_*` targets, built and
   (the titlebar's grab-anchor drag does the same: the host call only fires while
   the pointer actually moves).
   The demo HUD's `ui`/`sdl` split exists to attribute frame-time changes.
+- **Popups may leave the window.** A popup scope whose rect spills out of the
+  window records into a host overlay (`window_host::open_overlay`) and is
+  replayed onto it after the window presents; its input arrives in the parent's
+  local coordinates. Place popups with `detail::popup_space(c)` (the display
+  when overlays exist), never `c->screen`, and keep render-target effects out of
+  overlays (`ui::blur` already returns early there).
 - **The native caption is data, not geometry.** `window::caption` (drag
   regions from `ui::titlebar` / `ui::window_drag_region`, minus every rect that
   `interact` saw over them) is what the SDL hit-test drags by. Never hard-code

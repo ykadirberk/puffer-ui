@@ -9,6 +9,8 @@
 #include <SDL3/SDL.h>
 
 #include <cstdio>
+#include <cstring>
+#include <string>
 
 using namespace pui;
 
@@ -368,6 +370,119 @@ int main()
         CHECK(window_at(app.ctx, log->handle) == log); // untouched by the close
         begin_frame(app.ctx, *log, 0.016, 0.016);
         end_frame(app.ctx);
+        // r100: OS drops route to the window they happened over.
+        {
+            const std::string path = "C:/drop/me.png"; // SDL keeps the pointer, not a copy
+            SDL_Event d{};
+            d.drop.windowID = SDL_GetWindowID(static_cast<SDL_Window *>(log->handle));
+            d.drop.x = 20.0f;
+            d.drop.y = 30.0f;
+            d.type = SDL_EVENT_DROP_BEGIN;
+            sdl3_route(app.ctx, &d);
+            d.type = SDL_EVENT_DROP_FILE;
+            d.drop.data = path.c_str();
+            sdl3_route(app.ctx, &d);
+            d.type = SDL_EVENT_DROP_COMPLETE;
+            d.drop.data = nullptr;
+            sdl3_route(app.ctx, &d);
+            drop_result got{};
+            begin_frame(app.ctx, *log, 0.032, 0.016);
+            {
+                ui u(app.ctx);
+                got = u.drop_target(log->area, "pump_drop"_id);
+            }
+            end_frame(app.ctx);
+            CHECK(got.dropped && got.count == 1 && got.is_file(0));
+            CHECK(std::strcmp(got.item(0), path.c_str()) == 0);
+        }
+        // r100: BMP/PNG/JPEG through SDL into a device image.
+        {
+            SDL_Surface *s = SDL_CreateSurface(3, 2, SDL_PIXELFORMAT_RGBA32);
+            CHECK(s != nullptr);
+            const char *tmp = "pui_pump_test_image.bmp";
+            CHECK(s && SDL_SaveBMP(s, tmp));
+            SDL_DestroySurface(s);
+            image_handle img = sdl3_load_image(app.ctx, tmp);
+            CHECK(img.valid() && img.w == 3 && img.h == 2);
+            destroy_image(app.ctx, img);
+            SDL_RemovePath(tmp);
+            CHECK(!sdl3_load_image(app.ctx, "no/such/file.png").valid());
+        }
+        // r100: a saved state from a monitor that is gone lands on a display.
+        {
+            sdl3_apply_window_state(*log, {.x = -50000, .y = -50000, .w = 200, .h = 120});
+            SDL_DisplayID d = SDL_GetPrimaryDisplay();
+            SDL_Rect b{};
+            CHECK(SDL_GetDisplayUsableBounds(d, &b));
+            const rect cl = log->client;
+            CHECK(cl.x >= static_cast<f32>(b.x) && cl.y >= static_cast<f32>(b.y));
+            CHECK(cl.w == 200.0f && cl.h == 120.0f);
+            const std::string saved = save_window_state(get_window_state(*log));
+            window_state back{};
+            CHECK(load_window_state(saved, back) && back.w == 200);
+        }
+        // r101: the offscreen driver has no popup windows. The host notices
+        // (popup_bounds probes once) and a combo at the bottom of a small
+        // window stays inside it (above the header, or clamped) instead of
+        // drawing below the window where nothing would show. (The popup-window
+        // path itself is covered by tests/test_platform.cpp with a recording
+        // host and checked with real input on Windows.)
+        {
+            static const char *items[3] = {"Alpha", "Beta", "Gamma"};
+            i32 sel = 0;
+            const rect cb = rect::make(20, log->area.h - 40.0f, 150, 28);
+            const auto frame = [&](f64 t)
+            {
+                begin_frame(app.ctx, *log, t, 0.016);
+                {
+                    ui u(app.ctx);
+                    (void)u.combo(cb, "", items, 3, sel, "pump_cb"_id);
+                }
+                end_frame(app.ctx);
+            };
+            const auto button = [&](f32 x, f32 y, bool down)
+            {
+                SDL_Window *lw = static_cast<SDL_Window *>(log->handle);
+                SDL_Event m{};
+                m.type = SDL_EVENT_MOUSE_MOTION;
+                m.motion.windowID = SDL_GetWindowID(lw);
+                m.motion.x = x;
+                m.motion.y = y;
+                sdl3_route(app.ctx, &m);
+                SDL_Event b{};
+                b.type = down ? SDL_EVENT_MOUSE_BUTTON_DOWN : SDL_EVENT_MOUSE_BUTTON_UP;
+                b.button.windowID = SDL_GetWindowID(lw);
+                b.button.button = SDL_BUTTON_LEFT;
+                b.button.x = x;
+                b.button.y = y;
+                sdl3_route(app.ctx, &b);
+            };
+            int before = 0;
+            SDL_free(SDL_GetWindows(&before));
+            button(cb.x + 20.0f, cb.y + 10.0f, true);
+            frame(0.10);
+            button(cb.x + 20.0f, cb.y + 10.0f, false);
+            frame(0.12);
+            int after = 0;
+            SDL_free(SDL_GetWindows(&after));
+            CHECK(after == before); // no popup window on this driver
+            const uiid drop = id_child("pump_cb"_id, "dropdown"_id);
+            rect area{};
+            for (i32 i = 0; i < app.ctx->popup_depth; ++i)
+                if (app.ctx->popups[i].id == drop) area = app.ctx->popups[i].area;
+            CHECK(area.h > 0.0f && area.y >= 0.0f && area.bottom() <= log->area.h); // inside
+            const f32 beta_y = area.y + 6.0f + 26.0f + 2.0f + 13.0f;
+            button(area.x + 30.0f, beta_y, true);
+            frame(0.14);
+            button(area.x + 30.0f, beta_y, false);
+            frame(0.16);
+            frame(0.18);
+            CHECK(sel == 1);
+        }
+        // r106: the offscreen driver has no native window: the UIA adapter
+        // declines quietly (the bootstrap already tried) and recording stays off.
+        CHECK(!sdl3_enable_uia(*log));
+        CHECK(!app.ctx->a11y_enabled);
         sdl3_app_close_window(app, *app.win); // the primary is not closed this way
         CHECK(app.ctx->window_count == 2);
         CHECK(violation_count(app.ctx) == 0);

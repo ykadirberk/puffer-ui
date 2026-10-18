@@ -16,11 +16,16 @@ remain design notes. A planned interface is not an available API.
 - Prerequisite (met): the `pui::comp` components (r91–93) centralize metric
   reads, which makes the scale multiply nearly free.
 
-## 2. Text shaper interface
+## 2. Text shaper interface — implemented (r104)
 
-- **Shape**: an interface with `measure(text, style) -> extent`,
-  `shape(text, style) -> glyph run`, `rasterize(...)`; the current
-  stb_truetype implementation is the default.
+- **API**: `text_shaper::shape(ctx, font, size, text, emit)` emits
+  `shaped_glyph{cp, kern_in}` per glyph; `set_text_shaper(ctx, shaper)`
+  installs one (nullptr = built-in: codepoint by codepoint with stb's kerning
+  pairs). Measuring and drawing share the one layout it produces.
+- Decision (2026-10-14): no HarfBuzz in the library. An app that needs complex
+  scripts can wrap a shaping engine of its choice in a `text_shaper`; editing
+  still maps carets codepoint by codepoint, so such a shaper should emit one
+  glyph per input codepoint.
 - Why now: stb supports GPOS pair kerning, but has no BiDi/RTL or ligatures.
   Ordered glyph fallback is implemented separately. A shaping backend (HarfBuzz or a
   built-in subset) becomes a drop-in behind the interface.
@@ -37,11 +42,16 @@ remain design notes. A planned interface is not an available API.
   slot to keyed-by-pointer. Deferred until a touch use case exists; the
   seam is the `pointer_id` field.
 
-## 4. Accessibility hook
+## 4. Accessibility hook — implemented (r106)
 
-- **Shape**: components may call
-  `u.a11y({role, name, state, rect})` — compiled out by default; a platform
-  adapter consumes the recorded tree later.
+- **API**: `u.a11y(id, rect, a11y_info{role, name, value, state})`; built-in
+  widgets and components call it. Off until `set_accessibility` (zero cost);
+  each window publishes its frame's nodes (`a11y_count` / `a11y_node`), and
+  assistive actions come back as `a11y_invoke` (a click) / `a11y_focus`.
+- Adapter: Windows UI Automation (`impl/uia_windows.inl`, `sdl3_enable_uia`,
+  enabled by the SDL3 bootstrap, recording starts with the first client query).
+  The tree is flat (one level under the window); other platforms read the same
+  nodes when an adapter is written.
 - Why components first: one call per component instead of retrofitting
   every widget.
 
@@ -56,12 +66,11 @@ to a widget. This small API is available now; the registry below remains a propo
   navigation already routes through the ring; commands add the
   app-level shortcut layer on top.
 
-## 6. Stable window handles (C8)
+## 6. Stable window handles (C8) — implemented differently (r99)
 
-- **Shape**: `window_id` (an integer generation-stamped handle) handed out
-  alongside `window*`; `remove_window` invalidates pointers but not ids;
-  `window_at(window_id)` re-fetches. Raw-pointer APIs deprecate over a
-  release window.
+- Each window is its own allocation, so a `window*` stays valid until that
+  window is removed, and its root id (and every widget's state) survives other
+  windows coming and going. No separate id type was needed.
 
 ## 7. Material / effect hook
 

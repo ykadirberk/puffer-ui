@@ -129,6 +129,81 @@ void mods_event(window &w, bool shift, bool ctrl, bool alt, bool super)
     q.super_down = super;
 }
 
+void a11y_invoke(window &w, uiid id)
+{
+    detail::input_for(w).a11y_invoke = id;
+}
+
+void ui::sample_pixel(uiid id, vec2 at)
+{
+    ctx->st->pixel_requests.push_back({id, at});
+}
+
+bool ui::take_sampled_pixel(uiid id, color &out)
+{
+    auto &results = ctx->st->pixel_results;
+    const auto it = results.find(id);
+    if (it == results.end()) return false;
+    out = it->second;
+    results.erase(it);
+    return true;
+}
+
+void ui::a11y(uiid id, rect r, const a11y_info &info)
+{
+    context *c = ctx;
+    if (!c->a11y_enabled || !c->current_window) return;
+    u32 state = info.state;
+    if (c->focus == id) state |= A11Y_FOCUSED;
+    if (c->disabled_depth > 0) state |= A11Y_DISABLED;
+    a11y_tree &f = c->st->a11y_frame;
+    if (f.count == f.nodes.size()) f.nodes.emplace_back();
+    a11y_tree::node &n = f.nodes[f.count++];
+    n.id = id;
+    n.role = info.role;
+    n.bounds = r;
+    n.state = state;
+    n.name.assign(info.name); // assign keeps the slot's capacity: no allocation once warm
+    n.value.assign(info.value);
+}
+
+void dismiss_popups(window &w)
+{
+    detail::input_for(w).popup_dismiss = true;
+}
+
+void drop_event(window &w, drop_kind kind, f32 x, f32 y, const char *data)
+{
+    window_input &q = detail::input_for(w);
+    if (kind != drop_kind::COMPLETE)
+    {
+        q.drop_active = true;
+        q.drop_x = x / w.input_scale;
+        q.drop_y = y / w.input_scale;
+    }
+    if (kind == drop_kind::COMPLETE)
+    {
+        q.drop_active = false;
+        return;
+    }
+    if (kind != drop_kind::FILE && kind != drop_kind::TEXT) return;
+    if (!data) data = "";
+    usize len = 0;
+    while (data[len] != '\0') ++len;
+    const i32 cap = static_cast<i32>(sizeof(q.drop_items));
+    const i32 need = static_cast<i32>(len) + 2; // kind byte + NUL
+    if (q.drop_len + need > cap)
+    {
+        PUFFERUI_CHECK(VIOL_INPUT_OVERFLOW, false,
+                       "dropped items did not fit the per-frame drop buffer (item dropped)");
+        return;
+    }
+    q.drop_items[q.drop_len++] = kind == drop_kind::FILE ? 'f' : 't';
+    for (usize i = 0; i < len; ++i) q.drop_items[q.drop_len++] = data[i];
+    q.drop_items[q.drop_len++] = '\0';
+    q.drop_count += 1;
+}
+
 void mouse_move(context *c, f32 x, f32 y)
 {
     window *w = detail::ensure_primary(c);
@@ -750,6 +825,12 @@ interaction ui::interact(uiid id, rect area, bool enabled, bool focusable)
         }
     }
 
+    if (c->a11y_invoke == id && id != 0 && !in.blocked)
+    {
+        in.clicked = true; // assistive technology invoked it (a11y_invoke)
+        c->a11y_invoke = 0;
+    }
+
     if (in.clicked)
     {
         if (c->last_click_id == id && (c->now - c->last_click_time) < 0.35)
@@ -790,6 +871,29 @@ interaction ui::interact(uiid id, rect area, bool enabled, bool focusable)
 #endif
     }
     return in;
+}
+
+drop_result ui::drop_target(rect r, uiid id)
+{
+    context *c = ctx;
+    drop_result out;
+    // Through interact for the input layers: a popup or panel over the target
+    // blocks the drop like it blocks a click. Not a focus stop.
+    const interaction in = interact(id, r, true, false);
+    if (in.blocked || in.disabled) return out;
+    const rect clip =
+        c->clip_depth > 0 ? c->clip_stack[c->clip_depth - 1] : rect{0.0f, 0.0f, 1.0e9f, 1.0e9f};
+    const bool over = rect::intersect(r, clip).contains(c->drop_x, c->drop_y);
+    out.hovering = c->drop_active && over;
+    if (over && c->drop_count > 0)
+    {
+        out.dropped = true;
+        out.count = c->drop_count;
+        out.items_ = c->drop_items;
+        out.len_ = c->drop_len;
+        c->drop_count = 0; // taken: later targets see none (the buffer stays for this frame)
+    }
+    return out;
 }
 
 // ---- cursors ----

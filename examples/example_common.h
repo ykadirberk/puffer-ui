@@ -216,7 +216,7 @@ inline example_page example_begin_page(ui &u, example_app &app, const char *titl
     // decoration on borderless windows, plus the invisible edge-resize strips.
     // The close request is handled by the run loop (primary quits, extras are
     // removed), so the page does not care which window this is.
-    window &w = *u.ctx->current_window;
+    window &w = *u.current_window();
     rect chrome = client;
     (void)u.titlebar(w, chrome, title);
 
@@ -225,7 +225,7 @@ inline example_page example_begin_page(ui &u, example_app &app, const char *titl
     if (subtitle) u.text(head.cut_top(example_ui::SUBTITLE_H), subtitle, th.text_dim, ALIGN_LEFT);
     const f32 line_y = head.bottom() + example_ui::DIVIDER_GAP;
     u.draw_line(area.left(), line_y, area.right(), line_y, th.border, 1.0f);
-    area.cut_top(example_ui::BODY_GAP);
+    (void)area.cut_top(example_ui::BODY_GAP);
     page.content = area;
     return page;
 }

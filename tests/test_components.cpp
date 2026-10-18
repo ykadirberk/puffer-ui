@@ -594,11 +594,13 @@ PUI_TEST(test_theme_lerp_slots)
     b.menu.bg = {255, 255, 255, 255};
     b.menu.blur = a.menu.blur + 20.0f;
     b.titlebar.height = a.titlebar.height + 10.0f;
+    b.text_gamma = a.text_gamma + 1.0f;
     a.titlebar.bg = some(color{0, 0, 0, 255});
     b.titlebar.bg = some(color{200, 0, 0, 255});
 
     const theme mid = theme_lerp(a, b, 0.5f);
     CHECK(mid.titlebar.height > a.titlebar.height && mid.titlebar.height < b.titlebar.height);
+    CHECK(mid.text_gamma > a.text_gamma && mid.text_gamma < b.text_gamma);
     CHECK(mid.titlebar.bg.set && mid.titlebar.bg.value.r > 0 && mid.titlebar.bg.value.r < 200);
     CHECK(mid.switch_ctrl.track_on.r > a.switch_ctrl.track_on.r &&
           mid.switch_ctrl.track_on.r < 255);
@@ -971,4 +973,226 @@ PUI_TEST(test_glass_menu)
     open_menu(0.0f, {1, 2, 3, 255}, tint, targets);
     CHECK(tint);
     CHECK(targets == 0); // an opaque menu needs no blur
+}
+
+// ---- r107: calendar math, HSV, the pickers ------------------------------------
+PUI_TEST(test_calendar_math)
+{
+    CHECK(days_in_month(2024, 2) == 29 && days_in_month(2023, 2) == 28);
+    CHECK(days_in_month(1900, 2) == 28 && days_in_month(2000, 2) == 29);
+    CHECK(days_in_month(2026, 4) == 30 && days_in_month(2026, 13) == 0);
+    CHECK(weekday({2026, 10, 15}) == 3); // a Thursday
+    CHECK(weekday({2000, 1, 1}) == 5);   // a Saturday
+    CHECK((add_days({2026, 12, 31}, 1) == date{2027, 1, 1}));
+    CHECK((add_days({2024, 3, 1}, -1) == date{2024, 2, 29}));
+    CHECK((add_days({2026, 1, 15}, 400) == date{2027, 2, 19}));
+    CHECK((add_days({2027, 2, 19}, -400) == date{2026, 1, 15}));
+    CHECK((add_months({2026, 1, 31}, 1) == date{2026, 2, 28}));
+    CHECK((add_months({2026, 1, 15}, -13) == date{2024, 12, 15}));
+}
+
+PUI_TEST(test_hsv_round_trip)
+{
+    const color samples[] = {{255, 0, 0, 255},     {0, 128, 255, 255}, {12, 200, 90, 255},
+                             {128, 128, 128, 255}, {0, 0, 0, 255},     {255, 255, 255, 40}};
+    for (const color c : samples)
+    {
+        const color back = from_hsv(to_hsv(c), c.a);
+        CHECK(std::abs(back.r - c.r) <= 1 && std::abs(back.g - c.g) <= 1 &&
+              std::abs(back.b - c.b) <= 1 && back.a == c.a);
+    }
+    CHECK(std::fabs(to_hsv({0, 255, 0, 255}).h - 120.0f) < 0.5f);
+}
+
+PUI_TEST(test_date_picker)
+{
+    tf_env env(400, 400);
+    date d{2026, 10, 15};
+    comp::edit_result r{};
+    const auto draw = [&](ui &u)
+    { r = comp::date_picker(u, rect::make(20, 20, 160, 28), d, {.id = "when"_id}); };
+    tf_click(env.c, 60, 30, 0.0, draw); // open
+    CHECK(!r.changed);
+    tf_frame(env.c, 0.05, draw);
+    CHECK(popup_present(env.c, id_child("when"_id, "grid"_id), true));
+    tf_key(env.c, key::RIGHT, false, false, 0.10, draw); // one day on
+    CHECK(r.changed && (d == date{2026, 10, 16}));
+    tf_key(env.c, key::PAGE_DOWN, false, false, 0.15, draw); // a month on
+    CHECK((d == date{2026, 11, 16}));
+    tf_key(env.c, key::ENTER, false, false, 0.20, draw); // closes
+    tf_frame(env.c, 0.25, draw);
+    tf_frame(env.c, 0.30, draw);
+    CHECK(!popup_present(env.c, id_child("when"_id, "grid"_id), true));
+    // Reopen and click a day: November 2026, Monday-first; the 1st is a
+    // Sunday, so it sits in the first row's last column.
+    tf_click(env.c, 60, 30, 0.40, draw);
+    tf_frame(env.c, 0.45, draw);
+    const f32 cell = 28.0f, pad = default_dark().spacing;
+    const f32 gx = 20.0f + pad,
+              gy = 20.0f + 28.0f + 4.0f + pad + cell * 2.0f; // below title + names
+    tf_click(env.c, gx + cell * 6.5f, gy + cell * 0.5f, 0.50, draw);
+    CHECK((d == date{2026, 11, 1}));
+}
+
+PUI_TEST(test_color_picker)
+{
+    tf_env env; // tf_frame draws a 300x200 window
+    color c{255, 0, 0, 255};
+    comp::edit_result r{};
+    // square 10..142, hue bar, alpha bar, then the info column (x ~200..290)
+    const rect area = rect::make(10, 10, 280, 150);
+    const auto draw = [&](ui &u) { r = comp::color_picker(u, area, c, {.id = "pick"_id}); };
+    tf_frame(env.c, 0.0, draw);
+    // Drag to the bottom of the square: value ~0 (black), the hue stays red.
+    mouse_move(env.c, 10 + 60, 10 + 131); // the square is 132 px: its last row
+    mouse_button(env.c, true);
+    tf_frame(env.c, 0.05, draw);
+    mouse_button(env.c, false);
+    tf_frame(env.c, 0.10, draw);
+    CHECK(c.r < 5 && c.g < 5 && c.b < 5); // the bottom row: value ~0 (black)
+    // Drag back up: red again (the remembered hue), not grey.
+    mouse_move(env.c, 10 + 130, 12);
+    mouse_button(env.c, true);
+    tf_frame(env.c, 0.15, draw);
+    mouse_button(env.c, false);
+    tf_frame(env.c, 0.20, draw);
+    CHECK(c.r > 200 && c.g < 60 && c.b < 60);
+
+    // Eyedropper: a device that can read pixels answers with its pixel.
+    env.nd.readable = true;
+    env.nd.pixel = color{10, 200, 30, 255};
+    tf_frame(env.c, 0.25, draw); // the button appears now that the device can read
+    // the info column: right of the square and the two bars
+    bool armed = false;
+    for (f32 y = 60; y < 150 && !armed; y += 6)
+    {
+        tf_click(env.c, 245, y, 0.30 + y * 0.001, draw);
+        armed = popup_present(env.c, id_child("pick"_id, "pickmode"_id), false);
+    }
+    CHECK(armed);
+    tf_click(env.c, 100, 185, 1.0, draw); // anywhere in the window: sampled at end_frame
+    tf_frame(env.c, 1.1, draw);           // delivered
+    CHECK(c.g > 150 && c.r < 40 && c.b < 60);
+    CHECK(!popup_present(env.c, id_child("pick"_id, "pickmode"_id), false)); // disarmed
+}
+
+// r107: table columns - hidden, reordered by dragging a header, toggled from
+// the header menu, scrolled sideways with a sticky first column.
+namespace
+{
+struct table_fixture
+{
+    tf_env env;
+    static constexpr i32 COLS = 4;
+    const char *headers[COLS] = {"Name", "Size", "Kind", "Date"};
+    comp::table_column cols[COLS] = {
+        {.width = 80.0f}, {.width = 80.0f}, {.width = 80.0f}, {.width = 80.0f}};
+    i32 order[COLS] = {0, 1, 2, 3};
+    comp::table_props props{};
+    std::vector<std::pair<i32, f32>> cells; // (column, x) of row 0, draw order
+    comp::table_result res{};
+    table_fixture()
+    {
+        props.id = "tbl"_id;
+        props.columns = cols;
+        props.order = order;
+    }
+    void frame(f64 t)
+    {
+        cells.clear();
+        env.frame(t,
+                  [&](ui &u)
+                  {
+                      res = comp::table(
+                          u, rect::make(0, 0, 300, 160), headers, 3,
+                          [&](ui &, rect r, i32 row, i32 col)
+                          {
+                              if (row == 0) cells.push_back({col, r.x});
+                          },
+                          props);
+                  });
+    }
+};
+} // namespace
+
+PUI_TEST(test_table_hidden_and_order)
+{
+    table_fixture f;
+    f.cols[1].hidden = true;
+    f.order[0] = 2; // Kind, Name, Size(hidden), Date
+    f.order[1] = 0;
+    f.order[2] = 1;
+    f.order[3] = 3;
+    f.frame(0.0);
+    f.frame(0.016);
+    CHECK(f.cells.size() == 3);
+    CHECK(f.cells[0].first == 2 && f.cells[1].first == 0 && f.cells[2].first == 3);
+    CHECK(f.cells[0].second < f.cells[1].second);
+}
+
+PUI_TEST(test_table_header_drag_reorders)
+{
+    table_fixture f;
+    f.frame(0.0);
+    // Drag "Name" (x 0..80) to between "Kind" and "Date" (Date starts at 240).
+    mouse_move(f.env.c, 30, 10);
+    mouse_button(f.env.c, true);
+    f.frame(0.016);
+    mouse_move(f.env.c, 230, 10);
+    f.frame(0.032);
+    mouse_button(f.env.c, false);
+    f.frame(0.048);
+    CHECK(f.res.columns_changed);
+    CHECK(f.order[0] == 1 && f.order[1] == 2 && f.order[2] == 0 && f.order[3] == 3);
+    CHECK(!f.res.sort_changed); // a drag is not a sort click
+}
+
+PUI_TEST(test_table_horizontal_sticky)
+{
+    table_fixture f;
+    f.props.horizontal = true;
+    f.props.sticky_first = true;
+    f.cols[1].width = 150.0f; // 80 + 150 + 80 + 80 = 390 > 300
+    f.frame(0.0);
+    f.frame(0.016);
+    const f32 kind_x = f.cells[2].second;
+    // Shift+wheel over the table scrolls sideways.
+    mouse_move(f.env.c, 150, 80);
+    mods_event(f.env.c, true, false);
+    mouse_wheel(f.env.c, 0.0f, -1.0f);
+    f.frame(0.032);
+    mods_event(f.env.c, false, false);
+    f.frame(0.048);
+    CHECK(f.cells[0].first == 0 && f.cells[0].second == 0.0f + 8.0f); // the sticky column
+    bool moved = false;
+    for (const auto &cx : f.cells)
+        if (cx.first == 2) moved = cx.second < kind_x;
+    CHECK(moved);
+}
+
+PUI_TEST(test_table_column_menu)
+{
+    table_fixture f;
+    f.frame(0.0);
+    // Right-press on the header opens the menu at the pointer.
+    mouse_move(f.env.c, 100, 10);
+    mouse_button(f.env.c, pointer_button::RIGHT, true);
+    f.frame(0.016);
+    mouse_button(f.env.c, pointer_button::RIGHT, false);
+    f.frame(0.032);
+    f.frame(0.048);
+    // Item 1 ("Size"): 6 px pad, 26 px rows, 2 px gaps. (No font here: the menu
+    // is only as wide as its padding, x 100..128.)
+    const f32 iy = 10.0f + 6.0f + 26.0f + 2.0f + 13.0f;
+    tf_click(f.env.c, 110, iy, 0.064,
+             [&](ui &u)
+             {
+                 f.res = comp::table(
+                     u, rect::make(0, 0, 300, 160), f.headers, 3, [](ui &, rect, i32, i32) {},
+                     f.props);
+             });
+    f.frame(0.1); // the pick lands (the rows of this frame were laid out before it)
+    CHECK(f.cols[1].hidden && f.res.columns_changed);
+    f.frame(0.116);
+    CHECK(f.cells.size() == 3);
 }

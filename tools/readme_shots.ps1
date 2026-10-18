@@ -58,6 +58,10 @@ $shots = @(
     @('numeric', 'pui_ex_numeric', '--selftest --frames 6 --no-script'),
     @('colors', 'pui_ex_colors', '--selftest --frames 6 --no-script'),
     @('dpi', 'pui_ex_dpi', '--selftest --frames 6 --no-script'),
+    @('files', 'pui_ex_files', '--selftest --frames 8 --no-script'),  # drops a test picture itself
+    @('textarea', 'pui_ex_textarea', '--selftest --frames 46 --no-script'),
+    @('a11y', 'pui_ex_a11y', '--selftest --frames 4 --no-script'),
+    @('pickers', 'pui_ex_pickers', '--selftest --frames 6 --no-script'),
     @('counter', 'pui_counter', ''),  # its own --screenshot mode (frame 4)
     @('showcase', 'pui_showcase', '--selftest --frames 100 --page 0 --no-script --no-hud'),
     @('showcase-light', 'pui_showcase', '--selftest --frames 100 --page 3 --no-script --no-hud --light')

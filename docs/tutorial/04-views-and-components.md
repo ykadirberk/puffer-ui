@@ -176,7 +176,7 @@ The text field has no placeholder property, but immediate mode makes one trivial
 
 <!-- src: examples/tutorial/step04_filters.cpp -->
 ```cpp
-if (s.draft.empty() && u.ctx->focus != "draft"_id) // a placeholder, drawn by hand
+if (s.draft.empty() && u.focused_id() != "draft"_id) // a placeholder, drawn by hand
     u.text(in.pad(u.th().padding * 0.5f + 2.0f, 0.0f), "What needs doing?", u.th().text_dim,
            ALIGN_LEFT);
 ```

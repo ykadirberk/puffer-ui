@@ -293,6 +293,14 @@ popup_scope::popup_scope(ui &u, uiid id, rect area, popup_flags flags)
 
     c->popup_layer_depth += 1;
     c->in_popup = true;
+
+    // A popup that leaves the window draws into a host overlay window (the
+    // host decides whether it can); its input still arrives in this window's
+    // local coordinates, so the rest of the popup machinery is unchanged.
+    const rect s = c->screen;
+    const bool spills =
+        area.x < s.x || area.y < s.y || area.right() > s.right() || area.bottom() > s.bottom();
+    if (spills && !has_flag(flags, POPUP_IN_WINDOW)) overlay_ = detail::overlay_begin(c, id, area);
 }
 
 popup_scope::~popup_scope()
@@ -303,6 +311,7 @@ popup_scope::~popup_scope()
     if (u_)
     {
         context *c = u_->ctx;
+        if (overlay_) detail::overlay_end(c);
         if (c->popup_layer_depth > 0) c->popup_layer_depth -= 1;
         c->in_popup = c->popup_layer_depth > 0;
     }
