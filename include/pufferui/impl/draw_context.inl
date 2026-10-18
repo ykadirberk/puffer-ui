@@ -148,7 +148,8 @@ inline void dl_add(context *c, const vertex *verts, i32 vcount, const i32 *idx, 
             dl.verts[i].v = wy;
         }
     }
-    dl.idx.reserve(dl.idx.size() + static_cast<usize>(icount));
+    // Let vector grow geometrically. Reserving exactly size + icount here
+    // relocated the entire batch once per primitive while warming up.
     for (i32 i = 0; i < icount; ++i) dl.idx.push_back(idx[i] + base);
 }
 

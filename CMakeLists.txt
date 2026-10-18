@@ -153,10 +153,15 @@ pui_add_exe(pui_core_tests SOURCES
 # are draw_calls/vertices. Baseline numbers live in docs/perf.md.
 pui_add_exe(pui_bench SOURCES tests/bench.cpp)
 
+# White-box regressions use the same implementation TU, with private test code
+# included at its end. The core archive is not pulled in (no unresolved symbols).
+pui_add_exe(pui_perf_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_INTERNAL_TESTS)
+
 # SDL event-pump tests: SDL_PushEvent-driven routing through the offscreen
 # driver. Same exit contract as the core tests (exit 0 = all passed).
 if(PUFFERUI_WITH_SDL3)
 pui_add_exe(pui_pump_tests SDL3 SOURCES tests/test_pump.cpp)
+pui_add_exe(pui_perf_pixels SDL3 SOURCES tests/test_perf_pixels.cpp)
 
 # Golden-image tests: offscreen SDL + software renderer, hash + BMP compare.
 pui_add_exe(pui_golden_tests SDL3 SOURCES tests/golden/test_golden.cpp

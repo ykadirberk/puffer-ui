@@ -19,6 +19,10 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   (`env.expect_clean = false` for tests that provoke guards on purpose).
 - `tests/golden/test_golden.cpp` — golden-image tests (target `pui_golden_tests`,
   SDL offscreen + software renderer).
+- `tests/test_performance.inl` — private cache/allocation regressions and `--bench`
+  workloads (`pui_perf_tests`), included at the end of the same implementation TU
+  only with `PUFFERUI_INTERNAL_TESTS`. `pui_perf_pixels` checks 16 pre-optimization
+  pixel fingerprints; `tools/compare_showcase.ps1` compares two showcase binaries.
 - `vendored/` — third-party code: `SDL/` (SDL3), `stb/stb_truetype.h`.
 
 ## Build & run
@@ -287,7 +291,7 @@ Every feature, revision, or fix must either **come with a test** or **pass the
 existing suite unchanged**:
 
 - `python tools/run_tests.py` runs all of the checks below in one go on Windows, Linux
-  and macOS (on Windows it finds MSVC itself): `--quick` = core + pump only,
+  and macOS (on Windows it finds MSVC itself): `--quick` = core + pump + performance,
   `--no-build`, `--release`, `--format`, `--skip-examples`. It exits non-zero if any
   step fails (the API-drift and tutorial checks need `pwsh`; they are skipped without).
 

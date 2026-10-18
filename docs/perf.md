@@ -98,3 +98,116 @@ The per-glyph liveness check and LRU store were a few nanoseconds per glyph
 (~20k glyphs per default frame): below what this benchmark resolves. The
 overlay replay change removes one vertex-array copy per open spilling popup
 per frame; no scene measures it.
+
+## Rendering-preserving review fixes (r110)
+
+Baseline: `feb1702`. Same machine, MSVC release (`/O2`, `/GL`, precise floating
+point), same vendored SDL and bundled fonts. No existing tests, golden BMPs,
+golden hashes, theme defaults, geometry, sampling passes or text accumulation
+order were changed.
+
+Changes:
+- Index batches grow geometrically instead of reserving the exact size per draw.
+- Text layouts keep the original 4096 primary slots and add 64 bounded victim
+  slots. Victims are reused only for the built-in shaper, the exact raw size,
+  and the original build's atlas epoch. Primary hit/eviction history stays
+  unchanged (quantized font-size keys otherwise change kerning on collisions).
+  Temporary layouts transfer their glyph vectors into the cache.
+- Ellipsis reuses the built-in glyph advances when the exact size and atlas
+  epoch match; it keeps the last cut for the same width/size/tail/epoch. Custom
+  shapers and quantized-size mismatches retain the original codepoint scan.
+- A context caches the gamma coverage table by the raw gamma value, including
+  the existing identity branch and minimum-gamma clamp.
+- Tables retain separate scratch buffers for every active nesting depth.
+- Blur allocates and clears eighth/sixteenth targets only when first needed.
+  Target dimensions, blit rectangles, radius thresholds and composites match
+  the baseline.
+
+`pui_perf_tests` adds eight regressions: geometric growth with exact indices,
+move ownership, colliding layouts and invalidation, quantized-size collision
+history, ellipsis
+against the original algorithm (UTF-8, fractional sizes, all alignments,
+substituting/fallback shapers), exact gamma coverage, allocation-free nested
+table scratch reuse, and lazy blur allocation/resize/failure recovery. Internal
+tests compile through the same `src/pufferui_impl.cpp`; shipping builds have no
+test counters or public test API.
+
+`pui_perf_pixels` matches 16 software-rendered pixel fingerprints captured from
+the baseline before editing the renderer. They cover odd blur extents and all
+pyramid levels, repeated blur calls, gamma values in the same quantization bin,
+fractional font sizes, ellipsis, and nested tables of 12/40 columns.
+
+The original 22 golden scenes remain exact in debug and release, including
+`blur_stable` (zero drift over 30 frames). All 205 existing core tests, pump
+tests, example/tutorial selftests, external core and SDL consumers, API/snippet
+checks and clang-format 22.1.3 pass on Windows.
+
+Showcase: `tools/compare_showcase.ps1` checked 33 before/after BMP pairs at
+1360x860 (all five pages, light/dark, first/16th frames, scripted overlays) and
+a scripted resize to 640x420. Every complete BMP file is byte-identical.
+`--no-hud` excludes the timing graph's inherently variable pixels; application
+sources are otherwise unchanged.
+
+For reproduction, preserve a baseline `pui_perf_tests --bench` binary and a
+baseline `pui_bench` binary before rebuilding. The showcase comparison binaries
+use the identical showcase application object and SDL library; only the
+implementation object differs (baseline header/slices from `feb1702`). Link
+both with identical flags. Run:
+
+```powershell
+out/build/x64-release/Release/pui_perf_tests.exe --bench
+out/build/x64-release/Release/pui_bench.exe --frames 300
+out/build/x64-release/Release/pui_bench.exe --longlines --frames 300
+tools/compare_showcase.ps1 -Before path/to/before.exe -After path/to/after.exe -Frames 96 -TimingPages @(0,3)
+```
+
+Measurement output and matching BMPs from this run are retained locally under
+`build-perf-review/` (gitignored). Times below use interleaved execution order;
+they are machine-relative, not cross-platform performance guarantees.
+
+Core benchmarks: median of five interleaved runs, 300 frames each (the first
+quarter is warm-up). The geometry counts are identical:
+
+| Scene | before ms/frame | after ms/frame | draw calls / vertices, both |
+| --- | --- | --- | --- |
+| default | 2.823 | 2.737 | 2 / 221,570 |
+| `--longlines` | 6.687 | 0.594 | 2 / 30,935 |
+
+Isolated `pui_perf_tests --bench` workloads: median of five interleaved runs,
+normalized per iteration. The setup/font loading is outside the timed region.
+Allocation counters are enabled in both versions for these isolated probes.
+
+| Workload | before ms | after ms | mechanism / stable evidence |
+| --- | --- | --- | --- |
+| cold index capacity, 4,000 quads | 2.36155 | 0.08047 | 4,000 exact capacity increases become geometric growth; indices identical |
+| alternate two colliding 12k-character lines | 2.21389 | 0.01221 | zero steady-state allocations after warm-up |
+| create/insert a 12k-glyph vector | 0.52300 | 0.45006 | cache owns the original allocation; no 2.88 MB vector copy |
+| ellipsis of a static 12k-character label | 1.08726 | 0.01864 | same UTF-8 cut and vertex stream as the original scan |
+| rasterize 26 new glyphs, gamma 1.35 | 0.09469 | 0.05433 | exact coverage table reused across glyphs/sizes |
+| warmed 12-column table | 0.01531 | 0.01424 | allocations fall from 9 per frame to 0; the time difference is small |
+
+Cold blur with radius 2 at 1600x1000: target creation falls from four targets to
+two; RGBA8 payload from 2,125,200 to 2,000,000 bytes. Both versions still perform
+two blits. Payload is a dimension-based calculation, not a GPU memory reading.
+
+Showcase timings use the offscreen SDL software renderer at 1360x860, with
+`--selftest --no-hud --no-script --page N --frames 96 --perf`. Every run skips
+60 warm-up frames and averages the remaining 36. Execution order alternates;
+the table reports medians of three runs per version for Overview and five for
+Effects (two extra pairs checked the variation in this case).
+
+| Showcase page | before build ms | after build ms | before frame ms | after frame ms |
+| --- | --- | --- | --- | --- |
+| Overview | 137.711 | 134.474 | 148.815 | 145.025 |
+| Effects | 140.742 | 138.981 | 151.913 | 149.291 |
+
+These are small median differences (frame time -2.55% / -1.73%) in a workload
+that includes the software renderer's cost. Repeated build averages ranged
+133.973..141.648 -> 129.399..134.669 ms for Overview and
+133.664..144.308 -> 134.499..153.296 ms for Effects: the Effects ranges overlap
+substantially. The isolated long-text gains should not be extrapolated to a
+large showcase-wide or accelerated-renderer speedup.
+
+Local evidence: `build-perf-review/core.csv`, `micro.csv`,
+`showcase/timing.csv`, `showcase/pixels.csv`, `binary-hashes.csv`, and the
+`debug-verified-suite.log` / `release-verified-suite.log` full-suite logs.

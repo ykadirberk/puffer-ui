@@ -397,7 +397,9 @@ table_result table(ui &u, rect area, std::span<const char *const> headers, i32 r
 
     // The shown columns in display order.
     const bool ordered = static_cast<i32>(p.order.size()) == cols;
-    std::vector<i32> shown;
+    detail::table_scratch_scope scratch(*c->st);
+    auto &shown = scratch.value.shown;
+    shown.clear();
     for (i32 k = 0; k < cols; ++k)
     {
         const i32 col = ordered ? p.order[k] : k;
@@ -408,7 +410,8 @@ table_result table(ui &u, rect area, std::span<const char *const> headers, i32 r
 
     // Widths: set ones as given, the rest share what is left (scrolling
     // tables keep every column at least its minimum).
-    std::vector<f32> widths(static_cast<usize>(cols), 0.0f);
+    auto &widths = scratch.value.widths;
+    widths.assign(static_cast<usize>(cols), 0.0f);
     f32 fixed = 0.0f;
     i32 flexible = 0;
     for (i32 col : shown)
@@ -451,7 +454,8 @@ table_result table(ui &u, rect area, std::span<const char *const> headers, i32 r
     xoff = clampf(xoff, 0.0f, max_x);
     const bool sticky = p.sticky_first && max_x > 0.0f && !shown.empty();
     const f32 sticky_w = sticky ? widths[shown[0]] : 0.0f;
-    std::vector<f32> xs(shown.size());
+    auto &xs = scratch.value.xs;
+    xs.resize(shown.size());
     {
         f32 run = 0.0f;
         for (usize k = 0; k < shown.size(); ++k)

@@ -40,6 +40,12 @@ jobs:
       - name: Core tests
         run: out/build/x64-debug/Debug/pui_core_tests.exe
 
+      - name: Performance regressions (debug)
+        run: out/build/x64-debug/Debug/pui_perf_tests.exe
+
+      - name: Performance pixel baselines (debug)
+        run: out/build/x64-debug/Debug/pui_perf_pixels.exe
+
       - name: Pump tests
         run: out/build/x64-debug/Debug/pui_pump_tests.exe
 
@@ -60,6 +66,12 @@ jobs:
 
       - name: Core tests (release)
         run: out/build/x64-release/Release/pui_core_tests.exe
+
+      - name: Performance regressions (release)
+        run: out/build/x64-release/Release/pui_perf_tests.exe
+
+      - name: Performance pixel baselines (release)
+        run: out/build/x64-release/Release/pui_perf_pixels.exe
 
       - name: Pump tests (release)
         run: out/build/x64-release/Release/pui_pump_tests.exe
@@ -101,11 +113,12 @@ jobs:
           -DCMAKE_CXX_COMPILER=${{ matrix.compiler == 'gcc' && 'g++' || 'clang++' }}
 
       - name: Build (headless: core tests + bench)
-        run: cmake --build out/build/linux --target pui_core_tests pui_bench
+        run: cmake --build out/build/linux --target pui_core_tests pui_perf_tests pui_bench
 
       - name: Core tests (ASan + UBSan)
         run: >
           out/build/linux/Debug/pui_core_tests &&
+          out/build/linux/Debug/pui_perf_tests &&
           out/build/linux/Debug/pui_core_tests --filter keyboard &&
           out/build/linux/Debug/pui_core_tests --filter virtual_list
 
@@ -114,8 +127,9 @@ jobs:
 
       - name: SDL offscreen suites
         run: >
-          cmake --build out/build/linux --target pui_pump_tests pui_golden_tests &&
+          cmake --build out/build/linux --target pui_pump_tests pui_golden_tests pui_perf_pixels &&
           out/build/linux/Debug/pui_pump_tests &&
+          out/build/linux/Debug/pui_perf_pixels &&
           out/build/linux/Debug/pui_golden_tests
 
       - name: External core consumers
@@ -139,13 +153,13 @@ jobs:
         run: cmake -B out/build/macos -G Ninja -DCMAKE_BUILD_TYPE=Debug
 
       - name: Build (core, SDL suites)
-        run: cmake --build out/build/macos --target pui_core_tests pui_pump_tests pui_golden_tests
+        run: cmake --build out/build/macos --target pui_core_tests pui_perf_tests pui_pump_tests pui_golden_tests pui_perf_pixels
 
       - name: Core tests
-        run: out/build/macos/Debug/pui_core_tests
+        run: out/build/macos/Debug/pui_core_tests && out/build/macos/Debug/pui_perf_tests
 
       - name: SDL offscreen suites
-        run: out/build/macos/Debug/pui_pump_tests && out/build/macos/Debug/pui_golden_tests
+        run: out/build/macos/Debug/pui_pump_tests && out/build/macos/Debug/pui_golden_tests && out/build/macos/Debug/pui_perf_pixels
 
       - name: Example selftests (offscreen)
         run: cmake --build out/build/macos --target examples_selftest

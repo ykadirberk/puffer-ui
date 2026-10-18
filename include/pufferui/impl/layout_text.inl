@@ -312,6 +312,25 @@ inline i32 gamma_q(const context *c)
     return static_cast<i32>(c->active_theme.text_gamma * 100.0f + 0.5f);
 }
 
+inline const u8 *coverage_curve(text_store *ts, f32 gamma)
+{
+    // Keep the raw input, not just gamma_q: two values in the same glyph-key
+    // bin can still produce different coverage for a newly rasterized glyph.
+    if (!ts->coverage_valid || ts->coverage_gamma != gamma)
+    {
+        const f32 inv = 1.0f / max2(0.1f, gamma);
+        const bool identity = static_cast<i32>(gamma * 100.0f + 0.5f) == 100;
+        for (i32 v = 0; v < 256; ++v)
+            ts->coverage_curve[v] =
+                identity
+                    ? static_cast<u8>(v)
+                    : static_cast<u8>(std::pow(static_cast<f32>(v) / 255.0f, inv) * 255.0f + 0.5f);
+        ts->coverage_gamma = gamma;
+        ts->coverage_valid = true;
+    }
+    return ts->coverage_curve;
+}
+
 inline u64 layout_key(context *c, font_handle font, f32 size, std::string_view text)
 {
     u64 key = (static_cast<u64>(static_cast<u32>(font)) << 48) ^
@@ -429,13 +448,7 @@ inline glyph get_glyph(context *c, i32 font_index, f32 size, u32 cp, i32 sub = 0
         page.shelf_x += gw + 1;
         page.last_used = c->frame;
         // The coverage curve (theme::text_gamma) as a lookup table.
-        u8 curve[256];
-        const f32 inv = 1.0f / max2(0.1f, c->active_theme.text_gamma);
-        for (i32 v = 0; v < 256; ++v)
-            curve[v] =
-                gamma_q(c) == 100
-                    ? static_cast<u8>(v)
-                    : static_cast<u8>(std::pow(static_cast<f32>(v) / 255.0f, inv) * 255.0f + 0.5f);
+        const u8 *curve = coverage_curve(ts, c->active_theme.text_gamma);
         std::vector<u8> rgba(static_cast<usize>(gw) * gh * 4);
         for (i32 n = 0; n < gw * gh; ++n)
         {
@@ -506,6 +519,8 @@ inline text_store::text_layout build_layout(context *c, font_handle fh, f32 size
         return built;
     }
     built = {};
+    built.builtin = true;
+    built.built_size = size;
     usize i = 0;
     u32 prev = 0;
     while (i < s.size())
@@ -516,7 +531,38 @@ inline text_store::text_layout build_layout(context *c, font_handle fh, f32 size
         prev = cp;
     }
     built.epoch = epoch;
+    built.build_epoch = epoch;
     return built;
+}
+
+inline text_store::text_layout *get_layout(context *c, font_handle fh, f32 size, std::string_view s)
+{
+    text_store &ts = *c->ts;
+    const u64 key = layout_key(c, fh, size, s);
+    if (auto *lay = ts.layout_cache.find(key)) return lay;
+
+    // A normal associative cache would change primary hit/miss history. Since
+    // the legacy key quantizes size but kerning uses the raw size, that can
+    // change pixels. Retain the original primary slot, and only replace a
+    // fresh build with an exactly equivalent, live built-in run.
+    text_store::text_layout built;
+    const u64 mixed = decltype(ts.layout_cache)::mix(key);
+    bool reused = false;
+    if (!ts.shaper)
+        if (auto *v = ts.layout_victims.find(mixed);
+            v && v->builtin && v->built_size == size && v->build_epoch == ts.recycled)
+        {
+            built = std::move(*v);
+            ts.layout_victims.slot_for(mixed).tag = 0;
+            reused = true;
+        }
+    if (!reused) built = build_layout(c, fh, size, s);
+    // Build before evicting, as before. A custom shaper keeps its original
+    // invocation pattern and is never served by the victim cache.
+    auto &primary = ts.layout_cache.slot_for(key);
+    if (primary.tag && !ts.shaper) ts.layout_victims.put(primary.tag, std::move(primary.value));
+    ts.layout_cache.put(key, std::move(built));
+    return ts.layout_cache.find(key);
 }
 } // namespace detail
 
@@ -525,7 +571,7 @@ void set_text_shaper(context *c, text_shaper *shaper)
     if (!c) return;
     if (!c->ts) c->ts = new text_store();
     c->ts->shaper = shaper;
-    for (auto &slot : c->ts->layout_cache.slots) slot.tag = 0;
+    c->ts->clear_layouts();
     c->redraw_requested = true;
 }
 
@@ -536,7 +582,7 @@ bool set_font_fallbacks(context *c, std::span<const font_handle> fonts)
         if (f < 0 || f >= static_cast<i32>(c->ts->fonts.size()) || !c->ts->fonts[f].ok)
             return false;
     c->ts->fallbacks.assign(fonts.begin(), fonts.end());
-    for (auto &slot : c->ts->layout_cache.slots) slot.tag = 0;
+    c->ts->clear_layouts();
     c->redraw_requested = true;
     return true;
 }
@@ -598,12 +644,7 @@ f32 ui::text_width(std::string_view s)
     // change for a loaded font, so entries cannot go stale. Building the
     // layout here is fine: a measure almost always precedes a draw of the
     // same string, and the built glyphs serve the emit path next call.
-    const u64 key = detail::layout_key(c, fh, c->active_theme.text_size, s);
-    if (text_store::text_layout *lay = c->ts->layout_cache.find(key)) return lay->width;
-
-    c->ts->layout_cache.put(key, detail::build_layout(c, fh, c->active_theme.text_size, s));
-    if (text_store::text_layout *lay = c->ts->layout_cache.find(key)) return lay->width;
-    return 0.0f;
+    return detail::get_layout(c, fh, c->active_theme.text_size, s)->width;
 }
 
 void ui::textf(rect r, color c, align a, const char *fmt, ...)
@@ -637,14 +678,7 @@ void ui::text(rect r, std::string_view s, color c, align a)
     // The layout cache is shared with text_width (same key): a hit emits
     // from cached glyph copies — no decode, no glyph-map lookups, no stb
     // calls.
-    const u64 key = detail::layout_key(cc, fh, size, s);
-    text_store::text_layout *lay = cc->ts->layout_cache.find(key);
-    if (!lay)
-    {
-        cc->ts->layout_cache.put(key, detail::build_layout(cc, fh, size, s));
-        lay = cc->ts->layout_cache.find(key);
-        if (!lay) return; // cache full? rebuild path guarantees a hit; paranoia
-    }
+    text_store::text_layout *lay = detail::get_layout(cc, fh, size, s);
 
     const f32 width = lay->width;
     f32 pen = (a == ALIGN_CENTER)  ? r.x + (r.w - width) * 0.5f
@@ -805,14 +839,48 @@ void ui::text_ellipsis(rect r, std::string_view s, color c, align a)
     usize i = 0, cut = 0;
     f32 x = 0.0f;
     u32 prev = 0;
-    while (i < s.size())
+    // Re-find after measuring the ellipsis: that lookup can evict a cache
+    // entry. Never retain a layout pointer across another layout insertion.
+    const f32 size = cc->active_theme.text_size;
+    text_store::text_layout *lay =
+        cc->ts ? cc->ts->layout_cache.find(detail::layout_key(cc, fh, size, s)) : nullptr;
+    if (lay && lay->ellipsis_valid && lay->ellipsis_width == r.w && lay->ellipsis_size == size &&
+        lay->ellipsis_tail_width == ell_w && lay->ellipsis_epoch == cc->ts->recycled)
+        cut = lay->ellipsis_cut;
+    else
     {
-        u32 cp = utf8_decode(s, i);
-        if (cp == UTF8_END) break;
-        x += detail::kern_advance(cc, fh, cc->active_theme.text_size, prev, cp);
-        x += detail::get_glyph(cc, fh, cc->active_theme.text_size, cp).advance;
-        if (x + ell_w <= r.w) cut = i; // i is past this codepoint now
-        prev = cp;
+        usize glyph_index = 0;
+        const bool cached =
+            lay && lay->builtin && lay->built_size == size && lay->epoch == cc->ts->recycled;
+        while (i < s.size())
+        {
+            const u32 cp = utf8_decode(s, i);
+            if (cp == UTF8_END) break;
+            if (cached)
+            {
+                const auto &g = lay->gs[glyph_index++];
+                x += g.kern_in;
+                x += g.g.advance;
+            }
+            else // Preserve the original codepoint cut for custom shapers.
+            {
+                x += detail::kern_advance(cc, fh, size, prev, cp);
+                x += detail::get_glyph(cc, fh, size, cp).advance;
+            }
+            if (x + ell_w <= r.w) cut = i;
+            prev = cp;
+        }
+        if (lay)
+        {
+            lay->ellipsis_width = r.w;
+            lay->ellipsis_size = size;
+            lay->ellipsis_cut = cut;
+            lay->ellipsis_tail_width = ell_w;
+            // A slow scan may recycle an atlas halfway through. Keep the
+            // source's validation epoch so such a cut is retried next time.
+            lay->ellipsis_epoch = lay->epoch;
+            lay->ellipsis_valid = true;
+        }
     }
     std::string out(s.substr(0, cut));
     out += ELLIPSIS;

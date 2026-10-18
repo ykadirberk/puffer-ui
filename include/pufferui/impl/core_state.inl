@@ -303,9 +303,8 @@ template <class V> struct flat_map
     }
 };
 
-// Direct-mapped cache: a fixed array of {tag, value}; lookup is one probe.
-// Collision = overwrite + recompute, so only use it for data whose
-// recomputation is cheap and side-effect-free (the purge disappears).
+// Bounded direct-mapped cache. Collisions replace the old entry; values can
+// transfer ownership into the cache without a deep copy.
 template <class T, usize N> struct direct_cache
 {
     static_assert((N & (N - 1)) == 0, "N must be a power of two");
@@ -325,18 +324,18 @@ template <class T, usize N> struct direct_cache
         return h ? h : 1;
     }
 
+    slot &slot_for(u64 h) { return slots[static_cast<usize>(mix(h)) & (N - 1)]; }
     T *find(u64 h)
     {
-        const u64 m = mix(h);
-        slot &s = slots[static_cast<usize>(m) & (N - 1)];
-        return (s.tag == m) ? &s.value : nullptr;
+        slot &s = slot_for(h);
+        return s.tag == mix(h) ? &s.value : nullptr;
     }
-    void put(u64 h, const T &v)
+    template <class V> void put(u64 h, V &&v)
     {
         const u64 m = mix(h);
         slot &s = slots[static_cast<usize>(m) & (N - 1)];
         s.tag = m;
-        s.value = v;
+        s.value = std::forward<V>(v);
     }
 };
 
@@ -378,8 +377,9 @@ struct text_store
     };
     std::unordered_map<glyph_key, glyph, glyph_key_hash> glyphs;
 
-    // Text layout cache (direct-mapped, one probe; collisions rebuild —
-    // side-effect-free): (font, size, string hash) -> width + the per-glyph
+    // Preserve the original 4096 primary slots and their exact hit/eviction
+    // history. A small victim cache avoids rebuilding safe, colliding runs.
+    // (font, size, string hash) -> width + the per-glyph
     // run (kern-in + glyph copy). text_width reads the width; ui::text emits
     // from the run — one cache, no decode and no glyph-map lookups on hit.
     struct cached_glyph
@@ -403,9 +403,28 @@ struct text_store
         // copy marked in `have`) was last known to be live: while no atlas page
         // has been recycled since, the draw loop needs no per-glyph checks.
         i32 epoch = -1;
+        i32 build_epoch = -1; // immutable: width was summed before any later recycling
         std::vector<cached_glyph> gs;
+        f32 built_size = 0.0f;
+        bool builtin = false;
+        // Last ellipsis cut, in UTF-8 bytes. Exact size matters: layout keys
+        // quantize sizes, but the legacy ellipsis kerning uses the raw size.
+        f32 ellipsis_width = 0.0f, ellipsis_size = 0.0f, ellipsis_tail_width = 0.0f;
+        usize ellipsis_cut = 0;
+        i32 ellipsis_epoch = -1;
+        bool ellipsis_valid = false;
     };
     direct_cache<text_layout, 4096> layout_cache;
+    direct_cache<text_layout, 64> layout_victims;
+    void clear_layouts()
+    {
+        for (auto &s : layout_cache.slots) s.tag = 0;
+        for (auto &s : layout_victims.slots) s.tag = 0;
+    }
+
+    f32 coverage_gamma = 0.0f;
+    bool coverage_valid = false;
+    u8 coverage_curve[256]{};
 
     // Glyph atlases. One 1024x1024 page holds a full UI set; pages spill when
     // it fills, so non-Latin vocabularies scale (each glyph carries its own
@@ -710,6 +729,14 @@ struct a11y_tree
 
 // Every keyed store lives in one struct: created with the context, freed with
 // one `delete`, reached without casts. A new store is one member here.
+struct table_scratch
+{
+    std::vector<i32> shown;
+    std::vector<f32> widths, xs;
+    table_scratch *nested = nullptr; // owned; one buffer set per active depth
+    ~table_scratch() { delete nested; }
+};
+
 struct ctx_stores
 {
     // Popup overlays; heap-allocated so a recorder's address stays put while
@@ -743,6 +770,8 @@ struct ctx_stores
     };
     std::vector<dialog_entry> dialogs;
     std::vector<f32> row_tops; // scroll_view::virtual_list(height_of) scratch
+    table_scratch tables;
+    table_scratch *table_active = nullptr; // borrowed during a table callback
     // virtual_list(height_of) offsets kept per list (virtual_list_opts::heights_version)
     struct kept_rows
     {
@@ -776,6 +805,27 @@ struct ctx_stores
 
 namespace detail
 {
+struct table_scratch_scope
+{
+    ctx_stores &stores;
+    table_scratch *previous;
+    table_scratch &value;
+    static table_scratch &acquire(ctx_stores &s)
+    {
+        if (!s.table_active) return s.tables;
+        if (!s.table_active->nested) s.table_active->nested = new table_scratch();
+        return *s.table_active->nested;
+    }
+    explicit table_scratch_scope(ctx_stores &s)
+        : stores(s), previous(s.table_active), value(acquire(s))
+    {
+        stores.table_active = &value;
+    }
+    ~table_scratch_scope() { stores.table_active = previous; }
+    table_scratch_scope(const table_scratch_scope &) = delete;
+    table_scratch_scope &operator=(const table_scratch_scope &) = delete;
+};
+
 inline defer_store *ensure_defers(context *c)
 {
     return &c->st->defers;

@@ -2,13 +2,14 @@
 """Builds and runs every check CI runs. Works on Windows, Linux and macOS.
 
 Usage:  python tools/run_tests.py                 # build + all suites (debug)
-        python tools/run_tests.py --quick         # core + pump tests only
+        python tools/run_tests.py --quick         # core + pump + performance regressions
         python tools/run_tests.py --no-build      # run what is already built
         python tools/run_tests.py --release       # a release build instead of debug
         python tools/run_tests.py --format        # also clang-format --dry-run --Werror
         python tools/run_tests.py --skip-examples # skip the examples_selftest target
 
-Steps: build, pui_core_tests, pui_pump_tests, pui_golden_tests, examples_selftest,
+Steps: build, core/pump/performance regressions, golden and performance pixel
+baselines, examples_selftest,
 API reference drift and tutorial snippets (those two are PowerShell scripts: they run
 when `pwsh` (or Windows PowerShell) is available and are skipped otherwise), and
 clang-format with --format. Exits 0 only when no step failed.
@@ -83,7 +84,7 @@ class Runner:
 
 def main():
     ap = argparse.ArgumentParser(description="Build and run every PufferUI check.")
-    ap.add_argument("--quick", action="store_true", help="core + pump tests only")
+    ap.add_argument("--quick", action="store_true", help="core + pump + performance regressions")
     ap.add_argument("--no-build", action="store_true", help="run what is already built")
     ap.add_argument("--release", action="store_true", help="release build instead of debug")
     ap.add_argument("--format", action="store_true", help="also run clang-format --dry-run")
@@ -115,9 +116,10 @@ def main():
                                                "-DCMAKE_BUILD_TYPE=Release"])
             else:
                 r.step(f"configure ({preset})", ["cmake", "--preset", preset])
-        targets = ["pui_core_tests", "pui_pump_tests"]
+        targets = ["pui_core_tests", "pui_pump_tests", "pui_perf_tests"]
         if not args.quick:
             targets.append("pui_golden_tests")
+            targets.append("pui_perf_pixels")
         # examples_selftest builds *and runs* every example: its own step below
         if not r.step(f"build ({', '.join(targets)})",
                       ["cmake", "--build", build_dir, "--target", *targets]):
@@ -133,9 +135,11 @@ def main():
         r.step(name, [path])
 
     suite("pui_core_tests", "core tests")
+    suite("pui_perf_tests", "performance regressions")
     suite("pui_pump_tests", "pump tests (SDL event routing)")
     if not args.quick:
         suite("pui_golden_tests", "golden-image tests")
+        suite("pui_perf_pixels", "performance pixel baselines")
         r.step("external consumer builds", [sys.executable, os.path.join(ROOT, "tools", "check_consumers.py")])
         if not args.skip_examples:
             r.step("examples_selftest (every example, offscreen)",

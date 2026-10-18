@@ -542,41 +542,45 @@ void ui::draw_arc(vec2 center, f32 radius, f32 thickness, f32 a0, f32 a1, color 
 namespace detail
 {
 
-inline blur_store *ensure_blur(context *c, i32 ow, i32 oh)
+inline blur_store *ensure_blur(context *c, i32 ow, i32 oh, f32 radius)
 {
     if (!c->device) return nullptr;
     if (!c->blur) c->blur = new blur_store();
     blur_store *bs = c->blur;
-    if (bs->w == ow && bs->h == oh && bs->half && bs->quarter) return bs;
-
-    if (bs->half) c->device->destroy_target(bs->half);
-    if (bs->quarter) c->device->destroy_target(bs->quarter);
-    if (bs->eighth) c->device->destroy_target(bs->eighth);
-    if (bs->sixteenth) c->device->destroy_target(bs->sixteenth);
+    if (bs->w != ow || bs->h != oh)
+    {
+        for (texture_handle t : {bs->half, bs->quarter, bs->eighth, bs->sixteenth})
+            if (t) c->device->destroy_target(t);
+        *bs = {};
+        bs->w = ow;
+        bs->h = oh;
+    }
 
     const i32 hw = (ow + 1) / 2, hh = (oh + 1) / 2;
     const i32 qw = (hw + 1) / 2, qh = (hh + 1) / 2;
     const i32 ew = (qw + 1) / 2, eh = (qh + 1) / 2;
     const i32 sw = (ew + 1) / 2, sh = (eh + 1) / 2;
 
-    bs->half = c->device->create_target(hw, hh);
-    bs->quarter = c->device->create_target(qw, qh);
-    bs->eighth = c->device->create_target(ew, eh);
-    bs->sixteenth = c->device->create_target(sw, sh);
     // A new render target holds whatever the allocator handed out. The blur's
     // scaled blits do not cover every texel of a target (the destination rects
     // are fractional) and bilinear sampling at the edge of the written area
     // reads the rest, so clear them: the result must not depend on stale memory.
-    texture_handle previous = c->device->current_target();
-    for (texture_handle t : {bs->half, bs->quarter, bs->eighth, bs->sixteenth})
+    const texture_handle previous = c->device->current_target();
+    bool changed = false;
+    const auto ensure = [&](texture_handle &t, i32 w, i32 h)
     {
-        if (!t) continue;
+        if (t) return;
+        t = c->device->create_target(w, h);
+        if (!t) return;
         c->device->set_target(t);
         c->device->clear(color{0, 0, 0, 0});
-    }
-    c->device->set_target(previous);
-    bs->w = ow;
-    bs->h = oh;
+        changed = true;
+    };
+    ensure(bs->half, hw, hh);
+    ensure(bs->quarter, qw, qh);
+    if (radius > 4.0f) ensure(bs->eighth, ew, eh);
+    if (radius > 20.0f) ensure(bs->sixteenth, sw, sh);
+    if (changed) c->device->set_target(previous);
     return (bs->half && bs->quarter) ? bs : nullptr;
 }
 
@@ -634,7 +638,7 @@ void ui::blur(rect r, f32 blur_radius, const corner_radii &radii_in, f32 alpha)
     if (ry + rh > oh) rh = oh - ry;
     if (rw <= 2 || rh <= 2) return;
 
-    blur_store *bs = detail::ensure_blur(c, ow, oh);
+    blur_store *bs = detail::ensure_blur(c, ow, oh, blur_radius);
     if (!bs) return;
 
     const f32 fw = static_cast<f32>(rw), fh = static_cast<f32>(rh);
