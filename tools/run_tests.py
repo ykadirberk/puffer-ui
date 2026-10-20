@@ -84,7 +84,7 @@ class Runner:
 
 def main():
     ap = argparse.ArgumentParser(description="Build and run every PufferUI check.")
-    ap.add_argument("--quick", action="store_true", help="core + pump + performance regressions")
+    ap.add_argument("--quick", action="store_true", help="core + pump + performance + showcase regressions")
     ap.add_argument("--no-build", action="store_true", help="run what is already built")
     ap.add_argument("--release", action="store_true", help="release build instead of debug")
     ap.add_argument("--format", action="store_true", help="also run clang-format --dry-run")
@@ -116,7 +116,7 @@ def main():
                                                "-DCMAKE_BUILD_TYPE=Release"])
             else:
                 r.step(f"configure ({preset})", ["cmake", "--preset", preset])
-        targets = ["pui_core_tests", "pui_pump_tests", "pui_perf_tests"]
+        targets = ["pui_core_tests", "pui_pump_tests", "pui_perf_tests", "pui_showcase_tests"]
         if not args.quick:
             targets.append("pui_golden_tests")
             targets.append("pui_perf_pixels")
@@ -136,10 +136,12 @@ def main():
 
     suite("pui_core_tests", "core tests")
     suite("pui_perf_tests", "performance regressions")
+    suite("pui_showcase_tests", "showcase regressions")
     suite("pui_pump_tests", "pump tests (SDL event routing)")
     if not args.quick:
         suite("pui_golden_tests", "golden-image tests")
         suite("pui_perf_pixels", "performance pixel baselines")
+        r.step("1150-tile Spiral golden frames", [os.path.join(bin_dir, "pui_showcase_tests" + EXE), "--pixels"])
         r.step("external consumer builds", [sys.executable, os.path.join(ROOT, "tools", "check_consumers.py")])
         if not args.skip_examples:
             r.step("examples_selftest (every example, offscreen)",

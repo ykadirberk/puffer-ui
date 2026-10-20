@@ -23,6 +23,14 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   workloads (`pui_perf_tests`), included at the end of the same implementation TU
   only with `PUFFERUI_INTERNAL_TESTS`. `pui_perf_pixels` checks 16 pre-optimization
   pixel fingerprints; `tools/compare_showcase.ps1` compares two showcase binaries.
+- `tests/test_showcase.cpp` compiles the actual showcase helpers: `pui_showcase_tests`
+  runs six geometry/layout/allocation/SDL-upload regressions; `--pixels` checks four
+  pre-fix 1150-tile Spiral golden frames, and `--bench <renderer>` emits 180 frames
+  with three actual keyboard Add activations. `tools/compare_spiral.ps1` alternates
+  baseline/candidate runs and compares full BMPs and per-frame geometry counts.
+- `cmake/PufferUISdlD3d11.cmake` applies `src/sdl_d3d11_buffer.inl` to a generated
+  copy of the pinned SDL D3D11 source. It verifies the original function hash;
+  keep the submodule clean. System SDL and other renderers use their upstream code.
 - `vendored/` — third-party code: `SDL/` (SDL3), `stb/stb_truetype.h`.
 
 ## Build & run
@@ -291,7 +299,7 @@ Every feature, revision, or fix must either **come with a test** or **pass the
 existing suite unchanged**:
 
 - `python tools/run_tests.py` runs all of the checks below in one go on Windows, Linux
-  and macOS (on Windows it finds MSVC itself): `--quick` = core + pump + performance,
+  and macOS (on Windows it finds MSVC itself): `--quick` = core + pump + performance + showcase,
   `--no-build`, `--release`, `--format`, `--skip-examples`. It exits non-zero if any
   step fails (the API-drift and tutorial checks need `pwsh`; they are skipped without).
 

@@ -46,6 +46,12 @@ jobs:
       - name: Performance pixel baselines (debug)
         run: out/build/x64-debug/Debug/pui_perf_pixels.exe
 
+      - name: Showcase regressions and Spiral goldens (debug)
+        run: |
+          out/build/x64-debug/Debug/pui_showcase_tests.exe
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          out/build/x64-debug/Debug/pui_showcase_tests.exe --pixels
+
       - name: Pump tests
         run: out/build/x64-debug/Debug/pui_pump_tests.exe
 
@@ -72,6 +78,12 @@ jobs:
 
       - name: Performance pixel baselines (release)
         run: out/build/x64-release/Release/pui_perf_pixels.exe
+
+      - name: Showcase regressions and Spiral goldens (release)
+        run: |
+          out/build/x64-release/Release/pui_showcase_tests.exe
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          out/build/x64-release/Release/pui_showcase_tests.exe --pixels
 
       - name: Pump tests (release)
         run: out/build/x64-release/Release/pui_pump_tests.exe
@@ -127,9 +139,11 @@ jobs:
 
       - name: SDL offscreen suites
         run: >
-          cmake --build out/build/linux --target pui_pump_tests pui_golden_tests pui_perf_pixels &&
+          cmake --build out/build/linux --target pui_pump_tests pui_golden_tests pui_perf_pixels pui_showcase_tests &&
           out/build/linux/Debug/pui_pump_tests &&
           out/build/linux/Debug/pui_perf_pixels &&
+          out/build/linux/Debug/pui_showcase_tests &&
+          out/build/linux/Debug/pui_showcase_tests --pixels &&
           out/build/linux/Debug/pui_golden_tests
 
       - name: External core consumers
@@ -153,13 +167,18 @@ jobs:
         run: cmake -B out/build/macos -G Ninja -DCMAKE_BUILD_TYPE=Debug
 
       - name: Build (core, SDL suites)
-        run: cmake --build out/build/macos --target pui_core_tests pui_perf_tests pui_pump_tests pui_golden_tests pui_perf_pixels
+        run: cmake --build out/build/macos --target pui_core_tests pui_perf_tests pui_pump_tests pui_golden_tests pui_perf_pixels pui_showcase_tests
 
       - name: Core tests
         run: out/build/macos/Debug/pui_core_tests && out/build/macos/Debug/pui_perf_tests
 
       - name: SDL offscreen suites
-        run: out/build/macos/Debug/pui_pump_tests && out/build/macos/Debug/pui_golden_tests && out/build/macos/Debug/pui_perf_pixels
+        run: >
+          out/build/macos/Debug/pui_pump_tests &&
+          out/build/macos/Debug/pui_golden_tests &&
+          out/build/macos/Debug/pui_perf_pixels &&
+          out/build/macos/Debug/pui_showcase_tests &&
+          out/build/macos/Debug/pui_showcase_tests --pixels
 
       - name: Example selftests (offscreen)
         run: cmake --build out/build/macos --target examples_selftest

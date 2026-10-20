@@ -211,3 +211,117 @@ large showcase-wide or accelerated-renderer speedup.
 Local evidence: `build-perf-review/core.csv`, `micro.csv`,
 `showcase/timing.csv`, `showcase/pixels.csv`, `binary-hashes.csv`, and the
 `debug-verified-suite.log` / `release-verified-suite.log` full-suite logs.
+
+## Showcase layout scalability without visual changes (r111, 2026-10-20)
+
+Baseline: `f876bb2`. The new `pui_showcase_tests` harness was compiled and its
+baseline executable preserved **before** editing the showcase or SDL upload
+path. It includes the actual `examples/pui_showcase.cpp`, with its example
+entry point renamed in the test TU. It does not copy the application's drawing
+or animation implementation. Both binaries use the same MSVC Release/LTO
+settings, bundled fonts, core library and pinned SDL revision.
+
+Five fixes:
+
+- Gradient helpers reject shapes outside the paint area before building their
+  vertices. The 1.5 px feather allowance matches the rounded underlay. Tile
+  animation, interaction, hover state and context menus still execute.
+- Rounded gradients cache the original 28 corner angles' sine/cosine results.
+  The angle expressions, vertex arithmetic, colors and triangle order stay exact.
+- Grid packing keeps the earliest unoccupied cell instead of restarting at cell
+  zero for every item. A featured 2x2 item leaves earlier holes available to 1x1
+  items, preserving the original first-fit placement.
+- Layout slots belong to the showcase state; their capacity survives frames.
+  The warmed Spiral layout performs zero slot allocations.
+- The vendored SDL D3D11 upload keeps geometric buffer capacity with headroom
+  for transient layout peaks. Growth reserves at least twice the current payload
+  when representable, with a 64 KiB minimum and UINT ByteWidth overflow guards.
+  Geometric rounding can reserve almost four times the requested payload; reused
+  buffers never shrink. Only actual vertex bytes are uploaded, not spare capacity.
+  This trades retained buffer capacity for fewer driver allocations during motion.
+  If headroom allocation fails, an exact-size allocation is attempted. Allocation
+  or mapping failure leaves the old buffer and its capacity intact.
+
+The SDL submodule is unchanged. `cmake/PufferUISdlD3d11.cmake` verifies the pinned
+upstream upload function's SHA256 and substitutes `src/sdl_d3d11_buffer.inl` in a
+generated source copy for the Windows vendored static build. A changed upstream
+function fails configuration for review. Other renderers, disabled D3D11 builds
+and system SDL builds retain upstream behavior. Shaders, uploaded vertex values,
+indices, draw order, blur passes and sampling are unchanged.
+
+Six regressions cover first-fit layouts against an independent original scan
+(72 combinations of width, size, featured position and a dying tile), exact
+gradient vertex/index streams against the original arithmetic at clip boundaries,
+retained slots including Add, bounded buffer growth using captured Spiral payloads,
+exact upload bytes/reuse, and allocation/map failures with exact-size fallback.
+The upload tests compile the actual replacement function against a small COM fake;
+they run without requiring Windows graphics hardware.
+
+### Reproducible 1150-tile Spiral scenario
+
+`pui_showcase_tests --bench <renderer>` starts with 1150 tiles, Spiral, tile size
+64, at 1360x860. Time advances by a fixed 1/60 s. Frames 90, 120 and 150 invoke
+the actual Add control by keyboard; releases follow on the next frame. The run
+finishes with 1153 tiles. HUD pixels are excluded; normal rendering and motion
+remain enabled. The native window is hidden, vsync is off. Timed work is
+`begin_frame` + the showcase callback + `end_frame`/presentation; the OS event pump
+and process/font startup are outside this measurement.
+
+Five process runs per version alternate before/after order, with no simultaneous
+builds or benchmarks. Frames 0..59 warm up. `tools/compare_spiral.ps1` checks that
+all 180 per-frame tile/draw/vertex/index counts match and writes the raw CSVs.
+Separate capture runs compare frames 89, 91, 98 and 104, so readback does not
+affect timing runs. Reproduce with:
+
+```powershell
+tools/compare_spiral.ps1 -Before path/to/before.exe -After path/to/after.exe -Renderer direct3d11 -Runs 5
+tools/compare_spiral.ps1 -Before path/to/before.exe -After path/to/after.exe -Renderer null -Runs 5
+out/build/x64-release/Release/pui_showcase_tests.exe --pixels
+```
+
+D3D11 results below are medians of five per-run statistics. Steady state is
+frames 60..89; Add statistics use 90..179; P95/P99 use the full warmed interval
+60..179 (nearest rank). The worst-frame row is the median of five maxima, not
+the maximum across every run.
+
+| Native D3D11 statistic | Before ms | After ms |
+| --- | ---: | ---: |
+| Steady median frame | 16.286 | 14.581 |
+| Add-period mean frame | 33.252 | 19.397 |
+| Worst Add frame per run, median | 182.529 | 40.127 |
+| Warmed P95 | 127.037 | 25.167 |
+| Warmed P99 | 178.108 | 32.960 |
+
+The Add-period mean falls 41.7%; the median of worst Add frames falls 78.0%.
+All five maxima are retained: before 211.306 / 192.400 / 182.529 / 123.872 /
+134.040 ms; after 53.790 / 72.919 / 31.287 / 40.127 / 38.750 ms (rounded).
+The result reduces the hitch; it is not a guarantee that every frame meets
+16.7 ms. SDL still expands indexed geometry into vertex copies on this path.
+
+With the null device (CPU UI construction, no rasterization), the median steady
+frame falls 6.376 -> 4.960 ms and the median Add-period mean 8.313 -> 6.409 ms.
+CPU timing has outliers too; its five worst Add frames range 9.998..26.597 ms
+before and 8.207..34.173 ms after. These measurements describe this machine and
+protocol, not a cross-platform FPS promise.
+
+Four software-renderer golden hashes were captured from the baseline before
+optimization and pinned in `tests/test_showcase.cpp`. Original golden files and
+test expectations remain unchanged. Full BMP comparisons for those four frames
+and four native D3D11 frames are byte-identical. The standard 33-case showcase
+comparison additionally covers all five pages, both themes, overlays and resize.
+
+Local evidence is in `build-perf-fixes/`: `native-final/summary.csv`,
+`null-final/summary.csv`, their per-run CSVs and pixel SHA256 lists,
+`software-pixels.csv`, `measurement-summary.json`, and the full-suite logs.
+The executable pair is `build-perf-fixes/spiral-before.exe` / `spiral-after.exe`;
+their SHA256s are in `binary-hashes.csv`. Generated files
+and captures are gitignored. Build/run integration includes the new regressions
+in quick mode and the four Spiral golden frames in the full suite and CI.
+
+Windows validation: full Debug and Release suites pass, including all 205
+existing core tests, pump, eight existing performance regressions, six new
+showcase/upload regressions, 22 original golden scenes, 16 existing pixel
+references, four new Spiral golden frames, all example/tutorial selftests,
+external consumers, API/tutorial checks and clang-format 22.1.3. Installed SDL
+consumer checks and a native demo startup/graceful-close smoke also pass.
+No existing test source, golden BMP or expected hash was modified.

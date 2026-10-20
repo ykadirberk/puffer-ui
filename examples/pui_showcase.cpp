@@ -266,6 +266,7 @@ struct showcase
 
     // layout lab
     std::vector<lab_tile> tiles;
+    std::vector<rect> lab_slots; // app-owned scratch, capacity survives each layout pass
     u32 next_tile = 1, lab_selected = 0;
     i32 lab_mode = 0;
     f32 lab_size = 112.0f, lab_gap = 12.0f;
@@ -344,6 +345,9 @@ static void gradient_quad(ui &u, rect r, color tl, color tr, color br, color bl)
 static void gradient_round(ui &u, rect r, f32 radius, color tl, color tr, color br, color bl)
 {
     if (r.w <= 0.5f || r.h <= 0.5f) return;
+    // Keep the rounded underlay's feather (the fan itself stays inside r).
+    // State and interaction still run for tiles outside the paint area.
+    if (!u.is_visible(r.pad(-1.5f))) return;
     radius = clampf(radius, 0.0f, min2(r.w, r.h) * 0.5f);
     constexpr i32 SEG = 6;
     constexpr i32 RING = 4 * (SEG + 1);
@@ -358,7 +362,24 @@ static void gradient_round(ui &u, rect r, f32 radius, color tl, color tr, color 
                              {r.right() - radius, r.y + radius},
                              {r.right() - radius, r.bottom() - radius},
                              {r.x + radius, r.bottom() - radius}};
-    const f32 start[4] = {PI, PI * 1.5f, 0.0f, PI * 0.5f};
+    struct arc_table
+    {
+        f32 cs[4][SEG + 1], sn[4][SEG + 1];
+        arc_table()
+        {
+            const f32 starts[4] = {PI, PI * 1.5f, 0.0f, PI * 0.5f};
+            for (i32 c = 0; c < 4; ++c)
+                for (i32 s = 0; s <= SEG; ++s)
+                {
+                    // Same expression and rounding as the original per-vertex path.
+                    const f32 a =
+                        starts[c] + (PI * 0.5f) * static_cast<f32>(s) / static_cast<f32>(SEG);
+                    cs[c][s] = std::cos(a);
+                    sn[c][s] = std::sin(a);
+                }
+        }
+    };
+    static const arc_table arcs;
     const color mid = col_at(r.center_x(), r.center_y());
     v[0] = {r.center_x(), r.center_y(), 0.0f, 0.0f, mid};
     i32 n = 1;
@@ -366,9 +387,8 @@ static void gradient_round(ui &u, rect r, f32 radius, color tl, color tr, color 
     {
         for (i32 s = 0; s <= SEG; ++s)
         {
-            const f32 a = start[c] + (PI * 0.5f) * static_cast<f32>(s) / static_cast<f32>(SEG);
-            const f32 x = centers[c].x + std::cos(a) * radius;
-            const f32 y = centers[c].y + std::sin(a) * radius;
+            const f32 x = centers[c].x + arcs.cs[c][s] * radius;
+            const f32 y = centers[c].y + arcs.sn[c][s] * radius;
             v[n++] = {x, y, 0.0f, 0.0f, col_at(x, y)};
         }
     }
@@ -2097,11 +2117,12 @@ static f32 lab_layout(const showcase &s, f32 W, f32 t, std::vector<rect> &out)
     case 0: // grid packing: the selected tile spans 2x2, the rest flow around it
     {
         std::vector<u8> occ;
+        i32 first_free = 0;
         for (const lab_tile &tl : s.tiles)
         {
             if (tl.dying >= 0.0) continue;
             const i32 span = (tl.id == s.lab_selected && cols >= 2) ? 2 : 1;
-            for (i32 p = 0;; ++p)
+            for (i32 p = first_free;; ++p)
             {
                 const i32 rr = p / cols, cc = p % cols;
                 if (cc + span > cols) continue;
@@ -2119,6 +2140,11 @@ static f32 lab_layout(const showcase &s, f32 W, f32 t, std::vector<rect> &out)
                 out.push_back(rect::make(static_cast<f32>(cc) * (cell + gap),
                                          static_cast<f32>(rr) * (cell + gap), ext, ext));
                 height = max2(height, static_cast<f32>(rr + span) * (cell + gap) - gap);
+                // Later items cannot fit before the earliest unoccupied cell.
+                // A 2x2 tile may skip holes; leave those for subsequent 1x1 tiles.
+                while (first_free < static_cast<i32>(occ.size()) &&
+                       occ[static_cast<usize>(first_free)])
+                    ++first_free;
                 break;
             }
         }
@@ -2334,7 +2360,7 @@ static f32 page_layout(ui &u, showcase &s, rect area, vec2 origin)
     // the stage
     {
         const f32 inner_w = max2(40.0f, area.w - 40.0f);
-        std::vector<rect> slots;
+        std::vector<rect> &slots = s.lab_slots;
         const f32 need = lab_layout(s, inner_w, s.motion_on ? s.clock : 0.0f, slots);
         const rect r =
             card(u, s, "lab_stage"_id, col.next(max2(440.0f, need + 40.0f)), origin, enter_k(s, 1));
