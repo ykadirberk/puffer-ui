@@ -325,3 +325,108 @@ references, four new Spiral golden frames, all example/tutorial selftests,
 external consumers, API/tutorial checks and clang-format 22.1.3. Installed SDL
 consumer checks and a native demo startup/graceful-close smoke also pass.
 No existing test source, golden BMP or expected hash was modified.
+
+## Rounded geometry and offscreen paint preparation (r112, 2026-10-20)
+
+Baseline: `8dd5a0a`. Before changing production code, the existing showcase
+harness gained `--tiles 1150|5000`, and four additional software golden hashes
+were captured at 5000 tiles. The original 1150 hashes and all existing test
+bodies/expectations are unchanged. Both measured executables compile the real
+showcase and link the normal core/SDL libraries with MSVC Release/LTO, without
+review instrumentation, fast-math, reduced motion or altered drawing settings.
+The baseline executable was preserved before the three production fixes.
+
+- Rounded fans copy an immutable, constexpr 324-index topology. Vertex positions,
+  UV callbacks, colors, feather geometry and triangle order keep their original
+  arithmetic. The private helper also preserves indexing with prefilled scratch.
+- Draw-list index appends open the destination range once, then write the original
+  indices plus the original vertex base in order. Capacity still grows geometrically:
+  at least 64 indices, then doubling (with a max-size overflow guard). This can retain
+  up to roughly twice the current index payload after growth; buffers remain reusable.
+  It does not restore the old exact-size reserve per primitive.
+- Shadows reject a conservative union of all four layers and their feather before
+  preparing colors. Tile fills prepare HSV/alpha colors only if the body or gloss
+  can paint. The gloss has its own bounds because it can extend below a short,
+  animated body. Outlines, labels, animation, hover, interaction and menus still run.
+
+The public triangle AABB cull, SDL upload policy, shaders, blur and sampling are
+unchanged. A broader AABB-bypass experiment from the review was not included.
+
+Four new regressions compare against independent r111 implementations:
+
+- Full fan vertices/UVs/colors and indices across 32 rect/radius/prefix cases,
+  plus zero scratch allocations after warm-up.
+- Bulk appends across 12 scale/remap/disabled combinations and mixed payloads,
+  exact vertex transforms/index order, and geometric growth across 2000 submits.
+- Original shadow streams across 270 clip/rect/spread/signed-offset cases.
+- Original tile streams across 168 clip/rect/selection/hover/mode cases, including
+  empty/thin clips, gloss-only visibility, outlines and labels. Font atlases are
+  warmed before comparing batching so atlas creation is outside the comparison.
+
+### Matched Spiral measurements
+
+The r111 protocol is retained: 1360x860, tile size 64, Spiral, fixed 1/60 time,
+180 frames, actual keyboard Add at frames 90/120/150. Counts finish at 1153 or
+5003. Five before/after processes per renderer and tile count alternate order;
+no builds or other tests run during timing. Capture/readback uses separate runs.
+The native D3D11 window is hidden with vsync off. Timed work is begin-frame,
+showcase construction, and end-frame/presentation; startup and the OS event pump
+are outside the interval. Null measures CPU construction without rasterization.
+
+Each table entry is the median of five per-run statistics. Steady medians use
+frames 60..89; Add means/maxima use 90..179; P95/P99 use warmed frames 60..179
+with nearest rank. These are this revision's matched measurements, not a direct
+comparison against timings from earlier reports or the instrumented review.
+
+| Renderer / initial tiles | Steady median before/after ms | Add mean before/after ms | Add mean reduction |
+| --- | ---: | ---: | ---: |
+| Null / 1150 | 2.696 / 1.658 | 3.538 / 2.265 | 36.0% |
+| Null / 5000 | 4.356 / 2.985 | 6.600 / 4.305 | 34.8% |
+| D3D11 / 1150 | 10.771 / 10.128 | 14.592 / 12.744 | 12.7% |
+| D3D11 / 5000 | 12.769 / 12.154 | 24.995 / 21.553 | 13.8% |
+
+| Renderer / initial tiles | Worst Add frame, median before/after ms | Warm P95 before/after ms | Warm P99 before/after ms |
+| --- | ---: | ---: | ---: |
+| Null / 1150 | 5.472 / 4.018 | 4.664 / 2.939 | 5.025 / 3.702 |
+| Null / 5000 | 30.630 / 18.665 | 13.689 / 7.835 | 22.282 / 17.441 |
+| D3D11 / 1150 | 29.026 / 24.256 | 22.483 / 17.766 | 26.321 / 23.031 |
+| D3D11 / 5000 | 208.343 / 195.304 | 44.902 / 39.641 | 138.169 / 136.539 |
+
+Outliers are retained. All five native 5000-tile maxima were 588.821 / 208.343 /
+232.848 / 203.602 / 207.208 ms before and 310.143 / 194.428 / 204.175 / 180.573 /
+195.304 ms after. Null 5000 also retained a 47.250 ms candidate outlier. The
+three fixes reduce construction and average frame cost; they do not eliminate
+large-population native hitches or guarantee a 16.7 ms budget.
+
+```powershell
+tools/compare_spiral.ps1 -Before path/to/before.exe -After path/to/after.exe -Tiles 1150 -Renderer null -Runs 5
+tools/compare_spiral.ps1 -Before path/to/before.exe -After path/to/after.exe -Tiles 5000 -Renderer direct3d11 -Runs 5
+out/build/x64-release/Release/pui_showcase_tests.exe --pixels
+out/build/x64-release/Release/pui_showcase_tests.exe --pixels --tiles 5000
+```
+
+Raw evidence is local and gitignored under `build-perf-fixes2/`: the frozen
+`spiral-before.exe` / `spiral-after.exe`, `binary-hashes.csv`, four workload
+directories with all per-run CSVs and per-frame geometry checks,
+`measurement-summary.json`, native capture hashes, software comparisons and
+validation logs. All 180 frame counts match in every before/after timing pair;
+the eight native Spiral BMP pairs are byte-identical. The 5000-tile goldens are
+included in the full test runner and Windows/Linux/macOS CI.
+
+Windows validation: `tools/run_tests.py --format` and `--release --format` both
+finish with `all steps passed`. This covers the unchanged core/pump suites,
+10 private performance regressions (8 existing + 2 new), 8 showcase/upload/paint
+regressions (6 existing + 2 new), all 22 original golden scenes, all 16 existing
+pixel fingerprints, and both four-frame Spiral golden sets. All example/tutorial
+selftests, external core consumers, API reference and tutorial snippet checks,
+and clang-format 22.1.3 pass. The two new regression files also pass an explicit
+format check while untracked. The regenerated single-header distribution compiles
+and runs; a native Debug demo opens and closes gracefully with exit 0.
+
+All eight software Spiral BMP pairs are byte-identical, in addition to the eight
+native pairs. The standard 33-case showcase comparison also matches byte-for-byte
+across all pages, both themes, modal layers and resize. No original golden BMP,
+existing test body or old expected hash was changed. The measurement runner's
+tile-count extension and new regressions are the only test-source additions.
+`scope-verification.json` confirms this and confirms that the final Release
+executables have the same SHA256s as the measured candidate executables.

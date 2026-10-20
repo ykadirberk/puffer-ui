@@ -515,6 +515,10 @@ static void outline(ui &u, rect r, f32 radius, color c, f32 th)
 static void soft_shadow(ui &u, rect r, f32 radius, f32 spread, f32 strength, f32 dy)
 {
     if (strength <= 0.01f) return;
+    // All four translated/widened layers, including the rounded feather.
+    const rect paint =
+        grow(shifted(r, 0.0f, dy * 0.5f), std::fabs(spread) + std::fabs(dy) * 0.5f + 1.5f);
+    if (!u.is_visible(paint)) return;
     const color base = mixc(color{0, 0, 8, 255}, color{50, 50, 110, 255}, g_app.light);
     for (i32 i = 4; i >= 1; --i)
     {
@@ -2234,15 +2238,20 @@ static void lab_tile_draw(ui &u, showcase &s, const lab_tile &tl, rect d, bool h
     const theme &th = u.th();
     const bool sel = tl.id == s.lab_selected;
     const f32 rad = min2(16.0f, min2(d.w, d.h) * 0.22f);
-    const color c0 = fade(hsv(tl.hue, 0.5f, 1.0f), alpha),
-                c1 = fade(hsv(tl.hue + 0.06f, 0.6f, 0.95f), alpha);
-    const color c2 = fade(hsv(tl.hue + 0.12f, 0.72f, 0.78f), alpha),
-                c3 = fade(hsv(tl.hue + 0.04f, 0.66f, 0.86f), alpha);
-    gradient_round(u, d, rad, c0, c1, c2, c3);
     const rect gl = rect::make(d.x + 3.0f, d.y + 3.0f, max2(0.0f, d.w - 6.0f), d.h * 0.42f);
-    gradient_round(u, gl, max2(0.0f, rad - 3.0f), fade(color::white(), 0.28f * alpha),
-                   fade(color::white(), 0.18f * alpha), color{255, 255, 255, 0},
-                   color{255, 255, 255, 0});
+    // Gloss can extend below a very short, animated body. Test both bounds;
+    // outlines, text, animation and input remain independent of this fill.
+    if (u.is_visible(d.pad(-1.5f)) || u.is_visible(gl.pad(-1.5f)))
+    {
+        const color c0 = fade(hsv(tl.hue, 0.5f, 1.0f), alpha),
+                    c1 = fade(hsv(tl.hue + 0.06f, 0.6f, 0.95f), alpha);
+        const color c2 = fade(hsv(tl.hue + 0.12f, 0.72f, 0.78f), alpha),
+                    c3 = fade(hsv(tl.hue + 0.04f, 0.66f, 0.86f), alpha);
+        gradient_round(u, d, rad, c0, c1, c2, c3);
+        gradient_round(u, gl, max2(0.0f, rad - 3.0f), fade(color::white(), 0.28f * alpha),
+                       fade(color::white(), 0.18f * alpha), color{255, 255, 255, 0},
+                       color{255, 255, 255, 0});
+    }
     if (sel)
     {
         const f32 p = 0.5f + 0.5f * std::sin(s.clock * 4.0f);

@@ -23,11 +23,16 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   workloads (`pui_perf_tests`), included at the end of the same implementation TU
   only with `PUFFERUI_INTERNAL_TESTS`. `pui_perf_pixels` checks 16 pre-optimization
   pixel fingerprints; `tools/compare_showcase.ps1` compares two showcase binaries.
+  `tests/test_geometry_performance.inl` adds original-stream references for rounded
+  fan topology and bulk index appends, including transforms and geometric growth.
 - `tests/test_showcase.cpp` compiles the actual showcase helpers: `pui_showcase_tests`
-  runs six geometry/layout/allocation/SDL-upload regressions; `--pixels` checks four
-  pre-fix 1150-tile Spiral golden frames, and `--bench <renderer>` emits 180 frames
+  runs eight geometry/layout/allocation/SDL-upload/paint regressions; `--pixels`
+  checks four pre-fix Spiral golden frames at 1150 tiles; `--pixels --tiles 5000`
+  checks four more. `--bench <renderer> --tiles 1150|5000` emits 180 frames
   with three actual keyboard Add activations. `tools/compare_spiral.ps1` alternates
-  baseline/candidate runs and compares full BMPs and per-frame geometry counts.
+  baseline/candidate runs and compares full BMPs and per-frame geometry counts;
+  its `-Tiles` option selects the matching workload. Painting regressions live in
+  `tests/test_showcase_paint.inl`; existing test bodies and golden references stay fixed.
 - `cmake/PufferUISdlD3d11.cmake` applies `src/sdl_d3d11_buffer.inl` to a generated
   copy of the pinned SDL D3D11 source. It verifies the original function hash;
   keep the submodule clean. System SDL and other renderers use their upstream code.

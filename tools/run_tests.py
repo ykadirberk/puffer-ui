@@ -142,6 +142,7 @@ def main():
         suite("pui_golden_tests", "golden-image tests")
         suite("pui_perf_pixels", "performance pixel baselines")
         r.step("1150-tile Spiral golden frames", [os.path.join(bin_dir, "pui_showcase_tests" + EXE), "--pixels"])
+        r.step("5000-tile Spiral golden frames", [os.path.join(bin_dir, "pui_showcase_tests" + EXE), "--pixels", "--tiles", "5000"])
         r.step("external consumer builds", [sys.executable, os.path.join(ROOT, "tools", "check_consumers.py")])
         if not args.skip_examples:
             r.step("examples_selftest (every example, offscreen)",

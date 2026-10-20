@@ -90,11 +90,39 @@ namespace detail
 // Corners are walked in the order BR, BL, TL, TR; a square corner (radius 0)
 // collapses its arc to the corner point. `uv(x, y, u, v)` supplies texture
 // coordinates (the blur composite samples the scene; plain fills use none).
+struct rounded_fan_indices
+{
+    static constexpr i32 SEG = 8, RING = 4 * (SEG + 1), COUNT = 9 * RING;
+    i32 values[COUNT]{};
+    constexpr rounded_fan_indices()
+    {
+        i32 k = 0;
+        for (i32 i = 0; i < RING; ++i)
+        {
+            const i32 next = (i + 1) % RING;
+            values[k++] = 0;
+            values[k++] = 1 + i;
+            values[k++] = 1 + next;
+        }
+        for (i32 i = 0; i < RING; ++i)
+        {
+            const i32 next = (i + 1) % RING;
+            values[k++] = 1 + i;
+            values[k++] = 1 + RING + i;
+            values[k++] = 1 + RING + next;
+            values[k++] = 1 + i;
+            values[k++] = 1 + RING + next;
+            values[k++] = 1 + next;
+        }
+    }
+};
+inline constexpr rounded_fan_indices ROUNDED_FAN_INDICES{};
+
 template <class UvFn>
 inline void build_rounded_fan(rect r, const corner_radii &radii, color c, UvFn &&uv,
                               std::vector<vertex> &verts, std::vector<i32> &idx)
 {
-    constexpr i32 SEG = 8;
+    constexpr i32 SEG = rounded_fan_indices::SEG;
     // The nine angles of a quarter arc never change: their sines and cosines are
     // computed once (the fan is built for every rounded rect of every frame).
     struct arc_table
@@ -123,7 +151,7 @@ inline void build_rounded_fan(rect r, const corner_radii &radii, color c, UvFn &
         {r.right() - radii.tr, r.y + radii.tr, radii.tr, 0, -1},
     };
 
-    const i32 N = 4 * (SEG + 1);
+    const i32 N = rounded_fan_indices::RING;
     verts.reserve(static_cast<usize>(1 + 2 * N));
     idx.reserve(static_cast<usize>(9 * N));
 
@@ -153,26 +181,18 @@ inline void build_rounded_fan(rect r, const corner_radii &radii, color c, UvFn &
             }
         }
     }
-    const i32 ring1 = ring0 + N;
-
-    for (i32 i = 0; i < N; ++i)
+    // Every shipped caller starts with empty scratch; only vertex positions,
+    // UVs and colors vary. Copy the original, immutable triangle order once.
+    if (ring0 == 1)
     {
-        const i32 nxt = (i + 1) % N;
-        idx.push_back(0);
-        idx.push_back(ring0 + i);
-        idx.push_back(ring0 + nxt);
+        idx.insert(idx.end(), ROUNDED_FAN_INDICES.values,
+                   ROUNDED_FAN_INDICES.values + rounded_fan_indices::COUNT);
     }
-    for (i32 i = 0; i < N; ++i)
+    else
     {
-        const i32 nxt = (i + 1) % N;
-        const i32 in1 = ring0 + i, in2 = ring0 + nxt;
-        const i32 out1 = ring1 + i, out2 = ring1 + nxt;
-        idx.push_back(in1);
-        idx.push_back(out1);
-        idx.push_back(out2);
-        idx.push_back(in1);
-        idx.push_back(out2);
-        idx.push_back(in2);
+        // Preserve the helper's original indexing even for prefilled scratch.
+        for (i32 value : ROUNDED_FAN_INDICES.values)
+            idx.push_back(value == 0 ? 0 : value + ring0 - 1);
     }
 }
 } // namespace detail

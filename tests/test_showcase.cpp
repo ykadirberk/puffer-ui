@@ -254,8 +254,11 @@ static constexpr i32 golden_frames[] = {89, 91, 98, 104};
 // Captured from f876bb2 before the five optimizations (software renderer, bundled fonts).
 static constexpr u64 golden_hashes[] = {0x830f2b351fd26655ull, 0x09fd93be5d12d8ffull,
                                         0x4ca58d2303cb9ee8ull, 0xb344d93c2d2e8eccull};
+// Captured from 8dd5a0a before r112 (5000 tiles, same scene and frame numbers).
+static constexpr u64 golden_hashes_large[] = {0x7dff9989f9d46a84ull, 0xf8218090d31121d5ull,
+                                              0x7c2d1f5233eec5d7ull, 0xeca630b97aa34f56ull};
 
-int run_spiral(const char *renderer, bool pixels, const char *capture_prefix)
+int run_spiral(const char *renderer, bool pixels, const char *capture_prefix, i32 tiles)
 {
     example_app app;
     null_device nd;
@@ -295,7 +298,7 @@ int run_spiral(const char *renderer, bool pixels, const char *capture_prefix)
     seed(g_app);
     g_app.lab_mode = 4;
     g_app.lab_size = 64;
-    while (g_app.tiles.size() < 1150) add_tile(g_app);
+    while (g_app.tiles.size() < static_cast<usize>(tiles)) add_tile(g_app);
     g_start_page = PAGE_LAYOUT;
     g_no_hud = true;
     mouse_move(*app.win, 800, 220);
@@ -347,11 +350,13 @@ int run_spiral(const char *renderer, bool pixels, const char *capture_prefix)
                         continue;
                     }
                     const u64 hash = hash_bytes(1469598103934665603ull, rgba.data(), rgba.size());
-                    if (hash != golden_hashes[i])
+                    const u64 expected_hash =
+                        tiles == 5000 ? golden_hashes_large[i] : golden_hashes[i];
+                    if (hash != expected_hash)
                     {
                         std::printf("FAIL spiral frame=%d hash=0x%016llx expected=0x%016llx\n", f,
                                     static_cast<unsigned long long>(hash),
-                                    static_cast<unsigned long long>(golden_hashes[i]));
+                                    static_cast<unsigned long long>(expected_hash));
                         ++failures;
                     }
                 }
@@ -363,14 +368,15 @@ int run_spiral(const char *renderer, bool pixels, const char *capture_prefix)
                 }
             }
     }
-    const usize expected = pixels ? 1151 : 1153;
+    const usize expected = static_cast<usize>(tiles) + (pixels ? 1 : 3);
     if (g_app.tiles.size() != expected || violation_count(app.ctx)) ++failures;
     app.ctx->device = &measured.real;
     if (headless)
         destroy_context(app.ctx);
     else
         sdl3_app_shutdown(app.boot);
-    if (pixels && !failures) std::puts("all 4 Spiral golden frames matched (1150 tiles + Add)");
+    if (pixels && !failures)
+        std::printf("all 4 Spiral golden frames matched (%d tiles + Add)\n", tiles);
     return failures ? 1 : 0;
 }
 } // namespace
@@ -390,6 +396,8 @@ void operator delete(void *p, size_t) noexcept
     std::free(p);
 }
 
+#include "test_showcase_paint.inl"
+
 int main(int argc, char **argv)
 {
     if (argc > 1)
@@ -398,9 +406,14 @@ int main(int argc, char **argv)
         if (!pixels && std::strcmp(argv[1], "--bench") != 0) return 1;
         const char *renderer = pixels ? "software" : argc > 2 ? argv[2] : "null";
         const char *capture = nullptr;
+        i32 tiles = 1150;
         for (i32 i = 2; i + 1 < argc; ++i)
+        {
             if (std::strcmp(argv[i], "--capture") == 0) capture = argv[i + 1];
-        return run_spiral(renderer, pixels, capture);
+            if (std::strcmp(argv[i], "--tiles") == 0) tiles = std::atoi(argv[i + 1]);
+        }
+        if (tiles != 1150 && tiles != 5000) return 1;
+        return run_spiral(renderer, pixels, capture, tiles);
     }
     for (const auto &test : test_registry()) test.fn();
     if (!g_failures)

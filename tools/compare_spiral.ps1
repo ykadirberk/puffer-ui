@@ -6,7 +6,9 @@ param(
     [string]$Output = 'build-perf-fixes/spiral',
     [ValidateSet('null','software','direct3d11','direct3d12','opengl','metal')]
     [string]$Renderer = 'direct3d11',
-    [int]$Runs = 5
+    [int]$Runs = 5,
+    [ValidateSet(1150,5000)]
+    [int]$Tiles = 1150
 )
 $ErrorActionPreference = 'Stop'
 $Before = (Resolve-Path -LiteralPath $Before).Path
@@ -25,18 +27,18 @@ foreach ($run in 1..$Runs) {
     foreach ($variant in $order) {
         $exe = if ($variant -eq 'before') { $Before } else { $After }
         $prefix = Join-Path $Output "$variant-r$run"
-        $opts = @('--bench', $Renderer)
+        $opts = @('--bench', $Renderer, '--tiles', "$Tiles")
         & $exe @opts > "$prefix.csv" 2> "$prefix.stderr.txt"
         if ($LASTEXITCODE -ne 0) { throw "Spiral failed: $exe ($LASTEXITCODE)" }
         $rows = @(Import-Csv -LiteralPath "$prefix.csv")
-        if ($rows.Count -ne 180 -or [int]$rows[-1].count -ne 1153) { throw 'Add scenario did not complete' }
+        if ($rows.Count -ne 180 -or [int]$rows[-1].count -ne ($Tiles + 3)) { throw 'Add scenario did not complete' }
         $counts[$variant] = @($rows | ForEach-Object { "$($_.frame):$($_.count):$($_.draws):$($_.vertices):$($_.indices)" })
         $steady = @($rows | Where-Object { [int]$_.frame -ge 60 -and [int]$_.frame -lt 90 })
         $adding = @($rows | Where-Object { [int]$_.frame -ge 90 })
         $warm = @($rows | Where-Object { [int]$_.frame -ge 60 })
         $times = @($warm | ForEach-Object { [double]$_.total_ms } | Sort-Object)
         $summary += [pscustomobject]@{
-            Run=$run; Variant=$variant; Renderer=$Renderer
+            Run=$run; Variant=$variant; Renderer=$Renderer; Tiles=$Tiles
             SteadyMedianMs=(Median @($steady | ForEach-Object { [double]$_.total_ms }))
             AddingMeanMs=($adding | ForEach-Object { [double]$_.total_ms } | Measure-Object -Average).Average
             AddingWorstMs=($adding | ForEach-Object { [double]$_.total_ms } | Measure-Object -Maximum).Maximum
@@ -53,7 +55,7 @@ if ($Renderer -ne 'null') {
     foreach ($variant in @('before','after')) {
         $exe = if ($variant -eq 'before') { $Before } else { $After }
         $prefix = Join-Path $Output "$variant-pixels"
-        & $exe --bench $Renderer --capture $prefix > "$prefix.csv" 2> "$prefix.stderr.txt"
+        & $exe --bench $Renderer --tiles $Tiles --capture $prefix > "$prefix.csv" 2> "$prefix.stderr.txt"
         if ($LASTEXITCODE -ne 0) { throw "Spiral capture failed: $exe" }
     }
     $pixels = foreach ($frame in @(89,91,98,104)) {

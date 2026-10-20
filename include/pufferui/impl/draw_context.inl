@@ -148,9 +148,19 @@ inline void dl_add(context *c, const vertex *verts, i32 vcount, const i32 *idx, 
             dl.verts[i].v = wy;
         }
     }
-    // Let vector grow geometrically. Reserving exactly size + icount here
-    // relocated the entire batch once per primitive while warming up.
-    for (i32 i = 0; i < icount; ++i) dl.idx.push_back(idx[i] + base);
+    // Grow geometrically, then append in one pass without a capacity check per
+    // index. Exact-size reserve on every primitive would relocate the batch.
+    const usize first_index = dl.idx.size();
+    const usize required = first_index + static_cast<usize>(icount);
+    if (required > dl.idx.capacity())
+    {
+        const usize limit = dl.idx.max_size();
+        const usize grown = dl.idx.capacity() <= limit / 2 ? dl.idx.capacity() * 2 : limit;
+        dl.idx.reserve(max2(required, max2(static_cast<usize>(64), grown)));
+    }
+    dl.idx.resize(required);
+    i32 *out = dl.idx.data() + first_index;
+    for (i32 i = 0; i < icount; ++i) out[i] = idx[i] + base;
 }
 
 } // namespace detail
