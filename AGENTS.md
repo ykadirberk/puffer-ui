@@ -25,6 +25,13 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   pixel fingerprints; `tools/compare_showcase.ps1` compares two showcase binaries.
   `tests/test_geometry_performance.inl` adds original-stream references for rounded
   fan topology and bulk index appends, including transforms and geometric growth.
+- `tests/test_core_performance.inl` adds seven regressions for long-run kerning,
+  exact spring integration, 5000 rects, bounded sector topology, exact state TTL,
+  empty ID tables and nested text-area scratch. `pui_core_bench` compiles the
+  actual implementation with eight workloads in `tests/bench_core_performance.inl`;
+  `tools/compare_core.ps1` retains alternating before/after runs and allocations.
+  `pui_core_perf_pixels` checks 24 pre-fix frames covering text-area gutters,
+  long UTF-8 text, sector outlines, rect motion, raw text sizes, gamma and DPI.
 - `tests/test_showcase.cpp` compiles the actual showcase helpers: `pui_showcase_tests`
   runs eleven geometry/layout/allocation/SDL-upload/paint regressions; `--pixels`
   checks four pre-fix Spiral golden frames at 1150 tiles; `--pixels --tiles 5000`

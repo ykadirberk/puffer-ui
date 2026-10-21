@@ -590,3 +590,183 @@ checks. Final logs use the `two-large-` prefix; native raw runs/captures are in
 directories describe the rejected single-large-buffer candidate, not the final
 implementation. The initial `5000-direct3d11/` series predates the final bounds
 and test-fixture edits and is not pooled with final results.
+
+## Lossless core performance fixes (r114)
+
+Baseline: `79c7007fd176aaa7219306dc03c44a1dd26ed4f8`. This revision implements
+all six findings from the core review. Public APIs, geometry density, primitive
+order, feathering, font rasterization, blur passes and existing tests/references
+are retained. The SDL source, overlay and submodule are unchanged.
+
+- Long built-in layouts (at least 256 UTF-8 bytes) memoize only pure kerning
+  queries for that build. Glyph lookup/rasterization order, raw-size arithmetic,
+  primary/victim layout-cache behavior and custom-shaper calls stay unchanged.
+  Short labels keep the original path. The 2048-pair memo uses 24 KiB per context.
+- Rect motion uses one map insertion/lookup and one spring plan for all four
+  axes. It retains the original substeps, divisions, float operation order and
+  settling thresholds. An axis at the exact target with zero velocity skips
+  integration only with finite coefficients; unusual/overflowing coefficients
+  retain the original arithmetic. Snap, origin, duplicate-step and TTL behavior
+  are unchanged.
+- Sector index topology is cached by segment/ring count in eight context-owned
+  slots. Only at most 128 segments are retained (at most 72 KiB of index elements);
+  larger arcs use the original scratch path. Vertex recurrence and triangle
+  order are identical, including cold caches and collisions.
+- State collection keeps a conservative oldest-use bound. A scan is skipped
+  only when the original `now - last_used > ttl` test cannot expire any entry.
+  It rescans for backwards/non-finite time or a different TTL and includes future
+  inserts in the bound. Expiration remains exact, including floating-point TTL
+  boundaries. A due scan remains O(n); this does not promise elimination of every
+  worst-frame hitch.
+- Empty ID tables return immediately from `clear`, retaining capacity and the
+  original duplicate-detection semantics. Sparse nonempty tables still scan.
+- Text-area gutter marks retain scratch per active call depth. The shared typed
+  scratch-scope helper also serves nested tables. Both Debug and Release avoid
+  gutter scratch allocations after warm-up; nested calls preserve outer marks.
+
+### Reproducible workloads and references
+
+`pui_core_bench` compiles `tests/bench_core_performance.inl` with the actual
+implementation. Eight fixed workloads cover all six changes; allocations are
+counted along with elapsed time. The before executable uses the exact same
+benchmark source with the pinned baseline header/slices and matching MSVC
+Release `/O2`/LTO settings. `tools/compare_core.ps1` alternates execution order
+over five runs per version and retains every sample, including outliers.
+
+The actual showcase uses the existing 5000-tile Spiral protocol: size 64,
+1360x860, 180 fixed-dt frames, actual keyboard Add activations at 90/120/150,
+and 5003 items at the end. `tools/compare_spiral.ps1 -Tiles 5000` compares all
+180 count/draw/vertex/index tuples and all fourteen capture frames, including
+second-Add peak frames 125..129. Timing and captures run separately from builds
+and tests. Null-device CPU timings and native D3D11 total timings are reported
+separately; neither is a promise about other machines/renderers.
+
+Seven new private regressions leave the previous ten bodies unchanged:
+original built-in text metrics and shaper paths; 20,000 original spring steps
+including hitches; 900,000 rect submissions over 180 frames with 5000 items;
+256 sector-stream comparisons and bounded-cache/fallback/allocation checks;
+exact TTL/reference-map equivalence with backwards time and scan suppression;
+large ID-table reuse; and allocation-free/nested text-area scratch.
+
+`pui_core_perf_pixels` adds 24 software-rendered references captured with the
+unchanged baseline implementation. They cover multiple gutters, wrapped and
+unwrapped text, long UTF-8 runs, translucent outlines, sector topology, motion,
+raw font-size collisions, gamma, DPI and a TTL time jump. Existing golden BMPs,
+16 performance fingerprints and 18 Spiral references are untouched. The new
+pixel target is included in the full runner and Windows/Linux/macOS CI.
+
+### Core results
+
+Median of five per-version averages, milliseconds per workload iteration:
+
+| Workload | Before | After | Change |
+| --- | ---: | ---: | ---: |
+| 37,000-character uncached layout, warm glyphs | 8.464858 | 5.905058 | -30.2% |
+| 5000 stationary rects, whole core frame | 0.423634 | 0.248468 | -41.3% |
+| 5000 continuously retargeted rects, whole core frame | 0.369494 | 0.287837 | -22.1% |
+| 5000 sectors, warm topology/draw buffers | 0.670414 | 0.587930 | -12.3% |
+| Core frame with 5000 live rect states, none expired | 0.014864 | <0.001 | scan skipped |
+| Core frame with 100,000 live rect states, none expired | 0.944759 | <0.001 | scan skipped |
+| Empty ID table after 200,000 identities | 0.133853 | <0.001 | scan skipped |
+| Static numbered text area, 1000 lines | 0.029123 | 0.025467 | -12.6% |
+
+The last workload drops from **11 to 0 allocations per warm frame**. Layout
+vector allocations remain 27 per forced rebuild; the kerning optimization does
+not change their lifetime or glyph ordering. Other warm workloads allocate zero.
+Sub-microsecond empty-frame/empty-clear numbers are measurement-floor values;
+the useful result is that the linear scan no longer executes. Expired state,
+large topology fallbacks and cold-start allocations still have their normal cost.
+
+### 5000-tile Spiral results and variability
+
+The initial five alternating pairs showed substantial temporal variation and
+an adverse null-renderer pooled mean. Six additional pairs balance which binary
+runs first (three each). Both series are retained: **eleven pairs per renderer**,
+990 timed Add-window frames per version per renderer. The following medians
+cover all eleven run summaries; pooled means cover every Add-window frame.
+
+| Metric (ms) | Null before | Null after | D3D11 before | D3D11 after |
+| --- | ---: | ---: | ---: | ---: |
+| Median steady-frame median | 2.678850 | 2.531800 | 5.517700 | 5.393350 |
+| Median Add-window mean | 3.740218 | 3.667017 | 10.435218 | 10.173261 |
+| Median worst Add frame | 14.562200 | 14.849600 | 94.942700 | 89.970900 |
+| Median warm p95 | 7.403000 | 7.490900 | 25.381700 | 22.668900 |
+| Median warm p99 | 13.188500 | 13.624800 | 83.211100 | 82.061400 |
+| Pooled Add-window mean | 4.206690 | 4.234439 | 11.620877 | 11.372413 |
+
+The complete null-renderer mean is **0.66% worse**; its median worst frame is
+also worse. Native pooled mean improves 2.14%, but the confirmation series alone
+changes 10.029872 -> 9.970215 ms (-0.59%) and its median worst frame is slightly
+worse (87.949600 -> 88.839450 ms). These small native changes do not establish
+a uniform total-frametime gain. Spikes remain: the initial candidate's frame
+126 reaches **190.5762 ms**, versus the baseline series maximum of 172.6277 ms.
+Frame 126 is included in both software and native pixel comparisons. No outlier
+or unfavorable series is omitted, and this revision does not claim a 16.7 ms cap.
+
+For context, the initial null pooled mean is 4.825485 -> 5.056317 ms; the balanced
+confirmation mean is 3.691027 -> 3.549542 ms. All eleven runs' per-frame CSVs,
+per-run summaries and maxima are retained. These API wall timers do not identify
+the cause of the observed timing drift or driver stalls.
+
+The targeted state-collection saving is visible in the application: pooled Add
+`begin_frame` time is 0.103439 -> 0.000368 ms on null, and 0.245128 -> 0.002339 ms
+on D3D11. Null build time is 4.100360 -> 4.231015 ms, so the begin-frame saving
+does not translate into a lower pooled whole-frame mean in this experiment.
+Native build time is 10.508832 -> 10.459348 ms; end time is
+0.866917 -> 0.910726 ms. The draw/vertex/index stream is unchanged throughout.
+
+Five paired 180-frame control runs also retain every sample:
+
+| Existing core scene | Before median avg ms | After median avg ms | Median paired delta |
+| --- | ---: | ---: | ---: |
+| default | 3.036 | 3.184 | -0.34% |
+| `--longlines` | 0.696 | 0.684 | -2.31% |
+| `--wrap-type` | 2.401 | 2.486 | -2.54% |
+
+Default and wrap-type cross-run medians are slower even though the medians of
+matched-pair percentage differences are negative. Default paired differences
+range from -16.96% to +28.03%; long-lines includes a +29.74% pair. These controls
+do not establish a general scene speedup. Counts and atlas-page totals match in
+every paired control. Dedicated core improvements are reported separately from
+these noisy application/control timings.
+
+### Visual and validation receipt
+
+All **85 canonical BMP pairs** are byte-identical: 24 new core scenes, fourteen
+native 5000-tile Spiral frames, fourteen software Spiral frames and 33 showcase
+cases (pages/themes/scripted layers/resize). The confirmation series' fourteen
+additional native pairs match each other and the original native captures.
+Every count/draw/vertex/index tuple matches for all 180 frames in all eleven
+pairs of each timed renderer and in the software capture pair.
+
+Final Windows Debug and Release full suites both finish with `all steps passed`:
+unchanged core/pump tests, **17** private performance regressions (10 existing,
+7 new), 11 existing showcase regressions, 22 existing golden scenes (including
+zero blur drift over 30 frames), 16 existing pixel fingerprints, 24 new core
+references and all 18 existing Spiral references, including the 5000-tile peak.
+Every example/tutorial selftest, external core consumers, API-reference drift,
+57 tutorial snippets and clang-format 22.1.3 pass. New source files also pass
+an explicit formatting check. Installed SDL consumers pass in matching Debug
+and Release configurations; the amalgamated-header smoke passes. The native
+D3D11 demo starts and closes normally with exit 0. Linux/macOS CI is wired for
+the new pixel target; those platforms were not executed locally.
+
+All **49 previously tracked test/reference files** retain their original SHA256s;
+no existing test body, hash or golden BMP was changed. Final measured/copied
+executables and all source/font hashes are pinned in the receipt and verified
+against the final workspace/build outputs. The SDL submodule is clean.
+
+The committed machine-readable receipt is [perf/r114.json](perf/r114.json): all
+core samples, both complete Spiral series and aggregates, every run's worst
+warm frame, control samples, image hashes, source/binary identities, raw CSV
+hashes and validation results. Local raw artifacts are in
+`build-core-perf-fixes/`: `core/`, `5000-null/`, `5000-direct3d11/`, their
+`-confirmation/` counterparts, core/software BMPs, `showcase-pixels/` and
+`full-{debug,release}.log`. Earlier smoke/prototype CSVs are not final measurements.
+
+Re-run the frozen binaries after builds/tests finish:
+
+```powershell
+tools/compare_core.ps1 -Before build-core-perf-fixes/before-core-bench.exe -After build-core-perf-fixes/after-core-bench.exe -Output build-core-perf-fixes/core-repeat -Runs 5
+tools/compare_spiral.ps1 -Before build-core-perf-fixes/before-showcase-tests.exe -After build-core-perf-fixes/after-showcase-tests.exe -Output build-core-perf-fixes/spiral-repeat -Renderer direct3d11 -Tiles 5000 -Runs 6
+```

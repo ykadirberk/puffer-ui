@@ -987,9 +987,9 @@ void begin_frame(context *c, window &w, f64 now, f64 dt)
     c->want_cursor = cursor::ARROW;
 
     // Keyed UI state (animation, scroll) is collected after 5 s of disuse.
-    sweep_unused(c->st->anim.map, now, 5.0);
-    sweep_unused(c->st->rects.map, now, 5.0);
-    sweep_unused(c->st->scrolls.map, now, 5.0);
+    sweep_unused(c->st->anim.map, now, 5.0, &c->st->anim.gc);
+    sweep_unused(c->st->rects.map, now, 5.0, &c->st->rects.gc);
+    sweep_unused(c->st->scrolls.map, now, 5.0, &c->st->scrolls.gc);
 
     c->button_scope_depth = 0;
 

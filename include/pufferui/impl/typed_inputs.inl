@@ -1236,12 +1236,10 @@ bool ui::text_area(rect r, std::string &value, uiid id, const text_area_opts &op
         (void)inner.cut_left(pad * 0.5f);
     }
 
-    struct number_mark
-    {
-        f32 y;
-        i32 n;
-    };
-    std::vector<number_mark> numbers;
+    using number_mark = text_area_scratch::number_mark;
+    detail::scratch_scope<text_area_scratch> scratch(c->st->text_areas, c->st->text_area_active);
+    auto &numbers = scratch.value.numbers;
+    numbers.clear();
     bool changed = false;
     {
         scroll_view sv(*this, id_child(id, "scroll"_id), inner, scroll_options{.padding = 0.0f});

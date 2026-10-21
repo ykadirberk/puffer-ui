@@ -488,6 +488,18 @@ inline f32 kern_advance(context *c, font_handle fh, f32 size, u32 a, u32 b)
            scale;
 }
 
+inline f32 memoized_kern(context *c, font_handle fh, f32 size, u32 a, u32 b, kerning_memo &memo)
+{
+    const u32 slot = (a * 0x9E3779B1u ^ b * 0x85EBCA77u) % kerning_memo::PAIRS;
+    if (memo.a[slot] != a || memo.b[slot] != b)
+    {
+        memo.a[slot] = a;
+        memo.b[slot] = b;
+        memo.kern[slot] = kern_advance(c, fh, size, a, b);
+    }
+    return memo.kern[slot];
+}
+
 // The glyph run of `s`: the installed shaper's, or codepoint by codepoint with
 // kerning pairs. Shared by measuring and drawing (one cache entry serves both).
 inline text_store::text_layout build_layout(context *c, font_handle fh, f32 size,
@@ -521,13 +533,18 @@ inline text_store::text_layout build_layout(context *c, font_handle fh, f32 size
     built = {};
     built.builtin = true;
     built.built_size = size;
+    // Short labels keep their existing small path. A shaper (even one which
+    // declines this run) retains its original invocation and lookup behavior.
+    kerning_memo *memo = !c->ts->shaper && s.size() >= 256 ? &c->st->layout_pairs : nullptr;
+    if (memo) memo->clear();
     usize i = 0;
     u32 prev = 0;
     while (i < s.size())
     {
         const u32 cp = utf8_decode(s, i);
         if (cp == UTF8_END) break;
-        add(cp, kern_advance(c, fh, size, prev, cp));
+        add(cp, memo ? memoized_kern(c, fh, size, prev, cp, *memo)
+                     : kern_advance(c, fh, size, prev, cp));
         prev = cp;
     }
     built.epoch = epoch;

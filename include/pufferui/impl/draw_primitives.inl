@@ -478,6 +478,40 @@ void ui::draw_polygon(std::span<const vec2> points, color c)
                    static_cast<i32>(idx.size()));
 }
 
+namespace detail
+{
+inline std::span<const i32> sector_indices(context *c, i32 seg, i32 rc)
+{
+    // Large/unusual arcs retain scratch rather than growing the bounded cache.
+    auto &cached = c->st->sectors[(static_cast<u32>(seg) * 5u + static_cast<u32>(rc)) % 8];
+    const bool retain = seg <= 128;
+    if (retain && cached.segments == seg && cached.rings == rc) return cached.indices;
+    std::vector<i32> &idx = retain ? cached.indices : c->dl->scratch_i;
+    idx.clear();
+    idx.reserve(static_cast<usize>(rc - 1) * static_cast<usize>(seg) * 6);
+    for (i32 ri = 0; ri < rc - 1; ++ri)
+    {
+        const i32 r0 = ri * (seg + 1), r1 = (ri + 1) * (seg + 1);
+        for (i32 s = 0; s < seg; ++s)
+        {
+            const i32 i0 = r0 + s, i1 = r0 + s + 1, o0 = r1 + s, o1 = r1 + s + 1;
+            idx.push_back(i0);
+            idx.push_back(o0);
+            idx.push_back(o1);
+            idx.push_back(i0);
+            idx.push_back(o1);
+            idx.push_back(i1);
+        }
+    }
+    if (retain)
+    {
+        cached.segments = seg;
+        cached.rings = rc;
+    }
+    return idx;
+}
+} // namespace detail
+
 void ui::draw_sector(vec2 center, f32 r_in, f32 r_out, f32 a0, f32 a1, color c)
 {
     if (a1 < a0)
@@ -512,9 +546,7 @@ void ui::draw_sector(vec2 center, f32 r_in, f32 r_out, f32 a0, f32 a1, color c)
     rings[rc++] = {r_out + 1.0f, c_out};
 
     std::vector<vertex> &verts = ctx->dl->scratch_v;
-    std::vector<i32> &idx = ctx->dl->scratch_i;
     verts.clear();
-    idx.clear();
     verts.reserve(static_cast<usize>(rc) * static_cast<usize>(seg + 1));
 
     // Rotation recurrence: two trig evaluations per CALL instead of two per
@@ -534,21 +566,7 @@ void ui::draw_sector(vec2 center, f32 r_in, f32 r_out, f32 a0, f32 a1, color c)
         }
     }
 
-    idx.reserve(static_cast<usize>(rc - 1) * static_cast<usize>(seg) * 6);
-    for (i32 ri = 0; ri < rc - 1; ++ri)
-    {
-        const i32 r0 = ri * (seg + 1), r1 = (ri + 1) * (seg + 1);
-        for (i32 s = 0; s < seg; ++s)
-        {
-            const i32 i0 = r0 + s, i1 = r0 + s + 1, o0 = r1 + s, o1 = r1 + s + 1;
-            idx.push_back(i0);
-            idx.push_back(o0);
-            idx.push_back(o1);
-            idx.push_back(i0);
-            idx.push_back(o1);
-            idx.push_back(i1);
-        }
-    }
+    const std::span<const i32> idx = detail::sector_indices(ctx, seg, rc);
     draw_triangles(nullptr, verts.data(), static_cast<i32>(verts.size()), idx.data(),
                    static_cast<i32>(idx.size()));
 }

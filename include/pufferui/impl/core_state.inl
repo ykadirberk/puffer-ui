@@ -298,6 +298,7 @@ template <class V> struct flat_map
     // Wholesale clear (per frame); capacity is kept.
     void clear()
     {
+        if (used == 0) return;
         for (slot &s : slots) s.hash = 0;
         used = 0;
     }
@@ -336,6 +337,19 @@ template <class T, usize N> struct direct_cache
         slot &s = slots[static_cast<usize>(m) & (N - 1)];
         s.tag = m;
         s.value = std::forward<V>(v);
+    }
+};
+
+// Pure kerning results for one layout build (font, raw size and fallbacks fixed).
+// Separate from layout caching: hits must not alter glyph/atlas or eviction order.
+struct kerning_memo
+{
+    static constexpr u32 PAIRS = 2048;
+    u32 a[PAIRS], b[PAIRS];
+    f32 kern[PAIRS];
+    void clear()
+    {
+        for (u32 &x : a) x = UTF8_END;
     }
 };
 
@@ -477,16 +491,14 @@ struct text_lines
     // throughout, so a hit returns exactly what the lookup would): a document's
     // few hundred distinct pairs replace a glyph-map and kern-table lookup per
     // codepoint. Cleared at the start of every rebuild.
-    struct metric_memo
+    struct metric_memo : kerning_memo
     {
-        static constexpr u32 PAIRS = 2048, CPS = 512;
-        u32 a[PAIRS], b[PAIRS];
-        f32 kern[PAIRS];
+        static constexpr u32 CPS = 512;
         u32 cp[CPS];
         f32 advance[CPS];
         void clear()
         {
-            for (u32 &x : a) x = UTF8_END;
+            kerning_memo::clear();
             for (u32 &x : cp) x = UTF8_END;
         }
     };
@@ -555,6 +567,12 @@ struct split_store
 
 // Animation state, keyed by (region-scoped or global) id. Unused keys are
 // collected after 5 s, like other keyed UI state.
+struct sweep_clock
+{
+    f64 oldest = 0.0, previous = 0.0, ttl = 0.0;
+    bool valid = false;
+};
+
 struct anim_store
 {
     struct entry
@@ -572,6 +590,7 @@ struct anim_store
         bool settled = true;
     };
     std::unordered_map<uiid, entry> map;
+    sweep_clock gc;
 };
 
 // Rect motion (u.animate_rect): four springs per key (x, y, w, h), kept
@@ -589,6 +608,7 @@ struct rect_store
         bool settled = true;
     };
     std::unordered_map<uiid, entry> map;
+    sweep_clock gc;
 };
 
 // Scroll offsets + content extents, keyed by scroll view id.
@@ -605,6 +625,7 @@ struct scroll_store
         bool dragging = false;
     };
     std::unordered_map<uiid, entry> map;
+    sweep_clock gc;
 };
 
 // Records what a popup draws while it lives in a host overlay window: draws and
@@ -737,6 +758,18 @@ struct table_scratch
     ~table_scratch() { delete nested; }
 };
 
+struct text_area_scratch
+{
+    struct number_mark
+    {
+        f32 y;
+        i32 n;
+    };
+    std::vector<number_mark> numbers;
+    text_area_scratch *nested = nullptr;
+    ~text_area_scratch() { delete nested; }
+};
+
 struct ctx_stores
 {
     // Popup overlays; heap-allocated so a recorder's address stays put while
@@ -781,7 +814,16 @@ struct ctx_stores
     std::unordered_map<uiid, kept_rows> row_tops_kept;
     std::vector<text_lines::metric> wrap_metrics; // text_area word wrap scratch
     text_lines::metric_memo wrap_memo;            // ... and its per-rebuild memo
-    a11y_tree a11y_frame;                         // the open frame's accessibility nodes
+    kerning_memo layout_pairs;                    // long built-in layout kerning only
+    struct sector_topology
+    {
+        i32 segments = 0, rings = 0;
+        std::vector<i32> indices;
+    };
+    sector_topology sectors[8]; // bounded: only <= 128 segments are retained
+    text_area_scratch text_areas;
+    text_area_scratch *text_area_active = nullptr;
+    a11y_tree a11y_frame; // the open frame's accessibility nodes
     // ui::sample_pixel requests (read at end_frame) and their results.
     struct pixel_request
     {
@@ -805,25 +847,30 @@ struct ctx_stores
 
 namespace detail
 {
-struct table_scratch_scope
+template <class Scratch> struct scratch_scope
 {
-    ctx_stores &stores;
-    table_scratch *previous;
-    table_scratch &value;
-    static table_scratch &acquire(ctx_stores &s)
+    Scratch *&active;
+    Scratch *previous;
+    Scratch &value;
+    static Scratch &acquire(Scratch &root, Scratch *current)
     {
-        if (!s.table_active) return s.tables;
-        if (!s.table_active->nested) s.table_active->nested = new table_scratch();
-        return *s.table_active->nested;
+        if (!current) return root;
+        if (!current->nested) current->nested = new Scratch();
+        return *current->nested;
     }
-    explicit table_scratch_scope(ctx_stores &s)
-        : stores(s), previous(s.table_active), value(acquire(s))
+    scratch_scope(Scratch &root, Scratch *&current)
+        : active(current), previous(current), value(acquire(root, current))
     {
-        stores.table_active = &value;
+        active = &value;
     }
-    ~table_scratch_scope() { stores.table_active = previous; }
-    table_scratch_scope(const table_scratch_scope &) = delete;
-    table_scratch_scope &operator=(const table_scratch_scope &) = delete;
+    ~scratch_scope() { active = previous; }
+    scratch_scope(const scratch_scope &) = delete;
+    scratch_scope &operator=(const scratch_scope &) = delete;
+};
+
+struct table_scratch_scope : scratch_scope<table_scratch>
+{
+    explicit table_scratch_scope(ctx_stores &s) : scratch_scope(s.tables, s.table_active) {}
 };
 
 inline defer_store *ensure_defers(context *c)
@@ -837,13 +884,29 @@ inline scroll_store *ensure_scrolls(context *c)
 }
 
 // Keyed state is collected after `ttl` seconds without use (`last_used`).
-template <class M> inline void sweep_unused(M &map, f64 now, f64 ttl)
+template <class M> inline void sweep_unused(M &map, f64 now, f64 ttl, sweep_clock *clock = nullptr)
 {
+    // Use the original subtraction, including its exact floating-point TTL edge.
+    // Every subsequently inserted/touched entry has last_used >= this bound.
+    // A backwards/non-finite clock or a different TTL always takes the scan path.
+    if (clock)
+    {
+        const bool skip = clock->valid && std::isfinite(now) && now >= clock->previous &&
+                          ttl == clock->ttl && !(now - clock->oldest > ttl);
+        clock->previous = now;
+        if (skip) return;
+        clock->oldest = now; // also bounds future inserts into an empty store
+        clock->ttl = ttl;
+        clock->valid = std::isfinite(now) && std::isfinite(ttl);
+    }
     for (auto it = map.begin(); it != map.end();)
     {
         if (now - it->second.last_used > ttl)
             it = map.erase(it);
         else
+        {
+            if (clock && it->second.last_used < clock->oldest) clock->oldest = it->second.last_used;
             ++it;
+        }
     }
 }

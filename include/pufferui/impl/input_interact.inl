@@ -355,29 +355,42 @@ inline f32 tween_value(context *c, anim_store::entry &e, f32 target, const tween
 // spring up. So a frame is integrated in small steps; a hitch longer than one
 // second is capped. Snaps to `target` and returns true once both the distance
 // and the speed are under their epsilons (the value's own units).
+struct spring_plan
+{
+    f32 m, step, d;
+    i32 steps;
+    spring_plan(f32 frame_dt, const spring &spec)
+    {
+        m = max2(spec.mass, 0.001f);
+        const f32 omega = std::sqrt(max2(spec.stiffness, 0.0f) / m);
+        const f32 dt = clampf(frame_dt, 0.0f, 1.0f);
+        const f32 max_step = min2(1.0f / 120.0f, 0.5f / max2(omega, 1.0f));
+        steps = static_cast<i32>(clampf(std::ceil(dt / max_step), 1.0f, 480.0f));
+        step = dt / static_cast<f32>(steps);
+        d = 2.0f * spec.damping_ratio * std::sqrt(spec.stiffness * m);
+    }
+    bool advance(f32 &x, f32 &v, f32 target, const spring &spec, f32 eps_x, f32 eps_v) const
+    {
+        for (i32 i = 0; i < steps; ++i)
+        {
+            const f32 accel = (spec.stiffness * (target - x) - d * v) / m;
+            v += accel * step;
+            x += v * step;
+        }
+        if (std::fabs(target - x) < eps_x && std::fabs(v) < eps_v)
+        {
+            x = target;
+            v = 0.0f;
+            return true;
+        }
+        return false;
+    }
+};
+
 inline bool spring_step(f32 &x, f32 &v, f32 target, f32 frame_dt, const spring &spec, f32 eps_x,
                         f32 eps_v)
 {
-    const f32 m = max2(spec.mass, 0.001f);
-    const f32 omega = std::sqrt(max2(spec.stiffness, 0.0f) / m);
-    const f32 dt = clampf(frame_dt, 0.0f, 1.0f);
-    const f32 max_step = min2(1.0f / 120.0f, 0.5f / max2(omega, 1.0f));
-    const i32 steps = static_cast<i32>(clampf(std::ceil(dt / max_step), 1.0f, 480.0f));
-    const f32 step = dt / static_cast<f32>(steps);
-    const f32 d = 2.0f * spec.damping_ratio * std::sqrt(spec.stiffness * m);
-    for (i32 i = 0; i < steps; ++i)
-    {
-        const f32 accel = (spec.stiffness * (target - x) - d * v) / m;
-        v += accel * step;
-        x += v * step;
-    }
-    if (std::fabs(target - x) < eps_x && std::fabs(v) < eps_v)
-    {
-        x = target;
-        v = 0.0f;
-        return true;
-    }
-    return false;
+    return spring_plan(frame_dt, spec).advance(x, v, target, spec, eps_x, eps_v);
 }
 
 inline f32 spring_value(context *c, anim_store::entry &e, f32 target, const spring &spec)
@@ -509,8 +522,8 @@ rect ui::animate_rect(uiid key, rect target, const rect_motion &m)
     }
     auto &map = c->st->rects.map;
     const uiid k = detail::anim_scoped_id(c, key, false);
-    const bool fresh = map.find(k) == map.end();
-    rect_store::entry &e = map[k];
+    const auto [it, fresh] = map.try_emplace(k);
+    rect_store::entry &e = it->second;
     const f32 t[4] = {target.x - m.origin.x, target.y - m.origin.y, target.w, target.h};
     if (fresh)
     {
@@ -546,11 +559,24 @@ rect ui::animate_rect(uiid key, rect target, const rect_motion &m)
     else
     {
         const f32 dt = static_cast<f32>(c->dt);
+        const detail::spring_plan plan(dt, m.spec);
+        // Exact equilibrium only. Finite coefficients matter: inf * 0 would
+        // otherwise produce NaNs in the original integrator, even at rest.
+        const bool finite_plan = std::isfinite(plan.m) && std::isfinite(plan.d) &&
+                                 std::isfinite(plan.step) && std::isfinite(m.spec.stiffness);
         bool settled = true;
         for (i32 i = 0; i < 4; ++i)
-            settled = detail::spring_step(e.x[i], e.v[i], t[i], dt, m.spec, detail::RECT_EPS_X,
-                                          detail::RECT_EPS_V) &&
-                      settled;
+        {
+            if (finite_plan && std::isfinite(t[i]) && e.x[i] == t[i] && e.v[i] == 0.0f)
+            {
+                e.x[i] = t[i];
+                e.v[i] = 0.0f;
+            }
+            else
+                settled = plan.advance(e.x[i], e.v[i], t[i], m.spec, detail::RECT_EPS_X,
+                                       detail::RECT_EPS_V) &&
+                          settled;
+        }
         e.settled = settled;
     }
     return detail::rect_from_axes(e.x, m.origin);

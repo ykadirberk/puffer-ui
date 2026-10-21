@@ -120,6 +120,7 @@ def main():
         if not args.quick:
             targets.append("pui_golden_tests")
             targets.append("pui_perf_pixels")
+            targets.append("pui_core_perf_pixels")
         # examples_selftest builds *and runs* every example: its own step below
         if not r.step(f"build ({', '.join(targets)})",
                       ["cmake", "--build", build_dir, "--target", *targets]):
@@ -141,6 +142,7 @@ def main():
     if not args.quick:
         suite("pui_golden_tests", "golden-image tests")
         suite("pui_perf_pixels", "performance pixel baselines")
+        suite("pui_core_perf_pixels", "core performance pixel baselines")
         r.step("1150-tile Spiral golden frames", [os.path.join(bin_dir, "pui_showcase_tests" + EXE), "--pixels"])
         r.step("5000-tile Spiral golden frames", [os.path.join(bin_dir, "pui_showcase_tests" + EXE), "--pixels", "--tiles", "5000"])
         r.step("5000-tile Spiral peak golden frames", [os.path.join(bin_dir, "pui_showcase_tests" + EXE), "--peak-pixels"])

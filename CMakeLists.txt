@@ -154,6 +154,7 @@ pui_add_exe(pui_core_tests SOURCES
 # recording/flush on null_device). Machine-relative times; the stable metrics
 # are draw_calls/vertices. Baseline numbers live in docs/perf.md.
 pui_add_exe(pui_bench SOURCES tests/bench.cpp)
+pui_add_exe(pui_core_bench SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_CORE_PERF_BENCH)
 
 # White-box regressions use the same implementation TU, with private test code
 # included at its end. The core archive is not pulled in (no unresolved symbols).
@@ -164,6 +165,7 @@ pui_add_exe(pui_perf_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_INTERNAL_
 if(PUFFERUI_WITH_SDL3)
 pui_add_exe(pui_pump_tests SDL3 SOURCES tests/test_pump.cpp)
 pui_add_exe(pui_perf_pixels SDL3 SOURCES tests/test_perf_pixels.cpp)
+pui_add_exe(pui_core_perf_pixels SDL3 SOURCES tests/test_core_perf_pixels.cpp)
 pui_add_exe(pui_showcase_tests SDL3 SOURCES tests/test_showcase.cpp tests/test_sdl_capacity.cpp tests/test_sdl_upload.cpp tests/test_sdl_geometry.cpp)
 
 # Golden-image tests: offscreen SDL + software renderer, hash + BMP compare.
