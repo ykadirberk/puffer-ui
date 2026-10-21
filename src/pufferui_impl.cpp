@@ -8,6 +8,10 @@
 #include "../tests/test_core_performance.inl"
 #endif
 
+#if defined(PUFFERUI_MEMORY_TESTS)
+#include "../tests/test_memory_performance.inl"
+#endif
+
 #if defined(PUFFERUI_CORE_PERF_BENCH)
 #include "../tests/bench_core_performance.inl"
 #endif

@@ -60,4 +60,39 @@ static inline size_t pui_d3d11_vertex_capacity(size_t current, size_t required)
     }
     return capacity;
 }
+
+// Large uploads need bounded headroom rather than 2x followed by power-of-two
+// rounding (almost 4x at a boundary). Keep the small/medium policy unchanged.
+static inline size_t pui_d3d11_upload_capacity(size_t current, size_t required)
+{
+    const size_t limit = (size_t)UINT_MAX;
+    const size_t alignment = 65536;
+    size_t wanted;
+    if (required > limit || current > limit) return 0;
+    if (required <= current) return current;
+    if (required <= 4194304) return pui_d3d11_vertex_capacity(current, required);
+    if (required > limit - required / 4) return required;
+    wanted = required + required / 4;
+    if (wanted > limit - (alignment - 1)) return required;
+    return (wanted + alignment - 1) & ~(alignment - 1);
+}
+
+// SDL's arena retains whole queued commands, but only `used` bytes survive a
+// growth. Match its doubling/alignment policy with checked size_t arithmetic.
+static inline size_t pui_d3d11_arena_capacity(size_t current, size_t used, size_t bytes,
+                                              size_t alignment)
+{
+    const size_t limit = (size_t)-1;
+    size_t needed, capacity;
+    if (used > current || bytes > limit - used || alignment > limit - used - bytes) return 0;
+    needed = used + bytes + alignment;
+    if (needed <= current) return current;
+    capacity = current ? current : 1024;
+    while (capacity < needed)
+    {
+        if (capacity > limit / 2) return needed;
+        capacity *= 2;
+    }
+    return capacity;
+}
 #endif

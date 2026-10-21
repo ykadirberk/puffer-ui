@@ -484,7 +484,10 @@ struct sdl3_device : render_device
         SDL_Renderer *ren = renderer();
         if (!ren || vertex_count <= 0 || index_count <= 0) return;
         SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
-        colors_scratch.resize(static_cast<usize>(vertex_count));
+        // Keep the initialized high-water prefix: small draws must not make the
+        // next large draw zero-initialize colors that it immediately overwrites.
+        if (colors_scratch.size() < static_cast<usize>(vertex_count))
+            colors_scratch.resize(static_cast<usize>(vertex_count));
         for (i32 i = 0; i < vertex_count; ++i)
         {
             colors_scratch[static_cast<usize>(i)].col =

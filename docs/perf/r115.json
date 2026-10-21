@@ -1,0 +1,2302 @@
+{
+  "baseline": "6487aee827752a4a18fd96311939eeefd247b9df",
+  "protocol": {
+    "tiles": 5000,
+    "size": 64,
+    "frames": 180,
+    "dt": 0.016666666666666666,
+    "width": 1360,
+    "height": 860,
+    "Adds": [
+      90,
+      120,
+      150
+    ],
+    "steady": [
+      60,
+      89
+    ],
+    "adding": [
+      90,
+      179
+    ],
+    "compiler": "MSVC Release /O2 /GL precise floats",
+    "series": {
+      "initial": {
+        "null": 6,
+        "direct3d11": 6
+      },
+      "confirmation": {
+        "null": 12,
+        "direct3d11": 6
+      }
+    },
+    "outliers_removed": false,
+    "captures_separate": true
+  },
+  "runs": [
+    {
+      "renderer": "null",
+      "series": "initial",
+      "run": 1,
+      "variant": "before",
+      "add_mean": 4.283554444444444,
+      "steady_median": 2.7011000000000003,
+      "warm_p95": 9.4489,
+      "warm_p99": 15.403,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.000400",
+        "build_ms": "20.651000",
+        "end_ms": "0.008200",
+        "total_ms": "20.659600",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "initial",
+      "run": 1,
+      "variant": "after",
+      "add_mean": 5.821743333333333,
+      "steady_median": 4.00135,
+      "warm_p95": 10.4488,
+      "warm_p99": 19.9369,
+      "worst": {
+        "frame": "125",
+        "count": "5002",
+        "begin_ms": "0.000400",
+        "build_ms": "27.714200",
+        "end_ms": "0.012000",
+        "total_ms": "27.726600",
+        "draws": "13",
+        "vertices": "1400351",
+        "indices": "5953626"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "initial",
+      "run": 2,
+      "variant": "after",
+      "add_mean": 5.801504444444444,
+      "steady_median": 3.9612,
+      "warm_p95": 10.9588,
+      "warm_p99": 20.9286,
+      "worst": {
+        "frame": "125",
+        "count": "5002",
+        "begin_ms": "0.000400",
+        "build_ms": "25.420000",
+        "end_ms": "0.010200",
+        "total_ms": "25.430600",
+        "draws": "13",
+        "vertices": "1400351",
+        "indices": "5953626"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "initial",
+      "run": 2,
+      "variant": "before",
+      "add_mean": 5.615795555555556,
+      "steady_median": 4.04015,
+      "warm_p95": 10.2568,
+      "warm_p99": 19.7791,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.000700",
+        "build_ms": "21.282700",
+        "end_ms": "0.012900",
+        "total_ms": "21.296300",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "initial",
+      "run": 3,
+      "variant": "before",
+      "add_mean": 5.668038888888889,
+      "steady_median": 4.01815,
+      "warm_p95": 11.0097,
+      "warm_p99": 20.3645,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.001100",
+        "build_ms": "21.637700",
+        "end_ms": "0.012500",
+        "total_ms": "21.651300",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "initial",
+      "run": 3,
+      "variant": "after",
+      "add_mean": 5.842336666666666,
+      "steady_median": 3.94325,
+      "warm_p95": 12.2933,
+      "warm_p99": 18.7336,
+      "worst": {
+        "frame": "125",
+        "count": "5002",
+        "begin_ms": "0.000700",
+        "build_ms": "22.460000",
+        "end_ms": "0.010200",
+        "total_ms": "22.470900",
+        "draws": "13",
+        "vertices": "1400351",
+        "indices": "5953626"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "initial",
+      "run": 4,
+      "variant": "after",
+      "add_mean": 5.387002222222223,
+      "steady_median": 3.85285,
+      "warm_p95": 11.1361,
+      "warm_p99": 18.4029,
+      "worst": {
+        "frame": "125",
+        "count": "5002",
+        "begin_ms": "0.000500",
+        "build_ms": "18.609200",
+        "end_ms": "0.010500",
+        "total_ms": "18.620200",
+        "draws": "13",
+        "vertices": "1400351",
+        "indices": "5953626"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "initial",
+      "run": 4,
+      "variant": "before",
+      "add_mean": 5.844522222222222,
+      "steady_median": 3.9356,
+      "warm_p95": 12.2287,
+      "warm_p99": 22.1393,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.001000",
+        "build_ms": "24.998500",
+        "end_ms": "0.012800",
+        "total_ms": "25.012300",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "initial",
+      "run": 5,
+      "variant": "before",
+      "add_mean": 5.660703333333333,
+      "steady_median": 3.9839,
+      "warm_p95": 11.0777,
+      "warm_p99": 20.458,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.001000",
+        "build_ms": "22.300700",
+        "end_ms": "0.012600",
+        "total_ms": "22.314300",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "initial",
+      "run": 5,
+      "variant": "after",
+      "add_mean": 5.4198844444444445,
+      "steady_median": 3.7884,
+      "warm_p95": 10.4871,
+      "warm_p99": 18.8871,
+      "worst": {
+        "frame": "127",
+        "count": "5002",
+        "begin_ms": "0.001000",
+        "build_ms": "18.980000",
+        "end_ms": "0.012900",
+        "total_ms": "18.993900",
+        "draws": "13",
+        "vertices": "1963939",
+        "indices": "8351460"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "initial",
+      "run": 6,
+      "variant": "after",
+      "add_mean": 5.5209777777777775,
+      "steady_median": 3.81555,
+      "warm_p95": 12.72,
+      "warm_p99": 20.1715,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.001000",
+        "build_ms": "20.543200",
+        "end_ms": "0.011200",
+        "total_ms": "20.555400",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "initial",
+      "run": 6,
+      "variant": "before",
+      "add_mean": 5.473904444444444,
+      "steady_median": 3.9145,
+      "warm_p95": 10.7297,
+      "warm_p99": 19.1511,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.000700",
+        "build_ms": "20.848400",
+        "end_ms": "0.010000",
+        "total_ms": "20.859100",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 1,
+      "variant": "before",
+      "add_mean": 3.38201,
+      "steady_median": 2.48705,
+      "warm_p95": 6.7641,
+      "warm_p99": 12.2963,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.000400",
+        "build_ms": "13.530700",
+        "end_ms": "0.007300",
+        "total_ms": "13.538400",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 1,
+      "variant": "after",
+      "add_mean": 3.3552866666666668,
+      "steady_median": 2.4396000000000004,
+      "warm_p95": 6.1992,
+      "warm_p99": 10.6425,
+      "worst": {
+        "frame": "125",
+        "count": "5002",
+        "begin_ms": "0.000100",
+        "build_ms": "12.583900",
+        "end_ms": "0.006500",
+        "total_ms": "12.590500",
+        "draws": "13",
+        "vertices": "1400351",
+        "indices": "5953626"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 2,
+      "variant": "after",
+      "add_mean": 3.4144811111111113,
+      "steady_median": 2.5102,
+      "warm_p95": 6.2288,
+      "warm_p99": 10.6944,
+      "worst": {
+        "frame": "125",
+        "count": "5002",
+        "begin_ms": "0.000100",
+        "build_ms": "12.400400",
+        "end_ms": "0.006200",
+        "total_ms": "12.406700",
+        "draws": "13",
+        "vertices": "1400351",
+        "indices": "5953626"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 2,
+      "variant": "before",
+      "add_mean": 3.4366755555555555,
+      "steady_median": 2.5947500000000003,
+      "warm_p95": 6.5923,
+      "warm_p99": 12.8705,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.000400",
+        "build_ms": "14.028300",
+        "end_ms": "0.007300",
+        "total_ms": "14.036000",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 3,
+      "variant": "before",
+      "add_mean": 3.428491111111111,
+      "steady_median": 2.45,
+      "warm_p95": 6.4096,
+      "warm_p99": 12.1509,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.000400",
+        "build_ms": "13.542100",
+        "end_ms": "0.007400",
+        "total_ms": "13.549900",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 3,
+      "variant": "after",
+      "add_mean": 3.3843988888888887,
+      "steady_median": 2.433,
+      "warm_p95": 6.584,
+      "warm_p99": 11.1439,
+      "worst": {
+        "frame": "125",
+        "count": "5002",
+        "begin_ms": "0.000300",
+        "build_ms": "12.268300",
+        "end_ms": "0.006300",
+        "total_ms": "12.274900",
+        "draws": "13",
+        "vertices": "1400351",
+        "indices": "5953626"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 4,
+      "variant": "after",
+      "add_mean": 3.3138744444444446,
+      "steady_median": 2.4393000000000002,
+      "warm_p95": 6.2773,
+      "warm_p99": 10.5145,
+      "worst": {
+        "frame": "125",
+        "count": "5002",
+        "begin_ms": "0.000400",
+        "build_ms": "12.455200",
+        "end_ms": "0.006600",
+        "total_ms": "12.462200",
+        "draws": "13",
+        "vertices": "1400351",
+        "indices": "5953626"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 4,
+      "variant": "before",
+      "add_mean": 3.523221111111111,
+      "steady_median": 2.4721,
+      "warm_p95": 6.3166,
+      "warm_p99": 12.2138,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.000400",
+        "build_ms": "13.779700",
+        "end_ms": "0.007100",
+        "total_ms": "13.787200",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 5,
+      "variant": "before",
+      "add_mean": 3.5718655555555556,
+      "steady_median": 2.5564,
+      "warm_p95": 7.7936,
+      "warm_p99": 12.5991,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.000400",
+        "build_ms": "14.186600",
+        "end_ms": "0.007500",
+        "total_ms": "14.194500",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 5,
+      "variant": "after",
+      "add_mean": 3.4286588888888887,
+      "steady_median": 2.45575,
+      "warm_p95": 6.3494,
+      "warm_p99": 12.8636,
+      "worst": {
+        "frame": "127",
+        "count": "5002",
+        "begin_ms": "0.000400",
+        "build_ms": "15.125100",
+        "end_ms": "0.014000",
+        "total_ms": "15.139500",
+        "draws": "13",
+        "vertices": "1963939",
+        "indices": "8351460"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 6,
+      "variant": "after",
+      "add_mean": 3.4129855555555557,
+      "steady_median": 2.5712,
+      "warm_p95": 7.1279,
+      "warm_p99": 10.8809,
+      "worst": {
+        "frame": "125",
+        "count": "5002",
+        "begin_ms": "0.000400",
+        "build_ms": "12.680200",
+        "end_ms": "0.006700",
+        "total_ms": "12.687300",
+        "draws": "13",
+        "vertices": "1400351",
+        "indices": "5953626"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 6,
+      "variant": "before",
+      "add_mean": 3.7914844444444444,
+      "steady_median": 2.4846500000000002,
+      "warm_p95": 7.7539,
+      "warm_p99": 16.4914,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.000500",
+        "build_ms": "20.150800",
+        "end_ms": "0.007800",
+        "total_ms": "20.159100",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 7,
+      "variant": "before",
+      "add_mean": 3.547887777777778,
+      "steady_median": 2.4417999999999997,
+      "warm_p95": 6.3318,
+      "warm_p99": 12.6807,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.000400",
+        "build_ms": "13.910400",
+        "end_ms": "0.007400",
+        "total_ms": "13.918200",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 7,
+      "variant": "after",
+      "add_mean": 3.52788,
+      "steady_median": 2.7438,
+      "warm_p95": 6.3769,
+      "warm_p99": 10.8789,
+      "worst": {
+        "frame": "125",
+        "count": "5002",
+        "begin_ms": "0.000100",
+        "build_ms": "12.986500",
+        "end_ms": "0.006600",
+        "total_ms": "12.993200",
+        "draws": "13",
+        "vertices": "1400351",
+        "indices": "5953626"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 8,
+      "variant": "after",
+      "add_mean": 3.5432255555555554,
+      "steady_median": 2.5321499999999997,
+      "warm_p95": 7.2375,
+      "warm_p99": 11.2419,
+      "worst": {
+        "frame": "125",
+        "count": "5002",
+        "begin_ms": "0.000100",
+        "build_ms": "12.428600",
+        "end_ms": "0.007000",
+        "total_ms": "12.435700",
+        "draws": "13",
+        "vertices": "1400351",
+        "indices": "5953626"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 8,
+      "variant": "before",
+      "add_mean": 4.036476666666666,
+      "steady_median": 2.47885,
+      "warm_p95": 8.233,
+      "warm_p99": 15.6217,
+      "worst": {
+        "frame": "129",
+        "count": "5002",
+        "begin_ms": "0.000700",
+        "build_ms": "18.260700",
+        "end_ms": "0.007800",
+        "total_ms": "18.269200",
+        "draws": "13",
+        "vertices": "1705678",
+        "indices": "7253952"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 9,
+      "variant": "before",
+      "add_mean": 3.6589811111111112,
+      "steady_median": 2.6296999999999997,
+      "warm_p95": 6.9783,
+      "warm_p99": 13.9168,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.000200",
+        "build_ms": "15.032700",
+        "end_ms": "0.007700",
+        "total_ms": "15.040600",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 9,
+      "variant": "after",
+      "add_mean": 3.69444,
+      "steady_median": 2.57165,
+      "warm_p95": 7.371,
+      "warm_p99": 12.8116,
+      "worst": {
+        "frame": "128",
+        "count": "5002",
+        "begin_ms": "0.000200",
+        "build_ms": "14.297100",
+        "end_ms": "0.007400",
+        "total_ms": "14.304700",
+        "draws": "13",
+        "vertices": "1930610",
+        "indices": "8210376"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 10,
+      "variant": "after",
+      "add_mean": 3.499572222222222,
+      "steady_median": 2.4433,
+      "warm_p95": 6.1675,
+      "warm_p99": 14.2623,
+      "worst": {
+        "frame": "127",
+        "count": "5002",
+        "begin_ms": "0.000400",
+        "build_ms": "16.881400",
+        "end_ms": "0.007600",
+        "total_ms": "16.889400",
+        "draws": "13",
+        "vertices": "1963939",
+        "indices": "8351460"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 10,
+      "variant": "before",
+      "add_mean": 3.4741233333333335,
+      "steady_median": 2.4814499999999997,
+      "warm_p95": 7.5622,
+      "warm_p99": 12.3193,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.000400",
+        "build_ms": "13.679000",
+        "end_ms": "0.007400",
+        "total_ms": "13.686800",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 11,
+      "variant": "before",
+      "add_mean": 3.517063333333333,
+      "steady_median": 2.4396,
+      "warm_p95": 6.3645,
+      "warm_p99": 16.1292,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.000300",
+        "build_ms": "18.890200",
+        "end_ms": "0.012200",
+        "total_ms": "18.902700",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 11,
+      "variant": "after",
+      "add_mean": 3.325761111111111,
+      "steady_median": 2.43965,
+      "warm_p95": 6.5132,
+      "warm_p99": 10.6418,
+      "worst": {
+        "frame": "125",
+        "count": "5002",
+        "begin_ms": "0.000400",
+        "build_ms": "12.380100",
+        "end_ms": "0.006300",
+        "total_ms": "12.386800",
+        "draws": "13",
+        "vertices": "1400351",
+        "indices": "5953626"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 12,
+      "variant": "after",
+      "add_mean": 3.3257455555555557,
+      "steady_median": 2.45625,
+      "warm_p95": 6.1485,
+      "warm_p99": 10.6897,
+      "worst": {
+        "frame": "125",
+        "count": "5002",
+        "begin_ms": "0.000100",
+        "build_ms": "12.352400",
+        "end_ms": "0.006300",
+        "total_ms": "12.358800",
+        "draws": "13",
+        "vertices": "1400351",
+        "indices": "5953626"
+      }
+    },
+    {
+      "renderer": "null",
+      "series": "confirmation",
+      "run": 12,
+      "variant": "before",
+      "add_mean": 3.3739,
+      "steady_median": 2.44985,
+      "warm_p95": 6.3488,
+      "warm_p99": 12.169,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.000200",
+        "build_ms": "13.776800",
+        "end_ms": "0.007600",
+        "total_ms": "13.784600",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "initial",
+      "run": 1,
+      "variant": "before",
+      "add_mean": 16.522003333333334,
+      "steady_median": 8.679200000000002,
+      "warm_p95": 37.6956,
+      "warm_p99": 106.0236,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.003500",
+        "build_ms": "60.566400",
+        "end_ms": "179.228000",
+        "total_ms": "239.797900",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "initial",
+      "run": 1,
+      "variant": "after",
+      "add_mean": 11.743398888888889,
+      "steady_median": 7.64015,
+      "warm_p95": 29.3253,
+      "warm_p99": 58.7744,
+      "worst": {
+        "frame": "127",
+        "count": "5002",
+        "begin_ms": "0.003800",
+        "build_ms": "53.242600",
+        "end_ms": "15.848600",
+        "total_ms": "69.095000",
+        "draws": "13",
+        "vertices": "1963939",
+        "indices": "8351460"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "initial",
+      "run": 2,
+      "variant": "after",
+      "add_mean": 11.714745555555556,
+      "steady_median": 5.54345,
+      "warm_p95": 24.5322,
+      "warm_p99": 58.8894,
+      "worst": {
+        "frame": "127",
+        "count": "5002",
+        "begin_ms": "0.004000",
+        "build_ms": "53.134400",
+        "end_ms": "14.742900",
+        "total_ms": "67.881300",
+        "draws": "13",
+        "vertices": "1963939",
+        "indices": "8351460"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "initial",
+      "run": 2,
+      "variant": "before",
+      "add_mean": 16.266192222222223,
+      "steady_median": 9.7107,
+      "warm_p95": 36.3802,
+      "warm_p99": 117.417,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.003600",
+        "build_ms": "59.781600",
+        "end_ms": "70.367300",
+        "total_ms": "130.152500",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "initial",
+      "run": 3,
+      "variant": "before",
+      "add_mean": 18.292563333333334,
+      "steady_median": 8.81635,
+      "warm_p95": 37.002,
+      "warm_p99": 128.2601,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.003800",
+        "build_ms": "96.414300",
+        "end_ms": "147.444000",
+        "total_ms": "243.862100",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "initial",
+      "run": 3,
+      "variant": "after",
+      "add_mean": 17.28593,
+      "steady_median": 9.65805,
+      "warm_p95": 53.6729,
+      "warm_p99": 97.3576,
+      "worst": {
+        "frame": "125",
+        "count": "5002",
+        "begin_ms": "0.003100",
+        "build_ms": "95.666900",
+        "end_ms": "13.032100",
+        "total_ms": "108.702100",
+        "draws": "13",
+        "vertices": "1400351",
+        "indices": "5953626"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "initial",
+      "run": 4,
+      "variant": "after",
+      "add_mean": 14.713035555555555,
+      "steady_median": 8.42015,
+      "warm_p95": 34.8768,
+      "warm_p99": 68.318,
+      "worst": {
+        "frame": "127",
+        "count": "5002",
+        "begin_ms": "0.005300",
+        "build_ms": "62.573200",
+        "end_ms": "13.904600",
+        "total_ms": "76.483100",
+        "draws": "13",
+        "vertices": "1963939",
+        "indices": "8351460"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "initial",
+      "run": 4,
+      "variant": "before",
+      "add_mean": 16.76024,
+      "steady_median": 8.2365,
+      "warm_p95": 33.1876,
+      "warm_p99": 120.1804,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.002700",
+        "build_ms": "59.250600",
+        "end_ms": "162.167500",
+        "total_ms": "221.420800",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "initial",
+      "run": 5,
+      "variant": "before",
+      "add_mean": 12.28856,
+      "steady_median": 6.7968,
+      "warm_p95": 26.1756,
+      "warm_p99": 107.1796,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.002900",
+        "build_ms": "41.803000",
+        "end_ms": "83.610300",
+        "total_ms": "125.416200",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "initial",
+      "run": 5,
+      "variant": "after",
+      "add_mean": 10.811817777777778,
+      "steady_median": 5.5143,
+      "warm_p95": 25.6804,
+      "warm_p99": 57.6624,
+      "worst": {
+        "frame": "127",
+        "count": "5002",
+        "begin_ms": "0.003900",
+        "build_ms": "55.231600",
+        "end_ms": "14.864600",
+        "total_ms": "70.100100",
+        "draws": "13",
+        "vertices": "1963939",
+        "indices": "8351460"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "initial",
+      "run": 6,
+      "variant": "after",
+      "add_mean": 10.687583333333333,
+      "steady_median": 5.364,
+      "warm_p95": 27.5197,
+      "warm_p99": 57.5098,
+      "worst": {
+        "frame": "127",
+        "count": "5002",
+        "begin_ms": "0.003800",
+        "build_ms": "52.203500",
+        "end_ms": "14.291800",
+        "total_ms": "66.499100",
+        "draws": "13",
+        "vertices": "1963939",
+        "indices": "8351460"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "initial",
+      "run": 6,
+      "variant": "before",
+      "add_mean": 11.676695555555556,
+      "steady_median": 5.55195,
+      "warm_p95": 25.3363,
+      "warm_p99": 110.1298,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.002700",
+        "build_ms": "46.099700",
+        "end_ms": "65.453200",
+        "total_ms": "111.555600",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "confirmation",
+      "run": 1,
+      "variant": "before",
+      "add_mean": 10.695971111111112,
+      "steady_median": 5.092499999999999,
+      "warm_p95": 22.7994,
+      "warm_p99": 104.1968,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.002800",
+        "build_ms": "37.398700",
+        "end_ms": "91.797600",
+        "total_ms": "129.199100",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "confirmation",
+      "run": 1,
+      "variant": "after",
+      "add_mean": 10.007291111111112,
+      "steady_median": 5.1718,
+      "warm_p95": 22.9936,
+      "warm_p99": 54.1031,
+      "worst": {
+        "frame": "127",
+        "count": "5002",
+        "begin_ms": "0.003200",
+        "build_ms": "50.555000",
+        "end_ms": "15.275700",
+        "total_ms": "65.833900",
+        "draws": "13",
+        "vertices": "1963939",
+        "indices": "8351460"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "confirmation",
+      "run": 2,
+      "variant": "after",
+      "add_mean": 9.949871111111111,
+      "steady_median": 5.0693,
+      "warm_p95": 22.9544,
+      "warm_p99": 51.3146,
+      "worst": {
+        "frame": "127",
+        "count": "5002",
+        "begin_ms": "0.003300",
+        "build_ms": "48.619200",
+        "end_ms": "14.897000",
+        "total_ms": "63.519500",
+        "draws": "13",
+        "vertices": "1963939",
+        "indices": "8351460"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "confirmation",
+      "run": 2,
+      "variant": "before",
+      "add_mean": 10.734175555555556,
+      "steady_median": 5.1118500000000004,
+      "warm_p95": 24.8936,
+      "warm_p99": 111.2899,
+      "worst": {
+        "frame": "128",
+        "count": "5002",
+        "begin_ms": "0.003700",
+        "build_ms": "34.582100",
+        "end_ms": "85.609000",
+        "total_ms": "120.194800",
+        "draws": "13",
+        "vertices": "1930610",
+        "indices": "8210376"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "confirmation",
+      "run": 3,
+      "variant": "before",
+      "add_mean": 10.771504444444444,
+      "steady_median": 5.15465,
+      "warm_p95": 21.4721,
+      "warm_p99": 109.0352,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.002400",
+        "build_ms": "37.239600",
+        "end_ms": "94.800000",
+        "total_ms": "132.042000",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "confirmation",
+      "run": 3,
+      "variant": "after",
+      "add_mean": 10.010847777777778,
+      "steady_median": 5.26995,
+      "warm_p95": 22.9721,
+      "warm_p99": 55.1378,
+      "worst": {
+        "frame": "127",
+        "count": "5002",
+        "begin_ms": "0.002600",
+        "build_ms": "52.425900",
+        "end_ms": "15.254000",
+        "total_ms": "67.682500",
+        "draws": "13",
+        "vertices": "1963939",
+        "indices": "8351460"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "confirmation",
+      "run": 4,
+      "variant": "after",
+      "add_mean": 10.052523333333333,
+      "steady_median": 5.09365,
+      "warm_p95": 23.299,
+      "warm_p99": 55.0287,
+      "worst": {
+        "frame": "127",
+        "count": "5002",
+        "begin_ms": "0.003400",
+        "build_ms": "54.014200",
+        "end_ms": "14.302200",
+        "total_ms": "68.319800",
+        "draws": "13",
+        "vertices": "1963939",
+        "indices": "8351460"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "confirmation",
+      "run": 4,
+      "variant": "before",
+      "add_mean": 10.718965555555556,
+      "steady_median": 5.22435,
+      "warm_p95": 21.6029,
+      "warm_p99": 106.6892,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.002600",
+        "build_ms": "37.032200",
+        "end_ms": "78.370900",
+        "total_ms": "115.405700",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "confirmation",
+      "run": 5,
+      "variant": "before",
+      "add_mean": 10.689666666666668,
+      "steady_median": 5.209,
+      "warm_p95": 21.6458,
+      "warm_p99": 109.3991,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.004500",
+        "build_ms": "36.968700",
+        "end_ms": "82.143700",
+        "total_ms": "119.116900",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "confirmation",
+      "run": 5,
+      "variant": "after",
+      "add_mean": 10.004744444444444,
+      "steady_median": 5.05145,
+      "warm_p95": 23.0599,
+      "warm_p99": 54.1066,
+      "worst": {
+        "frame": "127",
+        "count": "5002",
+        "begin_ms": "0.003000",
+        "build_ms": "53.318100",
+        "end_ms": "14.769300",
+        "total_ms": "68.090400",
+        "draws": "13",
+        "vertices": "1963939",
+        "indices": "8351460"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "confirmation",
+      "run": 6,
+      "variant": "after",
+      "add_mean": 10.010998888888889,
+      "steady_median": 5.01085,
+      "warm_p95": 22.7835,
+      "warm_p99": 55.4549,
+      "worst": {
+        "frame": "127",
+        "count": "5002",
+        "begin_ms": "0.002700",
+        "build_ms": "53.791500",
+        "end_ms": "15.164400",
+        "total_ms": "68.958600",
+        "draws": "13",
+        "vertices": "1963939",
+        "indices": "8351460"
+      }
+    },
+    {
+      "renderer": "direct3d11",
+      "series": "confirmation",
+      "run": 6,
+      "variant": "before",
+      "add_mean": 10.71871,
+      "steady_median": 5.11505,
+      "warm_p95": 22.178,
+      "warm_p99": 106.9662,
+      "worst": {
+        "frame": "126",
+        "count": "5002",
+        "begin_ms": "0.002200",
+        "build_ms": "36.703000",
+        "end_ms": "85.639400",
+        "total_ms": "122.344600",
+        "draws": "13",
+        "vertices": "1807747",
+        "indices": "7688100"
+      }
+    }
+  ],
+  "series": {
+    "null-initial": {
+      "before": {
+        "add_mean": 5.424419814814815
+      },
+      "after": {
+        "add_mean": 5.632241481481482
+      }
+    },
+    "null-confirmation": {
+      "before": {
+        "add_mean": 3.5618483333333333
+      },
+      "after": {
+        "add_mean": 3.435525833333333
+      }
+    },
+    "direct3d11-initial": {
+      "before": {
+        "add_mean": 15.301042407407408
+      },
+      "after": {
+        "add_mean": 12.826085185185185
+      }
+    },
+    "direct3d11-confirmation": {
+      "before": {
+        "add_mean": 10.721498888888888
+      },
+      "after": {
+        "add_mean": 10.006046111111111
+      }
+    }
+  },
+  "pooled": {
+    "null": {
+      "before": {
+        "add_mean": 4.182705493827161,
+        "steady_median": 2.521725,
+        "median_add_mean": 3.615423333333333,
+        "median_worst": 16.6549,
+        "absolute_worst": 25.0123,
+        "p95_median": 7.658049999999999,
+        "p99_median": 14.6599,
+        "phases": {
+          "begin_ms": 0.0003466049382716049,
+          "build_ms": 4.179372222222222,
+          "end_ms": 0.0029866666666666665
+        },
+        "peak_frames": {
+          "120": 2.6357999999999997,
+          "124": 6.74845,
+          "125": 12.855699999999999,
+          "126": 14.82335,
+          "127": 11.93145,
+          "128": 10.31535,
+          "129": 9.662099999999999
+        }
+      },
+      "after": {
+        "add_mean": 4.167764382716049,
+        "steady_median": 2.551675,
+        "median_add_mean": 3.513726111111111,
+        "median_worst": 13.64895,
+        "absolute_worst": 27.7266,
+        "p95_median": 6.85595,
+        "p99_median": 12.02675,
+        "phases": {
+          "begin_ms": 0.00034290123456790124,
+          "build_ms": 4.164469691358025,
+          "end_ms": 0.00295179012345679
+        },
+        "peak_frames": {
+          "120": 2.6361,
+          "124": 6.42125,
+          "125": 12.8376,
+          "126": 11.118,
+          "127": 11.1813,
+          "128": 10.38725,
+          "129": 9.13925
+        }
+      }
+    },
+    "direct3d11": {
+      "before": {
+        "add_mean": 13.011270648148148,
+        "steady_median": 5.3881499999999996,
+        "median_add_mean": 11.2241,
+        "median_worst": 127.30765,
+        "absolute_worst": 243.8621,
+        "p95_median": 25.11495,
+        "p99_median": 109.21715,
+        "phases": {
+          "begin_ms": 0.002467962962962963,
+          "build_ms": 10.658423148148149,
+          "end_ms": 2.350379537037037
+        },
+        "peak_frames": {
+          "120": 5.55665,
+          "124": 25.4259,
+          "125": 69.3226,
+          "126": 127.30765,
+          "127": 63.0113,
+          "128": 109.21715,
+          "129": 28.78165
+        }
+      },
+      "after": {
+        "add_mean": 11.416065648148148,
+        "steady_median": 5.316974999999999,
+        "median_add_mean": 10.370053333333333,
+        "median_worst": 68.2051,
+        "absolute_worst": 108.7021,
+        "p95_median": 23.915599999999998,
+        "p99_median": 56.48235,
+        "phases": {
+          "begin_ms": 0.0022491666666666667,
+          "build_ms": 10.153172962962962,
+          "end_ms": 1.2606435185185185
+        },
+        "peak_frames": {
+          "120": 5.528700000000001,
+          "124": 23.915599999999998,
+          "125": 54.644499999999994,
+          "126": 53.6028,
+          "127": 68.2051,
+          "128": 55.296350000000004,
+          "129": 48.6514
+        }
+      }
+    }
+  },
+  "pixels": [
+    {
+      "renderer": "direct3d11",
+      "frame": 89,
+      "sha256": "3521d817dd407d6d99a6f5d3cd32270f22c8cb39d0af19879cb2439770b22306",
+      "before": "build-memory-perf-fixes\\direct3d11\\before-pixels-89.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11\\after-pixels-89.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 91,
+      "sha256": "05fac89f2af42aeb2cb3c9fc60827de010a45c055ae631553f59481c13b38b6e",
+      "before": "build-memory-perf-fixes\\direct3d11\\before-pixels-91.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11\\after-pixels-91.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 98,
+      "sha256": "f78798322b5a66a8c223fea09d2a4cd0f97653fae76e7c00c541201973fb2156",
+      "before": "build-memory-perf-fixes\\direct3d11\\before-pixels-98.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11\\after-pixels-98.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 104,
+      "sha256": "11f82158372f3e4260ec0f9ec72bd1fa4f710314c7f4c7e4aaf3170422625a5b",
+      "before": "build-memory-perf-fixes\\direct3d11\\before-pixels-104.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11\\after-pixels-104.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 120,
+      "sha256": "acab498a80cee3a515e43f0354adfa6a059e7a8192f2458f25570cb717a20d5c",
+      "before": "build-memory-perf-fixes\\direct3d11\\before-pixels-120.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11\\after-pixels-120.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 124,
+      "sha256": "965ec8251b7132b5c506a0fec1327312e788362001f7f44b8deae4b804dbdcc0",
+      "before": "build-memory-perf-fixes\\direct3d11\\before-pixels-124.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11\\after-pixels-124.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 125,
+      "sha256": "2e6d6b55320fae1d981f95ecda637c5c7fe12eb8ca960de721c1d1c10604956b",
+      "before": "build-memory-perf-fixes\\direct3d11\\before-pixels-125.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11\\after-pixels-125.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 126,
+      "sha256": "ba4e6ed5d34ed6dd87a29ba01ed06cf94aead423b2b241dea293a624978570e4",
+      "before": "build-memory-perf-fixes\\direct3d11\\before-pixels-126.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11\\after-pixels-126.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 127,
+      "sha256": "bb3496147377a868aea1167e9ae5065697d2610e2b823c26c486e8e2344a8cc3",
+      "before": "build-memory-perf-fixes\\direct3d11\\before-pixels-127.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11\\after-pixels-127.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 128,
+      "sha256": "62d93dbefcc7e66970ac1ef6478d6816eee99a7ca427799d4e96b63d5a91f1f6",
+      "before": "build-memory-perf-fixes\\direct3d11\\before-pixels-128.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11\\after-pixels-128.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 129,
+      "sha256": "8884b9eb183f1dc93968023936b9512b9c28a9e481d61f5b89d078c43bad9ad5",
+      "before": "build-memory-perf-fixes\\direct3d11\\before-pixels-129.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11\\after-pixels-129.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 135,
+      "sha256": "851cef4c587d7076af2d4006d33c11dec17def896ac8834907adc3628976a126",
+      "before": "build-memory-perf-fixes\\direct3d11\\before-pixels-135.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11\\after-pixels-135.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 156,
+      "sha256": "7ac4a673b7fdffbbd3157b0929bca2e5b1c32aaf63b3c9a781e3e8adf72b400f",
+      "before": "build-memory-perf-fixes\\direct3d11\\before-pixels-156.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11\\after-pixels-156.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 179,
+      "sha256": "f2e95fb5f6b10ed2e02a7639210531d1b169d0babaacc8ac42e5d602e63e9115",
+      "before": "build-memory-perf-fixes\\direct3d11\\before-pixels-179.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11\\after-pixels-179.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 89,
+      "sha256": "3521d817dd407d6d99a6f5d3cd32270f22c8cb39d0af19879cb2439770b22306",
+      "before": "build-memory-perf-fixes\\direct3d11-confirmation\\before-pixels-89.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11-confirmation\\after-pixels-89.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 91,
+      "sha256": "05fac89f2af42aeb2cb3c9fc60827de010a45c055ae631553f59481c13b38b6e",
+      "before": "build-memory-perf-fixes\\direct3d11-confirmation\\before-pixels-91.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11-confirmation\\after-pixels-91.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 98,
+      "sha256": "f78798322b5a66a8c223fea09d2a4cd0f97653fae76e7c00c541201973fb2156",
+      "before": "build-memory-perf-fixes\\direct3d11-confirmation\\before-pixels-98.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11-confirmation\\after-pixels-98.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 104,
+      "sha256": "11f82158372f3e4260ec0f9ec72bd1fa4f710314c7f4c7e4aaf3170422625a5b",
+      "before": "build-memory-perf-fixes\\direct3d11-confirmation\\before-pixels-104.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11-confirmation\\after-pixels-104.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 120,
+      "sha256": "acab498a80cee3a515e43f0354adfa6a059e7a8192f2458f25570cb717a20d5c",
+      "before": "build-memory-perf-fixes\\direct3d11-confirmation\\before-pixels-120.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11-confirmation\\after-pixels-120.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 124,
+      "sha256": "965ec8251b7132b5c506a0fec1327312e788362001f7f44b8deae4b804dbdcc0",
+      "before": "build-memory-perf-fixes\\direct3d11-confirmation\\before-pixels-124.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11-confirmation\\after-pixels-124.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 125,
+      "sha256": "2e6d6b55320fae1d981f95ecda637c5c7fe12eb8ca960de721c1d1c10604956b",
+      "before": "build-memory-perf-fixes\\direct3d11-confirmation\\before-pixels-125.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11-confirmation\\after-pixels-125.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 126,
+      "sha256": "ba4e6ed5d34ed6dd87a29ba01ed06cf94aead423b2b241dea293a624978570e4",
+      "before": "build-memory-perf-fixes\\direct3d11-confirmation\\before-pixels-126.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11-confirmation\\after-pixels-126.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 127,
+      "sha256": "bb3496147377a868aea1167e9ae5065697d2610e2b823c26c486e8e2344a8cc3",
+      "before": "build-memory-perf-fixes\\direct3d11-confirmation\\before-pixels-127.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11-confirmation\\after-pixels-127.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 128,
+      "sha256": "62d93dbefcc7e66970ac1ef6478d6816eee99a7ca427799d4e96b63d5a91f1f6",
+      "before": "build-memory-perf-fixes\\direct3d11-confirmation\\before-pixels-128.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11-confirmation\\after-pixels-128.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 129,
+      "sha256": "8884b9eb183f1dc93968023936b9512b9c28a9e481d61f5b89d078c43bad9ad5",
+      "before": "build-memory-perf-fixes\\direct3d11-confirmation\\before-pixels-129.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11-confirmation\\after-pixels-129.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 135,
+      "sha256": "851cef4c587d7076af2d4006d33c11dec17def896ac8834907adc3628976a126",
+      "before": "build-memory-perf-fixes\\direct3d11-confirmation\\before-pixels-135.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11-confirmation\\after-pixels-135.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 156,
+      "sha256": "7ac4a673b7fdffbbd3157b0929bca2e5b1c32aaf63b3c9a781e3e8adf72b400f",
+      "before": "build-memory-perf-fixes\\direct3d11-confirmation\\before-pixels-156.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11-confirmation\\after-pixels-156.bmp"
+    },
+    {
+      "renderer": "direct3d11",
+      "frame": 179,
+      "sha256": "f2e95fb5f6b10ed2e02a7639210531d1b169d0babaacc8ac42e5d602e63e9115",
+      "before": "build-memory-perf-fixes\\direct3d11-confirmation\\before-pixels-179.bmp",
+      "after": "build-memory-perf-fixes\\direct3d11-confirmation\\after-pixels-179.bmp"
+    },
+    {
+      "renderer": "software",
+      "frame": 89,
+      "sha256": "ff4c39bf6d9ed649b52490ba8cfade2663d521f8b42d4aca030101e6d8214fba",
+      "before": "build-memory-perf-fixes\\software-before-89.bmp",
+      "after": "build-memory-perf-fixes\\software-after-89.bmp"
+    },
+    {
+      "renderer": "software",
+      "frame": 91,
+      "sha256": "0fba4845483f6200f45a52ad043156adec5dcd00568ee76e53ab53469c632226",
+      "before": "build-memory-perf-fixes\\software-before-91.bmp",
+      "after": "build-memory-perf-fixes\\software-after-91.bmp"
+    },
+    {
+      "renderer": "software",
+      "frame": 98,
+      "sha256": "1d6d6ab1d082496916c6c9dc1966698db961b188cf837f7ba0676be10efe319c",
+      "before": "build-memory-perf-fixes\\software-before-98.bmp",
+      "after": "build-memory-perf-fixes\\software-after-98.bmp"
+    },
+    {
+      "renderer": "software",
+      "frame": 104,
+      "sha256": "37e967747cb94a66b485d9e437f0cf009ec31cdc57b28bc880244e067a9a5b10",
+      "before": "build-memory-perf-fixes\\software-before-104.bmp",
+      "after": "build-memory-perf-fixes\\software-after-104.bmp"
+    },
+    {
+      "renderer": "software",
+      "frame": 120,
+      "sha256": "73460ab7e3d2bb7f0e915c52f1f109403a3a86f57625f0edd4c55e4474605088",
+      "before": "build-memory-perf-fixes\\software-before-120.bmp",
+      "after": "build-memory-perf-fixes\\software-after-120.bmp"
+    },
+    {
+      "renderer": "software",
+      "frame": 124,
+      "sha256": "e87626700ca6fe94d361b7934dd489851b85217925ca9e4273d226db3d5f54f2",
+      "before": "build-memory-perf-fixes\\software-before-124.bmp",
+      "after": "build-memory-perf-fixes\\software-after-124.bmp"
+    },
+    {
+      "renderer": "software",
+      "frame": 125,
+      "sha256": "7af9946e1b74cf3037c7fc45fbc8a0e0794957a2496a332fb9e66baf8f2dfe36",
+      "before": "build-memory-perf-fixes\\software-before-125.bmp",
+      "after": "build-memory-perf-fixes\\software-after-125.bmp"
+    },
+    {
+      "renderer": "software",
+      "frame": 126,
+      "sha256": "b54288c80b200d75189a0112894c9609cad13017ddab56c44f0315b780295ce0",
+      "before": "build-memory-perf-fixes\\software-before-126.bmp",
+      "after": "build-memory-perf-fixes\\software-after-126.bmp"
+    },
+    {
+      "renderer": "software",
+      "frame": 127,
+      "sha256": "f32efd68c0a86f73c06fa6cc3715265ac892bfcbbf989bbda3e94b16634c2cf0",
+      "before": "build-memory-perf-fixes\\software-before-127.bmp",
+      "after": "build-memory-perf-fixes\\software-after-127.bmp"
+    },
+    {
+      "renderer": "software",
+      "frame": 128,
+      "sha256": "065cebf631d94e9dcec8aa9f642a4517ce4fc94bd4f1a31872062dd4c0cc5f5e",
+      "before": "build-memory-perf-fixes\\software-before-128.bmp",
+      "after": "build-memory-perf-fixes\\software-after-128.bmp"
+    },
+    {
+      "renderer": "software",
+      "frame": 129,
+      "sha256": "19a6ac2846e386eb129f12ec2f262630ddd0078d5357bed575d0da03fca787ae",
+      "before": "build-memory-perf-fixes\\software-before-129.bmp",
+      "after": "build-memory-perf-fixes\\software-after-129.bmp"
+    },
+    {
+      "renderer": "software",
+      "frame": 135,
+      "sha256": "5254de9f5e03f2ac8ce278d5066e46a80a5ecf900bfd0adbd9fd1234770fc0da",
+      "before": "build-memory-perf-fixes\\software-before-135.bmp",
+      "after": "build-memory-perf-fixes\\software-after-135.bmp"
+    },
+    {
+      "renderer": "software",
+      "frame": 156,
+      "sha256": "a3339cd66763642fd84247fe130c4399d8b62c6835ee55e619a2ae982ad6a078",
+      "before": "build-memory-perf-fixes\\software-before-156.bmp",
+      "after": "build-memory-perf-fixes\\software-after-156.bmp"
+    },
+    {
+      "renderer": "software",
+      "frame": 179,
+      "sha256": "c316776410788513d3f7d0e77e4772f9d18fc4df208b9308c756376efa2339df",
+      "before": "build-memory-perf-fixes\\software-before-179.bmp",
+      "after": "build-memory-perf-fixes\\software-after-179.bmp"
+    },
+    {
+      "showcase": {
+        "Case": "dark-page0-f1",
+        "Identical": "True",
+        "SHA256": "6B9A240C44975A094DA6705FB35E20D2261888BF32661734D2C1CB375D817DFB"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "dark-page0-f16",
+        "Identical": "True",
+        "SHA256": "0CD24A3DFE5BD70D5FE3AA52C78B6FBB600CDAF552FE7A4C292933C9D8900101"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "dark-page1-f1",
+        "Identical": "True",
+        "SHA256": "81359F917FD5A090090246BE52176B43778279CB62A64A76024B5DFD3971F294"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "dark-page1-f16",
+        "Identical": "True",
+        "SHA256": "BDDD89CF574E2CEB81EC088299FC4184F7042D46D66C5D1369492716174768EB"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "dark-page2-f1",
+        "Identical": "True",
+        "SHA256": "674243887E2A3EB0BBB07CC0D0FAFCCB4E74E2DB20ECA3448FCB08EE25B8D80D"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "dark-page2-f16",
+        "Identical": "True",
+        "SHA256": "43D80FAB7E682D9BCB8711B7D3BD6F9D0EB122D0D765ED514386763CB40E478B"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "dark-page3-f1",
+        "Identical": "True",
+        "SHA256": "3AB5ECFA79240DB33D06166FAAA83341B99741E723687C4E2924863E35D7E6EE"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "dark-page3-f16",
+        "Identical": "True",
+        "SHA256": "BD3DD4CA8F241ADE946198FAB83E1E4D104E15C9FA090DC3F4885F1EF4358726"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "dark-page4-f1",
+        "Identical": "True",
+        "SHA256": "5D71FDBB0DEF40100425DD4A05ABCF55CED4309BBA34FB972233D5A5797D7ADE"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "dark-page4-f16",
+        "Identical": "True",
+        "SHA256": "12CD47C5BA6F02AABBF1735C37B49C5C4ECBD293EB78C8F3685E56B206F52420"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "light-page0-f1",
+        "Identical": "True",
+        "SHA256": "D261E99E9EE2C9783B80BCE2979265045BE2BABBA520FF6F19C074A98954825B"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "light-page0-f16",
+        "Identical": "True",
+        "SHA256": "2FA69B3FAC069318D17B8443A6522D678B7EAEE43ABD7EE6629CF58377675E6A"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "light-page1-f1",
+        "Identical": "True",
+        "SHA256": "9EB8A6CB4FFB7B03A646975EC7F07356CC2F0A061E830BB3629D5ADE5CF2CC4D"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "light-page1-f16",
+        "Identical": "True",
+        "SHA256": "688643130075247FB9787FCE116EBBFE82CCF10949B71EE892763F9FEB9F1ECD"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "light-page2-f1",
+        "Identical": "True",
+        "SHA256": "3CBC7877B154608415D502287C5788D5881797C5EF693A37248AE48B75BE9C12"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "light-page2-f16",
+        "Identical": "True",
+        "SHA256": "D851264E09EC11352E9EC84BCF3F04C78FDC0737AF1822BCF04C25615BE5812A"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "light-page3-f1",
+        "Identical": "True",
+        "SHA256": "39DCCA55B4128E940BC193C963D5302B6A69CAC8F0B109CA5DFEF312300513F4"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "light-page3-f16",
+        "Identical": "True",
+        "SHA256": "D37C679C8F2CE6170A8D49C342D5D89ABBCB7B88E351C97841F2377214D226E2"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "light-page4-f1",
+        "Identical": "True",
+        "SHA256": "5C69CB61C037D7F24D5964B4676FB18C3AD1419D25BAAE3FAEDEE43665EB0354"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "light-page4-f16",
+        "Identical": "True",
+        "SHA256": "499E615363B93ACCE97966DD67C4DC7E818144AC8C668488E7AA9BDAC2F41956"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "script-f6",
+        "Identical": "True",
+        "SHA256": "4D1657D1A847A503A29E452133FABB29F8BE72EE6587DE3996F95994AA72F181"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "script-f8",
+        "Identical": "True",
+        "SHA256": "9A8A2C81ABBAD390D59D223AA9D519830DE58B34E83F5D88A6DC17BB57180989"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "script-f10",
+        "Identical": "True",
+        "SHA256": "00C2F6653FA538EDC0A80500709D3C861184983D63A56C8DB54F72E12B0778F0"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "script-f12",
+        "Identical": "True",
+        "SHA256": "4BEE9869DCCCDB82D8AC33B9D79E995314A1ED5FF1E804881CD69C0C2951E4A2"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "script-f13",
+        "Identical": "True",
+        "SHA256": "B5E9B062637C6A2BA12221797B2D144F694AF6CA0AEAF0CF530C32270E12DFFB"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "script-f14",
+        "Identical": "True",
+        "SHA256": "75F570195640B57F6B3697D2036A68ED8D5995F9F082F50CF8DFE1B8B6957D00"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "script-f16",
+        "Identical": "True",
+        "SHA256": "A68988A85FDF60CF41122B8B7C070CABF6D8BE6B148DECA9D56F55D27DA398E7"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "script-f18",
+        "Identical": "True",
+        "SHA256": "594C66CEE104E373D18F67B4B9A004DAD2A962D64303FE9C53DB086135E81985"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "script-f20",
+        "Identical": "True",
+        "SHA256": "2A77DC08D9043CF47CAF05BA8CE6050EA201442CCE4E1E271A56DA5CA883D89F"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "script-f24",
+        "Identical": "True",
+        "SHA256": "5356E22871476892E2ED47EAEFAF6FCED151A0A2D3A2CB65832573BADCEAAEC1"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "script-f36",
+        "Identical": "True",
+        "SHA256": "01D0C663EE56295A03E8582DCC13890E27B40332A9BE5F572B987380104C4B88"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "script-f48",
+        "Identical": "True",
+        "SHA256": "4C1BE58339A331164439689428CB7447B1211C48B6791DAC1F3A7C6204238CED"
+      }
+    },
+    {
+      "showcase": {
+        "Case": "resize",
+        "Identical": "True",
+        "SHA256": "83E9A336A8F0FBBD0321C0CCF57D6D2F1BFF4634561671728015FD5BD038CC05"
+      }
+    }
+  ],
+  "csv_sha256": {
+    "build-memory-perf-fixes\\null\\before-r1.csv": "92cb2dac9e314b50a6522204960e9874256ec3917a67c3bbf495be69755b576d",
+    "build-memory-perf-fixes\\null\\after-r1.csv": "2e171844e83368c480ac8a4806a0f8d2a22d10f007fa7572de5e5ad0780e1f8c",
+    "build-memory-perf-fixes\\null\\after-r2.csv": "3f122efb4f68df3db800c9710690a73b54716fe67b6a357d60804a445f6c23ed",
+    "build-memory-perf-fixes\\null\\before-r2.csv": "28d966433324a44ea1d2d3737ad77cd59f46049c8538623307862cfa02e2db55",
+    "build-memory-perf-fixes\\null\\before-r3.csv": "1bd2b454a8a2c9259ff112ac8153ba6bf20292128a10b73160a1e6d166f7c42f",
+    "build-memory-perf-fixes\\null\\after-r3.csv": "7a80e11bfed8cec097553fdeb77a7eaf5101bf65d927f729fbb086d351695f1f",
+    "build-memory-perf-fixes\\null\\after-r4.csv": "2086c2b7724372fd4fafd11cc65382a20a7265ce05907ad67d715fb18b8ab16c",
+    "build-memory-perf-fixes\\null\\before-r4.csv": "16b0a1e57f55dac362515b8dec52f00ba972ebc99c58a17cd46cf817725a63ff",
+    "build-memory-perf-fixes\\null\\before-r5.csv": "8b8492dc44af3fe68bc043d9b1993e3f990e74f2f11554c433fd03a552dc3bb2",
+    "build-memory-perf-fixes\\null\\after-r5.csv": "047fb78b7caf6b42a29b085fc7614ecf5e85e7f5078b12726ee0c0777ebe84f0",
+    "build-memory-perf-fixes\\null\\after-r6.csv": "8f9218c889bd923b696d527196c8afc40323dd7eff227416fc473bcd587308b1",
+    "build-memory-perf-fixes\\null\\before-r6.csv": "46fd12918a66d4140812c34cd28036917b1b47698dbe08e0cb64f7bc07b9d328",
+    "build-memory-perf-fixes\\null-confirmation\\before-r1.csv": "ae953137ae2ed26b7688a6de56853358d918c8789d8b34c51426a385c4178ba0",
+    "build-memory-perf-fixes\\null-confirmation\\after-r1.csv": "08d50be3a8c65faa521aebde38afd1b84a0c38e1279f34c60ca768684970d4f3",
+    "build-memory-perf-fixes\\null-confirmation\\after-r2.csv": "dba733c202f0ae6e26454eb22e21f72dfdb8694037ab6895d30999af51bbbe67",
+    "build-memory-perf-fixes\\null-confirmation\\before-r2.csv": "1398ae8365277ce2f4e5689c4c4584106e65c39087b7e2e54a1184f78074aa31",
+    "build-memory-perf-fixes\\null-confirmation\\before-r3.csv": "30848d550705d3d4fcb4da333411c2bdbbd246e55f5a999a9e74d6e6576d5c56",
+    "build-memory-perf-fixes\\null-confirmation\\after-r3.csv": "7814fd3277df37fcc5b13e189c0d2ccd32f38193808de9dc24a579b115e5bee7",
+    "build-memory-perf-fixes\\null-confirmation\\after-r4.csv": "2ba185790460637ecf09d2aa0a993f3580c46fe2c0089a31924a470c3ccdbac9",
+    "build-memory-perf-fixes\\null-confirmation\\before-r4.csv": "b3688dcef32399639f9b3b3a8c4f41477dff58517ab693cf9e4e4a8b6135c638",
+    "build-memory-perf-fixes\\null-confirmation\\before-r5.csv": "f54e52c5b4a6d213778b3c8c68026f59046b1152f12e7f1375f3153b455f02dd",
+    "build-memory-perf-fixes\\null-confirmation\\after-r5.csv": "866b0c56028ce02a1d2837a47a5b32f29f205efd4c086451c0342ff0d51290e6",
+    "build-memory-perf-fixes\\null-confirmation\\after-r6.csv": "99b190d2d6ad7d1c70f559c185517d0e8042346ccfefabe8fca1678a92bf9cf2",
+    "build-memory-perf-fixes\\null-confirmation\\before-r6.csv": "da16f713b3344f1dbcf82e15d220293d12c8834b57836905dc37a28bb42d5b86",
+    "build-memory-perf-fixes\\null-confirmation\\before-r7.csv": "581d8d963d5ffa524e6bb0d703de62bbfc0cbaf23096f2d5b14afeb84ff3ed4e",
+    "build-memory-perf-fixes\\null-confirmation\\after-r7.csv": "e339d3c0f732f00083b1f271ae33160a6b2d7bf1146978c8442d1414dffafdc1",
+    "build-memory-perf-fixes\\null-confirmation\\after-r8.csv": "cd6247139c7c7fd1669cb5bfa9314727d5581e808349c68ed76463e9190ffe8f",
+    "build-memory-perf-fixes\\null-confirmation\\before-r8.csv": "f21c4cc9a612ad4c220b1807956000720fa593ab5cd02f04769c90577e361143",
+    "build-memory-perf-fixes\\null-confirmation\\before-r9.csv": "ad28e0fdacf550dd77b45625baaafde220a281e2e8edb69b614e0a50223575c0",
+    "build-memory-perf-fixes\\null-confirmation\\after-r9.csv": "b0d6eabb04deb4f8f7fe591074e9792f3358c35d9aafbd0dfac542329a23586b",
+    "build-memory-perf-fixes\\null-confirmation\\after-r10.csv": "9aecdd4ed2db53bf5f1de17c064147c12721d057bd45546cee03bf425269b52c",
+    "build-memory-perf-fixes\\null-confirmation\\before-r10.csv": "a1da375e0eb698b2b653243f548438d9987d3c3c0f6358c77387b4f08ec01e65",
+    "build-memory-perf-fixes\\null-confirmation\\before-r11.csv": "58829b370a87090592273062dc8ec96ac6be35d1cf05e6bfb4de5036429b2163",
+    "build-memory-perf-fixes\\null-confirmation\\after-r11.csv": "4fba7216fc426a352e821d5015a01b99aefb444cc4c9d83593a4ce4088254fe6",
+    "build-memory-perf-fixes\\null-confirmation\\after-r12.csv": "3107b61ab8c98c889ba6d6f3696454b183e6e5d495fac2d36a7cc2ac91ea1fe0",
+    "build-memory-perf-fixes\\null-confirmation\\before-r12.csv": "98be540d7c35aed9b0764b481b9334022d277b7a853940a077b9ccd303878442",
+    "build-memory-perf-fixes\\direct3d11\\before-r1.csv": "efae120ef692da15bf38903d1909bd58b07904f784730a11991801bb8ebe9a8d",
+    "build-memory-perf-fixes\\direct3d11\\after-r1.csv": "ead226c2d155c8fdce7e645f7b4aca3e74348cb1d05c46c37cafd70397865934",
+    "build-memory-perf-fixes\\direct3d11\\after-r2.csv": "677a135e296a5c66894ef5208fcbe4edf1481685b3323329adf42eee3c9287b2",
+    "build-memory-perf-fixes\\direct3d11\\before-r2.csv": "bab4a076987fb16a97b9bbc0121c9f848af81cef275c237f0f404e3449283277",
+    "build-memory-perf-fixes\\direct3d11\\before-r3.csv": "8a8f1547cafaa56a0cb2d9f3cb2be64ec56d1ffc3d764abde14ca1605405e307",
+    "build-memory-perf-fixes\\direct3d11\\after-r3.csv": "277a93479ae8e77a64ca1fb8ce634ada7e6da535fc52aa6853e35efe95e1ba84",
+    "build-memory-perf-fixes\\direct3d11\\after-r4.csv": "5f0495e0ce9ddc7c97aa7c67f6bfed75c4255d761c168ecfb4b2b46654f8ddb7",
+    "build-memory-perf-fixes\\direct3d11\\before-r4.csv": "296e700c1fc50d4f1b351d6cefc66a22826182f47c0805223b69d652e7cda2f5",
+    "build-memory-perf-fixes\\direct3d11\\before-r5.csv": "cd6909caf6d7eee3b1699ba139e798039d8f85d3d9519564ff2ae77db72bee00",
+    "build-memory-perf-fixes\\direct3d11\\after-r5.csv": "b9a91423dcb380cc7385746798eb548919f1532b1cf02184ed05b87321e1a6ea",
+    "build-memory-perf-fixes\\direct3d11\\after-r6.csv": "ba9ed6396bcfeacf3c5eb0fb76da4c87b4a05fe863f73f800cccec163fab821c",
+    "build-memory-perf-fixes\\direct3d11\\before-r6.csv": "a14f2286f40e4c7aebcaee70a78616e0bd74d30f4545705492f3b31acbaa0ca4",
+    "build-memory-perf-fixes\\direct3d11-confirmation\\before-r1.csv": "ed9209c8adcb0cdb4d4b55e82204504da783fce6e36ea9e023c27f9961989261",
+    "build-memory-perf-fixes\\direct3d11-confirmation\\after-r1.csv": "80d7b9c90e8df97d4bb76be70df760e6a06a5bacc78ab25ac0dae11ae8c0eb02",
+    "build-memory-perf-fixes\\direct3d11-confirmation\\after-r2.csv": "dc37d0db6461749163976e70253ffd0446fe9aa3d7730150bd19ee05266084ac",
+    "build-memory-perf-fixes\\direct3d11-confirmation\\before-r2.csv": "dcbd62e5d5c5a7ea4d930b86b050a38b4ac3b532fb61f4eeca3b273d6ec77e6a",
+    "build-memory-perf-fixes\\direct3d11-confirmation\\before-r3.csv": "a2df1e92f578aecd342424fe6362b3400b0a9523f2ce48b7269a89b8fcf28f46",
+    "build-memory-perf-fixes\\direct3d11-confirmation\\after-r3.csv": "270a3dce23a508bd368141adcc8c9e1cff6a4d3bf9ca6dec20a08e25921fea6f",
+    "build-memory-perf-fixes\\direct3d11-confirmation\\after-r4.csv": "7702cd9c63cda02498d3378811ca10098b585ad59ddb571d7998af09c26ca314",
+    "build-memory-perf-fixes\\direct3d11-confirmation\\before-r4.csv": "78ac0fc4e4830462acc1e93ad8a3c69f864be6d7a65ea2345a5c30d8fa94f71b",
+    "build-memory-perf-fixes\\direct3d11-confirmation\\before-r5.csv": "b4c1e6cc5b392fd0246a4b74470404f775b60b31114292f56a92b44cf942a9a3",
+    "build-memory-perf-fixes\\direct3d11-confirmation\\after-r5.csv": "710a7a9bcaa440fa24b64a993be569ce01de37c646fec7a59bab4e1b950aecb8",
+    "build-memory-perf-fixes\\direct3d11-confirmation\\after-r6.csv": "4e691aa0ed5c45a971f9c27cb311b5492ae09b4dfdf9e01fc120d9465e4b0218",
+    "build-memory-perf-fixes\\direct3d11-confirmation\\before-r6.csv": "96fb225c9353244d5033e9f132d42beed04b66c682cd18d7aa41a0f0ddbcf4a2"
+  },
+  "frame_schema": [
+    "series",
+    "renderer",
+    "variant",
+    "run",
+    "frame",
+    "count",
+    "begin_ms",
+    "build_ms",
+    "end_ms",
+    "total_ms",
+    "draws",
+    "vertices",
+    "indices"
+  ],
+  "existing_tests_unchanged": {
+    "tests/bench.cpp": true,
+    "tests/bench_core_performance.inl": true,
+    "tests/consumer/CMakeLists.txt": true,
+    "tests/consumer/main.cpp": true,
+    "tests/golden/anim_f0.bmp": true,
+    "tests/golden/anim_f1.bmp": true,
+    "tests/golden/anim_f2.bmp": true,
+    "tests/golden/blur_edge_f1.bmp": true,
+    "tests/golden/blur_f1.bmp": true,
+    "tests/golden/dpi_1x.bmp": true,
+    "tests/golden/dpi_2x.bmp": true,
+    "tests/golden/hashes.txt": true,
+    "tests/golden/inputs_f3.bmp": true,
+    "tests/golden/layers_f1.bmp": true,
+    "tests/golden/layout_f2.bmp": true,
+    "tests/golden/menus_f2.bmp": true,
+    "tests/golden/menus_f3.bmp": true,
+    "tests/golden/menus_f4.bmp": true,
+    "tests/golden/menus_f5.bmp": true,
+    "tests/golden/relayout_f7.bmp": true,
+    "tests/golden/relayout_f8.bmp": true,
+    "tests/golden/shapes.bmp": true,
+    "tests/golden/test_golden.cpp": true,
+    "tests/golden/text.bmp": true,
+    "tests/golden/widgets_f3.bmp": true,
+    "tests/golden/widgets_f4.bmp": true,
+    "tests/golden/windows_a.bmp": true,
+    "tests/golden/windows_b.bmp": true,
+    "tests/test_components.cpp": true,
+    "tests/test_core.cpp": true,
+    "tests/test_core_perf_pixels.cpp": true,
+    "tests/test_core_performance.inl": true,
+    "tests/test_dock.cpp": true,
+    "tests/test_ergonomics.cpp": true,
+    "tests/test_geometry_performance.inl": true,
+    "tests/test_input.cpp": true,
+    "tests/test_layout.cpp": true,
+    "tests/test_motion.cpp": true,
+    "tests/test_perf_pixels.cpp": true,
+    "tests/test_performance.inl": true,
+    "tests/test_platform.cpp": true,
+    "tests/test_pump.cpp": true,
+    "tests/test_render.cpp": true,
+    "tests/test_sdl_capacity.cpp": true,
+    "tests/test_sdl_geometry.cpp": true,
+    "tests/test_sdl_upload.cpp": true,
+    "tests/test_showcase.cpp": true,
+    "tests/test_showcase_paint.inl": true,
+    "tests/test_text.cpp": true,
+    "tests/test_textarea.cpp": true,
+    "tests/test_util.h": true,
+    "tests/test_widgets.cpp": true
+  },
+  "full_validation": [
+    {
+      "mode": "debug",
+      "exit": 0,
+      "seconds": 286.66148924827576
+    },
+    {
+      "mode": "release",
+      "exit": 0,
+      "seconds": 592.3332462310791
+    }
+  ],
+  "post_validation": {
+    "existing_test_files_unchanged": {
+      "tests/bench.cpp": true,
+      "tests/bench_core_performance.inl": true,
+      "tests/consumer/CMakeLists.txt": true,
+      "tests/consumer/main.cpp": true,
+      "tests/golden/anim_f0.bmp": true,
+      "tests/golden/anim_f1.bmp": true,
+      "tests/golden/anim_f2.bmp": true,
+      "tests/golden/blur_edge_f1.bmp": true,
+      "tests/golden/blur_f1.bmp": true,
+      "tests/golden/dpi_1x.bmp": true,
+      "tests/golden/dpi_2x.bmp": true,
+      "tests/golden/hashes.txt": true,
+      "tests/golden/inputs_f3.bmp": true,
+      "tests/golden/layers_f1.bmp": true,
+      "tests/golden/layout_f2.bmp": true,
+      "tests/golden/menus_f2.bmp": true,
+      "tests/golden/menus_f3.bmp": true,
+      "tests/golden/menus_f4.bmp": true,
+      "tests/golden/menus_f5.bmp": true,
+      "tests/golden/relayout_f7.bmp": true,
+      "tests/golden/relayout_f8.bmp": true,
+      "tests/golden/shapes.bmp": true,
+      "tests/golden/test_golden.cpp": true,
+      "tests/golden/text.bmp": true,
+      "tests/golden/widgets_f3.bmp": true,
+      "tests/golden/widgets_f4.bmp": true,
+      "tests/golden/windows_a.bmp": true,
+      "tests/golden/windows_b.bmp": true,
+      "tests/test_components.cpp": true,
+      "tests/test_core.cpp": true,
+      "tests/test_core_perf_pixels.cpp": true,
+      "tests/test_core_performance.inl": true,
+      "tests/test_dock.cpp": true,
+      "tests/test_ergonomics.cpp": true,
+      "tests/test_geometry_performance.inl": true,
+      "tests/test_input.cpp": true,
+      "tests/test_layout.cpp": true,
+      "tests/test_motion.cpp": true,
+      "tests/test_perf_pixels.cpp": true,
+      "tests/test_performance.inl": true,
+      "tests/test_platform.cpp": true,
+      "tests/test_pump.cpp": true,
+      "tests/test_render.cpp": true,
+      "tests/test_sdl_capacity.cpp": true,
+      "tests/test_sdl_geometry.cpp": true,
+      "tests/test_sdl_upload.cpp": true,
+      "tests/test_showcase.cpp": true,
+      "tests/test_showcase_paint.inl": true,
+      "tests/test_text.cpp": true,
+      "tests/test_textarea.cpp": true,
+      "tests/test_util.h": true,
+      "tests/test_widgets.cpp": true
+    },
+    "single_header": true,
+    "debug_sdl_consumer": true,
+    "release_sdl_consumer": true,
+    "final_memory_debug_and_release": true
+  },
+  "post_steps": [
+    {
+      "name": "post-validation",
+      "exit": 0,
+      "seconds": 158.82186555862427
+    },
+    {
+      "name": "demo-smoke",
+      "exit": 0,
+      "seconds": 3.6424942016601562
+    },
+    {
+      "name": "adapter",
+      "exit": 0,
+      "seconds": 0.12526440620422363
+    },
+    {
+      "name": "confirmation",
+      "exit": 0,
+      "seconds": 39.919739723205566
+    }
+  ],
+  "adapter": "renderer=direct3d11\nadapter=AMD Radeon RX 9070 XT\nvendor=0x1002\ndevice=0x7550\ndedicated_video_bytes=16977985536\nfeature_level=0xb100\n",
+  "regressions": {
+    "new": 9,
+    "memory_target_total": 12,
+    "original_perf": 17,
+    "original_showcase": 11,
+    "red_old_paths_rejected": 45
+  },
+  "sources": {
+    "CMakeLists.txt": "8b5752cb5c1991b3d78ffc13e4a0e005ac35dad14c39b3784d35fb0b8bd41703",
+    "assets/fonts/DejaVuSans-Bold.ttf": "e6476c1b80502924294eed40894c5b18e06c181444ca953e5334262df9c27724",
+    "assets/fonts/DejaVuSans-Oblique.ttf": "4af75fa16ee6d3ad43e1ecec41862c24954af26a55c6bb1ebb27bd486a50f5f4",
+    "assets/fonts/DejaVuSans.ttf": "7da195a74c55bef988d0d48f9508bd5d849425c1770dba5d7bfc6ce9ed848954",
+    "assets/fonts/LICENSE.txt": "7a083b136e64d064794c3419751e5c7dd10d2f64c108fe5ba161eae5e5958a93",
+    "assets/fonts/README.md": "2626f259620b85380cc3d69c45d9f5684ed9ab16c84ef89d48b9172969ece870",
+    "cmake/PufferUISdlD3d11.cmake": "301653a7d3c77d5c981d1112dfa8adba929a5c4ffc8690edb00f937c0ac29586",
+    "cmake/pufferuiConfig.cmake.in": "cc6e01a6c6366eedc9b48cce594ac4f61ff7ef658a2e5b7537a9974219edd562",
+    "examples/atomic/a11y.cpp": "40a182362964131e1030221e7a3e5d7acdbf491d7a4daa08e8f2e5fae68d3c34",
+    "examples/atomic/animation.cpp": "b1af8acef468e5d32fb9b39687539aca8f2ec9dd3b4e2462e4c345075272da4d",
+    "examples/atomic/blur.cpp": "9fb14e1d34fba0281c5527f48f23211326fc7ac4914904bc02fadb522d1af8dc",
+    "examples/atomic/bootstrap.cpp": "2b4dd94a570477fa70239aabbceec1dfacdb2c99a45d3e15057d7d9577daaa55",
+    "examples/atomic/buttons.cpp": "9969193ba86907bfcbda2747f4322f82ef90755ae47a38266871d963776085c8",
+    "examples/atomic/colors.cpp": "c70b0f68c3a0a6d755490225a8452b3e1337a5ef789261dd70491d337cda47cc",
+    "examples/atomic/combo.cpp": "043526548d7f9f8f57591ac1e85db738a0c1bd013c9553958193fd426b0d39f4",
+    "examples/atomic/components.cpp": "d383e445998d4b3f069e9466c904422454feb962d01d6600e080ab7477b2ed54",
+    "examples/atomic/controls.cpp": "784b46feb31ed49358f28e3eef6f11fdc16b15b6d3c41a1754df197e9e67e817",
+    "examples/atomic/cursors.cpp": "a3422285cf778e6a4a117afccc7ad6d507a17f3012bd7db7403c418fb840a395",
+    "examples/atomic/custom.cpp": "4956327cef9677c3668ea175d1cab77c3dd6ae1517543c015d7b4abb956f746d",
+    "examples/atomic/dock.cpp": "6fb731b8faf9d27be92ef156a6615815cbbcfb64d54e81b7fa3d024612a12679",
+    "examples/atomic/dpi.cpp": "26331be5d8675eb48706e2420fcf7c4543a9c7a149fa93a7e4376ad9f502d4f2",
+    "examples/atomic/drawing.cpp": "5405b626e94965bcabbb58110deb5a68986d6238768247eeb0950aff97b66e46",
+    "examples/atomic/expander.cpp": "1dd09e9058b4f045cf8ce5bf63e445f55d58de05f1ddd0ef8c906268f02f6d33",
+    "examples/atomic/files.cpp": "f8c036f299677b226c15ffd68b73e72b5e30161bb8ef8bc60d3a913d06ebf567",
+    "examples/atomic/grid.cpp": "b09ef5c27cd8d810daf5b6299a36f92d319b393276d412768ec7c094d9a788e9",
+    "examples/atomic/headless.cpp": "a940b7276eb579dd246a33e44144370a1588408bf8b66e35f54d48e223b34697",
+    "examples/atomic/hello.cpp": "03291636b2bd41c9375fac99a9aad4f44468f26521135b2ee96903c83e715085",
+    "examples/atomic/ids.cpp": "4012dd82fbb864f790cc7974ba75caeba2fe68db8deebd784e61d63c603312ed",
+    "examples/atomic/inputs.cpp": "ad452914689f2332294de4e851f17d0690676c6392a0bee1ec809607ebc03afa",
+    "examples/atomic/keyboard.cpp": "8e34aea699c7ce372b52f5df78ab12621cdfe3bdfe23ee5b2cbf8d5d8405526d",
+    "examples/atomic/numeric.cpp": "2fceb603e05e0f60ad7af6581a15fbf01f50be19cf5859dc4dc37c20857056f7",
+    "examples/atomic/overflow.cpp": "d17d812f398207f3a43c0fa043a2492042b575fc1113450f9cd391cc922503d0",
+    "examples/atomic/panels.cpp": "09daff315db249877ee1eadb5d96166dd6e8e2d1e846a4d9017ba673ac63d123",
+    "examples/atomic/patterns.cpp": "1023af2178a5302416881e8d0563b101ab2cb118447689f6e384857bde2ee860",
+    "examples/atomic/pickers.cpp": "65f1740fb093dcf86b890ad52b907b8efd8fb694483ebd40b2e34753d6d752f9",
+    "examples/atomic/popups.cpp": "df1e6d6f098bf4c6450c9f50c8b028669a4dcfcedbd2c0ce57b4c671b1080115",
+    "examples/atomic/rect.cpp": "de42b9b53b59cb779f66ddfd580353708a09d5d038e48fcca74fb1eabf9476de",
+    "examples/atomic/relayout.cpp": "cb94595c0538d440a91311282fea0d5ae5e4936d79070893e90ac5161c0cfc62",
+    "examples/atomic/renderer.cpp": "a99f8cedb6a8dc336995871786fe2b007f224ef528edc610869d648726c37656",
+    "examples/atomic/scroll.cpp": "ae67fcb05b9dc21dde92a700e4321968286bf34eefa0e8b1361bb2086f90007d",
+    "examples/atomic/tables.cpp": "8eadd7853b829d01f31d124c74a35a4841952b367d6ac67b263754feb5c96a67",
+    "examples/atomic/text.cpp": "f6439dc37656ec2f6644f32cc680b9d4f4ba31bb3b0b8ef6da143967b7c37b79",
+    "examples/atomic/textarea.cpp": "74819b7a0780707e29deec3199299b9c468285b1adddfbe54a7cf84525ba19e4",
+    "examples/atomic/theme.cpp": "ecb9fe09f5af3cd3a195f9aae055a4d2558cd8b7eea47dc9786fc81598ea3ae7",
+    "examples/atomic/tracks.cpp": "f1032181a4a25a071faefbac7f1550ddab7a3f84bde82a53d7205c466d49f0f8",
+    "examples/atomic/tree.cpp": "4a4105eb9d4bed4f827de9a96906da3b7280cf76bb38f7c48b94cc99cc1a41c4",
+    "examples/atomic/vlist.cpp": "942bc4bce20db1606577ec38797239668d46ce917d131729d8a3db3410021269",
+    "examples/atomic/widgets.cpp": "17a90bc52dbb6b620ac236bfd4e45e791b6e0bc915a5d94eb362b614a3ecde61",
+    "examples/atomic/windows.cpp": "120a4d75fe40acdfe4a5c7af5f64f916c4d149765f79ad46011166c5f9a782b6",
+    "examples/dock_helpers.h": "f2f6f3522c19ec4dfef905029d2cec5e987584bb2254316c7a454278320e0083",
+    "examples/example_common.h": "8ca9ee336add5a9f8a9b1da18630ec50face062203233d6820ef0efba6021da7",
+    "examples/pui_counter.cpp": "925378b12ed5cf89f4ccc8810797b2b57cf1229d58b62950ea402b8418e23c77",
+    "examples/pui_demo.cpp": "ab885689d0a75c9c371ecb88629ce943019848cb3703d2dd01cdbf9049094ce2",
+    "examples/pui_showcase.cpp": "ecc34997ae4e9cab667c4beb373a86c47d247e9e34b0e75a5b3fe2bb3ba93723",
+    "examples/pui_tour.cpp": "72bad7a0581619e23e29b48801afaff602b4ce4e67915eb7cc4ad55b618da680",
+    "examples/tutorial/button_states.cpp": "56ff9f7439efbbb090ebd646d76f8a3b42937e5341752984affc163b28136c10",
+    "examples/tutorial/glass.h": "2132cf4031e6eca3d783b72ce79fb9344e31a83986551170b96f4750137e0ab5",
+    "examples/tutorial/glass_widgets.h": "0bd519557244c1dd3085668fe076c576bfd826efa553c2625e0f56574dd1e7d8",
+    "examples/tutorial/step01_shot.cpp": "75b36f0022dad46065afc25bc649a8a75a53c9e5e4bf449e03e5379c3c71a644",
+    "examples/tutorial/step01_window.cpp": "b5304feb561ddb22f18029a7df07eccae88946abe3c1b6711224d303cfe278e1",
+    "examples/tutorial/step02_layout.cpp": "abc48138b2c7d3e4a53da92f5f1acc50d8adeb35357bd38663f8926a706b9911",
+    "examples/tutorial/step03_tasks.cpp": "67970386218a146bbb5debb0700236e75f5c2125d5899c33d6786004657ebcf6",
+    "examples/tutorial/step04_filters.cpp": "198525a638d35be295cbc54599c2a806888721b0cb075d4d9db4d8ff936b98db",
+    "examples/tutorial/step05_glass.cpp": "199c478e0ea3e1645e5401997978c09b6af8a7fa3a36b29e32385694fd526e1d",
+    "examples/tutorial/step06_motion.cpp": "491f31dc9bf7337f15cfd3214fcff808c1666d54b565420997de7c2987d67f48",
+    "examples/tutorial/todo.cpp": "24c4b288b8893a070f39f4f79fd5fec9014e3d8179bc2afe55da247150dfb0d8",
+    "examples/tutorial/todo_model.h": "1ecaf1800c9164fde450a4529003e44470524d84eca09ae5b0b0343907550c78",
+    "examples/tutorial/todo_test.cpp": "5ce5aa12eed1db23df8fab216563455a8262bcbd91ff4a9e914bca9223e25d2e",
+    "examples/tutorial/todo_ui.h": "52a925810f7bcb66204da117fdddebf68c6328a3b47cd02a21ce5b8150e8044d",
+    "examples/tutorial/tut.h": "44c91f47010fe1cafbe30e4b82f44e5f1a991ed3d92dc5908eca57446b8c32b9",
+    "include/pufferui/impl/chrome_scroll.inl": "d8b4cc31ca403fedfd48add4927c42ce0aaef59c1d9bd9e77834fc773882da50",
+    "include/pufferui/impl/components.inl": "2576af896c2140af238c5c4036f2a8d00ec6dc6744c9b4a48ee4c3ae9cf38a6f",
+    "include/pufferui/impl/core_state.inl": "d60ba223d869481dd76697b9b971c504f088ca0b8029a70783c87c8e21faabc0",
+    "include/pufferui/impl/dock_style.inl": "400a11bc84f737312af3049d71779e8b606c54ee04273dfa38be85c5c05c2e19",
+    "include/pufferui/impl/draw_context.inl": "83f1a76b9855275fab4a9013d535a6479ecbb53a8bafe4babe416102d72a1240",
+    "include/pufferui/impl/draw_primitives.inl": "e263142433d1a81d9e5a18e2ef267bfa3bb448c144464f8c3f079876147d73c4",
+    "include/pufferui/impl/input_interact.inl": "a7f614898418e98eb04e9619a3b09f90a4b5ab0e98548e488fed63290ccdc79a",
+    "include/pufferui/impl/layout_text.inl": "066d6b35e4d0d9c709c464f1d7a145e501825da41895a72a793ef22f5909ff66",
+    "include/pufferui/impl/sdl3.inl": "12c837b61eb9c661121fa06ad121bb45a31114feb0f821aa902b5b5349709c01",
+    "include/pufferui/impl/typed_inputs.inl": "9091f04ba9a0dfef8aa478b7125096974d1d082f4342f825703841206cc5f592",
+    "include/pufferui/impl/uia_windows.inl": "81190fcf0169f493fb552472e03d25f78f9fa39346b6e3aef117dd5fe45d1758",
+    "include/pufferui/impl/widgets.inl": "5560b13ad87d17a7449e83773d4a617134fa532a0df510d022db2c597080fea5",
+    "include/pufferui/pufferui.h": "93202c86c74fd6634fec0102388c68afabeeef907e71657baa049d474e40081f",
+    "src/pufferui_impl.cpp": "ef6918aba301d97919b283ac2328aa58d0e6587e9cf578664594201bdf8c4d80",
+    "src/sdl_d3d11_arena.inl": "1c0e9105c3b4e2d0913069eeb34ac4caaf68183356f4e605e8644f9c6cbe28df",
+    "src/sdl_d3d11_buffer.h": "b980858d3eb64a4e4b44698880603bf0efc0fde254643f32d2a3e698dcb7d3cd",
+    "src/sdl_d3d11_buffer.inl": "726328615af1944095ba741a4dc737e785ace73c145bc74e87114f78088c157a",
+    "src/sdl_d3d11_draw.inl": "a1b484fcc47e5525d88732a593e9d6fdc523b6746959ac96b55d32d40ca3912f",
+    "src/sdl_d3d11_geometry.inl": "81ccb578b4bba15444bb2a146eb710f524dece7ab471df4e95a60e50b7a54247",
+    "tests/test_memory_performance.inl": "e1b0e64f890f0bb7c13afe6e0574c995a52852bfb44f41d68ce3a112f726d364",
+    "tests/test_memory_upload.cpp": "38606400b442095704eb86e8f2863b201053f5177ccbe4df9a3d27743b1e6294"
+  },
+  "binaries": {
+    "build-memory-perf-fixes\\before-pui_showcase_tests.exe": "0a52d3a00f97690406259d4a42e47e85c65fd83fbee35ffb7d130458d1bb4b72",
+    "build-memory-perf-fixes\\after-pui_showcase_tests.exe": "e6f7cd4f2dca8184020d5c5d7b5d9fd99c6297c1e5df6731670429cfe83f15a6",
+    "build-memory-perf-fixes\\before-pui_showcase.exe": "e14db3fe76a394b25e767f09e39f525316ab2a0d7471066a2a41c35d50fc041d",
+    "build-memory-perf-fixes\\after-pui_showcase.exe": "f215829d37de293ae2e777f182159fcefbc0c422979b947183e51b6fb1de7e53",
+    "build-memory-perf-fixes\\before-pui_bench.exe": "34b5c87c25d0e2fb801e92613a02e0b2ba477faf4597950a18b81175bd264b2e",
+    "build-memory-perf-fixes\\after-pui_bench.exe": "519db6f476f0a462b43a27e989e32aa0ce2072ce5571efe955923b94b2996886"
+  },
+  "SDL_commit": "64998d2bc8ec062186ba15978789b042ee831721",
+  "SDL_clean": true,
+  "all_timed_frames_csv": {
+    "path": "docs/perf/r115-frames.csv",
+    "sha256": "5a14828b8f1337201d9a153e71b6fd53981cab8b5d1413316fb3c54969db34a3",
+    "sha256_line_endings": "LF",
+    "rows": 10800,
+    "capture_timings_included": false
+  },
+  "local_artifacts": "build-memory-perf-fixes"
+}

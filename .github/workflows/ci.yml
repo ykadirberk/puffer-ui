@@ -43,6 +43,9 @@ jobs:
       - name: Performance regressions (debug)
         run: out/build/x64-debug/Debug/pui_perf_tests.exe
 
+      - name: Memory performance regressions (debug)
+        run: out/build/x64-debug/Debug/pui_memory_tests.exe
+
       - name: Performance pixel baselines (debug)
         run: out/build/x64-debug/Debug/pui_perf_pixels.exe
 
@@ -82,6 +85,9 @@ jobs:
 
       - name: Performance regressions (release)
         run: out/build/x64-release/Release/pui_perf_tests.exe
+
+      - name: Memory performance regressions (release)
+        run: out/build/x64-release/Release/pui_memory_tests.exe
 
       - name: Performance pixel baselines (release)
         run: out/build/x64-release/Release/pui_perf_pixels.exe
@@ -153,7 +159,8 @@ jobs:
 
       - name: SDL offscreen suites
         run: >
-          cmake --build out/build/linux --target pui_pump_tests pui_golden_tests pui_perf_pixels pui_core_perf_pixels pui_showcase_tests &&
+          cmake --build out/build/linux --target pui_pump_tests pui_golden_tests pui_perf_pixels pui_core_perf_pixels pui_memory_tests pui_showcase_tests &&
+          out/build/linux/Debug/pui_memory_tests &&
           out/build/linux/Debug/pui_pump_tests &&
           out/build/linux/Debug/pui_perf_pixels &&
           out/build/linux/Debug/pui_core_perf_pixels &&
@@ -184,13 +191,14 @@ jobs:
         run: cmake -B out/build/macos -G Ninja -DCMAKE_BUILD_TYPE=Debug
 
       - name: Build (core, SDL suites)
-        run: cmake --build out/build/macos --target pui_core_tests pui_perf_tests pui_pump_tests pui_golden_tests pui_perf_pixels pui_core_perf_pixels pui_showcase_tests
+        run: cmake --build out/build/macos --target pui_core_tests pui_perf_tests pui_pump_tests pui_golden_tests pui_perf_pixels pui_core_perf_pixels pui_memory_tests pui_showcase_tests
 
       - name: Core tests
         run: out/build/macos/Debug/pui_core_tests && out/build/macos/Debug/pui_perf_tests
 
       - name: SDL offscreen suites
         run: >
+          out/build/macos/Debug/pui_memory_tests &&
           out/build/macos/Debug/pui_pump_tests &&
           out/build/macos/Debug/pui_golden_tests &&
           out/build/macos/Debug/pui_perf_pixels &&

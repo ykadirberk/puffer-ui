@@ -25,6 +25,10 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   pixel fingerprints; `tools/compare_showcase.ps1` compares two showcase binaries.
   `tests/test_geometry_performance.inl` adds original-stream references for rounded
   fan topology and bulk index appends, including transforms and geometric growth.
+- `pui_memory_tests` adds private vertex-growth, SDL color-prefix and portable
+  D3D11 arena/upload regressions (`tests/test_memory_{performance.inl,upload.cpp}`).
+  It compiles the implementation TU with `PUFFERUI_MEMORY_TESTS`; the existing
+  tests and golden oracles remain independent and unchanged.
 - `tests/test_core_performance.inl` adds seven regressions for long-run kerning,
   exact spring integration, 5000 rects, bounded sector topology, exact state TTL,
   empty ID tables and nested text-area scratch. `pui_core_bench` compiles the
@@ -43,7 +47,7 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   its `-Tiles` option selects the matching workload; all fourteen native capture
   frames are compared. Painting regressions live in
   `tests/test_showcase_paint.inl`; existing test bodies and golden references stay fixed.
-- `cmake/PufferUISdlD3d11.cmake` applies the `src/sdl_d3d11_{buffer,geometry,draw}.inl`
+- `cmake/PufferUISdlD3d11.cmake` applies the `src/sdl_d3d11_{arena,buffer,geometry,draw}.inl`
   slices to a generated copy of the pinned SDL D3D11 source. It verifies the whole
   original file and upload function hashes. Indexed triangles retain vertex
   arithmetic and primitive order; renderer-owned upload slots separate sizes.

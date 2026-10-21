@@ -18,7 +18,7 @@ static bool D3D11_UpdateVertexBuffer(SDL_Renderer *renderer, const void *vertexD
         rendererData->vertexBufferSizes[vbidx] < dataSizeInBytes)
     {
         const size_t capacity =
-            pui_d3d11_vertex_capacity(rendererData->vertexBufferSizes[vbidx], dataSizeInBytes);
+            pui_d3d11_upload_capacity(rendererData->vertexBufferSizes[vbidx], dataSizeInBytes);
         D3D11_BUFFER_DESC desc;
         ID3D11Buffer *fresh = NULL;
         if (!capacity) return SDL_SetError("D3D11 vertex buffer exceeds ByteWidth");

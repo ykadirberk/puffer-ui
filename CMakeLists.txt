@@ -163,6 +163,7 @@ pui_add_exe(pui_perf_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_INTERNAL_
 # SDL event-pump tests: SDL_PushEvent-driven routing through the offscreen
 # driver. Same exit contract as the core tests (exit 0 = all passed).
 if(PUFFERUI_WITH_SDL3)
+pui_add_exe(pui_memory_tests SDL3 SOURCES src/pufferui_impl.cpp tests/test_memory_upload.cpp DEFS PUFFERUI_MEMORY_TESTS)
 pui_add_exe(pui_pump_tests SDL3 SOURCES tests/test_pump.cpp)
 pui_add_exe(pui_perf_pixels SDL3 SOURCES tests/test_perf_pixels.cpp)
 pui_add_exe(pui_core_perf_pixels SDL3 SOURCES tests/test_core_perf_pixels.cpp)

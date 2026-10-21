@@ -8,6 +8,7 @@ function(pui_sdl_d3d11_buffer_overlay)
   set(replacement "${PROJECT_SOURCE_DIR}/src/sdl_d3d11_buffer.inl")
   set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${original}" "${replacement}"
       "${PROJECT_SOURCE_DIR}/src/sdl_d3d11_geometry.inl"
+      "${PROJECT_SOURCE_DIR}/src/sdl_d3d11_arena.inl"
       "${PROJECT_SOURCE_DIR}/src/sdl_d3d11_draw.inl"
       "${PROJECT_SOURCE_DIR}/src/sdl_d3d11_buffer.h")
   file(READ "${original}" source)
@@ -34,7 +35,7 @@ function(pui_sdl_d3d11_buffer_overlay)
   file(READ "${replacement}" function_source)
   string(FIND "${prefix}" "static bool D3D11_QueueGeometry(" geometry_first)
   string(SUBSTRING "${prefix}" 0 ${geometry_first} before_geometry)
-  set(prefix "${before_geometry}#include \"sdl_d3d11_geometry.inl\"\n\n")
+  set(prefix "${before_geometry}#include \"sdl_d3d11_arena.inl\"\n#define SDL_AllocateRenderVertices PUI_D3D11_AllocateRenderVertices\n#include \"sdl_d3d11_geometry.inl\"\n#undef SDL_AllocateRenderVertices\n\n")
   string(REPLACE "    ID3D11Buffer *vertexBuffers[8];"
       "    int puiActiveVertexBuffer, puiLargeVertexCursor;\n    ID3D11Buffer *vertexBuffers[8];" prefix "${prefix}")
   string(REPLACE "        case SDL_RENDERCMD_DRAW_POINTS:\n        case SDL_RENDERCMD_GEOMETRY:"

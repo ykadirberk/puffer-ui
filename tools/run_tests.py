@@ -116,7 +116,7 @@ def main():
                                                "-DCMAKE_BUILD_TYPE=Release"])
             else:
                 r.step(f"configure ({preset})", ["cmake", "--preset", preset])
-        targets = ["pui_core_tests", "pui_pump_tests", "pui_perf_tests", "pui_showcase_tests"]
+        targets = ["pui_core_tests", "pui_pump_tests", "pui_perf_tests", "pui_memory_tests", "pui_showcase_tests"]
         if not args.quick:
             targets.append("pui_golden_tests")
             targets.append("pui_perf_pixels")
@@ -137,6 +137,7 @@ def main():
 
     suite("pui_core_tests", "core tests")
     suite("pui_perf_tests", "performance regressions")
+    suite("pui_memory_tests", "memory performance regressions")
     suite("pui_showcase_tests", "showcase regressions")
     suite("pui_pump_tests", "pump tests (SDL event routing)")
     if not args.quick:

@@ -116,11 +116,29 @@ inline bool outside_paint_feathered(const context *c, const rect &box)
     return outside_paint(c, box.pad(-FEATHER_REACH));
 }
 
+inline usize dl_vertex_capacity(usize current, usize required, usize limit)
+{
+    if (current > limit || required > limit) return 0;
+    if (required <= current) return current;
+    const usize grown = current <= limit / 2 ? current * 2 : limit;
+    const usize initial = limit < 64 ? limit : 64;
+    const usize target = grown > initial ? grown : initial;
+    return required > target ? required : target;
+}
+
 inline void dl_add(context *c, const vertex *verts, i32 vcount, const i32 *idx, i32 icount)
 {
     if (!c->dl || vcount <= 0 || icount <= 0) return;
     draw_list &dl = *c->dl;
     i32 base = static_cast<i32>(dl.verts.size());
+    // Match the index buffer's geometric growth. MSVC's smaller insert growth
+    // otherwise relocates the same large batch in consecutive motion frames.
+    const usize required_vertices = dl.verts.size() + static_cast<usize>(vcount);
+    if (required_vertices > dl.verts.capacity())
+    {
+        dl.verts.reserve(
+            dl_vertex_capacity(dl.verts.capacity(), required_vertices, dl.verts.max_size()));
+    }
     dl.verts.insert(dl.verts.end(), verts, verts + vcount);
     if (c->render_scale != 1.0f)
         for (usize i = dl.verts.size() - static_cast<usize>(vcount); i < dl.verts.size(); ++i)

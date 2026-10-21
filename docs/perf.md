@@ -770,3 +770,136 @@ Re-run the frozen binaries after builds/tests finish:
 tools/compare_core.ps1 -Before build-core-perf-fixes/before-core-bench.exe -After build-core-perf-fixes/after-core-bench.exe -Output build-core-perf-fixes/core-repeat -Runs 5
 tools/compare_spiral.ps1 -Before build-core-perf-fixes/before-showcase-tests.exe -After build-core-perf-fixes/after-showcase-tests.exe -Output build-core-perf-fixes/spiral-repeat -Renderer direct3d11 -Tiles 5000 -Runs 6
 ```
+
+
+## r115 — bounded geometry allocations and retained SDL scratch (2026-10-22)
+
+The 5000-tile Spiral briefly submits roughly 1.96 million vertices and
+8.35 million indices after Add. Consecutive core-vector relocations, preserving
+unused SDL-arena capacity and oversized dynamic D3D11 resources magnify these
+frames. This revision reduces that memory work while preserving draw boundaries,
+primitive order, vertex/index arithmetic, color conversion and all existing
+pixel references. The faster draw-splitting experiment from the review was
+rejected because it changed pixels; it is not part of this revision.
+
+### Implementation and regression coverage
+
+- `draw_context.inl` grows vertex capacity geometrically using checked integer
+  arithmetic and `max_size`, avoiding consecutive relocations around the peak.
+  The new tests cover complete appended vertex/index streams, the two successive
+  peak sizes, integer precision above 2^24 and capacity limits.
+- `sdl_d3d11_upload_capacity` retains the small/medium policy. Uploads above
+  4 MiB use 25% headroom rounded to 64 KiB, with checked ByteWidth arithmetic
+  and the original exact-size allocation fallback. A 67,910,784-byte payload
+  asks for 81 MiB rather than 256 MiB. The two large slots, shader inputs and
+  cursor advancement rules are unchanged. Failure, retry, retained-resource,
+  renderer-isolation and boundary tests exercise the actual upload slice.
+- `sdl_d3d11_arena.inl` allocates new arena storage and copies only
+  `vertex_data_used` bytes, then lets SDL assign alignment/offsets as before.
+  If fresh allocation fails, the original realloc-style path remains available;
+  a failed fallback retains the old storage and queued bytes. The wrapper is
+  scoped to the local D3D11 geometry overlay; SDL's submodule stays clean.
+  Tests include live prefixes 0/3/37/3680, retained offsets, untouched spare
+  bytes, allocation failure/fallback, reuse and size_t overflow.
+- SDL color scratch keeps its initialized high-water prefix. Smaller draws no
+  longer destroy that prefix and force later zero-initialization. The original
+  `/255.0f` operations, 20-byte stride and software-renderer stride requirements
+  stay fixed. Tests check every possible byte-channel value, retained padding,
+  storage and independent devices through the actual SDL draw method.
+
+There are **nine new regressions** in a separate `pui_memory_tests` target; it
+also reuses three existing COM-fake upload tests, so its total is twelve.
+The original 17 performance and 11 showcase tests remain independent. Restoring
+the four old paths in a private source copy makes all four regression groups
+fail. No existing test body or reference was edited: all **52 previously
+tracked test/reference files** have identical SHA256s. The runner and Windows,
+Linux and macOS CI include the new target.
+
+### Matched 5000-tile Spiral measurement
+
+Baseline is `6487aee827752a4a18fd96311939eeefd247b9df`. MSVC Release `/O2 /GL`,
+precise floats, the same pinned SDL, fonts and real showcase TU; 1360x860,
+Spiral size 64, 5000 initial tiles, fixed dt=1/60, 180 frames and actual keyboard
+Add activations at 90/120/150. Final count is 5003. The renderer's queried
+adapter is AMD Radeon RX 9070 XT (0x1002/0x7550), feature level 0xb100.
+
+Six initial alternating pairs per renderer were followed by twelve balanced
+null and six balanced D3D11 confirmation pairs. All **18 null and 12 D3D11
+pairs** are retained, including outliers. Builds, tests and captures were
+separate from timed runs. Captures do not enter these timing aggregates.
+
+Add mean pools all frames 90–179. Steady is the per-run median over 60–89.
+Worst median is the median of each run's maximum over 90–179. P95/P99 are
+per-run quantiles over 60–179, then medians across runs. All 0–179 frame values
+are committed in [r115-frames.csv](perf/r115-frames.csv): **10,800 frames**;
+the frame CSV is never trimmed to selected favorable frames.
+
+| Metric | Before (ms) | After (ms) | Change |
+|---|---:|---:|---:|
+| D3D11 Add mean | 13.011271 | 11.416066 | -12.26% |
+| D3D11 worst median | 127.307650 | 68.205100 | -46.42% |
+| D3D11 warm P99 median | 109.217150 | 56.482350 | -48.28% |
+| D3D11 absolute maximum in Add interval | 243.862100 | 108.702100 | -55.42% |
+| Null Add mean | 4.182705 | 4.167764 | -0.36% |
+| Null worst median | 16.654900 | 13.648950 | -18.05% |
+| Null absolute maximum in Add interval | 25.012300 | 27.726600 | +10.85% |
+
+The pooled null mean is effectively flat; it is not evidence of a general CPU
+speedup. Its initial and confirmation series point in opposite directions,
+and the single slowest null Add frame is worse. Native peaks improve, but the
+remaining spikes still exceed a 60 Hz frame budget. There is no claim that
+every frame improved or that the hitches have been eliminated.
+
+| Series (all Add frames) | Before (ms) | After (ms) | Change |
+|---|---:|---:|---:|
+| null-initial | 5.424420 | 5.632241 | +3.83% |
+| null-confirmation | 3.561848 | 3.435526 | -3.55% |
+| direct3d11-initial | 15.301042 | 12.826085 | -16.18% |
+| direct3d11-confirmation | 10.721499 | 10.006046 | -6.67% |
+
+The medians at the peak frames distinguish relocation savings from moving a
+maximum to the adjacent frame:
+
+| Frame | Null before/after (ms) | D3D11 before/after (ms) |
+|---|---:|---:|
+| 124 | 6.7485 / 6.4212 | 25.4259 / 23.9156 |
+| 125 | 12.8557 / 12.8376 | 69.3226 / 54.6445 |
+| 126 | 14.8233 / 11.1180 | 127.3076 / 53.6028 |
+| 127 | 11.9314 / 11.1813 | 63.0113 / 68.2051 |
+| 128 | 10.3154 / 10.3872 | 109.2172 / 55.2964 |
+| 129 | 9.6621 / 9.1393 | 28.7816 / 48.6514 |
+
+### Pixels and final validation
+
+All **75 full-BMP comparisons** match: fourteen native Spiral frames, fourteen
+software Spiral frames, thirty-three other showcase page/theme/script/resize
+cases and fourteen additional native confirmation frames. Every timed run has
+the same count/draw/vertex/index tuple on all 180 frames in each before/after
+pair. The software capture pair also has identical tuples. Capture frames are
+89/91/98/104/120/124/125/126/127/128/129/135/156/179, including the second-Add
+geometry peak and the later transition.
+
+Full Windows Debug and Release `tools/run_tests.py --format` suites both finish
+with `all steps passed`: core/pump, original performance/showcase regressions,
+new memory regressions, 22 existing golden scenes (zero blur drift), 16 existing
+performance fingerprints, 24 core references, all 18 Spiral references,
+every example/tutorial selftest, external consumers, API drift, 57 tutorial
+snippets and clang-format 22.1.3. The final new memory test sources were also
+rebuilt/run in both configurations. Installed SDL consumers pass in Debug and
+Release, the amalgamated-header smoke passes and the native D3D11 demo starts
+and closes normally with exit 0. Linux/macOS CI is wired; those platforms were
+not executed locally.
+
+The measured candidate executables match the final build SHA256s. Source/font
+hashes, every run summary and worst frame, all CSV hashes, the 52 unchanged-file
+checks, 75 image hashes and validation results are in
+[perf/r115.json](perf/r115.json). Raw frame values are in
+[perf/r115-frames.csv](perf/r115-frames.csv). Local binaries, complete logs,
+capture BMPs and red-path evidence are under `build-memory-perf-fixes/`.
+
+After builds/tests finish, repeat the frozen executable comparisons:
+
+```powershell
+tools/compare_spiral.ps1 -Before build-memory-perf-fixes/before-pui_showcase_tests.exe -After build-memory-perf-fixes/after-pui_showcase_tests.exe -Output build-memory-perf-fixes/repeat-null -Renderer null -Tiles 5000 -Runs 12
+tools/compare_spiral.ps1 -Before build-memory-perf-fixes/before-pui_showcase_tests.exe -After build-memory-perf-fixes/after-pui_showcase_tests.exe -Output build-memory-perf-fixes/repeat-native -Renderer direct3d11 -Tiles 5000 -Runs 6
+```
