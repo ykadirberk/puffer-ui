@@ -164,7 +164,7 @@ pui_add_exe(pui_perf_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_INTERNAL_
 if(PUFFERUI_WITH_SDL3)
 pui_add_exe(pui_pump_tests SDL3 SOURCES tests/test_pump.cpp)
 pui_add_exe(pui_perf_pixels SDL3 SOURCES tests/test_perf_pixels.cpp)
-pui_add_exe(pui_showcase_tests SDL3 SOURCES tests/test_showcase.cpp tests/test_sdl_capacity.cpp tests/test_sdl_upload.cpp)
+pui_add_exe(pui_showcase_tests SDL3 SOURCES tests/test_showcase.cpp tests/test_sdl_capacity.cpp tests/test_sdl_upload.cpp tests/test_sdl_geometry.cpp)
 
 # Golden-image tests: offscreen SDL + software renderer, hash + BMP compare.
 pui_add_exe(pui_golden_tests SDL3 SOURCES tests/golden/test_golden.cpp

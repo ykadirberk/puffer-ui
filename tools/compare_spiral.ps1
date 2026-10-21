@@ -58,12 +58,12 @@ if ($Renderer -ne 'null') {
         & $exe --bench $Renderer --tiles $Tiles --capture $prefix > "$prefix.csv" 2> "$prefix.stderr.txt"
         if ($LASTEXITCODE -ne 0) { throw "Spiral capture failed: $exe" }
     }
-    $pixels = foreach ($frame in @(89,91,98,104)) {
+    $pixels = foreach ($frame in @(89,91,98,104,120,124,125,126,127,128,129,135,156,179)) {
         $a = (Get-FileHash -LiteralPath (Join-Path $Output "before-pixels-$frame.bmp")).Hash
         $b = (Get-FileHash -LiteralPath (Join-Path $Output "after-pixels-$frame.bmp")).Hash
         if ($a -ne $b) { throw "Spiral pixels changed at frame $frame" }
         [pscustomobject]@{Frame=$frame;Identical=$true;SHA256=$a}
     }
     $pixels | Export-Csv -LiteralPath (Join-Path $Output 'pixels.csv') -NoTypeInformation
-    Write-Host 'All four Spiral BMP pairs are byte-identical'
+    Write-Host 'All 14 Spiral BMP pairs are byte-identical (including the second-Add peak)'
 }

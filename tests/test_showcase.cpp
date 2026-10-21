@@ -251,6 +251,13 @@ struct measured_device : render_device
 };
 
 static constexpr i32 golden_frames[] = {89, 91, 98, 104};
+// The second Add creates the largest crossing/geometry peak, after the old goldens.
+static constexpr i32 peak_frames[] = {120, 124, 125, 126, 127, 128, 129, 135, 156, 179};
+// Captured from b2f6e2d before r113 (software renderer, bundled fonts).
+static constexpr u64 peak_hashes[] = {
+    0xf1ae8527871a66f8ull, 0x2bf0aeca2e5af8b3ull, 0xede226fa6846977eull, 0x37908b6c6f912970ull,
+    0x7cb5485204129fa2ull, 0x0724bf8e5bc1499aull, 0x932ac8eda465a987ull, 0xe5a661242f83dd36ull,
+    0xdb4678dfe1003ad3ull, 0xdaf4c43522737756ull};
 // Captured from f876bb2 before the five optimizations (software renderer, bundled fonts).
 static constexpr u64 golden_hashes[] = {0x830f2b351fd26655ull, 0x09fd93be5d12d8ffull,
                                         0x4ca58d2303cb9ee8ull, 0xb344d93c2d2e8eccull};
@@ -258,7 +265,8 @@ static constexpr u64 golden_hashes[] = {0x830f2b351fd26655ull, 0x09fd93be5d12d8f
 static constexpr u64 golden_hashes_large[] = {0x7dff9989f9d46a84ull, 0xf8218090d31121d5ull,
                                               0x7c2d1f5233eec5d7ull, 0xeca630b97aa34f56ull};
 
-int run_spiral(const char *renderer, bool pixels, const char *capture_prefix, i32 tiles)
+int run_spiral(const char *renderer, bool pixels, const char *capture_prefix, i32 tiles,
+               bool peaks = false)
 {
     example_app app;
     null_device nd;
@@ -304,7 +312,7 @@ int run_spiral(const char *renderer, bool pixels, const char *capture_prefix, i3
     mouse_move(*app.win, 800, 220);
     measured_device measured(*app.ctx->device);
     app.ctx->device = &measured;
-    const i32 frames = pixels ? 105 : 180;
+    const i32 frames = pixels && !peaks ? 105 : 180;
     std::vector<u8> rgba(1360 * 860 * 4);
     i32 failures = 0;
     if (!pixels) std::puts("frame,count,begin_ms,build_ms,end_ms,total_ms,draws,vertices,indices");
@@ -338,10 +346,38 @@ int run_spiral(const char *renderer, bool pixels, const char *capture_prefix, i3
                         build, end, begin + build + end, measured.calls,
                         static_cast<long long>(measured.vertices),
                         static_cast<long long>(measured.indices));
+        for (usize i = 0; i < std::size(peak_frames); ++i)
+            if (f == peak_frames[i] && !headless)
+            {
+                if (peaks)
+                {
+                    if (!measured.real.read_pixels(app.surface->scene_target(), 0, 0, 1360, 860,
+                                                   rgba.data()))
+                        ++failures;
+                    else
+                    {
+                        const u64 hash =
+                            hash_bytes(1469598103934665603ull, rgba.data(), rgba.size());
+                        if (hash != peak_hashes[i])
+                        {
+                            std::printf("FAIL peak frame=%d hash=0x%016llx expected=0x%016llx\n", f,
+                                        static_cast<unsigned long long>(hash),
+                                        static_cast<unsigned long long>(peak_hashes[i]));
+                            ++failures;
+                        }
+                    }
+                }
+                if (capture_prefix)
+                {
+                    char path[1024];
+                    std::snprintf(path, sizeof(path), "%s-%d.bmp", capture_prefix, f);
+                    example_screenshot(app, path);
+                }
+            }
         for (usize i = 0; i < std::size(golden_frames); ++i)
             if (f == golden_frames[i] && !headless)
             {
-                if (pixels)
+                if (pixels && !peaks)
                 {
                     if (!measured.real.read_pixels(app.surface->scene_target(), 0, 0, 1360, 860,
                                                    rgba.data()))
@@ -368,14 +404,16 @@ int run_spiral(const char *renderer, bool pixels, const char *capture_prefix, i3
                 }
             }
     }
-    const usize expected = static_cast<usize>(tiles) + (pixels ? 1 : 3);
+    const usize expected = static_cast<usize>(tiles) + (pixels && !peaks ? 1 : 3);
     if (g_app.tiles.size() != expected || violation_count(app.ctx)) ++failures;
     app.ctx->device = &measured.real;
     if (headless)
         destroy_context(app.ctx);
     else
         sdl3_app_shutdown(app.boot);
-    if (pixels && !failures)
+    if (peaks && !failures)
+        std::puts("all 10 Spiral peak golden frames matched (5000 tiles + three Adds)");
+    if (pixels && !peaks && !failures)
         std::printf("all 4 Spiral golden frames matched (%d tiles + Add)\n", tiles);
     return failures ? 1 : 0;
 }
@@ -402,18 +440,20 @@ int main(int argc, char **argv)
 {
     if (argc > 1)
     {
-        const bool pixels = std::strcmp(argv[1], "--pixels") == 0;
+        const bool peaks = std::strcmp(argv[1], "--peak-pixels") == 0;
+        const bool pixels = peaks || std::strcmp(argv[1], "--pixels") == 0;
         if (!pixels && std::strcmp(argv[1], "--bench") != 0) return 1;
         const char *renderer = pixels ? "software" : argc > 2 ? argv[2] : "null";
         const char *capture = nullptr;
-        i32 tiles = 1150;
+        i32 tiles = peaks ? 5000 : 1150;
         for (i32 i = 2; i + 1 < argc; ++i)
         {
             if (std::strcmp(argv[i], "--capture") == 0) capture = argv[i + 1];
             if (std::strcmp(argv[i], "--tiles") == 0) tiles = std::atoi(argv[i + 1]);
         }
         if (tiles != 1150 && tiles != 5000) return 1;
-        return run_spiral(renderer, pixels, capture, tiles);
+        if (peaks && tiles != 5000) return 1;
+        return run_spiral(renderer, pixels, capture, tiles, peaks);
     }
     for (const auto &test : test_registry()) test.fn();
     if (!g_failures)

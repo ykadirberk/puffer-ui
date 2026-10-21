@@ -53,6 +53,8 @@ jobs:
           out/build/x64-debug/Debug/pui_showcase_tests.exe --pixels
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           out/build/x64-debug/Debug/pui_showcase_tests.exe --pixels --tiles 5000
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          out/build/x64-debug/Debug/pui_showcase_tests.exe --peak-pixels
 
       - name: Pump tests
         run: out/build/x64-debug/Debug/pui_pump_tests.exe
@@ -88,6 +90,8 @@ jobs:
           out/build/x64-release/Release/pui_showcase_tests.exe --pixels
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           out/build/x64-release/Release/pui_showcase_tests.exe --pixels --tiles 5000
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          out/build/x64-release/Release/pui_showcase_tests.exe --peak-pixels
 
       - name: Pump tests (release)
         run: out/build/x64-release/Release/pui_pump_tests.exe
@@ -149,6 +153,7 @@ jobs:
           out/build/linux/Debug/pui_showcase_tests &&
           out/build/linux/Debug/pui_showcase_tests --pixels &&
           out/build/linux/Debug/pui_showcase_tests --pixels --tiles 5000 &&
+          out/build/linux/Debug/pui_showcase_tests --peak-pixels &&
           out/build/linux/Debug/pui_golden_tests
 
       - name: External core consumers
@@ -184,7 +189,8 @@ jobs:
           out/build/macos/Debug/pui_perf_pixels &&
           out/build/macos/Debug/pui_showcase_tests &&
           out/build/macos/Debug/pui_showcase_tests --pixels &&
-          out/build/macos/Debug/pui_showcase_tests --pixels --tiles 5000
+          out/build/macos/Debug/pui_showcase_tests --pixels --tiles 5000 &&
+          out/build/macos/Debug/pui_showcase_tests --peak-pixels
 
       - name: Example selftests (offscreen)
         run: cmake --build out/build/macos --target examples_selftest

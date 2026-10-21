@@ -1,18 +1,19 @@
 // PufferUI's local build overlay for the pinned SDL D3D11 renderer.
-// Uploaded bytes and draw order are unchanged; retain capacity between peaks.
+// Retain capacity between peaks and isolate small uploads from large geometry.
 #include "sdl_d3d11_buffer.h"
 
 static bool D3D11_UpdateVertexBuffer(SDL_Renderer *renderer, const void *vertexData,
                                      size_t dataSizeInBytes)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->internal;
-    const int vbidx = rendererData->currentVertexBuffer;
+    int vbidx = pui_d3d11_upload_slot(dataSizeInBytes, rendererData->currentVertexBuffer);
     const UINT stride = sizeof(D3D11_VertexPositionColor);
     const UINT offset = 0;
     HRESULT result;
     D3D11_MAPPED_SUBRESOURCE mapped;
 
     if (dataSizeInBytes == 0) return true;
+    if (vbidx == PUI_D3D11_LARGE_FIRST) vbidx += rendererData->puiLargeVertexCursor;
     if (!rendererData->vertexBuffers[vbidx] ||
         rendererData->vertexBufferSizes[vbidx] < dataSizeInBytes)
     {
@@ -24,7 +25,7 @@ static bool D3D11_UpdateVertexBuffer(SDL_Renderer *renderer, const void *vertexD
         SDL_zero(desc);
         desc.ByteWidth = (UINT)capacity;
         desc.Usage = D3D11_USAGE_DYNAMIC;
-        desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+        desc.BindFlags = D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_INDEX_BUFFER;
         desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
         // Spare capacity has no source bytes: never pass vertexData as initial
         // data for the enlarged allocation (D3D would read past its end).
@@ -63,8 +64,11 @@ static bool D3D11_UpdateVertexBuffer(SDL_Renderer *renderer, const void *vertexD
     }
     ID3D11DeviceContext_IASetVertexBuffers(rendererData->d3dContext, 0, 1,
                                            &rendererData->vertexBuffers[vbidx], &stride, &offset);
-    rendererData->currentVertexBuffer++;
-    if (rendererData->currentVertexBuffer >= SDL_arraysize(rendererData->vertexBuffers))
-        rendererData->currentVertexBuffer = 0;
+    rendererData->puiActiveVertexBuffer = vbidx;
+    if (vbidx < PUI_D3D11_SMALL_BUFFERS)
+        rendererData->currentVertexBuffer = (vbidx + 1) % PUI_D3D11_SMALL_BUFFERS;
+    else if (vbidx >= PUI_D3D11_LARGE_FIRST)
+        rendererData->puiLargeVertexCursor =
+            (vbidx - PUI_D3D11_LARGE_FIRST + 1) % PUI_D3D11_LARGE_BUFFERS;
     return true;
 }

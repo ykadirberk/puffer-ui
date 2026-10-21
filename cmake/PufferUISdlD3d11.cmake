@@ -6,9 +6,18 @@ function(pui_sdl_d3d11_buffer_overlay)
   endif()
   set(original "${PROJECT_SOURCE_DIR}/vendored/SDL/src/render/direct3d11/SDL_render_d3d11.c")
   set(replacement "${PROJECT_SOURCE_DIR}/src/sdl_d3d11_buffer.inl")
-  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${original}" "${replacement}")
+  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${original}" "${replacement}"
+      "${PROJECT_SOURCE_DIR}/src/sdl_d3d11_geometry.inl"
+      "${PROJECT_SOURCE_DIR}/src/sdl_d3d11_draw.inl"
+      "${PROJECT_SOURCE_DIR}/src/sdl_d3d11_buffer.h")
   file(READ "${original}" source)
   string(REPLACE "\r\n" "\n" source "${source}")
+  # Geometry records also affect dispatch and renderer-owned upload state.
+  # Pin the whole upstream file, so an SDL update cannot silently bypass review.
+  string(SHA256 source_hash "${source}")
+  if(NOT source_hash STREQUAL "3bf26da6dfecde845efdc95a108c437de6d14cf8df71ce5d18cd4b863f9de4af")
+    message(FATAL_ERROR "SDL D3D11 source changed; review geometry/upload overlay (${source_hash})")
+  endif()
   string(FIND "${source}" "static bool D3D11_UpdateVertexBuffer(SDL_Renderer *renderer," first)
   string(FIND "${source}" "static bool D3D11_UpdateViewport(SDL_Renderer *renderer)" last)
   if(first LESS 0 OR last LESS first)
@@ -23,6 +32,14 @@ function(pui_sdl_d3d11_buffer_overlay)
   string(SUBSTRING "${source}" 0 ${first} prefix)
   string(SUBSTRING "${source}" ${last} -1 suffix)
   file(READ "${replacement}" function_source)
+  string(FIND "${prefix}" "static bool D3D11_QueueGeometry(" geometry_first)
+  string(SUBSTRING "${prefix}" 0 ${geometry_first} before_geometry)
+  set(prefix "${before_geometry}#include \"sdl_d3d11_geometry.inl\"\n\n")
+  string(REPLACE "    ID3D11Buffer *vertexBuffers[8];"
+      "    int puiActiveVertexBuffer, puiLargeVertexCursor;\n    ID3D11Buffer *vertexBuffers[8];" prefix "${prefix}")
+  string(REPLACE "        case SDL_RENDERCMD_DRAW_POINTS:\n        case SDL_RENDERCMD_GEOMETRY:"
+      "        case SDL_RENDERCMD_GEOMETRY:\n#include \"sdl_d3d11_draw.inl\"\n        case SDL_RENDERCMD_DRAW_POINTS:"
+      suffix "${suffix}")
   set(generated "${CMAKE_CURRENT_BINARY_DIR}/pufferui-sdl/SDL_render_d3d11.c")
   file(CONFIGURE OUTPUT "${generated}" CONTENT "${prefix}${function_source}${suffix}" @ONLY)
   set_source_files_properties("${generated}" TARGET_DIRECTORY SDL3-static PROPERTIES

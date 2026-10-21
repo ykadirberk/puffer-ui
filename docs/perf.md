@@ -430,3 +430,163 @@ existing test body or old expected hash was changed. The measurement runner's
 tile-count extension and new regressions are the only test-source additions.
 `scope-verification.json` confirms this and confirms that the final Release
 executables have the same SHA256s as the measured candidate executables.
+
+## r113 - indexed D3D11 geometry and upload size classes (2026-10-21)
+
+Baseline: `b2f6e2d` (r112). The benchmark harness was extended and its baseline
+executable frozen before changing the production renderer. Existing test bodies,
+original golden BMPs and all earlier expected pixel hashes remain unchanged.
+The two changes apply only to the pinned, bundled Windows SDL D3D11 renderer;
+system SDL and other renderer implementations retain their upstream code.
+
+The 5000-tile Spiral hitch follows the second Add: random-position insertion
+shifts many layout indices, so existing straight spring paths cross the center.
+That motion and its drawing remain unchanged. At frame 127 the application
+submits 1,963,939 vertices and 8,351,460 indices. Expanding each index into a full
+32-byte vertex requires about 267.25 MB; shared vertices plus 32-bit indices
+require about 96.25 MB, excluding record/alignment overhead.
+
+- Geometry now uploads each source vertex once and keeps the original index
+  sequence for `DrawIndexed`. Position/UV/color arithmetic, linear-color
+  conversion, shader inputs, blend/scissor state and triangle order are retained.
+  Each geometry record starts at a 32-byte boundary so point/line commands can
+  share the upload arena. Checked record/arena sizes fit D3D11's 32-bit ByteWidth
+  and draw offsets, including alignment and 32-bit SDL arena growth limits.
+- Uploads up to 1 MiB rotate through five small slots; 1..4 MiB use a medium slot;
+  larger uploads alternate between two large slots. All eight slots remain
+  renderer-owned. A 192-byte blur/copy quad no longer discards
+  a buffer retained for a large tile batch. Cursors and the active buffer belong
+  to each renderer. Two large resources allow the previous geometry upload to
+  remain in flight; selection advances only after a successful upload. Capacity
+  growth, exact-size fallback, old-resource ownership
+  on allocation/map failure, release and device recreation retain their behavior.
+
+The overlay checks the complete normalized upstream source SHA256 as well as
+the previous upload-function hash, and generates the replacement during CMake
+configuration. The SDL submodule is untouched. No explicit flushes, global
+policy switches, animation changes, reduced geometry or shader changes are used.
+
+Three added portable regressions compile the actual queue, dispatch and upload
+slices with SDL/COM fakes. They cover 48 combinations of textured/untextured,
+linear/nonlinear, 8/16/32-bit/implicit indices and aligned/misaligned prior arena
+contents against the original expanded shader-input stream; actual indexed draw
+offsets and state selection; empty/invalid/overflow/allocation failure cases;
+size-class thresholds, repeated tiny uploads after large ones, two independent
+renderers, map retry and resource recreation. Existing upload regressions still
+exercise enlarged-allocation fallback and old-buffer preservation.
+
+### Matched 5000-tile Spiral measurements
+
+MSVC Release/LTO, native D3D11, hidden 1360x860 window, vsync off, Spiral size 64,
+fixed 1/60 time, 180 frames and actual keyboard Add at 90/120/150 (5000 -> 5003).
+Five runs per version alternate order, with no concurrent builds/tests. Startup
+and the OS event pump are outside the timed begin/build/end-frame interval.
+Capture/readback runs separately. Each result below is the median of five
+per-run statistics: steady median at 60..89, Add mean/max at 90..179, warmed
+nearest-rank P95/P99 at 60..179. Outliers are retained. Comparisons against older
+reports or the instrumented review are not matched measurements.
+
+<!-- r113-measurements -->
+| Statistic (median of five per-run values) | Before ms | After ms | Reduction |
+| --- | ---: | ---: | ---: |
+| Steady median | 27.920 | 20.826 | 25.4% |
+| Add mean | 44.011 | 30.191 | 31.4% |
+| Worst Add frame | 176.902 | 105.742 | 40.2% |
+| Warm P95 | 92.041 | 59.128 | 35.8% |
+| Warm P99 | 158.049 | 101.145 | 36.0% |
+
+| Peak frame (median across five runs) | Before ms | After ms |
+| --- | ---: | ---: |
+| 125 | 168.871 | 57.141 |
+| 126 | 158.049 | 76.697 |
+| 127 | 152.831 | 96.020 |
+| 128 | 144.746 | 105.742 |
+| 129 | 130.847 | 102.027 |
+
+The complete per-run Add means/maxima are retained:
+
+| Run | Before mean / maximum ms | After mean / maximum ms |
+| --- | ---: | ---: |
+| 1 | 44.011 / 183.284 | 31.382 / 109.235 |
+| 2 | 44.140 / 235.221 | 29.493 / 105.742 |
+| 3 | 43.088 / 154.117 | 30.191 / 104.312 |
+| 4 | 42.972 / 168.871 | 29.075 / 102.929 |
+| 5 | 45.301 / 176.902 | 171.438 / 1178.140 |
+
+**The fifth candidate run is a material exception, not a discarded sample.**
+Its worst frame is 128, included in both the software goldens and native BMP
+comparison. Pooling all 450 Add frames per version gives an arithmetic mean
+of **43.902 ms before and 58.316 ms after (32.8% slower)**, rather than the
+median-of-run-means improvement above. The aggregate wall timers do not establish
+the cause of this exception. These results support a typical-frame improvement
+and exact output equality, but do not establish uniformly improved latency or
+elimination of the remaining hitches. A 16.7 ms frame budget is not guaranteed.
+
+Null-renderer control (five alternating runs, same final binaries) has an Add
+mean median of 3.667 -> 3.744 ms and a steady median of 2.629 -> 2.650 ms. The
+core construction path is unchanged; the native gain is in the renderer path.
+Native timings varied substantially between measurement blocks; no timing from
+an earlier report or an intermediate candidate is substituted for the final data.
+
+The final upload distribution was chosen with a separate, bounded indexed-only
+trial: three runs each of 6-small/1-medium/1-large, 5/1/2 and 4/2/2 using the same
+local prototype executable. Their median Add means were 55.534 / 49.592 / 55.484 ms;
+median worst frames were 263.734 / 183.256 / 212.973 ms. Two alternating large
+resources improve reuse while the previous upload is still in flight, at the
+cost of retaining a second large allocation versus the single-large prototype.
+The total resource count remains eight. The selected policy also matched all
+14 baseline native images in that trial. These selection timings are separate
+from the final before/after table. All trial runs, including the earlier
+single-large-buffer candidate's variable tails, remain in the local evidence.
+<!-- /r113-measurements -->
+
+### Image equality and verification
+
+The four existing 1150-tile and four existing 5000-tile software goldens are
+retained. Ten new pre-fix software references cover frames
+120/124/125/126/127/128/129/135/156/179, including the actual largest geometry
+peak. `--peak-pixels` runs all three Adds and is part of the full test runner and
+Windows/Linux/macOS CI. Native captures compare complete before/after BMPs at
+these ten frames plus the original 89/91/98/104. The comparison script also
+requires all 180 application draw/vertex/index counts to match in every pair;
+these are application submissions, not the driver's internal GPU draw count.
+
+```powershell
+tools/compare_spiral.ps1 -Before build-perf-fixes3/before.exe -After build-perf-fixes3/after-two-large.exe -Tiles 5000 -Renderer direct3d11 -Runs 5 -Output build-perf-fixes3/5000-direct3d11-two-large
+out/build/x64-release/Release/pui_showcase_tests.exe --peak-pixels
+python tools/run_tests.py --format
+python tools/run_tests.py --release --format
+```
+
+Raw CSVs, separate captures, preserved binaries, binary hashes and validation
+logs remain local under gitignored `build-perf-fixes3/`. Software reference
+hashes were obtained before the production edits; their initial collection log
+reports mismatches against temporary zero placeholders, not accepted test
+failures. The committed expectations are those captured baseline values.
+
+Final Windows validation: both complete Debug and Release runs finish with
+`all steps passed`, including unchanged core/pump tests, 10 private performance
+regressions, 11 showcase regressions (8 existing + 3 new), 22 original golden
+scenes, 16 original pixel fingerprints, 8 original Spiral references and the
+10 new peak references. All example/tutorial selftests, external core consumers,
+API reference, 57 tutorial snippets and clang-format 22.1.3 pass. Installed SDL
+consumers pass in matching Debug and Release configurations using the existing
+consumer source. The native D3D11 demo starts and closes normally with exit 0.
+Linux/macOS CI runs the new peak mode; those platforms were not run locally.
+
+All 61 final BMP pairs are byte-identical: 14 native Spiral frames, 14 software
+Spiral frames and 33 standard showcase cases across pages, themes, scripted
+layers and resize. Every application's count/draw/vertex/index tuple matches
+at all 180 frames in all five native timing pairs. The final measured test
+executable and the compared showcase executable have the same SHA256s as their
+final build outputs. Existing test bodies, previous hashes and golden BMPs are
+unchanged, and the SDL submodule is clean.
+
+The authoritative local receipt is
+`build-perf-fixes3/two-large-measurement-summary.json`, with complete per-run
+statistics, peak-frame timings, pixel hashes, source/binary SHA256s and scope
+checks. Final logs use the `two-large-` prefix; native raw runs/captures are in
+`5000-direct3d11-two-large/`. Earlier `5000-direct3d11-final/` and `-repeat/`
+directories describe the rejected single-large-buffer candidate, not the final
+implementation. The initial `5000-direct3d11/` series predates the final bounds
+and test-fixture edits and is not pooled with final results.
