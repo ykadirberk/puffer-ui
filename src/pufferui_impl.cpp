@@ -15,3 +15,7 @@
 #if defined(PUFFERUI_CORE_PERF_BENCH)
 #include "../tests/bench_core_performance.inl"
 #endif
+
+#if defined(PUFFERUI_PREPARATION_TESTS)
+#include "../tests/test_geometry_preparation.inl"
+#endif

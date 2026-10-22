@@ -1333,6 +1333,14 @@ inline constexpr bool has_cap(backend_caps caps, backend_caps bit)
 
 struct render_surface;
 
+// Optional high-water storage hint. Counts are per batch, not per primitive.
+// Preparation commits CPU storage up front; it never changes draw-list sizes.
+struct geometry_capacity
+{
+    usize vertices = 0;
+    usize indices = 0;
+};
+
 // One device shared by all windows. Owns textures/targets; the core keeps the
 // draw list and only submits geometry here.
 struct render_device
@@ -1342,6 +1350,14 @@ struct render_device
 
     virtual void begin_frame() {}
     virtual void end_frame() {}
+
+    // Optional backend scratch preparation, independent of the core's storage.
+    // Wrappers may forward this; unsupported devices keep their normal growth.
+    virtual bool prepare_geometry(const geometry_capacity &capacity)
+    {
+        (void)capacity;
+        return false;
+    }
 
     virtual render_surface *create_surface(void *native_window = nullptr)
     {
@@ -2611,6 +2627,11 @@ struct ui
     }
 
     // primitives
+    // Prepare core vertex/index storage without drawing or flushing. Call during
+    // scene setup (or before a large batch); preparation time is real CPU work.
+    // Backend scratch is separate: device->prepare_geometry(capacity).
+    // Invalid counts (> i32 draw limits) return false without changing storage.
+    bool prepare_geometry(const geometry_capacity &capacity);
     void draw_triangles(texture_handle tex, const vertex *vertices, i32 vertex_count,
                         const i32 *indices, i32 index_count);
     void draw_rect(rect r, color c);

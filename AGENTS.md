@@ -29,6 +29,9 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   D3D11 arena/upload regressions (`tests/test_memory_{performance.inl,upload.cpp}`).
   It compiles the implementation TU with `PUFFERUI_MEMORY_TESTS`; the existing
   tests and golden oracles remain independent and unchanged.
+- `pui_preparation_tests` adds separate core/SDL preparation, exact stream,
+  bounds/isolation and actual 180-frame 5000-tile Spiral allocation regressions
+  (`tests/test_geometry_preparation.inl`). Existing tests stay unchanged.
 - `tests/test_core_performance.inl` adds seven regressions for long-run kerning,
   exact spring integration, 5000 rects, bounded sector topology, exact state TTL,
   empty ID tables and nested text-area scratch. `pui_core_bench` compiles the

@@ -18,6 +18,8 @@ struct draw_list
     // after warm-up.
     std::vector<vertex> scratch_v;
     std::vector<i32> scratch_i;
+    // Cold setup metadata must not displace the hot texture/clip batch fields.
+    usize prepared_vertices = 0, prepared_indices = 0;
 };
 
 // Open-addressing map with inline values: power-of-two capacity, linear
@@ -126,6 +128,26 @@ inline usize dl_vertex_capacity(usize current, usize required, usize limit)
     return required > target ? required : target;
 }
 
+// Commit the requested prefix while preserving live elements and logical size.
+// The marker survives clear(), but a normal relocation invalidates its tail.
+template <class T>
+inline void prepare_geometry_storage(std::vector<T> &storage, usize count, usize &prepared)
+{
+    if (count <= prepared) return;
+    const usize live = storage.size();
+    if (count > storage.capacity())
+    {
+        storage.reserve(count);
+        prepared = live;
+    }
+    if (count > live)
+    {
+        storage.resize(count);
+        storage.resize(live);
+    }
+    prepared = count > live ? count : live;
+}
+
 inline void dl_add(context *c, const vertex *verts, i32 vcount, const i32 *idx, i32 icount)
 {
     if (!c->dl || vcount <= 0 || icount <= 0) return;
@@ -138,6 +160,7 @@ inline void dl_add(context *c, const vertex *verts, i32 vcount, const i32 *idx, 
     {
         dl.verts.reserve(
             dl_vertex_capacity(dl.verts.capacity(), required_vertices, dl.verts.max_size()));
+        dl.prepared_vertices = dl.verts.size();
     }
     dl.verts.insert(dl.verts.end(), verts, verts + vcount);
     if (c->render_scale != 1.0f)
@@ -175,6 +198,7 @@ inline void dl_add(context *c, const vertex *verts, i32 vcount, const i32 *idx, 
         const usize limit = dl.idx.max_size();
         const usize grown = dl.idx.capacity() <= limit / 2 ? dl.idx.capacity() * 2 : limit;
         dl.idx.reserve(max2(required, max2(static_cast<usize>(64), grown)));
+        dl.prepared_indices = dl.idx.size();
     }
     dl.idx.resize(required);
     i32 *out = dl.idx.data() + first_index;
@@ -182,6 +206,19 @@ inline void dl_add(context *c, const vertex *verts, i32 vcount, const i32 *idx, 
 }
 
 } // namespace detail
+
+bool ui::prepare_geometry(const geometry_capacity &capacity)
+{
+    if (!ctx || !ctx->dl) return false;
+    draw_list &dl = *ctx->dl;
+    constexpr usize limit = static_cast<usize>(0x7fffffff);
+    if (capacity.vertices > limit || capacity.indices > limit ||
+        capacity.vertices > dl.verts.max_size() || capacity.indices > dl.idx.max_size())
+        return false;
+    detail::prepare_geometry_storage(dl.verts, capacity.vertices, dl.prepared_vertices);
+    detail::prepare_geometry_storage(dl.idx, capacity.indices, dl.prepared_indices);
+    return true;
+}
 
 // ---- popup overlays (window_host::open_overlay) ----
 namespace detail

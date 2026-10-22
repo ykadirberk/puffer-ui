@@ -903,3 +903,199 @@ After builds/tests finish, repeat the frozen executable comparisons:
 tools/compare_spiral.ps1 -Before build-memory-perf-fixes/before-pui_showcase_tests.exe -After build-memory-perf-fixes/after-pui_showcase_tests.exe -Output build-memory-perf-fixes/repeat-null -Renderer null -Tiles 5000 -Runs 12
 tools/compare_spiral.ps1 -Before build-memory-perf-fixes/before-pui_showcase_tests.exe -After build-memory-perf-fixes/after-pui_showcase_tests.exe -Output build-memory-perf-fixes/repeat-native -Renderer direct3d11 -Tiles 5000 -Runs 6
 ```
+
+
+## r116 — explicit geometry preparation and bounded Spiral storage
+
+Baseline: `f625323` (r115). This revision addresses the two remaining CPU
+storage findings. Vulkan remains a design proposal; no Vulkan backend,
+tile cache, shader or D3D11 upload/present policy is implemented here.
+
+### Implementation and startup tradeoff
+
+`geometry_capacity` is an explicit per-batch vertex/index hint.
+`ui::prepare_geometry` reserves and initializes context-owned storage while
+preserving live geometry, logical sizes, clip/texture state and draw boundaries.
+It does not draw or flush. Invalid i32/allocator counts are rejected before
+either buffer is changed. Warm-prefix markers survive clear and are invalidated
+when ordinary growth relocates storage. The markers are cold fields at the end
+of the draw list, preserving the original hot texture/clip field offsets.
+
+`render_device::prepare_geometry` is an independent optional backend hook:
+unsupported devices return false and continue their normal path. SDL3 retains
+an initialized color prefix, preserving existing colors/padding and exactly the
+same `/255.0f` conversion and software-renderer stride. Application-owned devices
+can be prepared directly even when a measurement/decorator device wraps drawing.
+
+Showcase prepares only the Spiral page. Its budget comes from four rounded
+shadow fans, both gradient underlays/fills, a hovered/selected outline and the
+longest u32 label, rounded in 128-tile buckets. CPU preparation is bounded to
+128 MiB split across core vertices, core indices and SDL colors; the selected
+5000-item prefixes total **112 MiB** (2,097,152 vertices, 8,388,608 indices,
+and 2,097,152 padded colors). This is initialized payload, not a total process
+memory/RSS or GPU-memory limit. Existing larger allocations are not shrunk;
+larger draws retain normal growth. Small scenes do not automatically get the
+maximum allocation. The CPU renderer atomic documents core-only setup usage.
+
+Preparation is real work. In the unchanged Spiral harness it runs **inside
+showcase_frame at frame 0**, inside the measured build interval. It is not moved
+outside timing. The first-frame increase below is the explicit cost paid to
+avoid allocation/first-touch work during Add. SDL/device/font initialization
+and deterministic tile seeding remain outside both versions' frame timing.
+
+### Protocol and final matched measurements
+
+MSVC x64 Release, `/O2 /GL`, precise float, same pinned SDL/D3D11 overlay and
+bundled DejaVu fonts. The live SDL adapter query confirms AMD Radeon RX 9070 XT
+(0x1002/0x7550, feature level 0xb100). Actual showcase helpers, 1360×860, Spiral,
+size 64, 5000 initial items, 180 frames, dt=1/60, actual keyboard Adds at
+90/120/150, final count 5003. Fixed mouse and no timing-dependent HUD pixels.
+Standard native runs use the existing hidden-window/vsync-off harness; this is
+not a foreground/visible all-frame FPS certification.
+
+Main final comparisons: 12 alternating AB/BA null pairs and 6 D3D11 pairs.
+Every frame/outlier is retained. Add mean covers 90–179; steady covers 60–89;
+warm p95/p99 cover 60–179 and are summarized by the per-run median. The median
+run maximum and the absolute maximum are different metrics. Builds, tests,
+captures and timing runs were sequential; BMP capture processes are excluded
+from timing aggregates. Both versions have identical item/draw/vertex/index
+counts at every matched frame.
+
+**Null renderer, main final series**
+
+| Metric | Before (ms) | After (ms) | Change |
+| --- | ---: | ---: | ---: |
+| Add mean (90–179) | 3.5660 | 3.3263 | -6.72% |
+| Median run maximum (90–179) | 12.9345 | 10.2164 | -21.01% |
+| Absolute maximum, every frame | 17.2349 | 12.9464 | -24.88% |
+| Mean, every frame including frame 0 | 3.1037 | 2.9487 | -4.99% |
+| Frame 0 median | 2.7056 | 9.0628 | +234.96% |
+| Steady median (60–89) | 2.5014 | 2.4543 | -1.88% |
+| Warm p95 median | 6.3839 | 6.1526 | -3.62% |
+| Warm p99 median | 10.8341 | 9.9483 | -8.18% |
+
+**D3D11, main final series**
+
+| Metric | Before (ms) | After (ms) | Change |
+| --- | ---: | ---: | ---: |
+| Add mean (90–179) | 15.1721 | 14.1740 | -6.58% |
+| Median run maximum (90–179) | 106.9033 | 107.3521 | +0.42% |
+| Absolute maximum, every frame | 112.7335 | 113.8784 | +1.02% |
+| Mean, every frame including frame 0 | 12.0273 | 11.4221 | -5.03% |
+| Frame 0 median | 30.9176 | 39.9001 | +29.05% |
+| Steady median (60–89) | 7.1669 | 6.0309 | -15.85% |
+| Warm p95 median | 43.5290 | 43.8580 | +0.76% |
+| Warm p99 median | 99.1525 | 98.7393 | -0.42% |
+
+The native main-series mean improves, but its median run maximum and absolute
+worst frame do not improve. This revision does not claim to remove the separately
+identified driver submission/presentation wait. A shorter CPU build can also
+change where that wait becomes visible; moving a wait is not a speedup.
+
+**Fixed-size native confirmation, 6 further AB/BA pairs after validation**
+
+| Metric | Before (ms) | After (ms) | Change |
+| --- | ---: | ---: | ---: |
+| Add mean (90–179) | 13.6365 | 13.6832 | +0.34% |
+| Median run maximum (90–179) | 109.2613 | 109.3208 | +0.05% |
+| Absolute maximum, every frame | 113.2024 | 114.5673 | +1.21% |
+| Mean, every frame including frame 0 | 10.3926 | 10.4998 | +1.03% |
+| Frame 0 median | 26.4103 | 38.1183 | +44.33% |
+| Steady median (60–89) | 5.4641 | 5.6643 | +3.66% |
+| Warm p95 median | 43.8745 | 43.5088 | -0.83% |
+| Warm p99 median | 99.8716 | 98.4129 | -1.46% |
+
+**Native A/A control, the same final executable on both sides, 6 pairs**
+
+| Metric | Before (ms) | After (ms) | Change |
+| --- | ---: | ---: | ---: |
+| Add mean (90–179) | 13.4557 | 13.3007 | -1.15% |
+| Median run maximum (90–179) | 107.4483 | 107.0104 | -0.41% |
+| Absolute maximum, every frame | 114.3530 | 113.2070 | -1.00% |
+| Mean, every frame including frame 0 | 10.3169 | 10.2181 | -0.96% |
+| Frame 0 median | 37.3426 | 36.9814 | -0.97% |
+| Steady median (60–89) | 5.3961 | 5.3997 | +0.07% |
+| Warm p95 median | 43.5049 | 43.4920 | -0.03% |
+| Warm p99 median | 97.3124 | 99.0486 | +1.78% |
+
+The control characterizes observed variability; it does not retrospectively
+prove the cause of a particular outlier or turn a native regression into a win.
+Native tail-latency reduction is not certified by these two CPU storage fixes.
+No Map/Flush/present instrumentation or policy changes are in production.
+
+### Main-series peak-frame medians
+
+| Frame | Null before / after (ms) | D3D11 before / after (ms) |
+| --- | ---: | ---: |
+| 120 | 2.6043 / 2.5716 | 6.5764 / 6.0473 |
+| 124 | 6.3752 / 5.5551 | 27.2076 / 22.8702 |
+| 125 | 12.8937 / 7.6768 | 83.8877 / 84.4612 |
+| 126 | 10.7860 / 9.5983 | 96.8435 / 98.7393 |
+| 127 | 10.7526 / 10.1096 | 106.9033 / 107.3521 |
+| 128 | 10.0773 / 10.0019 | 79.9137 / 78.5743 |
+| 129 | 9.1546 / 9.0008 | 72.7724 / 72.1145 |
+| 135 | 3.5526 / 3.5914 | 13.0580 / 9.4386 |
+| 156 | 3.1721 / 3.1886 | 8.1889 / 8.2919 |
+| 179 | 2.4493 / 2.4157 | 8.3836 / 5.5453 |
+
+### Regression, pixel and consumer validation
+
+Seven new tests are isolated in `tests/test_geometry_preparation.inl`, target
+`pui_preparation_tests`, compiling the actual implementation and showcase helpers:
+
+- Pending batch/texture/clip preservation and exact geometry with 1.5× DPI,
+  disabled alpha, solid atlas UVs and UTF-8 text.
+- Prepared peak/small/peak buffer reuse, exact vertex/index data and context
+  isolation; empty/overflow counts rejected before mutation.
+- Normal relocation invalidates warm-prefix markers, with live data preserved.
+- SDL initialized-prefix reuse, original padding, all channel conversions,
+  device isolation, zero hints and invalid counts.
+- Bounded geometry-derived Spiral budget checked against real maximum-label,
+  selected and hovered tile painting.
+- Actual 180-frame 5000-item Spiral with three real Adds: core vertex/index
+  addresses remain stable through every peak and the final item count is 5003.
+
+A private red control keeps the new API shape but disables both preparation
+bodies: the new regressions fail (expected exit 1). Production tests pass.
+The **54 pre-existing test/reference files are SHA256-identical** to the baseline;
+no existing test body, expected value or committed golden was changed.
+
+Final full Windows Debug/Release runners (`--format`) pass: Debug
+344.28s, Release 194.00s. This includes core,
+pump, 17 original performance regressions, 12 memory regressions, the 7 new
+preparation tests, 11 showcase regressions, 22 golden scenes (blur drift 0),
+16 performance fingerprints, 24 core frames, 1150/5000 four-frame Spiral
+oracles and all ten 5000-item peak oracles, external consumers, all example/
+tutorial selftests, API drift, tutorial excerpts and clang-format 22.1.3.
+Installed SDL consumers exercise the new API in Debug and Release; an
+amalgamated-header consumer also passes. The D3D11 demo builds, starts and
+closes normally with exit 0. Linux/macOS CI includes the new target; those
+platforms were not executed locally.
+
+Final baseline/candidate capture evidence is **61 full BMP pairs, byte for
+byte identical**: 14 main native Spiral frames, 14 native confirmation frames
+(both include 120/124/125/126/127/128/129/135/156/179), and 33 normal showcase
+page/theme/script/resize cases. Another 14 A/A BMP pairs are control evidence,
+not additional optimization coverage. No golden `--update` was used.
+
+### Retained evidence and reproduction
+
+[perf/r116.json](perf/r116.json) records every run, maxima, fixed-frame medians,
+phase means, source/font/binary hashes, pixel hashes, unchanged-file checks and
+validation receipts. [perf/r116-frames.csv](perf/r116-frames.csv) retains **17,280
+timing frames**: 6480 final main frames, 2160 confirmation frames, 2160 A/A
+frames, plus the initial implementation's 6480 frames. The initial implementation
+placed setup metadata before the hot batch fields; it is explicitly labeled
+`initial`, has its own source/binary hashes, and is not pooled with final code.
+All initial values/outliers remain available. CSV SHA256 is for LF bytes.
+Local frozen executables, raw stdout/stderr, captures, red control and complete
+logs remain under `build-geometry-prep-fixes/`.
+
+Build baseline `f625323` and the candidate with the same toolchain and preserve
+the executables before replacing either build. The existing, unchanged timing
+and image harness can reproduce the final main workload:
+
+```powershell
+tools/compare_spiral.ps1 -Before build-geometry-prep-fixes/before-pui_showcase_tests.exe -After build-geometry-prep-fixes/final-after-pui_showcase_tests.exe -Output build-geometry-prep-fixes/repeat-null -Renderer null -Tiles 5000 -Runs 12
+tools/compare_spiral.ps1 -Before build-geometry-prep-fixes/before-pui_showcase_tests.exe -After build-geometry-prep-fixes/final-after-pui_showcase_tests.exe -Output build-geometry-prep-fixes/repeat-native -Renderer direct3d11 -Tiles 5000 -Runs 6
+```

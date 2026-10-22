@@ -2289,6 +2289,38 @@ static void lab_tile_draw(ui &u, showcase &s, const lab_tile &tl, rect d, bool h
     (void)th;
 }
 
+// Conservative Spiral geometry, including every shadow, both gradient underlays,
+// an outline on every hovered tile and the longest u32 label. Spare tile buckets
+// absorb nearby Adds. A 128 MiB CPU preparation budget is split between core
+// vertices, core indices and SDL colors; larger scenes retain normal growth.
+static geometry_capacity lab_geometry_capacity(usize tiles)
+{
+    constexpr usize fan_ring = 4 * (8 + 1), fan_v = 1 + 2 * fan_ring, fan_i = 9 * fan_ring;
+    constexpr usize gradient_ring = 4 * (6 + 1);
+    constexpr usize outline_points = 4 * (ROUND_SEG + 1) + 1;
+    constexpr usize label_chars = 11; // '#' plus UINT32_MAX
+    constexpr usize tile_v =
+        4 * fan_v + 2 * (fan_v + 1 + gradient_ring) + 4 * outline_points + 4 * label_chars;
+    constexpr usize tile_i =
+        4 * fan_i + 2 * (fan_i + 3 * gradient_ring) + 18 * (outline_points - 1) + 6 * label_chars;
+    constexpr usize share = (128 * 1024 * 1024) / 3;
+    const auto power_limit = [](usize n)
+    {
+        usize p = 1;
+        while (p <= n / 2) p *= 2;
+        return p;
+    };
+    const usize vertex_limit = power_limit(share / sizeof(vertex));
+    const usize index_limit = power_limit(share / sizeof(i32));
+    // Clamp before rounding/multiplication, including size_t overflow inputs.
+    const usize max_tiles = index_limit / tile_i + 128;
+    const usize bounded = tiles < max_tiles ? tiles : max_tiles;
+    const usize bucket = ((bounded + 127) / 128) * 128;
+    const usize vertices = bucket * tile_v, indices = bucket * tile_i;
+    return {vertices < vertex_limit ? vertices : vertex_limit,
+            indices < index_limit ? indices : index_limit};
+}
+
 static f32 page_layout(ui &u, showcase &s, rect area, vec2 origin)
 {
     const theme &th = u.th();
@@ -3972,6 +4004,13 @@ static void showcase_frame(ui &u, example_app &app)
     if (app.selftest && g_start_page < 0 && g_fuzz == 0)
         selftest_script(s, app, now); // --page pins one page
     if (g_fuzz != 0) fuzz_input(s, app);
+
+    if (s.page == PAGE_LAYOUT && s.lab_mode == 4)
+    {
+        const geometry_capacity capacity = lab_geometry_capacity(s.tiles.size());
+        (void)u.prepare_geometry(capacity);
+        if (app.device) (void)app.device->prepare_geometry(capacity);
+    }
 
     // ---- keyboard shortcuts
     if ((u.mods() & MOD_CTRL) && u.key_pressed(key::SPACE))

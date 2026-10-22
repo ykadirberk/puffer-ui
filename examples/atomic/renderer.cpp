@@ -221,6 +221,12 @@ int main(int argc, char **argv)
     render_surface *surf = dev.create_surface(nullptr);
     context *c = create_context(&dev, surf);
 
+    // Optional setup work for a known batch budget; the image is unchanged.
+    {
+        ui u(c);
+        (void)u.prepare_geometry({.vertices = 4096, .indices = 16384});
+    }
+
     // No RENDER_TARGETS: blur degrades to a flat tint (see docs/porting_a_backend.md).
     font_handle font = load_font(c, PUFFERUI_ASSET_DIR "/fonts/DejaVuSans.ttf");
     theme t = default_dark();

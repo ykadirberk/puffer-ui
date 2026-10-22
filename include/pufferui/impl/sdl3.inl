@@ -80,6 +80,23 @@ struct sdl3_device : render_device
     std::vector<padded_color> colors_scratch;
     SDL_Cursor *cursors[5] = {nullptr, nullptr, nullptr, nullptr, nullptr};
 
+    bool prepare_geometry(const geometry_capacity &capacity) override
+    {
+        constexpr usize limit = static_cast<usize>(0x7fffffff);
+        if (capacity.vertices > limit || capacity.indices > limit ||
+            capacity.vertices > colors_scratch.max_size())
+            return false;
+        // Keep every initialized element: preparation must not erase colors or
+        // padding already used by another surface on this shared device.
+        if (capacity.vertices > colors_scratch.size())
+        {
+            if (capacity.vertices > colors_scratch.capacity())
+                colors_scratch.reserve(capacity.vertices);
+            colors_scratch.resize(capacity.vertices);
+        }
+        return true;
+    }
+
     ~sdl3_device() override
     {
         for (SDL_Cursor *cu : cursors)

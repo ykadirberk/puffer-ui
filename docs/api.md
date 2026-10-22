@@ -59,6 +59,7 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `rect tooltip(rect anchor, uiid id, std::string_view tip);`
 - `i32 context_menu(uiid id, rect anchor, const char *const *item_labels, i32 item_count);`
 - `i32 context_menu(uiid id, rect anchor, std::span<const char *const> items);`
+- `bool prepare_geometry(const geometry_capacity &capacity);`
 - `void draw_triangles(texture_handle tex, const vertex *vertices, i32 vertex_count, const i32 *indices, i32 index_count);`
 - `void draw_rect(rect r, color c);`
 - `void draw_line(f32 x0, f32 y0, f32 x1, f32 y1, color c, f32 thickness = 1.0f);`

@@ -28,7 +28,17 @@ Required:
 
 Optional overrides, and when they matter:
 
-- `begin_frame()` / `end_frame()` — bracket the whole frame across all windows.
+- `prepare_geometry(const geometry_capacity&)` — optional CPU scratch preparation.
+  SDL3 initializes its retained color prefix here. Return `false` when unsupported;
+  normal drawing must still work. Preserve existing initialized data, do not
+  draw/flush or change target/clip state. Validate both counts against i32 draw
+  limits before allocating. This is independent of `ui::prepare_geometry`, which
+  prepares context-owned core vertex/index storage. Wrappers can forward the
+  device call; applications may also prepare their owned device directly.
+- `begin_frame()` / `end_frame()` — bracket each window frame. The core calls
+  `device->begin_frame()` before that surface's `make_current()`, then
+  `device->end_frame()` before its `present()`. Shared storage must respect
+  other windows' outstanding work; these hooks are not a global frame reset.
 - `create_surface(native_window)` — needed for anything past the primary window.
 - `destroy_surface(surface)` — releases a closed window's surface (after
   `remove_window`, before the native window goes away).

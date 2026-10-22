@@ -892,6 +892,24 @@ A backend implements two interfaces — `render_device` (textures, clear, clip,
 `pui_ex_renderer` example is a complete CPU rasterizer that writes a PPM; read it
 together with [`docs/porting_a_backend.md`](docs/porting_a_backend.md).
 
+For a scene with a known peak batch size, prepare core CPU storage during setup
+to avoid its first allocation/page-touch cost during an interaction. The CPU
+renderer example uses:
+
+```cpp
+    {
+        ui u(c);
+        (void)u.prepare_geometry({.vertices = 4096, .indices = 16384});
+    }
+```
+
+This preserves the current draw list and its pixels. Counts are hints, not
+limits; larger batches still grow normally. Preparation costs time and memory
+up front. Backend scratch is independent: optional
+`device->prepare_geometry(capacity)` prepares it when supported (SDL3 retains
+an initialized color prefix). Unsupported backends return `false` and keep
+their normal path. Showcase uses a bounded, geometry-derived budget for Spiral.
+
 ![pui_ex_renderer: a frame drawn by a CPU render_device, saved as a PPM](docs/img/readme/renderer.png)
 
 Run: `pui_ex_headless`, `pui_ex_renderer`. Full source:
@@ -1748,7 +1766,7 @@ button_override)`.
 | `set_global_mouse(ctx, x, y)` | Set the shared pointer position (same space as `window::client`). |
 | `set_clipboard(ctx, clipboard*)` | Install the app clipboard. |
 | `key`, `KEY_COUNT`, `pointer_button` | Input enums. |
-| `render_device`, `render_surface`, `backend_caps`, `has_cap`, `create_sdl3_device`, `destroy_sdl3_device`, `null_device`, `null_surface` | Backend contract. |
+| `render_device`, `render_surface`, `geometry_capacity`, `backend_caps`, `has_cap`, `create_sdl3_device`, `destroy_sdl3_device`, `null_device`, `null_surface` | Backend contract and optional geometry storage preparation. |
 | `PUFFERUI_CHECK`, `set_violation_handler`, `violation_handler`, `violation_count`, `violation_last`, `draw_violation_overlay`, `report_violation`, `set_current_context` | Diagnostics; the overlay draws count + last message for development. |
 
 #### Limits
