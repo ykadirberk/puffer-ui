@@ -1677,6 +1677,40 @@ rect clamp_to_displays(rect r, std::span<const rect> displays);
 render_device *create_sdl3_device(void *sdl_renderer);
 void destroy_sdl3_device(render_device *device);
 
+// Optional Vulkan renderer. Native handle interoperability lives in vulkan.h;
+// core and SDL-only consumers do not need Vulkan headers or the SDK.
+struct vulkan_host;
+struct vulkan_native_device;
+enum class vulkan_upload_mode : u8
+{
+    DIRECT,
+    STAGED
+};
+struct vulkan_device_opts
+{
+    vulkan_host *host = nullptr;                  // non-owning; nullptr supports offscreen targets
+    const vulkan_native_device *native = nullptr; // borrowed; copied during creation
+    bool validation = false;
+    bool tile_cache = false;
+    vulkan_upload_mode upload_mode = vulkan_upload_mode::DIRECT;
+    u32 physical_device_index = 0xffffffffu; // automatic: prefer a compatible discrete GPU
+    u32 frames_in_flight = 2;
+    u64 upload_budget_bytes = 256ull * 1024 * 1024;
+    u64 cache_budget_bytes = 64ull * 1024 * 1024;
+    void (*error_callback)(i32 result, const char *operation, void *user) = nullptr;
+    void *user = nullptr;
+};
+render_device *create_vulkan_device(const vulkan_device_opts &opts = {});
+void destroy_vulkan_device(render_device *device);
+bool is_vulkan_device(render_device *device);
+render_device *create_sdl3_vulkan_device(const vulkan_device_opts &opts = {});
+struct vulkan_surface_opts
+{
+    void *window = nullptr; // nullptr creates an offscreen surface
+    i32 width = 640, height = 480;
+};
+render_surface *create_vulkan_surface(render_device *device, const vulkan_surface_opts &opts = {});
+
 // One-call SDL event routing (the SDL3 glue above): feeds every event to the
 // right window (mouse, left+right buttons, wheel, keys with mods, text input,
 // IME preedit, focus, move/resize) and keeps window clients in sync with SDL.
@@ -1728,6 +1762,8 @@ struct sdl3_app
     bool hidden = false;                 // create the window hidden (offscreen tests)
     const char *renderer_name = nullptr; // "software" pins the software renderer
     const char *asset_dir = nullptr;     // font root; defaults to PUFFERUI_ASSET_DIR
+    bool use_vulkan = false;             // opt-in native Vulkan, not SDL_Renderer
+    vulkan_device_opts vulkan{};
     // Opt-in idle sleep: when true and the library has nothing animating, the
     // pump waits for events instead of spinning at vsync (tools/editors on
     // laptops). Apps that animate OUTSIDE the library (their own clocks,
@@ -1742,6 +1778,13 @@ struct sdl3_app
     bool inited = false;
 };
 bool sdl3_app_init(sdl3_app &a, const char *title, i32 w, i32 h, int argc, char **argv);
+struct sdl3_vulkan_app_opts
+{
+    const char *title = "PufferUI";
+    i32 width = 960, height = 640;
+    vulkan_device_opts device{};
+};
+bool sdl3_vulkan_app_init(sdl3_app &app, const sdl3_vulkan_app_opts &opts = {});
 bool sdl3_app_pump(sdl3_app &a);
 void sdl3_app_tick(sdl3_app &a);
 void sdl3_app_shutdown(sdl3_app &a); // also closes every window still open
@@ -3564,12 +3607,19 @@ i32 violation_count(context *c);
 #include <string>
 #include <unordered_map>
 #include <fstream>
+#include <chrono>
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
 
 #if defined(PUFFERUI_ENABLE_SDL3)
 #include <SDL3/SDL.h>
+#endif
+#if defined(PUFFERUI_ENABLE_VULKAN)
+#include "impl/vulkan_native.inl"
+#if defined(PUFFERUI_ENABLE_SDL3)
+#include <SDL3/SDL_vulkan.h>
+#endif
 #endif
 
 namespace pui
@@ -3585,7 +3635,18 @@ namespace pui
 #include "impl/chrome_scroll.inl"
 #include "impl/typed_inputs.inl"
 #include "impl/draw_primitives.inl"
+#if defined(PUFFERUI_ENABLE_VULKAN)
+#include "impl/vulkan_shaders.inl"
+#endif
+#include "impl/vulkan_dispatch.inl"
+#include "impl/vulkan_device.inl"
+#include "impl/vulkan_memory.inl"
+#include "impl/vulkan_resources.inl"
+#include "impl/vulkan_draw.inl"
+#include "impl/vulkan_surface.inl"
+#include "impl/vulkan_cache.inl"
 #include "impl/sdl3.inl"
+#include "impl/sdl3_vulkan_host.inl"
 } // namespace pui
 
 // The Windows UI Automation adapter comes last: the Windows headers' macros

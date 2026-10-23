@@ -14,6 +14,13 @@ the test suite runs against). `test_device_contract` in `tests/test_render.cpp`
 exercises the whole contract; make it pass with your device before trusting
 anything else.
 
+The optional native Vulkan implementation is documented in [vulkan.md](vulkan.md).
+It also implements these interfaces, accepts application-owned Vulkan handles,
+and can use SDL solely as the window/input host. Link `pufferui::vulkan` for
+that route; the default SDL renderer and core-only consumption stay independent.
+Native image interoperability uses `<pufferui/vulkan.h>` rather than exposing
+SDK types in the core declaration section.
+
 ## render_device
 
 Required:

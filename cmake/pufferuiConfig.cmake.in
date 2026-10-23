@@ -5,6 +5,15 @@ if(@PUFFERUI_WITH_SDL3@)
     find_dependency(SDL3 CONFIG)
 endif()
 include("${CMAKE_CURRENT_LIST_DIR}/pufferuiTargets.cmake")
+if("vulkan" IN_LIST pufferui_FIND_COMPONENTS)
+    if(@PUFFERUI_WITH_VULKAN@)
+        find_dependency(Vulkan 1.3)
+        include("${CMAKE_CURRENT_LIST_DIR}/pufferuiVulkanTargets.cmake")
+        set(pufferui_vulkan_FOUND TRUE)
+    else()
+        set(pufferui_vulkan_FOUND FALSE)
+    endif()
+endif()
 
 # Two prebuilt variants:
 #

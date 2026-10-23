@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.21)
+if(POLICY CMP0141)
+  cmake_policy(SET CMP0141 NEW)
+endif()
+project(pufferui_vulkan_consumer LANGUAGES CXX)
+find_package(pufferui CONFIG REQUIRED COMPONENTS vulkan)
+add_executable(consumer main.cpp)
+target_link_libraries(consumer PRIVATE pufferui::vulkan)
+target_compile_definitions(consumer PRIVATE VK_NO_PROTOTYPES)
+# C++20, native include paths and Vulkan linkage must propagate from the target.

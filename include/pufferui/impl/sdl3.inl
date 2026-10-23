@@ -777,6 +777,8 @@ struct sdl3_window_host : window_host
         SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_FOCUSABLE_BOOLEAN, false);
         SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_TRANSPARENT_BOOLEAN, true);
         SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, true);
+        if (is_vulkan_device(c->device))
+            SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_VULKAN_BOOLEAN, true);
         SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_CONSTRAIN_POPUP_BOOLEAN, false);
         SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER,
                               static_cast<Sint64>(local.x * s));
@@ -1079,21 +1081,27 @@ bool sdl3_app_init(sdl3_app &a, const char *title, i32 w, i32 h, int argc, char 
 
     const SDL_WindowFlags flags = SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE |
                                   (a.hidden ? SDL_WINDOW_HIDDEN : static_cast<SDL_WindowFlags>(0));
-    a.sdl_window = SDL_CreateWindow(title, w, h, flags | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+    a.sdl_window =
+        SDL_CreateWindow(title, w, h,
+                         flags | SDL_WINDOW_HIGH_PIXEL_DENSITY |
+                             (a.use_vulkan ? SDL_WINDOW_VULKAN : static_cast<SDL_WindowFlags>(0)));
     if (!a.sdl_window)
     {
         SDL_Quit();
         return false;
     }
-    a.sdl_renderer = SDL_CreateRenderer(static_cast<SDL_Window *>(a.sdl_window), a.renderer_name);
-    if (!a.sdl_renderer)
+    if (!a.use_vulkan)
+        a.sdl_renderer =
+            SDL_CreateRenderer(static_cast<SDL_Window *>(a.sdl_window), a.renderer_name);
+    if (!a.use_vulkan && !a.sdl_renderer)
     {
         SDL_DestroyWindow(static_cast<SDL_Window *>(a.sdl_window));
         a.sdl_window = nullptr;
         SDL_Quit();
         return false;
     }
-    a.device = create_sdl3_device(a.sdl_renderer);
+    a.device =
+        a.use_vulkan ? create_sdl3_vulkan_device(a.vulkan) : create_sdl3_device(a.sdl_renderer);
     if (!a.device)
     {
         SDL_DestroyRenderer(static_cast<SDL_Renderer *>(a.sdl_renderer));
@@ -1218,7 +1226,9 @@ window *sdl3_app_open_window(sdl3_app &a, const char *title, i32 w, i32 h,
     const SDL_WindowFlags flags = SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE |
                                   SDL_WINDOW_HIGH_PIXEL_DENSITY |
                                   (hidden ? SDL_WINDOW_HIDDEN : static_cast<SDL_WindowFlags>(0));
-    SDL_Window *sdl = SDL_CreateWindow(title, w, h, flags);
+    SDL_Window *sdl = SDL_CreateWindow(
+        title, w, h,
+        flags | (is_vulkan_device(a.device) ? SDL_WINDOW_VULKAN : static_cast<SDL_WindowFlags>(0)));
     if (!sdl) return nullptr;
     if (opts.x >= 0 && opts.y >= 0) SDL_SetWindowPosition(sdl, opts.x, opts.y);
     render_surface *surface = a.device->create_surface(sdl);

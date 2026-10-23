@@ -27,6 +27,10 @@
 #include <pufferui/pufferui.h>
 
 #include <SDL3/SDL.h>
+#if defined(PUFFERUI_ENABLE_VULKAN)
+#include <pufferui/vulkan.h>
+#include <vector>
+#endif
 
 #include <cstdio>
 #include <cstdlib>
@@ -150,6 +154,9 @@ struct example_app
     // Optional: `example_run` frames each extra window with this callback
     // (index is 1-based: 1 is the first extra window).
     void (*extra_frame)(ui &, example_app &, i32 index) = nullptr;
+    // App-owned native resources must be released before the bootstrap device.
+    void (*before_shutdown)(example_app &, void *user) = nullptr;
+    void *shutdown_user = nullptr;
 
     // `--screenshot <file>`: save a frame as a BMP (with --selftest: the last
     // frame; otherwise after a few frames).
@@ -288,11 +295,13 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
         return false;
     }
 
+#if !defined(PUFFERUI_ENABLE_VULKAN)
     if (app.selftest)
     {
         SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "offscreen");
         SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
     }
+#endif
     SDL_SetLogPriorities(SDL_LOG_PRIORITY_ERROR);
 
     if (!SDL_Init(SDL_INIT_VIDEO))
@@ -306,6 +315,10 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
     sdl3_app &boot = app.boot;
     boot.hidden = app.selftest;
     boot.renderer_name = app.selftest ? "software" : nullptr;
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    boot.use_vulkan = true;
+    boot.vulkan.validation = std::getenv("PUFFERUI_VULKAN_VALIDATION") != nullptr;
+#endif
     if (!sdl3_app_init(boot, title, app.width, app.height, 0, nullptr))
     {
         std::printf("FAIL %s: sdl3_app_init\n", app.name);
@@ -450,7 +463,21 @@ inline void example_script(example_app &app)
 
 inline int example_shutdown(example_app &app)
 {
-    const i32 violations = app.ctx ? violation_count(app.ctx) : 0;
+    if (app.before_shutdown)
+    {
+        auto cleanup = app.before_shutdown;
+        app.before_shutdown = nullptr;
+        cleanup(app, app.shutdown_user);
+    }
+    i32 violations = app.ctx ? violation_count(app.ctx) : 0;
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    if (is_vulkan_device(app.device))
+    {
+        (void)vulkan_wait_idle(app.device);
+        violations += static_cast<i32>(vulkan_statistics(app.device).validation_errors);
+        if (vulkan_last_result(app.device) != VK_SUCCESS) ++violations;
+    }
+#endif
     if (app.boot.inited)
         sdl3_app_shutdown(app.boot); // every window, the device, the renderer, SDL
     else
@@ -488,6 +515,23 @@ inline void example_screenshot_window(SDL_Window *w, const char *path)
 }
 inline void example_screenshot(example_app &app, const char *path)
 {
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    if (is_vulkan_device(app.device) && app.surface && path)
+    {
+        i32 w = 0, h = 0;
+        app.surface->output_size(w, h);
+        if (w <= 0 || h <= 0) return;
+        std::vector<u8> rgba(static_cast<usize>(w) * static_cast<usize>(h) * 4);
+        if (!app.device->read_pixels(app.surface->scene_target(), 0, 0, w, h, rgba.data())) return;
+        SDL_Surface *shot = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA32, rgba.data(), w * 4);
+        if (shot)
+        {
+            SDL_SaveBMP(shot, path);
+            SDL_DestroySurface(shot);
+        }
+        return;
+    }
+#endif
     example_screenshot_window(app.sdl_window, path);
 }
 

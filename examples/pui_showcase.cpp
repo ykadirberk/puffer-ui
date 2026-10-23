@@ -1526,7 +1526,11 @@ static void draw_sidebar(ui &u, showcase &s, rect area, bool open_target, bool n
                 u.text(tr.cut_top(22.0f), "Nebula", fade(th.text, label_k), ALIGN_LEFT);
             }
             text_scope ts = u.text_style(12.0f);
-            u.text(tr.cut_top(16.0f), "PufferUI showcase", fade(th.text_dim, label_k), ALIGN_LEFT);
+            const char *subtitle = "PufferUI showcase";
+#if defined(PUFFERUI_ENABLE_VULKAN)
+            if (is_vulkan_device(u.ctx->device)) subtitle = "vulkan showcase";
+#endif
+            u.text(tr.cut_top(16.0f), subtitle, fade(th.text_dim, label_k), ALIGN_LEFT);
         }
     }
 
@@ -3999,6 +4003,15 @@ static void showcase_frame(ui &u, example_app &app)
     {
         s.font = app.font;
         s.bold = app.font_bold;
+#if defined(PUFFERUI_ENABLE_VULKAN)
+        if (is_vulkan_device(app.device))
+        {
+            // The selftest bootstrap is uncapped. Establish the interactive
+            // policy explicitly instead of assuming the device still has it.
+            s.vsync = !app.selftest;
+            s.vsync_applied = !s.vsync;
+        }
+#endif
         if (g_start_page >= 0) set_page(s, g_start_page, now);
     }
     if (app.selftest && g_start_page < 0 && g_fuzz == 0)
@@ -4229,6 +4242,22 @@ int main(int argc, char **argv)
 {
     for (int i = 1; i < argc; ++i)
     {
+#if defined(PUFFERUI_ENABLE_VULKAN)
+        if (std::strcmp(argv[i], "--vulkan-device-info") == 0)
+        {
+            render_device *device = create_vulkan_device();
+            if (!device) return 1;
+            const auto native = vulkan_handles(device);
+            VkPhysicalDeviceProperties properties{};
+            vkGetPhysicalDeviceProperties(native.physical_device, &properties);
+            std::printf("device=%s\nvendor=%u\ndevice_id=%u\ntype=%u\n", properties.deviceName,
+                        properties.vendorID, properties.deviceID,
+                        static_cast<u32>(properties.deviceType));
+            const bool okay = vulkan_wait_idle(device);
+            destroy_vulkan_device(device);
+            return okay ? 0 : 1;
+        }
+#endif
         if (i + 1 < argc && std::strcmp(argv[i], "--page") == 0)
             g_start_page = std::atoi(argv[i + 1]);
         if (i + 1 < argc && std::strcmp(argv[i], "--fuzz") == 0)

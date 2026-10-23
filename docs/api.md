@@ -101,10 +101,16 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `std::string save_window_state(const window_state &s); // "x y w h maximized" bool load_window_state(std::string_view text, window_state &out); // false: malformed // `r` moved (and shrunk) so that it is visible on one of `displays` (usable // desktop rects): kept as is when a usable part already shows, else centered on // the first display. An app restores a saved rect through this. rect clamp_to_displays(rect r, std::span<const rect> displays);`
 - `render_device *create_sdl3_device(void *sdl_renderer);`
 - `void destroy_sdl3_device(render_device *device);`
+- `render_device *create_vulkan_device(const vulkan_device_opts &opts = {});`
+- `void destroy_vulkan_device(render_device *device);`
+- `bool is_vulkan_device(render_device *device);`
+- `render_device *create_sdl3_vulkan_device(const vulkan_device_opts &opts = {});`
+- `render_surface *create_vulkan_surface(render_device *device, const vulkan_surface_opts &opts = {});`
 - `bool sdl3_route(context *c, void *sdl_event);`
 - `bool sdl3_pump(context *c);`
 - `clipboard *sdl3_system_clipboard();`
 - `bool sdl3_app_init(sdl3_app &a, const char *title, i32 w, i32 h, int argc, char **argv);`
+- `bool sdl3_vulkan_app_init(sdl3_app &app, const sdl3_vulkan_app_opts &opts = {});`
 - `bool sdl3_app_pump(sdl3_app &a);`
 - `void sdl3_app_tick(sdl3_app &a);`
 - `void sdl3_app_shutdown(sdl3_app &a); // also closes every window still open // More windows over the same device and context, each a complete window: // SDL window (borderless + resizable) + surface + core window + native chrome // + text input. Frame each with its own begin_frame/end_frame after the // primary's. The returned pointer stays valid until the window is closed. // // The pump routes every window's events and keeps its size current. A click // on an extra window's close glyph (or the platform's close) only sets // `window::close_requested`; the app decides, usually with // `if (w->close_requested) { sdl3_app_close_window(app, *w); w = nullptr; }`. // Closing the primary window ends the app (sdl3_app_pump returns false). struct sdl3_window_opts;`

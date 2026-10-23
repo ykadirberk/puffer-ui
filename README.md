@@ -1506,6 +1506,39 @@ a week, PageUp/PageDown a month, Enter closes. `days_in_month`, `weekday`,
                          {.id = "accent"_id});
 ```
 
+### 39. Native Vulkan and external images
+
+![Native Vulkan renderer and an application-owned image](docs/img/readme/vulkan.png)
+
+Run: `pui_ex_vulkan` (configure with `-DPUFFERUI_WITH_VULKAN=ON`).
+
+Vulkan is an optional renderer alongside the existing SDL renderer. SDL still
+owns windows, input, clipboard, native chrome and accessibility. Link
+`pufferui::vulkan`; `sdl3_vulkan_app_init` creates the native Vulkan route in one
+call. The installed package exposes it through `find_package(pufferui CONFIG
+REQUIRED COMPONENTS vulkan)`. Ordinary core/SDL consumers do not need the SDK.
+
+An engine can lend its instance, physical device, logical device, graphics queue
+and loader through `vulkan_native_device`. It can also lend a sampled `VkImage`
+and view through `import_vulkan_image`; `ui::image` accepts the resulting
+`image_handle`. The example uploads its checkerboard independently of PufferUI,
+passes a ready semaphore and waits for the release timeline before freeing the
+producer's resources. Ownership stays explicit in both directions.
+
+The backend includes targets, the existing blur pyramid, readback and an opt-in
+pixel cache. SDL remains the default. See [Vulkan setup and native integration](docs/vulkan.md)
+for feature requirements, queue/lifetime rules, validation and build commands.
+Full source: `examples/atomic/vulkan.cpp`. `pui_showcase_vulkan` runs the actual
+motion showcase on the same native backend.
+
+![Vulkan showcase with its renderer label](docs/img/readme/vulkan-showcase.png)
+
+Its sidebar says `vulkan showcase` when the actual device is Vulkan. Interactive
+runs start with VSync enabled; selftests start uncapped and the HUD reflects it.
+`python tools/run_vulkan_showcase.py` verifies the actual GPU before launch and
+can use an existing DriverStore manifest when Windows registration is stale,
+without a manually entered path or system configuration changes.
+
 ## Examples index
 
 | Target | Capability |
@@ -1557,6 +1590,8 @@ a week, PageUp/PageDown a month, Enter closes. `days_in_month`, `weekday`,
 | `pui_ex_components` | `examples/atomic/components.cpp` | the `pui::comp` toggles: switch, radio group, segmented control |
 | `pui_ex_headless` | `examples/atomic/headless.cpp` | `null_device`, violations, caps, no display |
 | `pui_ex_renderer` | `examples/atomic/renderer.cpp` | a CPU `render_device` writing a PPM |
+| `pui_ex_vulkan` | `examples/atomic/vulkan.cpp` | optional native Vulkan renderer, SDL windows, application-owned VkImage |
+| `pui_showcase_vulkan` | `examples/pui_showcase.cpp` | the existing motion showcase on the optional native Vulkan backend |
 
 Every example supports:
 

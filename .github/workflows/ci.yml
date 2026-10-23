@@ -31,6 +31,9 @@ jobs:
         shell: pwsh
         run: tools/check_tutorial.ps1
 
+      - name: Python tool regressions
+        run: python -m unittest discover -s tests -p "test_*tools.py"
+
       - name: Configure (debug)
         run: cmake --preset x64-debug
 
@@ -123,6 +126,30 @@ jobs:
         with:
           name: golden-dumps
           path: tests/golden/dump
+
+  vulkan-offscreen:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Vulkan toolchain, validation and software ICD
+        run: >
+          sudo apt-get update && sudo apt-get install -y ninja-build libvulkan-dev
+          mesa-vulkan-drivers vulkan-validationlayers
+      - name: Configure independent Vulkan build
+        run: >
+          cmake -S . -B out/build/vulkan -G Ninja -DCMAKE_BUILD_TYPE=Debug
+          -DPUFFERUI_WITH_VULKAN=ON -DPUFFERUI_WITH_SDL3=OFF -DPUFFERUI_BUILD_EXAMPLES=OFF
+      - name: Build Vulkan conformance and fault tests
+        run: cmake --build out/build/vulkan --target vulkan_tests
+      - name: Offscreen Vulkan correctness (software driver, no speed claim)
+        run: |
+          for icd in /usr/share/vulkan/icd.d/*lvp*.json; do
+            if [ -f "$icd" ]; then export VK_DRIVER_FILES="$icd"; break; fi
+          done
+          test -n "$VK_DRIVER_FILES"
+          cmake --build out/build/vulkan --target vulkan_selftest
 
   linux:
     runs-on: ubuntu-latest

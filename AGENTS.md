@@ -57,6 +57,47 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   Keep the submodule clean. System SDL and other renderers use their upstream code.
 - `vendored/` — third-party code: `SDL/` (SDL3), `stb/stb_truetype.h`.
 
+### Optional Vulkan backend
+
+- Enable with `-DPUFFERUI_WITH_VULKAN=ON`; link only `pufferui::vulkan` for that
+  executable. Core/SDL variants remain independent of Vulkan. Installed native
+  consumers request `find_package(pufferui CONFIG REQUIRED COMPONENTS vulkan)`.
+- Native SDK types live in `include/pufferui/vulkan.h` /
+  `impl/vulkan_native.inl`, outside the main declaration section. Implementation
+  belongs in `impl/vulkan_{dispatch,device,memory,resources,draw,surface,cache}.inl`
+  and `impl/sdl3_vulkan_host.inl`, through the same single implementation TU.
+- SDL still owns window/input policy; Vulkan uses native surfaces and no
+  SDL_Renderer. Borrowed instance/device/queue and producer image/view remain
+  caller-owned. Release external images and wait for their completion value
+  before producer reuse/destruction. See `docs/vulkan.md` for the full contract.
+- `pui_vulkan_tests`, `pui_vulkan_external_tests`, `pui_vulkan_cache_tests`,
+  `pui_vulkan_internal_tests` and `pui_vulkan_fault_tests` run offscreen;
+  `pui_vulkan_interaction_tests` compares 180 actual text/caret/scroll/atlas/
+  popup/blur/DPI/gamma/target-recreation frames with cache off/on (also --staged).
+  `pui_vulkan_wsi_tests` adds SDL lifecycle/overlay/resize/DPI/zero-extent coverage.
+  `pui_vulkan_showcase_tests` checks the actual showcase's startup VSync/HUD
+  agreement and off/on transitions; `--visible` is a separate bounded pacing probe.
+  `pui_vulkan_spiral_tests` compares all 180 frames at 1150/5000 items; default
+  cache/reference and `--upload-reference` direct/staged comparisons are exact.
+  `--staged` also exercises the staged cache/reference route.
+- `python tools/run_tests.py --vulkan --format [--release]` includes native tests
+  and installed core/SDL/Vulkan consumers. Cross-backend visual parity is not
+  assumed; existing tests/goldens remain unchanged, and Vulkan cached/uncached
+  equality must remain exact. Never use `--update` to hide a backend difference.
+- GLSL lives in `src/shaders/vulkan/`; `tools/compile_vulkan_shaders.py` generates
+  checked-in SPIR-V plus a compiler/source manifest. Ordinary consumers do not
+  run the shader compiler. Cache is opt-in; GPU binning is not implemented.
+- `pui_ex_vulkan` is the external VkImage atomic; `pui_showcase_vulkan` uses the
+  actual showcase helpers. Both support the normal example selftest interface.
+- Register a native test once with `pui_add_vulkan_test` in `CMakeLists.txt`;
+  its generated JSON cases drive `run_tests.py`, `vulkan_tests` and
+  `vulkan_selftest`. Use `RUNS` for extra argument cases and `FULL_ONLY` for
+  workloads excluded by `--quick`.
+- `tools/run_vulkan_showcase.py` verifies the selected adapter and can work
+  around a stale Windows manifest using existing packages only in child-process
+  environments. It never changes registry or system driver installation.
+  Portable launcher regressions are discovered as `tests/test_*tools.py`.
+
 ## Build & run
 
 The project uses CMake presets with the Ninja generator and MSVC (`cl.exe`), so

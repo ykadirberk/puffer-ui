@@ -19,3 +19,7 @@
 #if defined(PUFFERUI_PREPARATION_TESTS)
 #include "../tests/test_geometry_preparation.inl"
 #endif
+
+#if defined(PUFFERUI_VULKAN_INTERNAL_TESTS)
+#include "../tests/test_vulkan_internal.inl"
+#endif

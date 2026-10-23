@@ -62,6 +62,8 @@ $shots = @(
     @('textarea', 'pui_ex_textarea', '--selftest --frames 46 --no-script'),
     @('a11y', 'pui_ex_a11y', '--selftest --frames 4 --no-script'),
     @('pickers', 'pui_ex_pickers', '--selftest --frames 6 --no-script'),
+    @('vulkan', 'pui_ex_vulkan', '--selftest --frames 6 --no-script', 'optional'),
+    @('vulkan-showcase', 'pui_showcase_vulkan', '--selftest --frames 100 --page 0 --no-script', 'optional'),
     @('counter', 'pui_counter', ''),  # its own --screenshot mode (frame 4)
     @('showcase', 'pui_showcase', '--selftest --frames 100 --page 0 --no-script --no-hud'),
     @('showcase-light', 'pui_showcase', '--selftest --frames 100 --page 3 --no-script --no-hud --light')
@@ -69,7 +71,10 @@ $shots = @(
 foreach ($s in $shots) {
     if ($Names.Count -gt 0 -and $s[0] -notin $Names) { continue }
     $exe = Join-Path $bin ($s[1] + '.exe')
-    if (-not (Test-Path $exe)) { throw "missing $exe (build the examples first)" }
+    if (-not (Test-Path $exe)) {
+        if ($s.Count -gt 3 -and $s[3] -eq 'optional') { Write-Host "skip optional $exe"; continue }
+        throw "missing $exe (build the examples first)"
+    }
     $bmp = Join-Path ([System.IO.Path]::GetTempPath()) ('readme_' + $s[0] + '.bmp')
     $second = $bmp + '.second.bmp' # multi-window examples also save their second window
     foreach ($f in @($bmp, $second)) { if (Test-Path $f) { Remove-Item $f } }

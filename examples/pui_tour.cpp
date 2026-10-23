@@ -1323,9 +1323,30 @@ static void ch_a11y(ui &u, example_app &app, rect body)
     }
 }
 
+static void ch_vulkan(ui &u, example_app &app, rect body)
+{
+    column cards(body, u.spacing());
+    rect native = example_section(u, cards.next(u.control_h() * 5), "Native Vulkan",
+                                  "optional renderer; SDL windows and input", app.font_bold);
+    u.text_wrapped(
+        native,
+        "Build with PUFFERUI_WITH_VULKAN=ON and link pufferui::vulkan. The standalone example runs "
+        "the native renderer and displays an image supplied by its application.",
+        u.th().text_dim);
+    rect engine = example_section(u, cards.next(u.control_h() * 5), "Engine integration",
+                                  "borrow the device and images; keep ownership", app.font_bold);
+    u.text_wrapped(engine,
+                   "vulkan_native_device accepts an existing instance, device, queue and loader. "
+                   "Imported images use an explicit ready semaphore and release timeline. See "
+                   "docs/vulkan.md and pui_ex_vulkan.",
+                   u.th().text_dim);
+}
+
 static const tour_chapter CHAPTERS[] = {
     {"Start", "Bootstrap", "one-call app setup, the raw frame loop, native chrome",
      "pui_ex_bootstrap", ch_bootstrap},
+    {"Start", "Vulkan", "native renderer, borrowed devices and external images (optional)",
+     "pui_ex_vulkan", ch_vulkan},
     {"Layout", "Rect algebra", "cuts, slices, align/fit + tracks + auto-fit grid",
      "pui_ex_rect / pui_ex_tracks / pui_ex_grid", ch_layout},
     {"Layout", "Cursors", "column/row slicing, spacing, clamping", "pui_ex_cursors", ch_cursors},

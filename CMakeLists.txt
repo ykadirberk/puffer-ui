@@ -109,12 +109,15 @@ if(PUFFERUI_WITH_SDL3)
 endif()
 
 # pui_add_exe(<name> SOURCES <files...> [SDL3] [DEFS <defines...>])
+include(cmake/PufferUIVulkan.cmake)
 # One executable on the prebuilt library (SDL3 variant with SDL3), warnings
 # on, and PUFFERUI_ASSET_DIR set so it can load the bundled fonts.
 function(pui_add_exe name)
-  cmake_parse_arguments(A "SDL3" "" "SOURCES;DEFS" ${ARGN})
+  cmake_parse_arguments(A "SDL3;VULKAN" "" "SOURCES;DEFS" ${ARGN})
   add_executable(${name} ${A_SOURCES})
-  if(A_SDL3)
+  if(A_VULKAN)
+    target_link_libraries(${name} PRIVATE pufferui_vulkan pufferui_warnings)
+  elseif(A_SDL3)
     target_link_libraries(${name} PRIVATE pufferui_sdl3 pufferui_warnings)
   else()
     target_link_libraries(${name} PRIVATE pufferui pufferui_warnings)
@@ -136,6 +139,63 @@ endfunction()
 # Headless core tests (no SDL, no window). Tests register themselves
 # (PUI_TEST in tests/test_util.h): add a test by writing it in an area file.
 if(PUFFERUI_BUILD_TESTS)
+if(PUFFERUI_WITH_VULKAN)
+  # One registration owns the executable, runner cases and CI selftest commands.
+  function(pui_vulkan_case name full_only)
+    set(case "{}")
+    string(JSON case SET "${case}" target "\"${name}\"")
+    string(JSON case SET "${case}" full_only "${full_only}")
+    string(JSON case SET "${case}" args "[]")
+    set(index 0)
+    foreach(arg IN LISTS ARGN)
+      string(REPLACE "\\" "\\\\" escaped "${arg}")
+      string(REPLACE "\"" "\\\"" escaped "${escaped}")
+      string(JSON case SET "${case}" args ${index} "\"${escaped}\"")
+      math(EXPR index "${index} + 1")
+    endforeach()
+    set_property(GLOBAL APPEND PROPERTY PUFFERUI_VULKAN_CASES "${case}")
+    set_property(GLOBAL APPEND PROPERTY PUFFERUI_VULKAN_COMMANDS
+        COMMAND "$<TARGET_FILE:${name}>" ${ARGN})
+  endfunction()
+  function(pui_add_vulkan_test name)
+    cmake_parse_arguments(V "FULL_ONLY" "" "SOURCES;DEFS;RUNS" ${ARGN})
+    if(V_UNPARSED_ARGUMENTS)
+      message(FATAL_ERROR "Unknown Vulkan test options: ${V_UNPARSED_ARGUMENTS}")
+    endif()
+    pui_add_exe(${name} VULKAN SOURCES ${V_SOURCES} DEFS ${V_DEFS})
+    set_property(GLOBAL APPEND PROPERTY PUFFERUI_VULKAN_TARGETS ${name})
+    set(full_only false)
+    if(V_FULL_ONLY)
+      set(full_only true)
+    endif()
+    pui_vulkan_case(${name} ${full_only})
+    foreach(run IN LISTS V_RUNS)
+      separate_arguments(run_args UNIX_COMMAND "${run}")
+      pui_vulkan_case(${name} ${full_only} ${run_args})
+    endforeach()
+  endfunction()
+  pui_add_vulkan_test(pui_vulkan_tests SOURCES tests/test_vulkan.cpp)
+  pui_add_vulkan_test(pui_vulkan_external_tests SOURCES tests/test_vulkan_external.cpp)
+  pui_add_vulkan_test(pui_vulkan_cache_tests SOURCES tests/test_vulkan_cache.cpp)
+  pui_add_vulkan_test(pui_vulkan_interaction_tests SOURCES tests/test_vulkan_interaction.cpp RUNS "--staged")
+  pui_add_vulkan_test(pui_vulkan_fault_tests SOURCES tests/test_vulkan_faults.cpp)
+  pui_add_vulkan_test(pui_vulkan_internal_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VULKAN_INTERNAL_TESTS)
+  if(PUFFERUI_WITH_SDL3)
+    pui_add_vulkan_test(pui_vulkan_wsi_tests SOURCES tests/test_vulkan_wsi.cpp)
+    pui_add_vulkan_test(pui_vulkan_showcase_tests SOURCES tests/test_vulkan_showcase.cpp)
+    pui_add_vulkan_test(pui_vulkan_spiral_tests FULL_ONLY SOURCES tests/test_vulkan_spiral.cpp
+        RUNS "--tiles 5000" "--tiles 1150 --upload-reference" "--tiles 5000 --upload-reference"
+             "--tiles 1150 --staged" "--tiles 5000 --staged")
+  endif()
+  get_property(cases GLOBAL PROPERTY PUFFERUI_VULKAN_CASES)
+  list(JOIN cases ",\n" cases_json)
+  file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/pufferui-vulkan-tests-$<CONFIG>.json"
+      CONTENT "[\n${cases_json}\n]\n")
+  get_property(targets GLOBAL PROPERTY PUFFERUI_VULKAN_TARGETS)
+  get_property(commands GLOBAL PROPERTY PUFFERUI_VULKAN_COMMANDS)
+  add_custom_target(vulkan_tests DEPENDS ${targets})
+  add_custom_target(vulkan_selftest ${commands} DEPENDS ${targets} VERBATIM)
+endif()
 pui_add_exe(pui_core_tests SOURCES
     tests/test_core.cpp
     tests/test_layout.cpp
@@ -210,6 +270,10 @@ endforeach()
 pui_add_selftest_exe(pui_tour SDL3 SOURCES examples/pui_tour.cpp)
 # The motion showcase: animated layout (FLIP), blur, particles, components.
 pui_add_selftest_exe(pui_showcase SDL3 SOURCES examples/pui_showcase.cpp)
+if(PUFFERUI_WITH_VULKAN)
+pui_add_selftest_exe(pui_showcase_vulkan VULKAN SOURCES examples/pui_showcase.cpp)
+pui_add_selftest_exe(pui_ex_vulkan VULKAN SOURCES examples/atomic/vulkan.cpp)
+endif()
 
 # ---------------------------------------------------------------------------
 # The tutorial (docs/tutorial/): every chapter's program is built and, apart
@@ -249,6 +313,7 @@ endif()
 file(GLOB PUFFERUI_IMPL_SLICES "include/pufferui/impl/*.inl")
 install(FILES
     "include/pufferui/pufferui.h"
+    "include/pufferui/vulkan.h"
     "src/pufferui_impl.cpp"
     "vendored/stb/stb_truetype.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pufferui")
