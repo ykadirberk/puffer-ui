@@ -179,6 +179,28 @@ struct pipeline_pair
 };
 struct device : render_device, dispatch
 {
+    render_painter *create_painter(context &c) override
+    {
+        auto *p = new renderer_detail::mesh_painter(c);
+        p->native =
+            options.painter == vulkan_painter_mode::REFERENCE ? nullptr : &primitive_commands;
+        p->vectors = options.vector_text;
+        p->native_device = this;
+        p->native_blur = paint_detail::vulkan_blur;
+        if (paint_detail::sdf_painter(options.painter))
+            p->native_gradient = [](context *c, const paint_rounded_gradient &g, color mid)
+            {
+                ui u(c);
+                return vulkan_try_rounded_gradient(u, {.area = g.area,
+                                                       .radii = corner_radii::all(g.radius),
+                                                       .underlay = mid,
+                                                       .top_left = g.top_left,
+                                                       .top_right = g.top_right,
+                                                       .bottom_right = g.bottom_right,
+                                                       .bottom_left = g.bottom_left});
+            };
+        return p;
+    }
     vulkan_device_opts options{};
     vulkan_host *owned_host = nullptr;
     vulkan_native_device native{};

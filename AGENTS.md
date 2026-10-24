@@ -265,6 +265,14 @@ programs live in `examples/tutorial/` (`pui_tut_*` targets, built and
 
 ## Code conventions
 
+- Drawing goes through the required `render_painter` contract. Every backend
+  supplies every operation; no implicit core tessellation fallback. Shared mesh
+  algorithms are an explicit backend choice (`create_mesh_painter`). Rendering
+  implementation lives in `impl/renderer_*.inl`; UI methods only submit semantic
+  operations. Preserve existing streams/goldens when moving algorithms. Painter
+  storage is owned by the renderer; `context::dl` is borrowed introspection only.
+  Keep text measurement on the selected painter and popup recorders isolated.
+
 - Naming: types/functions/variables `lower_snake_case`; macros and
   constants/enumerators `UPPER_SNAKE_CASE` (e.g. `backend_caps::RENDER_TARGETS`,
   `SCROLL_ALWAYS_RESERVE_BAR`, `ALIGN_LEFT`, `PUFFERUI_CHECK`).

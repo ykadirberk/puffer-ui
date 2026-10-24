@@ -1,0 +1,7 @@
+Full suites passed
+MSVC environment: C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat
+PASS bench-build.log
+PASS native-progress.log
+PASS control-progress.log
+PASS golden-progress.log
+All qualification stages passed

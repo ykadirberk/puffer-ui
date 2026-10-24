@@ -1,11 +1,15 @@
 # Porting a backend
 
-PufferUI owns all state and geometry; a backend only turns the frame's draw list
-into pixels. The contract is two interfaces declared in
+PufferUI owns layout, input and widget state. Every backend supplies a complete
+semantic painter that owns drawing preparation and execution. The contract has
+three interfaces declared in
 `include/pufferui/pufferui.h`:
 
 - `render_device` — one per application. Owns textures and offscreen targets,
-  receives all geometry.
+  creates a painter for each context.
+- `render_painter` — receives logical drawing operations before tessellation or
+  glyph preparation; chooses geometry, procedural shapes, text representation,
+  caching, batching and blur for its renderer configuration.
 - `render_surface` — one per window. Owns the backbuffer and presentation.
 
 The SDL3 backend (`create_sdl3_device`) is the reference implementation, and
@@ -28,6 +32,7 @@ Required:
 | member | contract |
 | --- | --- |
 | `caps()` | report what the backend supports (see Capabilities) |
+| `create_painter(context&)` | return an owned, complete `render_painter`; must not return null; the context deletes it before device destruction |
 | `create_texture(w, h, rgba)` | RGBA8, straight (non-premultiplied) alpha; returns a handle or `nullptr` |
 | `update_texture(tex, x, y, w, h, rgba)` | partial upload; the font atlas streams dirty rects through this |
 | `destroy_texture(tex)` | free the texture; also used for targets unless `destroy_target` overrides it |
@@ -40,7 +45,7 @@ Optional overrides, and when they matter:
   normal drawing must still work. Preserve existing initialized data, do not
   draw/flush or change target/clip state. Validate both counts against i32 draw
   limits before allocating. This is independent of `ui::prepare_geometry`, which
-  prepares context-owned core vertex/index storage. Wrappers can forward the
+  delegates storage preparation to the active painter. Wrappers can forward the
   device call; applications may also prepare their owned device directly.
 - `begin_frame()` / `end_frame()` — bracket each window frame. The core calls
   `device->begin_frame()` before that surface's `make_current()`, then
@@ -66,6 +71,70 @@ Optional overrides, and when they matter:
 - `create_target` / `destroy_target` / `blit` / `set_target` / `current_target` —
   required for `backend_caps::RENDER_TARGETS` (backdrop blur). `blit` is a
   filtered (bilinear) copy used by the blur pyramid.
+
+## render_painter
+
+Every operation is pure virtual. Missing handlers are compile errors; core never
+selects a tessellator when a backend omits an operation. Implement mesh, rectangle,
+line, rounded rectangle, skin image, fitted image, nine-slice, polygon, sector,
+arc, blur, text, ellipsis, wrapping, ring, stroke and gradient operations, including
+the portable rounded gradient used by showcase. `ui::draw_rounded_gradient`
+submits its options without building a fan. Its mesh implementation retains the
+original underlay and six-segment corner fan; Vulkan selects its analytic
+representation from device configuration. Text
+width and glyph-advance measurement also go through the painter so layout and
+painting use its chosen font representation. `font_bytes(context, handle)` exposes
+borrowed source bytes for custom font caches, without requiring implementation
+headers. The theme's font, text size and gamma remain context data.
+
+Each operation takes a named options struct. Coordinates and thicknesses are
+logical units; the active context supplies DPI, clip stack, target/window, theme
+and disabled alpha. Inputs are borrowed for the duration of the call. A deferred
+painter must copy the operation and any referenced mesh, string or image data,
+and snapshot all state it will need before returning. It must preserve submission
+order, including the scene prefix sampled by blur. Zero clips must paint nothing.
+
+The painter owns its storage. `geometry()` returns a borrowed introspection pointer
+or null for a backend without CPU geometry; core neither allocates nor deletes a
+draw list. `prepare` reserves renderer-owned storage without changing live draws.
+`begin` starts painting after the device and surface have become current; `flush`
+finishes the submitted prefix; `end` finishes state for presentation. `invalidate`
+forgets cached target/clip/texture bindings without painting or clearing. It is
+used when switching to and from a popup recorder. `release_effects` releases the
+painter's per-window effect scratch before that window/context is destroyed.
+`release_text` releases renderer-owned glyph/atlas caches when rebinding or
+destroying a context. Source font bytes remain alive through painter destruction;
+the new renderer rebuilds its own representation after a device change. Rebind
+only between frames. Mesh effect scratch is prepared in `begin`, before drawing.
+
+Backends that deliberately choose CPU tessellation can explicitly use the complete
+shared mesh implementation:
+
+```cpp
+render_painter *create_painter(context &c) override
+{
+    return create_mesh_painter(c);
+}
+```
+
+SDL3, the recording null backend and the CPU example choose this implementation.
+Vulkan supplies the same complete operation set and configures its native shape,
+Slug and blur handlers inside its own factory. Core contains no Vulkan painter
+selection. Existing Reference, SDF, compute/cache and Kawase selections retain
+their separate visual contracts. Backend wrappers should forward `create_painter`
+to their wrapped device while keeping the context bound to the wrapper for upload,
+mesh and lifecycle accounting.
+
+Popup overlays use a complete recording painter of their own. Their shifted mesh
+stream is replayed after the parent presents; they deliberately retain the
+existing bitmap/raster text policy and skip backdrop effects. Their paint storage
+is retained with the overlay, and the parent painter is restored afterward.
+
+This is a backend API change: existing custom devices must add the factory and
+either explicitly choose the complete mesh painter or implement every painter
+handler. Existing UI drawing calls are unchanged. The no-device headless context
+retains its explicit recording mesh policy. See `tests/test_renderer_boundary.cpp`
+for a complete renderer that has no CPU draw list or atlas.
 
 ## render_surface
 

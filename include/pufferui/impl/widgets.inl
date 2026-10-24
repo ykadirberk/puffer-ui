@@ -12,29 +12,6 @@ namespace detail
 // A straight band whose two long edges carry per-vertex alpha, matching
 // draw_sector's 1px arc feathers: in a rounded_ring the straight and arced
 // segments then shade identically instead of meeting in a crisp step.
-inline void ring_hband(ui &u, f32 x0, f32 x1, f32 y0, f32 y1, color ca, color cb)
-{
-    vertex v[4] = {
-        {x0, y0, 0.0f, 0.0f, ca},
-        {x1, y0, 1.0f, 0.0f, ca},
-        {x1, y1, 1.0f, 1.0f, cb},
-        {x0, y1, 0.0f, 1.0f, cb},
-    };
-    i32 idx[6] = {0, 1, 2, 0, 2, 3};
-    u.draw_triangles(nullptr, v, 4, idx, 6);
-}
-
-inline void ring_vband(ui &u, f32 x0, f32 x1, f32 y0, f32 y1, color ca, color cb)
-{
-    vertex v[4] = {
-        {x0, y0, 0.0f, 0.0f, ca},
-        {x1, y0, 1.0f, 0.0f, cb},
-        {x1, y1, 1.0f, 1.0f, cb},
-        {x0, y1, 0.0f, 1.0f, ca},
-    };
-    i32 idx[6] = {0, 1, 2, 0, 2, 3};
-    u.draw_triangles(nullptr, v, 4, idx, 6);
-}
 
 // Each radius limited to half of the shorter side; under half a pixel is a
 // square corner (so every rounded shape clamps the same way).
@@ -58,65 +35,7 @@ inline corner_radii inset_radii(const corner_radii &in, f32 by)
 // (translucent outlines would show an overlap).
 inline void rounded_ring(ui &u, rect r, color c, const corner_radii &radii_in, f32 thickness)
 {
-    if (c.a == 0 || thickness <= 0.0f) return;
-    if (outside_paint_feathered(u.ctx, r)) return; // all eight pieces would be culled
-    const f32 t = min2(thickness, min2(r.w, r.h) * 0.5f);
-    if (t <= 0.0f) return;
-    const corner_radii q = clamp_radii(r, radii_in);
-
-    if (q.tl == 0.0f && q.tr == 0.0f && q.br == 0.0f && q.bl == 0.0f)
-    {
-        u.draw_rect({r.x, r.y, r.w, t}, c);
-        u.draw_rect({r.x, r.bottom() - t, r.w, t}, c);
-        u.draw_rect({r.x, r.y + t, t, r.h - 2.0f * t}, c);
-        u.draw_rect({r.right() - t, r.y + t, t, r.h - 2.0f * t}, c);
-        return;
-    }
-
-    // Straight bands with the same 1px feathers the corner arcs get from
-    // draw_sector (transparent 1px outside the outer edge and, when the hole
-    // is wide enough, 1px inside the inner edge). Without them the hard strip
-    // edges met the soft arc edges in a crisp step toward the inside.
-    const f32 widest = max2(max2(q.tl, q.tr), max2(q.br, q.bl));
-    const bool feather_in = max2(0.0f, widest - t) > 1.0f; // must match draw_sector's ring rule
-    color fade = c;
-    fade.a = 0;
-
-    // extents of the four bands
-    const f32 top_x0 = r.x + q.tl, top_x1 = r.right() - q.tr;
-    const f32 bot_x0 = r.x + q.bl, bot_x1 = r.right() - q.br;
-    const f32 left_y0 = r.y + (q.tl > 0.0f ? q.tl : t),
-              left_y1 = r.bottom() - (q.bl > 0.0f ? q.bl : t);
-    const f32 right_y0 = r.y + (q.tr > 0.0f ? q.tr : t),
-              right_y1 = r.bottom() - (q.br > 0.0f ? q.br : t);
-
-    // top / bottom
-    ring_hband(u, top_x0, top_x1, r.y - 1.0f, r.y, fade, c);
-    ring_hband(u, top_x0, top_x1, r.y, r.y + t, c, c);
-    if (feather_in) ring_hband(u, top_x0, top_x1, r.y + t, r.y + t + 1.0f, c, fade);
-    ring_hband(u, bot_x0, bot_x1, r.bottom(), r.bottom() + 1.0f, c, fade);
-    ring_hband(u, bot_x0, bot_x1, r.bottom() - t, r.bottom(), c, c);
-    if (feather_in) ring_hband(u, bot_x0, bot_x1, r.bottom() - t - 1.0f, r.bottom() - t, fade, c);
-
-    // left / right
-    ring_vband(u, r.x - 1.0f, r.x, left_y0, left_y1, fade, c);
-    ring_vband(u, r.x, r.x + t, left_y0, left_y1, c, c);
-    if (feather_in) ring_vband(u, r.x + t, r.x + t + 1.0f, left_y0, left_y1, c, fade);
-    ring_vband(u, r.right(), r.right() + 1.0f, right_y0, right_y1, c, fade);
-    ring_vband(u, r.right() - t, r.right(), right_y0, right_y1, c, c);
-    if (feather_in) ring_vband(u, r.right() - t - 1.0f, r.right() - t, right_y0, right_y1, fade, c);
-
-    if (q.tl > 0.0f)
-        u.draw_sector(vec2{r.x + q.tl, r.y + q.tl}, max2(0.0f, q.tl - t), q.tl, PI, PI * 1.5f, c);
-    if (q.tr > 0.0f)
-        u.draw_sector(vec2{r.right() - q.tr, r.y + q.tr}, max2(0.0f, q.tr - t), q.tr, PI * 1.5f,
-                      PI * 2.0f, c);
-    if (q.br > 0.0f)
-        u.draw_sector(vec2{r.right() - q.br, r.bottom() - q.br}, max2(0.0f, q.br - t), q.br, 0.0f,
-                      PI * 0.5f, c);
-    if (q.bl > 0.0f)
-        u.draw_sector(vec2{r.x + q.bl, r.bottom() - q.bl}, max2(0.0f, q.bl - t), q.bl, PI * 0.5f,
-                      PI, c);
+    u.ctx->painter->ring({r, c, radii_in, thickness});
 }
 
 inline void rounded_ring(ui &u, rect r, color c, f32 radius, f32 thickness)

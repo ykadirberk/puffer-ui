@@ -1,10 +1,18 @@
 # Native Vulkan renderer
 
-PufferUI's optional Vulkan 1.3 backend implements `render_device` and
-`render_surface`. SDL3 still manages windows, input, clipboard, system chrome,
+PufferUI's optional Vulkan 1.3 backend implements `render_device`, supplies a
+complete `render_painter`, and implements `render_surface`. SDL3 still manages
+windows, input, clipboard, system chrome,
 accessibility and popup overlays. Vulkan records and presents the graphics;
 this route does not create an `SDL_Renderer`. The existing SDL renderer remains
 the default. Core-only and SDL-only applications need no Vulkan SDK.
+
+Core submits semantic operations before geometry or glyph preparation. The
+Vulkan painter factory selects native shape, Slug and blur handling according to
+device options; core does not inspect Vulkan mode or supply an implicit geometry
+fallback. The backend's explicit mesh algorithms retain all remaining operations
+with their original pixels. See the [required painter contract](porting_a_backend.md#render_painter)
+and [boundary validation report](perf_renderer_boundary.md).
 
 ## Prepared painter resources
 

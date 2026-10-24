@@ -234,6 +234,7 @@ pui_add_exe(pui_core_tests SOURCES
     tests/test_widgets.cpp
     tests/test_dock.cpp
     tests/test_render.cpp
+    tests/test_renderer_boundary.cpp
     tests/test_components.cpp
     tests/test_ergonomics.cpp
     tests/test_platform.cpp

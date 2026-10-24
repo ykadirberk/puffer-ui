@@ -1,264 +1,10 @@
-// pufferui/impl/draw_context.inl - part of the PufferUI implementation (see pufferui.h).
-// Included by pufferui.h inside `namespace pui` when PUFFERUI_IMPLEMENTATION is
-// defined; never include it directly. The slices concatenate to the original
-// implementation block in order (tools/amalgamate.ps1 rebuilds the single header).
-// ---- draw list (batching by clip + texture) ----
-struct draw_list
-{
-    std::vector<vertex> verts;
-    std::vector<i32> idx;
-    texture_handle cur_tex = nullptr;
-    bool tex_known = false;
-    bool clip_active = false;
-    rect clip{};
-    bool clip_known = false;
-    bool solid_uv_remap = false; // the in-flight draw_triangles call is solid
-    // Reusable scratch for primitives that build local geometry before the
-    // batch copy (draw_sector / draw_polygon): no per-call heap allocation
-    // after warm-up.
-    std::vector<vertex> scratch_v;
-    std::vector<i32> scratch_i;
-    // Cold setup metadata must not displace the hot texture/clip batch fields.
-    usize prepared_vertices = 0, prepared_indices = 0;
-#if defined(PUFFERUI_ENABLE_VULKAN)
-    paint_detail::primitive_sink *painter = nullptr;
-#endif
-};
-
-#if defined(PUFFERUI_ENABLE_VULKAN)
-namespace paint_detail
-{
-inline bool try_shape(context *c, primitive_input input)
-{
-    auto *sink = c->dl ? c->dl->painter : nullptr;
-    if (!sink) return false;
-    input.scale = c->render_scale;
-    input.disabled_alpha = c->disabled_depth > 0 ? clampf(c->disabled_alpha, 0.0f, 1.0f) : 1;
-    return sink->shape(c, input);
-}
-struct primitive_scope
-{
-    primitive_sink *sink = nullptr;
-    primitive_scope(context *c, primitive_input input)
-    {
-        sink = c->dl ? c->dl->painter : nullptr;
-        if (sink)
-        {
-            input.scale = c->render_scale;
-            input.disabled_alpha =
-                c->disabled_depth > 0 ? clampf(c->disabled_alpha, 0.0f, 1.0f) : 1;
-            sink->enter(input);
-        }
-    }
-    ~primitive_scope()
-    {
-        if (sink) sink->leave();
-    }
-};
-} // namespace paint_detail
-#endif
-
-// Open-addressing map with inline values: power-of-two capacity, linear
-// probing, no tombstones (wholesale clears or rebuilds only). Keys are uiid
-// hashes (u64); the value type must be trivially relocatable enough for the
-// growth re-insert. O(1) expected; two cache lines worst case.
-
-namespace detail
-{
-
-inline void dl_flush(context *c)
-{
-    if (!c->dl) return;
-    draw_list &dl = *c->dl;
-    if (!dl.verts.empty() && c->device)
-    {
-        c->device->draw(dl.tex_known ? dl.cur_tex : nullptr, dl.verts.data(),
-                        static_cast<i32>(dl.verts.size()), dl.idx.data(),
-                        static_cast<i32>(dl.idx.size()));
-    }
-    dl.verts.clear();
-    dl.idx.clear();
-}
-
-inline void dl_prepare(context *c, texture_handle tex, const rect *clip)
-{
-    if (!c->dl) return;
-    draw_list &dl = *c->dl;
-
-    bool want_active = clip != nullptr && clip->w > 0.0f && clip->h > 0.0f;
-    rect want = want_active ? *clip : rect{};
-    bool clip_changed = !dl.clip_known || dl.clip_active != want_active ||
-                        (want_active && (dl.clip.x != want.x || dl.clip.y != want.y ||
-                                         dl.clip.w != want.w || dl.clip.h != want.h));
-    if (clip_changed)
-    {
-        dl_flush(c);
-        const f32 s = c->render_scale;
-        const rect pixels{want.x * s, want.y * s, want.w * s, want.h * s};
-        if (c->device) c->device->set_clip(want_active ? &pixels : nullptr);
-        dl.clip_active = want_active;
-        dl.clip = want;
-        dl.clip_known = true;
-    }
-    if (!dl.tex_known || dl.cur_tex != tex)
-    {
-        dl_flush(c);
-        dl.cur_tex = tex;
-        dl.tex_known = true;
-    }
-}
-
-// The area a draw can still change: the open window frame's client area
-// intersected with the active clip. A zero-size client area paints nothing. False
-// when nothing bounds the draw (no frame open, no clip): `screen` is only
-// meaningful while a frame is open, it is left stale after end_frame.
-inline bool paint_bounds(const context *c, rect &out)
-{
-    bool bounded = false;
-    rect r{};
-    if (c->current_window)
-    {
-        // A popup recording into an overlay paints its own rect, which lies
-        // (partly) outside the window by definition.
-        r = c->overlay_depth > 0 ? c->overlay_area : c->screen;
-        bounded = true;
-    }
-    if (c->clip_depth > 0)
-    {
-        const rect &top = c->clip_stack[c->clip_depth - 1];
-        r = bounded ? rect::intersect(r, top) : top;
-        bounded = true;
-    }
-    out = r;
-    return bounded;
-}
-
-// True when a draw confined to `box` (feather included) cannot change a pixel: it
-// lies wholly outside the client area or the active clip, or the clip is empty.
-// Callers skip the draw (and the geometry they would build) entirely.
-inline bool outside_paint(const context *c, const rect &box)
-{
-    rect pb;
-    if (!paint_bounds(c, pb)) return false;
-    if (pb.w <= 0.0f || pb.h <= 0.0f) return true;
-    return box.right() <= pb.x || box.x >= pb.right() || box.bottom() <= pb.y ||
-           box.y >= pb.bottom();
-}
-
-// How far past a shape's geometric bounds its antialiasing feather can reach.
-inline constexpr f32 FEATHER_REACH = 1.5f;
-
-// outside_paint for a shape whose geometry (feather excluded) fits in `box`.
-inline bool outside_paint_feathered(const context *c, const rect &box)
-{
-    return outside_paint(c, box.pad(-FEATHER_REACH));
-}
-
-inline usize dl_vertex_capacity(usize current, usize required, usize limit)
-{
-    if (current > limit || required > limit) return 0;
-    if (required <= current) return current;
-    const usize grown = current <= limit / 2 ? current * 2 : limit;
-    const usize initial = limit < 64 ? limit : 64;
-    const usize target = grown > initial ? grown : initial;
-    return required > target ? required : target;
-}
-
-// Commit the requested prefix while preserving live elements and logical size.
-// The marker survives clear(), but a normal relocation invalidates its tail.
-template <class T>
-inline void prepare_geometry_storage(std::vector<T> &storage, usize count, usize &prepared)
-{
-    if (count <= prepared) return;
-    const usize live = storage.size();
-    if (count > storage.capacity())
-    {
-        storage.reserve(count);
-        prepared = live;
-    }
-    if (count > live)
-    {
-        storage.resize(count);
-        storage.resize(live);
-    }
-    prepared = count > live ? count : live;
-}
-
-inline void dl_add(context *c, const vertex *verts, i32 vcount, const i32 *idx, i32 icount)
-{
-    if (!c->dl || vcount <= 0 || icount <= 0) return;
-    draw_list &dl = *c->dl;
-    i32 base = static_cast<i32>(dl.verts.size());
-    // Match the index buffer's geometric growth. MSVC's smaller insert growth
-    // otherwise relocates the same large batch in consecutive motion frames.
-    const usize required_vertices = dl.verts.size() + static_cast<usize>(vcount);
-    if (required_vertices > dl.verts.capacity())
-    {
-        dl.verts.reserve(
-            dl_vertex_capacity(dl.verts.capacity(), required_vertices, dl.verts.max_size()));
-        dl.prepared_vertices = dl.verts.size();
-    }
-    dl.verts.insert(dl.verts.end(), verts, verts + vcount);
-    if (c->render_scale != 1.0f)
-        for (usize i = dl.verts.size() - static_cast<usize>(vcount); i < dl.verts.size(); ++i)
-        {
-            dl.verts[i].x *= c->render_scale;
-            dl.verts[i].y *= c->render_scale;
-        }
-    if (c->disabled_depth > 0)
-        for (usize i = dl.verts.size() - static_cast<usize>(vcount); i < dl.verts.size(); ++i)
-            dl.verts[i].c.a =
-                static_cast<u8>(dl.verts[i].c.a * clampf(c->disabled_alpha, 0.0f, 1.0f));
-    if (dl.solid_uv_remap)
-    {
-        // Solid geometry rides in the glyph batch: remap the copied verts' UVs
-        // to the atlas's reserved white texel at (0,0) (its center, so any
-        // sampler/filtering returns exactly that texel). The copy already
-        // happened, so this is arithmetic on the way in — no extra pass cost
-        // beyond the uv writes.
-        const f32 wx = 0.5f / static_cast<f32>(c->ts->atlas_w);
-        const f32 wy = 0.5f / static_cast<f32>(c->ts->atlas_h);
-        const usize first = dl.verts.size() - static_cast<usize>(vcount);
-        for (usize i = first; i < dl.verts.size(); ++i)
-        {
-            dl.verts[i].u = wx;
-            dl.verts[i].v = wy;
-        }
-    }
-    // Grow geometrically, then append in one pass without a capacity check per
-    // index. Exact-size reserve on every primitive would relocate the batch.
-#if defined(PUFFERUI_ENABLE_VULKAN)
-    if (dl.painter)
-        dl.painter->mesh(dl.cur_tex, dl.verts.data() + dl.verts.size() - static_cast<usize>(vcount),
-                         vcount, idx, icount);
-#endif
-    const usize first_index = dl.idx.size();
-    const usize required = first_index + static_cast<usize>(icount);
-    if (required > dl.idx.capacity())
-    {
-        const usize limit = dl.idx.max_size();
-        const usize grown = dl.idx.capacity() <= limit / 2 ? dl.idx.capacity() * 2 : limit;
-        dl.idx.reserve(max2(required, max2(static_cast<usize>(64), grown)));
-        dl.prepared_indices = dl.idx.size();
-    }
-    dl.idx.resize(required);
-    i32 *out = dl.idx.data() + first_index;
-    for (i32 i = 0; i < icount; ++i) out[i] = idx[i] + base;
-}
-
-} // namespace detail
-
+// pufferui/impl/draw_context.inl - context, frame and overlay policy.
+// Included inside namespace pui by pufferui.h.
+// Painting storage and algorithms belong to renderer slices.
+// The first four lines are retained for amalgamation.
 bool ui::prepare_geometry(const geometry_capacity &capacity)
 {
-    if (!ctx || !ctx->dl) return false;
-    draw_list &dl = *ctx->dl;
-    constexpr usize limit = static_cast<usize>(0x7fffffff);
-    if (capacity.vertices > limit || capacity.indices > limit ||
-        capacity.vertices > dl.verts.max_size() || capacity.indices > dl.idx.max_size())
-        return false;
-    detail::prepare_geometry_storage(dl.verts, capacity.vertices, dl.prepared_vertices);
-    detail::prepare_geometry_storage(dl.idx, capacity.indices, dl.prepared_indices);
-    return true;
+    return ctx && ctx->painter && ctx->painter->prepare(capacity);
 }
 
 // ---- popup overlays (window_host::open_overlay) ----
@@ -288,13 +34,13 @@ inline rect popup_space(context *c)
 inline bool overlay_begin(context *c, uiid id, rect area)
 {
     window *w = c->current_window;
-    if (!w || !c->host || !c->popup_overlays || c->overlay_depth > 0 || !c->device || !c->dl)
+    if (!w || !c->host || !c->popup_overlays || c->overlay_depth > 0 || !c->device || !c->painter)
         return false;
     if (area.w <= 0.0f || area.h <= 0.0f) return false;
     overlay_entry *e = find_overlay(c, w, id);
     if (!e)
     {
-        e = new overlay_entry();
+        e = new overlay_entry(*c);
         e->parent = w;
         e->id = id;
         e->failed = !c->host->open_overlay(*w, area, e->h) || !e->h.surface;
@@ -314,14 +60,13 @@ inline bool overlay_begin(context *c, uiid id, rect area)
     e->rec.real = c->device;
     dl_flush(c); // what was drawn so far belongs to the window
     c->st->overlay_real = c->device;
+    c->st->overlay_painter = c->painter;
     c->device = &e->rec;
-#if defined(PUFFERUI_ENABLE_VULKAN)
-    c->dl->painter = nullptr;
-#endif
-    c->dl->clip_known = false; // re-issue clip/texture state into the recorder
-    c->dl->tex_known = false;
+    c->painter = &e->painter;
+    c->dl = c->painter->geometry();
     c->overlay_depth = 1;
     c->overlay_area = area;
+    c->painter->begin();
     return true;
 }
 
@@ -329,13 +74,13 @@ inline void overlay_end(context *c)
 {
     if (c->overlay_depth == 0) return;
     dl_flush(c);
+    c->painter->invalidate();
     c->device = c->st->overlay_real;
-#if defined(PUFFERUI_ENABLE_VULKAN)
-    c->dl->painter = paint_detail::vulkan_primitive_sink(c->device);
-#endif
+    c->painter = c->st->overlay_painter;
+    c->dl = c->painter->geometry();
+    c->st->overlay_painter = nullptr;
     c->st->overlay_real = nullptr;
-    c->dl->clip_known = false;
-    c->dl->tex_known = false;
+    c->painter->invalidate();
     c->overlay_depth = 0;
 }
 
@@ -448,7 +193,8 @@ context *create_context(render_device *device, render_surface *surface)
     c->panel_capacity = MAX_PANELS;
     c->panel_stack = new uiid[MAX_PANELS];
     c->panel_stack_capacity = MAX_PANELS;
-    c->dl = new draw_list();
+    c->painter = device ? device->create_painter(*c) : create_mesh_painter(*c);
+    c->dl = c->painter->geometry();
     set_current_context(c);
     return c;
 }
@@ -458,14 +204,7 @@ namespace detail
 
 inline void free_blur_store(context *c, blur_store *&bs)
 {
-    if (!bs) return;
-    if (c->device)
-    {
-        for (texture_handle t : {bs->half, bs->quarter, bs->eighth, bs->sixteenth})
-            if (t) c->device->destroy_target(t);
-    }
-    delete bs;
-    bs = nullptr;
+    c->painter->release_effects(bs);
 }
 
 inline window *ensure_primary(context *c)
@@ -482,13 +221,17 @@ void destroy_context(context *c)
     PUFFERUI_CHECK(VIOL_DESTROY_WHILE_OPEN, c->current_window == nullptr,
                    "destroy_context with an open window frame");
     if (current_context() == c) set_current_context(nullptr);
+    detail::overlays_close(c, nullptr);
+    for (i32 i = 0; i < c->window_count; ++i) detail::free_blur_store(c, c->windows[i]->blur);
+    detail::free_blur_store(c, c->blur);
+    c->painter->release_text();
+    delete c->painter; // dependent caches die while font/context sources are alive
+    c->painter = nullptr;
+    c->dl = nullptr;
     if (c->ts)
     {
-        for (text_store::atlas_page &page : c->ts->atlases)
-            if (c->device && page.tex) c->device->destroy_texture(page.tex);
         delete c->ts;
     }
-    detail::overlays_close(c, nullptr);
     delete c->st;
     delete[] c->popups;
     delete[] c->prev_popups;
@@ -503,11 +246,8 @@ void destroy_context(context *c)
         if (w->on_a11y_detach) w->on_a11y_detach(*w);
         delete w->a11y;
         delete w->focus_store;
-        detail::free_blur_store(c, w->blur);
         delete w;
     }
-    detail::free_blur_store(c, c->blur);
-    delete c->dl;
     delete[] c->windows;
     c->windows = nullptr;
     c->window_capacity = 0;
@@ -516,8 +256,19 @@ void destroy_context(context *c)
 
 void set_device(context *c, render_device *device, render_surface *surface)
 {
+    detail::dl_flush(c);
+    detail::overlays_close(c, nullptr);
+    for (i32 i = 0; i < c->window_count; ++i) detail::free_blur_store(c, c->windows[i]->blur);
+    detail::free_blur_store(c, c->blur);
+    c->painter->release_text();
+    delete c->painter;
     c->device = device;
     c->surface = surface;
+    c->painter = device ? device->create_painter(*c) : create_mesh_painter(*c);
+    c->dl = c->painter->geometry();
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    if (c->ts) c->ts->vector_enabled = c->painter->vector_text();
+#endif
     for (i32 i = 0; i < c->window_count; ++i)
         if (!c->windows[i]->surface) c->windows[i]->surface = surface;
 }
@@ -1083,7 +834,6 @@ void begin_frame(context *c, window &w, f64 now, f64 dt)
         c->focus = c->focus_request;
         c->focus_request = 0;
     }
-    if (!w.blur) w.blur = new blur_store();
     c->blur = w.blur;
 
     c->want_cursor = cursor::ARROW;
@@ -1095,26 +845,12 @@ void begin_frame(context *c, window &w, f64 now, f64 dt)
 
     c->button_scope_depth = 0;
 
-    if (!c->dl) c->dl = new draw_list();
-    c->dl->verts.clear();
-    c->dl->idx.clear();
-    c->dl->clip_known = false;
-    c->dl->clip_active = false;
-    c->dl->tex_known = false;
-    c->dl->cur_tex = nullptr;
-#if defined(PUFFERUI_ENABLE_VULKAN)
-    c->dl->painter = nullptr;
-#endif
-
     if (c->device)
     {
         c->device->begin_frame();
         if (w.surface) w.surface->make_current(*c->device);
-        c->device->clear(c->active_theme.bg);
-#if defined(PUFFERUI_ENABLE_VULKAN)
-        c->dl->painter = paint_detail::vulkan_primitive_sink(c->device);
-#endif
     }
+    c->painter->begin();
 }
 
 void begin_frame(context *c, f64 now, f64 dt, rect screen)
@@ -1280,7 +1016,7 @@ void end_frame(context *c)
     }
     if (c->device)
     {
-        c->device->set_clip(nullptr);
+        c->painter->end();
         // Apply the cursor only from the window under the pointer: with several
         // windows on one device, every window's frame would otherwise overwrite
         // the cursor of the window actually being hovered (the last one wins).
@@ -1319,14 +1055,6 @@ void end_frame(context *c)
     // text field this frame (the Tab target was not a field), drop it so a
     // later field focus never selects all by accident.
     c->focus_request_selects_all = false;
-
-    if (c->dl)
-    {
-        c->dl->clip_known = false;
-        c->dl->clip_active = false;
-        c->dl->tex_known = false;
-        c->dl->cur_tex = nullptr;
-    }
 
     // Safety net: if no dock space consumed the drop this frame, or the release
     // landed outside every window, don't leave a stale drag hanging.

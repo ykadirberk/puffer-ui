@@ -334,12 +334,7 @@ static void fill_circle(ui &u, vec2 c, f32 r, color col)
 
 static void gradient_quad(ui &u, rect r, color tl, color tr, color br, color bl)
 {
-    vertex v[4] = {{r.x, r.y, 0.0f, 0.0f, tl},
-                   {r.right(), r.y, 0.0f, 0.0f, tr},
-                   {r.right(), r.bottom(), 0.0f, 0.0f, br},
-                   {r.x, r.bottom(), 0.0f, 0.0f, bl}};
-    const i32 idx[6] = {0, 1, 2, 0, 2, 3};
-    u.draw_triangles(nullptr, v, 4, idx, 6);
+    u.ctx->painter->gradient({r, tl, tr, br, bl});
 }
 
 // A rounded rect whose color is interpolated from its four corners: a fan from
@@ -347,73 +342,7 @@ static void gradient_quad(ui &u, rect r, color tl, color tr, color br, color bl)
 // over a same-shape anti-aliased underlay so the edge stays soft.
 static void gradient_round(ui &u, rect r, f32 radius, color tl, color tr, color br, color bl)
 {
-    if (r.w <= 0.5f || r.h <= 0.5f) return;
-    // Keep the rounded underlay's feather (the fan itself stays inside r).
-    // State and interaction still run for tiles outside the paint area.
-    if (!u.is_visible(r.pad(-1.5f))) return;
-    radius = clampf(radius, 0.0f, min2(r.w, r.h) * 0.5f);
-    const auto col_at = [&](f32 x, f32 y)
-    {
-        const f32 fx = sat((x - r.x) / r.w), fy = sat((y - r.y) / r.h);
-        return mixc(mixc(tl, tr, fx), mixc(bl, br, fx), fy);
-    };
-    const color mid = col_at(r.center_x(), r.center_y());
-#if defined(PUFFERUI_ENABLE_VULKAN)
-    if (g_app.analytic_shapes && vulkan_try_rounded_gradient(u, {.area = r,
-                                                                 .radii = corner_radii::all(radius),
-                                                                 .underlay = mid,
-                                                                 .top_left = tl,
-                                                                 .top_right = tr,
-                                                                 .bottom_right = br,
-                                                                 .bottom_left = bl}))
-        return;
-#endif
-    constexpr i32 SEG = 6;
-    constexpr i32 RING = 4 * (SEG + 1);
-    vertex v[1 + RING];
-    i32 idx[3 * RING];
-    const vec2 centers[4] = {{r.x + radius, r.y + radius},
-                             {r.right() - radius, r.y + radius},
-                             {r.right() - radius, r.bottom() - radius},
-                             {r.x + radius, r.bottom() - radius}};
-    struct arc_table
-    {
-        f32 cs[4][SEG + 1], sn[4][SEG + 1];
-        arc_table()
-        {
-            const f32 starts[4] = {PI, PI * 1.5f, 0.0f, PI * 0.5f};
-            for (i32 c = 0; c < 4; ++c)
-                for (i32 s = 0; s <= SEG; ++s)
-                {
-                    // Same expression and rounding as the original per-vertex path.
-                    const f32 a =
-                        starts[c] + (PI * 0.5f) * static_cast<f32>(s) / static_cast<f32>(SEG);
-                    cs[c][s] = std::cos(a);
-                    sn[c][s] = std::sin(a);
-                }
-        }
-    };
-    static const arc_table arcs;
-    v[0] = {r.center_x(), r.center_y(), 0.0f, 0.0f, mid};
-    i32 n = 1;
-    for (i32 c = 0; c < 4; ++c)
-    {
-        for (i32 s = 0; s <= SEG; ++s)
-        {
-            const f32 x = centers[c].x + arcs.cs[c][s] * radius;
-            const f32 y = centers[c].y + arcs.sn[c][s] * radius;
-            v[n++] = {x, y, 0.0f, 0.0f, col_at(x, y)};
-        }
-    }
-    i32 k = 0;
-    for (i32 i = 0; i < RING; ++i)
-    {
-        idx[k++] = 0;
-        idx[k++] = 1 + i;
-        idx[k++] = 1 + (i + 1) % RING;
-    }
-    u.draw_rounded_rect(r, mid, radius);
-    u.draw_triangles(nullptr, v, n, idx, k);
+    u.draw_rounded_gradient({r, radius, tl, tr, br, bl});
 }
 
 // An anti-aliased polyline: a triangle strip with a feathered rim on both sides

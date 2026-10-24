@@ -62,6 +62,7 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `bool prepare_geometry(const geometry_capacity &capacity);`
 - `void draw_triangles(texture_handle tex, const vertex *vertices, i32 vertex_count, const i32 *indices, i32 index_count);`
 - `void draw_rect(rect r, color c);`
+- `void draw_rounded_gradient(const paint_rounded_gradient &);`
 - `void draw_line(f32 x0, f32 y0, f32 x1, f32 y1, color c, f32 thickness = 1.0f);`
 - `void draw_rounded_rect(rect r, color c, f32 radius = 0.0f);`
 - `void draw_rounded_rect(rect r, color c, const corner_radii &radii);`
@@ -97,6 +98,7 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `date add_months(date d, i32 months); // the day clamps to the new month // ---- HSV (comp::color_picker) ---- struct hsv_color;`
 - `hsv_color to_hsv(color c);`
 - `color from_hsv(hsv_color c, u8 alpha = 255);`
+- `render_painter *create_mesh_painter(context &);`
 - `rect fit_image(rect area, f32 img_w, f32 img_h, image_fit fit, rect &uv);`
 - `std::string save_window_state(const window_state &s); // "x y w h maximized" bool load_window_state(std::string_view text, window_state &out); // false: malformed // `r` moved (and shrunk) so that it is visible on one of `displays` (usable // desktop rects): kept as is when a usable part already shows, else centered on // the first display. An app restores a saved rect through this. rect clamp_to_displays(rect r, std::span<const rect> displays);`
 - `render_device *create_sdl3_device(void *sdl_renderer);`
@@ -141,6 +143,7 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `void set_text_shaper(context *c, text_shaper *shaper);`
 - `void set_text_atlas_budget(context *c, i32 pages);`
 - `i32 text_atlas_pages(const context *c);`
+- `std::span<const u8> font_bytes(const context *c, font_handle font);`
 - `bool set_font_fallbacks(context *c, std::span<const font_handle> fonts);`
 - `window *add_window(context *c, void *handle, render_surface *surface, rect client);`
 - `i32 window_count(const context *c);`

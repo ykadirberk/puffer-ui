@@ -148,7 +148,7 @@ it must (focus, text-edit state, scroll offsets, animation progress), keyed by i
 and forgets keys you stop using.
 
 **Can I use my own renderer or window system?** Yes: the renderer is a small
-abstract class (`render_device`), documented in `docs/porting_a_backend.md`, and the
+device/painter/surface contract, documented in `docs/porting_a_backend.md`, and the
 window/event layer is a handful of functions (`mouse_move`, `key_event`,
 `text_input_event`, ...). The SDL3 bootstrap is the reference implementation, and
 `null_device` is the smallest one.

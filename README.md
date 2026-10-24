@@ -886,13 +886,20 @@ i32 problems = violation_count(c);
 clip imbalance, duplicate ids, …) through `report_violation`; the default prints
 to stderr, `set_violation_handler` routes them to your log or test.
 
-A backend implements two interfaces — `render_device` (textures, clear, clip,
-`draw`) and `render_surface` (target, size, present) — plus `backend_caps`
+A backend implements `render_device` (resources and painter creation),
+`render_painter` (all semantic drawing operations and preparation), and
+`render_surface` (target, size, present) — plus `backend_caps`
 (`SCISSOR`, `RENDER_TARGETS`, `STREAMING_TEXTURES`, `SHARED_DEVICE`). The
 `pui_ex_renderer` example is a complete CPU rasterizer that writes a PPM; read it
 together with [`docs/porting_a_backend.md`](docs/porting_a_backend.md).
 
-For a scene with a known peak batch size, prepare core CPU storage during setup
+Every painter operation is required. Backends may explicitly choose the complete
+shared mesh painter with `create_mesh_painter(context&)`, or provide their own
+representation for every operation. Core submits rectangles, borders, text,
+images and blur before geometry preparation. Vulkan's SDF/Slug/compute choices
+belong to its backend; there is no implicit core tessellation fallback.
+
+For a scene with a known peak batch size, prepare renderer storage during setup
 to avoid its first allocation/page-touch cost during an interaction. The CPU
 renderer example uses:
 
@@ -1671,7 +1678,7 @@ Everything below is declared in `include/pufferui/pufferui.h`, in `namespace pui
 
 | Name | Notes |
 | --- | --- |
-| `context` | Owns the frame, windows, theme, draw list and keyed state. Created with `create_context`, destroyed with `destroy_context`. |
+| `context` | Owns the frame, windows, theme, backend painter and keyed state. The painter owns drawing storage. Created with `create_context`, destroyed with `destroy_context`. |
 | `window` | One window: `client` (desktop coords), `area` (local), input queue, focus list, active/drag state. |
 | `ui` | Per-frame facade: `ui u(ctx)`; all drawing/layout/interaction goes through it. |
 | `rect`, `color`, `vec2` | Value types. `color` is straight RGBA8. |
@@ -1799,7 +1806,7 @@ field's buffer while it is focused.
 
 ### Drawing and images
 
-`ui.draw_rect` · `ui.draw_line` · `ui.draw_rounded_rect` ·
+`ui.draw_rect` · `ui.draw_line` · `ui.draw_rounded_rect` · `ui.draw_rounded_gradient` ·
 `ui.draw_polygon(span<vec2>, color)` · `ui.draw_sector(center, r_in, r_out, a0,
 a1, color)` · `ui.draw_arc(center, radius, thickness, a0, a1, color)` ·
 `ui.draw_triangles(texture, vertices, count, indices, count)` ·
@@ -1838,7 +1845,7 @@ button_override)`.
 | `set_global_mouse(ctx, x, y)` | Set the shared pointer position (same space as `window::client`). |
 | `set_clipboard(ctx, clipboard*)` | Install the app clipboard. |
 | `key`, `KEY_COUNT`, `pointer_button` | Input enums. |
-| `render_device`, `render_surface`, `geometry_capacity`, `backend_caps`, `has_cap`, `create_sdl3_device`, `destroy_sdl3_device`, `null_device`, `null_surface` | Backend contract and optional geometry storage preparation. |
+| `render_device`, `render_painter`, `render_surface`, `create_mesh_painter`, `geometry_capacity`, `backend_caps`, `has_cap`, `create_sdl3_device`, `destroy_sdl3_device`, `null_device`, `null_surface` | Required semantic painter contract, explicit shared mesh implementation, renderer-owned preparation. |
 | `PUFFERUI_CHECK`, `set_violation_handler`, `violation_handler`, `violation_count`, `violation_last`, `draw_violation_overlay`, `report_violation`, `set_current_context` | Diagnostics; the overlay draws count + last message for development. |
 
 #### Limits

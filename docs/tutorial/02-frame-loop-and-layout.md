@@ -89,7 +89,7 @@ Three rules that follow from this shape:
                                          │
         ┌────────── begin_frame ◄────────┘      (input becomes "this frame's input")
         │
-        │   you:  u.text(...)  u.button(...)  glass_card(...)  ...   ──► draw list (batched)
+        │   you:  u.text(...)  u.button(...)  glass_card(...)  ...   ──► backend painter
         │            ▲                │
         │            └── results ◄────┘   (button clicked? checkbox toggled?)
         │

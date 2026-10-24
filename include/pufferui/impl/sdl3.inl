@@ -49,6 +49,7 @@ struct sdl3_surface : render_surface
 
 struct sdl3_device : render_device
 {
+    render_painter *create_painter(context &c) override { return create_mesh_painter(c); }
     struct slot
     {
         SDL_Window *window = nullptr;
