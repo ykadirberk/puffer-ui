@@ -1,0 +1,22 @@
+[0/2] Re-checking globbed directories...
+[1/3] Building CXX object CMakeFiles\pui_vulkan_preparation_tests.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/draw_context.inl(241): warning C4244: 'argument': conversion from 'const pui::usize' to 'pui::f32', possible loss of data
+D:\myimgui\include\pufferui\impl/draw_context.inl(241): warning C4244: 'argument': conversion from 'const pui::usize' to 'pui::f32', possible loss of data
+D:\myimgui\include\pufferui\impl/draw_context.inl(241): warning C4244: 'argument': conversion from 'pui::f32' to 'unsigned __int64', possible loss of data
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1192): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'argument': conversion from 'std::basic_string_view<char,std::char_traits<char>>::size_type' to 'pui::f32', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'pui::usize', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'const pui::usize', possible loss of data
+D:\myimgui\examples\example_common.h(360): warning C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[2/3] Linking CXX executable Release\pui_vulkan_preparation_tests.exe
+prepared arena capacity=7077888 peak=7009388 current=3137452
+prepared arena capacity=7077888 peak=6932504 current=3136524
+resident upload=25559040 metadata=45491752 images=47538432 glyph_bytes=149152 glyph_batches=2366
+prepared arena capacity=7077888 peak=7009388 current=3137452
+prepared arena capacity=7077888 peak=6932504 current=3136524
+resident upload=51118080 metadata=45491752 images=47538432 glyph_bytes=149152 glyph_batches=2366
+resident upload=25559040 metadata=17105448 images=7168256 glyph_bytes=149152 glyph_batches=2366
+all native resource preparation regressions passed

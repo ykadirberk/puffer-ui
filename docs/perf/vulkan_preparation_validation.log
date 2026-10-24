@@ -1,0 +1,5 @@
+PASS final device golden matrix: 8 x 180 frames
+MSVC environment: C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat
+PASS latest glyph delta regression
+verified shaders 18 and includes 5
+All post-measurement validation passed

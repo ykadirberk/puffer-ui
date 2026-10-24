@@ -154,6 +154,12 @@ struct primitive_sink
 };
 primitive_sink *vulkan_primitive_sink(render_device *device);
 bool vulkan_vector_text(render_device *device);
+struct blur_result
+{
+    texture_handle image = nullptr;
+    f32 scale_u = 0, scale_v = 0;
+};
+bool vulkan_blur(render_device *, texture_handle, rect, f32, blur_result &);
 
 inline bool same_content(const command_tape &a, usize ai, const command_tape &b, usize bi)
 {

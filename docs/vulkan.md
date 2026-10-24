@@ -6,6 +6,77 @@ accessibility and popup overlays. Vulkan records and presents the graphics;
 this route does not create an `SDL_Renderer`. The existing SDL renderer remains
 the default. Core-only and SDL-only applications need no Vulkan SDK.
 
+## Prepared painter resources
+
+SDF surfaces prepare upload pages, graphics descriptor sets and (for compute)
+bounded metadata arenas before recording UI draws. Compute kernels and their
+layouts belong to the device; slots share those immutable programs. Cache kernels
+are compiled only when tile caching was requested. Present-mode changes preserve
+prepared resources when the pixel extent and cache budget are unchanged.
+
+Adaptive surfaces initially reserve only raster uploads and descriptors. Their
+first eligible compute program requests preparation for the next frame boundary;
+that first program uses the same complete raster output. Scenes that always route
+to raster therefore keep compute arenas, cache images and cache kernels unallocated.
+Runtime `vulkan_set_cache` transitions likewise prepare/release history resources
+at a completed frame boundary; stale histories are not reused during the transition.
+
+Each compute slot has a current arena and, when eligible for caching, one previous
+arena. Completed slot reuse switches banks; readback-only submissions do not age
+the history. The cache retains views of commands, tile lists, shapes and ownership
+instead of making five history copies. Qualified pixels are written directly to
+the cache image, eliminating full-target snapshot copies. Cache image budget
+rejection is decided during preparation and is not retried for each draw. Pixel
+telemetry uses workgroup reduction rather than a global atomic for every pixel.
+At most four epochs per slot receive full-size cache images, even if the maximum
+cache budget could hold more. Other epochs paint normally. This bounds the image
+working set independently of the device's maximum budget.
+
+The initial reservation scales with target extent, with 64 KiB rounding, and stays
+within the existing device budgets. Budgets are limits, not amounts that must be
+filled. A metadata/job capacity shortfall selects complete raster replay without
+changing the output. Graphics descriptor exhaustion submits and waits before
+reusing already allocated sets. Tiny upload budgets keep the existing streaming
+path and may require allocations/waits; zero-allocation qualification applies to
+the measured prepared workload, not arbitrary unbounded UI geometry.
+
+Vector text additionally keeps append-only glyph outlines in a device-local
+buffer with coherent host staging (each at most 512 KiB and at most one eighth
+of the upload budget). New glyphs append bytes; their new range is transferred
+before the next consuming batch. Repeated text does not upload the accumulated
+font data per batch. Oversized collections and noncoherent host heaps retain
+per-submission uploads.
+HarfBuzz shaping, outline encoding, font selection, gamma and DPI remain unchanged.
+
+## Kawase blur
+
+Set `vulkan_device_opts::blur = vulkan_blur_mode::KAWASE`, or run
+`pui_showcase_vulkan --vulkan-blur kawase`. The standalone `pui_ex_vulkan_blur`
+selects it by default. `LEGACY` remains the default for all other applications;
+the core/SDL implementation and the existing legacy golden images are unchanged.
+
+This native-only filter uses the dual-filter variant of Kawase: a weighted
+five-tap downsample and eight-tap upsample over two to four levels. The weight
+patterns follow [Arm's dual-filter presentation](https://community.arm.com/cfs-file/__key/communityserver-blogs-components-weblogfiles/00-00-00-20-66/siggraph2015_2D00_mmg_2D00_marius_2D00_notes.pdf).
+The final image is half resolution. Radius controls pyramid depth and a bounded
+sample offset; its appearance differs from the legacy blit approximation.
+
+A surface prepares four reusable images and completed frame slots prepare 64
+descriptor sets. Blur recording uses the already-rendered scene prefix, orders
+sample/storage accesses, and dispatches only the requested region. Intermediate
+regions use ceil division and clamp samples to their valid texel centers, so odd
+sizes cannot sample unwritten or stale storage. The usual alpha, rounded composite,
+active clip, overlay exclusion and logical-to-pixel scaling still apply. The
+Kawase path works with the reference, SDF raster and compute painters. Cache replay
+must match its independent SDF raster output exactly; it has separate validation
+from the immutable legacy golden domain. Descriptor exhaustion waits and reuses
+storage instead of growing it during a blur call.
+
+Kawase is an opt-in quality/performance experiment. Its speed depends on radius,
+covered area and GPU; neither compute painting nor this blur is automatically
+faster than the corresponding raster/legacy path. Compare completed GPU time and
+resident allocation totals separately from CPU frame time and uncapped GPU usage.
+
 ## Build and run
 
 Install a Vulkan SDK for compilation and a Vulkan-capable driver for execution.

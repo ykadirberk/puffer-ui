@@ -47,3 +47,7 @@
 #if defined(PUFFERUI_VULKAN_SDF_CACHE_TESTS)
 #include "../tests/test_vulkan_sdf_cache.inl"
 #endif
+
+#if defined(PUFFERUI_VULKAN_PREPARATION_TESTS)
+#include "../tests/test_vulkan_preparation.inl"
+#endif

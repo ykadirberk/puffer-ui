@@ -16,6 +16,8 @@ struct sdf_gpu_job
     gpu_bin_job bin;
     page mask;
     page history[6], state;
+    page previous[5], shape_data;
+    i32 published_bank = -1;
     texture *saved = nullptr;
     bool cache_enabled = false, reset_history = true;
     VkDescriptorSetLayout image_layout = VK_NULL_HANDLE;
@@ -33,13 +35,7 @@ struct sdf_gpu_job
         if (!d) return;
         if (bin.serial && bin.serial < d->next_serial) d->wait(bin.serial);
         if (image_set) --d->stats.descriptor_sets;
-        if (painter) d->vkDestroyPipeline(d->native.device, painter, nullptr);
-        if (args) d->vkDestroyPipeline(d->native.device, args, nullptr);
-        for (auto pipeline : {compare, compact, restore, commit})
-            if (pipeline) d->vkDestroyPipeline(d->native.device, pipeline, nullptr);
-        if (layout) d->vkDestroyPipelineLayout(d->native.device, layout, nullptr);
         if (pool) d->vkDestroyDescriptorPool(d->native.device, pool, nullptr);
-        if (image_layout) d->vkDestroyDescriptorSetLayout(d->native.device, image_layout, nullptr);
         bin.free_storage(mask);
         bin.free_storage(state);
         for (auto &p : history) bin.free_storage(p);
@@ -49,108 +45,116 @@ struct sdf_gpu_job
             d->destroy_texture(saved);
         }
     }
-    bool initialize(device &d, u32 capacity)
+    bool prepare(device &d, sdf_slot_resources &resources, u32 capacity)
     {
-        if (!bin.initialize(d, d.sdf_tape, static_cast<u32>(d.target->width),
-                            static_cast<u32>(d.target->height), 32, 256, capacity))
-            return false;
+        const u32 width = static_cast<u32>(d.target->width),
+                  height = static_cast<u32>(d.target->height);
+        const u32 tx = (width + 31) / 32, ty = (height + 31) / 32;
+        const u32 cx = (width + 255) / 256, cy = (height + 255) / 256;
+        const u64 count = d.sdf_tape.commands.size(), words = (count + 31) / 32;
+        const u64 tiles = static_cast<u64>(tx) * ty;
+        const u64 sizes[] = {count * sizeof(paint_detail::command), cx * cy * words * 4,
+                             (tiles * 2 + 1) * 4, static_cast<u64>(capacity) * 4, 64};
         const u64 pixels = static_cast<u64>(d.target->width) * d.target->height;
-        if (!bin.storage(mask, ((pixels + 31) / 32) * 4)) return false;
-        if (!bin.resize_storage(4, 64) ||
-            !bin.storage(state, static_cast<u64>(bin.parameters[11]) * 16))
+        const u64 extra[] = {((pixels + 31) / 32) * 4, tiles * 16,
+                             (d.sdf_shapes.empty() ? 1 : d.sdf_shapes.size()) * sizeof(sdf_shape)};
+        const u64 alignment = std::max<u64>(4, d.properties.limits.minStorageBufferOffsetAlignment);
+        u64 required = 0;
+        for (const auto size : sizes)
+            required += (std::max<u64>(4, size) + alignment - 1) & ~(alignment - 1);
+        for (const auto size : extra) required += (size + alignment - 1) & ~(alignment - 1);
+        resources.required_bytes += required;
+        auto &arena = resources.banks[resources.bank];
+        if (width > resources.width || height > resources.height || !arena.buffer ||
+            required > arena.capacity - arena.used ||
+            (tiles + 63) / 64 > d.properties.limits.maxComputeWorkGroupCount[0] ||
+            (count + 63) / 64 > d.properties.limits.maxComputeWorkGroupCount[0])
             return false;
-        for (auto &p : history)
-            if (!bin.storage(p, 4)) return false;
-        VkDescriptorSetLayoutBinding bindings[9]{};
-        for (u32 i = 0; i < 9; ++i)
-            bindings[i] = {i,
-                           (i == 0 || i == 6) ? VK_DESCRIPTOR_TYPE_STORAGE_IMAGE
-                                              : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                           1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr};
-        VkDescriptorSetLayoutCreateInfo lc{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
-        lc.bindingCount = 9;
-        lc.pBindings = bindings;
-        if (!d.check(d.vkCreateDescriptorSetLayout(d.native.device, &lc, nullptr, &image_layout),
-                     "SDF compute image layout"))
-            return false;
-        const VkDescriptorSetLayout layouts[] = {bin.descriptor_layout, d.sdf_layout, image_layout};
-        VkPushConstantRange range{VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(parameters)};
-        VkPipelineLayoutCreateInfo pc{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
-        pc.setLayoutCount = 3;
-        pc.pSetLayouts = layouts;
-        pc.pushConstantRangeCount = 1;
-        pc.pPushConstantRanges = &range;
-        if (!d.check(d.vkCreatePipelineLayout(d.native.device, &pc, nullptr, &layout),
-                     "SDF compute layout"))
-            return false;
-        painter = compute_pipeline(d, layout, vulkan_sdf_paint, sizeof(vulkan_sdf_paint));
-        args = compute_pipeline(d, bin.layout, vulkan_paint_args, sizeof(vulkan_paint_args));
-        compare = compute_pipeline(d, layout, vulkan_sdf_compare, sizeof(vulkan_sdf_compare));
-        compact = compute_pipeline(d, layout, vulkan_sdf_compact, sizeof(vulkan_sdf_compact));
-        restore = compute_pipeline(d, layout, vulkan_sdf_restore, sizeof(vulkan_sdf_restore));
-        commit = compute_pipeline(d, layout, vulkan_sdf_commit, sizeof(vulkan_sdf_commit));
-        if (!painter || !args || !compare || !compact || !restore || !commit) return false;
-        VkDescriptorPoolSize sizes[] = {{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 2},
-                                        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 7}};
-        VkDescriptorPoolCreateInfo pool_info{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
-        pool_info.maxSets = 1;
-        pool_info.poolSizeCount = 2;
-        pool_info.pPoolSizes = sizes;
-        if (!d.check(d.vkCreateDescriptorPool(d.native.device, &pool_info, nullptr, &pool),
-                     "SDF compute image pool"))
-            return false;
-        VkDescriptorSetAllocateInfo ai{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
-        ai.descriptorPool = pool;
-        ai.descriptorSetCount = 1;
-        ai.pSetLayouts = &image_layout;
-        if (!d.check(d.vkAllocateDescriptorSets(d.native.device, &ai, &image_set),
-                     "SDF compute image set"))
-            return false;
-        ++d.stats.descriptor_sets;
-        return true;
-    }
-    bool configure_history(device &d)
-    {
-        cache_enabled = false;
-        if (!d.options.tile_cache || !d.options.cache_budget_bytes) return true;
-        const u64 sizes[] = {bin.buffers[0].capacity,
-                             bin.buffers[2].capacity,
-                             bin.buffers[3].capacity,
-                             (d.sdf_shapes.empty() ? 1 : d.sdf_shapes.size()) * sizeof(sdf_shape),
-                             mask.capacity,
-                             (static_cast<u64>(bin.parameters[11]) * 2 + 7) * 4};
-        for (u32 i = 0; i < 6; ++i)
-            if (history[i].capacity < sizes[i])
-            {
-                page fresh;
-                if (!bin.storage(fresh, sizes[i]))
-                {
-                    bin.free_storage(fresh);
-                    return true;
-                }
-                bin.free_storage(history[i]);
-                history[i] = fresh;
-                reset_history = true;
-            }
-        if (!saved)
+        reset_history = published_bank < 0 || published_bank == static_cast<i32>(resources.bank) ||
+                        bin.parameters[0] != width || bin.parameters[1] != height;
+        std::copy(std::begin(history), std::begin(history) + 5, previous);
+        const u32 parameters[] = {width,
+                                  height,
+                                  32,
+                                  256,
+                                  tx,
+                                  ty,
+                                  cx,
+                                  cy,
+                                  static_cast<u32>(count),
+                                  static_cast<u32>(words),
+                                  capacity,
+                                  static_cast<u32>(tiles)};
+        std::copy(std::begin(parameters), std::end(parameters), bin.parameters);
+        bin.recorded = false;
+        bin.serial = 0;
+        bin.arena = &arena;
+        for (u32 i = 0; i < 5; ++i)
         {
-            const u64 used = d.stats.gpu_sdf_cache_image_bytes;
-            if (used >= d.options.cache_budget_bytes) return true;
-            saved = d.make_texture({.width = d.target->width,
-                                    .height = d.target->height,
-                                    .render_target = true,
-                                    .extra_usage = VK_IMAGE_USAGE_STORAGE_BIT,
-                                    .allocation_budget = d.options.cache_budget_bytes - used});
-            if (!saved) return d.result == VK_SUCCESS;
-            d.stats.gpu_sdf_cache_image_bytes += saved->allocation;
-            reset_history = true;
+            bin.buffers[i] = {};
+            if (!bin.storage(bin.buffers[i], sizes[i])) return false;
         }
-        cache_enabled = true;
+        mask = state = shape_data = {};
+        if (!bin.storage(mask, ((pixels + 31) / 32) * 4)) return false;
+        if (!bin.storage(state, tiles * 16) || !bin.storage(shape_data, extra[2])) return false;
+        if (count) std::memcpy(bin.buffers[0].mapped, d.sdf_tape.commands.data(), sizes[0]);
+        bin.buffers[0].used = sizes[0];
+        if (d.sdf_shapes.empty())
+            std::memset(shape_data.mapped, 0, sizeof(sdf_shape));
+        else
+            std::memcpy(shape_data.mapped, d.sdf_shapes.data(), extra[2]);
+        shape_data.used = extra[2];
+        if (!d.flush_page(bin.buffers[0]) || !d.flush_page(shape_data)) return false;
+        VkDescriptorBufferInfo infos[5]{};
+        VkWriteDescriptorSet writes[5]{};
+        for (u32 i = 0; i < 5; ++i)
+        {
+            infos[i] = {bin.buffers[i].buffer, bin.buffers[i].offset, bin.buffers[i].capacity};
+            writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writes[i].dstSet = bin.descriptor;
+            writes[i].dstBinding = i;
+            writes[i].descriptorCount = 1;
+            writes[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            writes[i].pBufferInfo = &infos[i];
+        }
+        d.vkUpdateDescriptorSets(d.native.device, 5, writes, 0, nullptr);
+        cache_enabled = saved && d.options.tile_cache &&
+                        (!d.current_surface || !d.current_surface->sdf_preparation_pending) &&
+                        saved->width >= d.target->width && saved->height >= d.target->height;
+        history[0] = bin.buffers[0];
+        history[1] = bin.buffers[2];
+        history[2] = bin.buffers[3];
+        history[3] = shape_data;
+        history[4] = mask;
+        if (reset_history) std::copy(std::begin(history), std::begin(history) + 5, previous);
+        published_bank = static_cast<i32>(resources.bank);
         return true;
     }
 };
 bool device::initialize_sdf_compute()
 {
+    if (paint_detail::sdf_painter(options.painter))
+    {
+        sdf_shapes.reserve(65536);
+        sdf_spans.reserve(65536);
+        slug_data.reserve(1024 * 1024);
+        if (!prepare_sdf_descriptors(utility)) return false;
+        if (options.vector_text)
+        {
+            const u64 bytes = std::min<u64>(512 * 1024, options.upload_budget_bytes / 8);
+            if (bytes >= 4096)
+            {
+                if (!allocate_buffer(slug_storage, bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT))
+                    return false;
+                // Append-only coherent writes cannot overlap an older GPU read.
+                // Noncoherent heaps retain the per-submission upload path.
+                if (!slug_storage.coherent)
+                    free_page(slug_storage);
+                else if (!allocate_device_buffer(slug_storage))
+                    return false;
+            }
+        }
+    }
     if (options.painter != vulkan_painter_mode::COMPUTE_SDF) return true;
     VkFormatProperties format{};
     vkGetPhysicalDeviceFormatProperties(native.physical_device, VK_FORMAT_R8G8B8A8_UNORM, &format);
@@ -160,16 +164,72 @@ bool device::initialize_sdf_compute()
     sdf_blend = new rgba8_blend_lut();
     const bool initialized = sdf_blend->initialize(*this);
     stats.gpu_sdf_calibration_ms = sdf_blend->preparation_ms;
-    return initialized;
+    if (!initialized) return false;
+    VkDescriptorSetLayoutBinding bindings[9]{};
+    for (u32 i = 0; i < 9; ++i)
+        bindings[i] = {i,
+                       (i == 0 || i == 6) ? VK_DESCRIPTOR_TYPE_STORAGE_IMAGE
+                                          : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                       1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr};
+    VkDescriptorSetLayoutCreateInfo lc{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
+    lc.bindingCount = 9;
+    lc.pBindings = bindings;
+    if (!check(vkCreateDescriptorSetLayout(native.device, &lc, nullptr, &sdf_image_layout),
+               "SDF compute image layout"))
+        return false;
+    const VkDescriptorSetLayout layouts[] = {bin_descriptor_layout, sdf_layout, sdf_image_layout};
+    VkPushConstantRange range{VK_SHADER_STAGE_COMPUTE_BIT, 0, 80};
+    VkPipelineLayoutCreateInfo pc{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
+    pc.setLayoutCount = 3;
+    pc.pSetLayouts = layouts;
+    pc.pushConstantRangeCount = 1;
+    pc.pPushConstantRanges = &range;
+    if (!check(vkCreatePipelineLayout(native.device, &pc, nullptr, &sdf_compute_layout),
+               "SDF compute layout"))
+        return false;
+    const u32 *sources[] = {vulkan_sdf_paint, vulkan_paint_args};
+    const usize sizes[] = {sizeof(vulkan_sdf_paint), sizeof(vulkan_paint_args)};
+    for (u32 i = 0; i < 2; ++i)
+    {
+        sdf_pipelines[i] = compute_pipeline(
+            *this, i == 1 ? bin_pipeline_layout : sdf_compute_layout, sources[i], sizes[i]);
+        if (!sdf_pipelines[i]) return false;
+    }
+    return !options.tile_cache || options.adaptive_compute || initialize_sdf_cache_kernels();
+}
+bool device::initialize_sdf_cache_kernels()
+{
+    const u32 *sources[] = {vulkan_sdf_compare, vulkan_sdf_compact, vulkan_sdf_restore,
+                            vulkan_sdf_commit};
+    const usize sizes[] = {sizeof(vulkan_sdf_compare), sizeof(vulkan_sdf_compact),
+                           sizeof(vulkan_sdf_restore), sizeof(vulkan_sdf_commit)};
+    for (u32 i = 0; i < 4; ++i)
+    {
+        if (sdf_pipelines[i + 2]) continue;
+        sdf_pipelines[i + 2] = compute_pipeline(*this, sdf_compute_layout, sources[i], sizes[i]);
+        if (!sdf_pipelines[i + 2]) return false;
+    }
+    return true;
 }
 void device::release_sdf_compute()
 {
+    free_page(slug_storage);
     delete sdf_blend;
     sdf_blend = nullptr;
+    for (auto pipeline : sdf_pipelines)
+        if (pipeline) vkDestroyPipeline(native.device, pipeline, nullptr);
+    for (auto pipeline : bin_pipelines)
+        if (pipeline) vkDestroyPipeline(native.device, pipeline, nullptr);
+    if (sdf_compute_layout) vkDestroyPipelineLayout(native.device, sdf_compute_layout, nullptr);
+    if (bin_pipeline_layout) vkDestroyPipelineLayout(native.device, bin_pipeline_layout, nullptr);
+    if (sdf_image_layout) vkDestroyDescriptorSetLayout(native.device, sdf_image_layout, nullptr);
+    if (bin_descriptor_layout)
+        vkDestroyDescriptorSetLayout(native.device, bin_descriptor_layout, nullptr);
 }
 void device::destroy_sdf_jobs(frame_slot &slot)
 {
-    for (auto *job : slot.sdf_jobs) delete job;
+    delete slot.sdf_resources;
+    slot.sdf_resources = nullptr;
     slot.sdf_jobs.clear();
 }
 sdf_gpu_job *device::prepare_sdf_compute()
@@ -215,34 +275,49 @@ sdf_gpu_job *device::prepare_sdf_compute()
         if (capacity > 0xffffffffu || capacity > options.gpu_command_budget_bytes / 4)
             return nullptr;
     }
-    const usize index = frame->sdf_job_cursor++;
-    if (index == frame->sdf_jobs.size()) frame->sdf_jobs.push_back(nullptr);
-    auto *&job = frame->sdf_jobs[index];
-    if (job && (job->bin.parameters[0] != static_cast<u32>(target->width) ||
-                job->bin.parameters[1] != static_cast<u32>(target->height)))
+    auto *resources = frame->sdf_resources;
+    if (!resources && options.adaptive_compute && current_surface)
     {
-        delete job;
-        job = nullptr;
-    }
-    if (!job)
-    {
-        job = new sdf_gpu_job();
-        if (!job->initialize(*this, static_cast<u32>(capacity)))
+        if (!current_surface->sdf_compute_requested)
         {
-            delete job;
-            job = nullptr;
-            return nullptr;
+            current_surface->sdf_compute_requested = true;
+            current_surface->sdf_preparation_pending = true;
         }
-        ++stats.sdf_job_creations;
-    }
-    else if (!job->bin.prepare_again(sdf_tape, static_cast<u32>(capacity)))
+        ++stats.gpu_sdf_bypasses;
         return nullptr;
-    if (!job->configure_history(*this)) return nullptr;
+    }
+    const usize index = frame->sdf_job_cursor++;
+    if (!resources || index >= resources->jobs.size())
+    {
+        ++stats.gpu_sdf_capacity_bypasses;
+        return nullptr;
+    }
+    if (resources->pending)
+    {
+        resources->peak_required_bytes =
+            std::max(resources->peak_required_bytes, resources->required_bytes);
+        resources->required_bytes = 0;
+        if (resources->banks[1].buffer) resources->bank ^= 1;
+        resources->banks[resources->bank].used = 0;
+        resources->pending = false;
+        frame->sdf_jobs.clear();
+    }
+    auto *job = resources->jobs[index];
+    if (!job->prepare(*this, *resources, static_cast<u32>(capacity)))
+    {
+        ++stats.gpu_sdf_capacity_bypasses;
+        return nullptr;
+    }
+    frame->sdf_jobs.push_back(job); // capacity is reserved by slot preparation
     return job;
 }
 VkDescriptorBufferInfo device::sdf_route(sdf_gpu_job *job)
 {
-    return {job->mask.buffer, 0, job->mask.capacity};
+    return {job->mask.buffer, job->mask.offset, job->mask.capacity};
+}
+VkDescriptorBufferInfo device::sdf_shape_data(sdf_gpu_job *job)
+{
+    return {job->shape_data.buffer, job->shape_data.offset, job->shape_data.capacity};
 }
 VkDescriptorBufferInfo device::sdf_lut()
 {
@@ -260,9 +335,9 @@ bool device::execute_sdf_compute(sdf_gpu_job *job, VkDescriptorSet shapes,
         bin.barrier(VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
                     VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT,
                     VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT);
-        vkCmdFillBuffer(frame->command, bin.buffers[4].buffer, 12, 4, 1);
+        vkCmdFillBuffer(frame->command, bin.buffers[4].buffer, bin.buffers[4].offset + 12, 4, 1);
     }
-    vkCmdFillBuffer(frame->command, job->mask.buffer, 0, VK_WHOLE_SIZE, 0);
+    vkCmdFillBuffer(frame->command, job->mask.buffer, job->mask.offset, job->mask.capacity, 0);
     bin.barrier(VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
                 VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
                 VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT);
@@ -289,9 +364,10 @@ bool device::execute_sdf_compute(sdf_gpu_job *job, VkDescriptorSet shapes,
     images[1].imageView = job->cache_enabled ? job->saved->view : target->view;
     images[1].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
     VkDescriptorBufferInfo buffers[7]{};
-    for (u32 i = 0; i < 5; ++i) buffers[i] = {job->history[i].buffer, 0, job->history[i].capacity};
-    buffers[5] = {job->state.buffer, 0, job->state.capacity};
-    buffers[6] = {job->history[5].buffer, 0, job->history[5].capacity};
+    for (u32 i = 0; i < 5; ++i)
+        buffers[i] = {job->previous[i].buffer, job->previous[i].offset, job->previous[i].capacity};
+    buffers[5] = {job->state.buffer, job->state.offset, job->state.capacity};
+    buffers[6] = {job->history[5].buffer, job->history[5].offset, job->history[5].capacity};
     VkWriteDescriptorSet writes[9]{};
     u32 image_index = 0, buffer_index = 0;
     for (u32 i = 0; i < 9; ++i)
@@ -323,7 +399,8 @@ bool device::execute_sdf_compute(sdf_gpu_job *job, VkDescriptorSet shapes,
     {
         if (job->reset_history)
         {
-            vkCmdFillBuffer(frame->command, job->history[5].buffer, 0, VK_WHOLE_SIZE, 0);
+            vkCmdFillBuffer(frame->command, job->history[5].buffer, job->history[5].offset,
+                            job->history[5].capacity, 0);
             bin.barrier(VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
                         VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
                         VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT);
@@ -363,34 +440,19 @@ bool device::execute_sdf_compute(sdf_gpu_job *job, VkDescriptorSet shapes,
                            sizeof(job->parameters), job->parameters);
     }
     vkCmdBindPipeline(frame->command, VK_PIPELINE_BIND_POINT_COMPUTE, job->painter);
-    vkCmdDispatchIndirect(frame->command, bin.buffers[4].buffer, 0);
+    vkCmdDispatchIndirect(frame->command, bin.buffers[4].buffer, bin.buffers[4].offset);
     if (job->cache_enabled)
     {
         bin.barrier(VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
                     VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT,
                     VK_PIPELINE_STAGE_2_TRANSFER_BIT,
                     VK_ACCESS_2_TRANSFER_READ_BIT | VK_ACCESS_2_TRANSFER_WRITE_BIT);
-        const VkBuffer src[] = {bin.buffers[0].buffer, bin.buffers[2].buffer, bin.buffers[3].buffer,
-                                shape_data.buffer, job->mask.buffer};
-        const VkDeviceSize sizes[] = {bin.buffers[0].capacity, bin.buffers[2].capacity,
-                                      bin.buffers[3].capacity, shape_data.range,
-                                      job->mask.capacity};
-        for (u32 i = 0; i < 5; ++i)
-        {
-            const VkBufferCopy copy{i == 3 ? shape_data.offset : 0, 0, sizes[i]};
-            vkCmdCopyBuffer(frame->command, src[i], job->history[i].buffer, 1, &copy);
-        }
-        const VkBufferCopy hash_copy{static_cast<VkDeviceSize>(tiles) * 4, 4,
+        // Current commands/work/list/shape/route stay immutable in this slot's
+        // arena bank. The next use writes the other bank, so no copies are needed.
+        const VkBufferCopy hash_copy{job->state.offset + static_cast<VkDeviceSize>(tiles) * 4,
+                                     job->history[5].offset + 4,
                                      static_cast<VkDeviceSize>(tiles) * 8};
         vkCmdCopyBuffer(frame->command, job->state.buffer, job->history[5].buffer, 1, &hash_copy);
-        transition(target, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-        transition(job->saved, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        VkImageCopy copy{};
-        copy.srcSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
-        copy.dstSubresource = copy.srcSubresource;
-        copy.extent = {static_cast<u32>(target->width), static_cast<u32>(target->height), 1};
-        vkCmdCopyImage(frame->command, target->image, target->layout, job->saved->image,
-                       job->saved->layout, 1, &copy);
         job->saved->last_use = next_serial;
         bin.barrier(VK_PIPELINE_STAGE_2_TRANSFER_BIT | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
                     VK_ACCESS_2_TRANSFER_WRITE_BIT | VK_ACCESS_2_SHADER_WRITE_BIT,

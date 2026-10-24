@@ -28,6 +28,16 @@ GPU outlines are encoded once per font/glyph, then cached separately from
 size-specific layout. Size and DPI scale the same outline instead of requiring
 a new coverage bitmap for every size/subpixel bin.
 
+Encoded outlines are additionally resident in one append-only device-local
+buffer shared by frame slots. Coherent host staging transfers only newly
+encountered glyphs before their next consuming batch. Repeated text no longer
+copies every previously encoded glyph at each batch. Each of the device and
+staging buffers reserves at most 512 KiB (and at most one eighth of the upload
+budget); larger collections and noncoherent host memory use the existing
+per-submission copy path. CPU shaping/layout caches remain independent. This
+changes transfer/lifetime policy, not the outline encoding, coverage shader,
+font metrics, DPI or gamma.
+
 `src/shaders/vulkan/harfbuzz_slug.glsl` is the pinned upstream
 `src/hb-gpu-fragment.glsl`, with its complete copyright and permission notice.
 The Vulkan adapter fetches packed RGBA16I texels from a storage buffer and

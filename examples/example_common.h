@@ -302,6 +302,16 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
         }
         else if (std::strcmp(argv[i], "--vector-text") == 0)
             app.boot.vulkan.vector_text = true;
+        else if (std::strcmp(argv[i], "--vulkan-blur") == 0 && i + 1 < argc)
+        {
+            const char *mode = argv[++i];
+            if (std::strcmp(mode, "kawase") == 0)
+                app.boot.vulkan.blur = vulkan_blur_mode::KAWASE;
+            else if (std::strcmp(mode, "legacy") == 0)
+                app.boot.vulkan.blur = vulkan_blur_mode::LEGACY;
+            else
+                return false;
+        }
 #endif
     }
 
@@ -318,9 +328,9 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
             "  --no-script           selftest without the scripted input (screenshots)\n",
             title);
 #if defined(PUFFERUI_ENABLE_VULKAN)
-        std::printf(
-            "  --vulkan-painter reference|sdf|compute|adaptive  select the native painter\n"
-            "  --vector-text         HarfBuzz shaping and Slug GPU text (optional build)\n");
+        std::printf("  --vulkan-painter reference|sdf|compute|adaptive  select the native painter\n"
+                    "  --vector-text         HarfBuzz shaping and Slug GPU text (optional build)\n"
+                    "  --vulkan-blur legacy|kawase  select native blur filtering\n");
 #endif
         return false;
     }

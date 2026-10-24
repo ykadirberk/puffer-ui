@@ -1560,6 +1560,20 @@ and [font contracts and limits](docs/harfbuzz.md).
 
 Full source: `examples/atomic/vulkan_painter.cpp`.
 
+### Vulkan Kawase blur
+
+![Vulkan dual-filter Kawase blur](docs/img/readme/vulkan-blur.png)
+
+Run: `pui_ex_vulkan_blur` (configure with `-DPUFFERUI_WITH_VULKAN=ON`).
+
+This atomic selects the optional native dual-filter Kawase implementation. The
+showcase accepts `--vulkan-blur kawase` with any Vulkan painter; `--vulkan-blur legacy`
+selects the unchanged default filter. Each surface prepares a reusable image
+pyramid and descriptor sets before drawing. The new filter has its own appearance;
+it does not replace the legacy golden images. See [the blur contract](docs/vulkan.md#kawase-blur).
+
+Full source: `examples/atomic/vulkan_blur.cpp`.
+
 ## Examples index
 
 | Target | Capability |
@@ -1613,6 +1627,7 @@ Full source: `examples/atomic/vulkan_painter.cpp`.
 | `pui_ex_renderer` | `examples/atomic/renderer.cpp` | a CPU `render_device` writing a PPM |
 | `pui_ex_vulkan` | `examples/atomic/vulkan.cpp` | optional native Vulkan renderer, SDL windows, application-owned VkImage |
 | `pui_ex_vulkan_painter` | `examples/atomic/vulkan_painter.cpp` | analytic rounded shapes, GPU tile painter, optional HarfBuzz / Slug text |
+| `pui_ex_vulkan_blur` | `examples/atomic/vulkan_blur.cpp` | optional native dual-filter Kawase blur |
 | `pui_showcase_vulkan` | `examples/pui_showcase.cpp` | the existing motion showcase on the optional native Vulkan backend |
 
 Every example supports:

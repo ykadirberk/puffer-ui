@@ -98,6 +98,15 @@
         "vulkan1.3"
       ]
     },
+    "kawase": {
+      "source_sha256": "85e82e0b00760dac6ff8b703da32e5b9862d7f4f81fd1a61ab63434ceab0efa9",
+      "spirv_sha256": "8f753d6c8e1c8eb038fcc6f503b5b51611da8f0ccd00e17d87082b361a5373fb",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
     "paint_args": {
       "source_sha256": "9629ddfa3e10141aed3f81ccc3b1197623ec7dee0e2622734c5bd97de89e9536",
       "spirv_sha256": "e14b926d7ac32354e0eaa0e82fcb6879e6ee3f0d07649726799a70187b56b497",
@@ -144,8 +153,8 @@
       ]
     },
     "sdf_paint": {
-      "source_sha256": "1fe0ea872085599664a8c7450b1726d339af38bc5f305fe389f706c9bf16b40c",
-      "spirv_sha256": "47ae44ad7a15fbccfeae519275932737edf339bf01386970594e95c172179aeb",
+      "source_sha256": "b492c3f4dd28818b0644b6ac6273378cf5f8aa7cc46a0c2c63cbcad618a95909",
+      "spirv_sha256": "bc430830920ce079ec0f764f15f48751f63b3a0b99286ff95018700055168a12",
       "command_flags": [
         "-V",
         "--target-env",
@@ -153,8 +162,8 @@
       ]
     },
     "sdf_restore": {
-      "source_sha256": "35cb0aff4a88bbbff6225d305a694bb252bd15e9bafe1c3ace6ecbb3a8796183",
-      "spirv_sha256": "c87f3a382e5f0ad3fc8195f24c1f7b2222f30eed88f5baebe064cfa11ce5f503",
+      "source_sha256": "068306c0f03259403f382d4fada05f189b4878649ba804a489514586632f8cbc",
+      "spirv_sha256": "cfceb1824827e2c1183a083ce05380f1bccf009f7204aa897404ac321c41d226",
       "command_flags": [
         "-V",
         "--target-env",

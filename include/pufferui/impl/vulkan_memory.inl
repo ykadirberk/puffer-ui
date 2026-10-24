@@ -52,11 +52,7 @@ bool device::begin(frame_slot &slot)
     }
     if (!wait(slot.serial)) return false;
     harvest_sdf_stats();
-    for (auto pool : slot.sdf_pools)
-        if (!check(vkResetDescriptorPool(native.device, pool, 0), "vkResetDescriptorPool(SDF)"))
-            return false;
-    stats.descriptor_sets -= slot.sdf_sets;
-    slot.sdf_sets = 0;
+    if (!begin_sdf_slot(slot)) return false;
     slot.sdf_job_cursor = 0;
     collect();
     if (!slot.pool)
@@ -200,6 +196,7 @@ bool device::allocate_buffer(page &p, VkDeviceSize bytes, VkBufferUsageFlags usa
         free_page(p);
         return false;
     }
+    if (paint_depth && !initializing) ++stats.draw_memory_allocations;
     p.allocation = req.size;
     stats.upload_allocated_bytes += p.allocation;
     if (stats.upload_allocated_bytes > stats.peak_upload_allocated_bytes)
@@ -268,7 +265,7 @@ bool device::allocate_device_buffer(page &p)
     VkBufferCreateInfo bc{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
     bc.size = p.capacity;
     bc.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
-               VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+               VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
     if (!check(vkCreateBuffer(native.device, &bc, nullptr, &p.device_buffer),
                "vkCreateBuffer(device geometry)"))
         return false;
@@ -283,6 +280,7 @@ bool device::allocate_device_buffer(page &p)
     if (!check(vkAllocateMemory(native.device, &ac, nullptr, &p.device_memory),
                "vkAllocateMemory(device geometry)"))
         return false;
+    if (paint_depth && !initializing) ++stats.draw_memory_allocations;
     p.device_allocation = req.size;
     stats.upload_allocated_bytes += req.size;
     stats.device_upload_allocated_bytes += req.size;
@@ -334,6 +332,11 @@ page *device::upload(VkDeviceSize bytes, VkDeviceSize &offset, bool geometry)
 }
 void device::destroy_slot(frame_slot &slot)
 {
+    if (slot.kawase_pool)
+    {
+        stats.descriptor_sets -= slot.kawase_sets.size();
+        vkDestroyDescriptorPool(native.device, slot.kawase_pool, nullptr);
+    }
     destroy_sdf_jobs(slot);
     for (auto pool : slot.sdf_pools) vkDestroyDescriptorPool(native.device, pool, nullptr);
     stats.descriptor_sets -= slot.sdf_sets;

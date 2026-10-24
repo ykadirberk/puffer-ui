@@ -88,6 +88,12 @@ struct vulkan_stats
     u64 gpu_sdf_bypasses = 0;
     f64 gpu_sdf_calibration_ms = 0;
     f64 sdf_prepare_ms = 0, sdf_record_ms = 0; // CPU intervals, not GPU timestamps
+    u64 gpu_metadata_allocations = 0, gpu_compute_pipeline_creations = 0;
+    u64 gpu_sdf_cache_image_attempts = 0, gpu_sdf_snapshot_copy_bytes = 0;
+    u64 draw_memory_allocations = 0, draw_resource_creations = 0;
+    u64 gpu_sdf_capacity_bypasses = 0;
+    u64 glyph_upload_bytes = 0, glyph_resident_batches = 0;
+    u64 kawase_passes = 0, kawase_pixels = 0;
     u64 sdf_job_creations = 0;
     u64 upload_bytes = 0, upload_allocated_bytes = 0, budget_waits = 0;
     u64 cache_hits = 0, cache_misses = 0, cache_fallbacks = 0;

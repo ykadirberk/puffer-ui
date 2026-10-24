@@ -107,6 +107,17 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   `pui_harfbuzz_interaction_tests` covers 180 vector-text interaction frames.
   `pui_vulkan_painter_bench` and `tools/compare_vulkan_compute.py` retain separate
   readback-free 180-frame timings; do not overlap measurements with builds/tests.
+- Prepared Vulkan resources live in `impl/vulkan_preparation.inl`: shared device
+  kernels, bounded per-slot arenas/descriptors and an append-only resident glyph
+  buffer. `pui_vulkan_preparation_tests` includes actual 5000-item direct/staged/
+  adaptive allocation checks, history/readback lifetime, runtime cache transitions,
+  budget rejection, copy/telemetry oracles and exhaustion fallback regressions.
+  `tools/compare_vulkan_preparation.py` freezes binaries and retains every frame.
+- `vulkan_blur_mode::KAWASE` is opt-in and native-only; LEGACY remains the default.
+  Implementation is `impl/vulkan_kawase.inl` + `src/shaders/vulkan/kawase.comp`.
+  `pui_ex_vulkan_blur` and `--vulkan-blur kawase` exercise it. Separate Kawase
+  interaction/5000-Spiral tests cover direct/staged cache/raster equality and a
+  new golden domain; never replace existing legacy goldens with Kawase output.
 - `pui_ex_vulkan` is the external VkImage atomic; `pui_showcase_vulkan` uses the
   actual showcase helpers. Both support the normal example selftest interface.
 - Register a native test once with `pui_add_vulkan_test` in `CMakeLists.txt`;

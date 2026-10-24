@@ -692,74 +692,91 @@ void ui::blur(rect r, f32 blur_radius, const corner_radii &radii_in, f32 alpha)
     if (ry + rh > oh) rh = oh - ry;
     if (rw <= 2 || rh <= 2) return;
 
-    blur_store *bs = detail::ensure_blur(c, ow, oh, blur_radius);
-    if (!bs) return;
-
     const f32 fw = static_cast<f32>(rw), fh = static_cast<f32>(rh);
     const rect src{static_cast<f32>(rx), static_cast<f32>(ry), fw, fh};
-    const rect half_dst{0.0f, 0.0f, fw * 0.5f, fh * 0.5f};
-    const rect quarter_dst{0.0f, 0.0f, fw * 0.25f, fh * 0.25f};
-    const rect eighth_dst{0.0f, 0.0f, fw * 0.125f, fh * 0.125f};
-    const rect sixteenth_dst{0.0f, 0.0f, fw * 0.0625f, fh * 0.0625f};
-
-    // A scaled blit is the only sampling primitive a backend must provide, so the
-    // requested radius is approximated by how deep the pyramid goes (each level
-    // roughly doubles the smoothing) plus extra down/up round trips at that level
-    // for finer steps. The response is monotonic but stepwise, not linear.
-    const i32 level = (blur_radius > 20.0f && bs->sixteenth) ? 4
-                      : (blur_radius > 4.0f && bs->eighth)   ? 3
-                                                             : 2;
-    i32 extra = 0;
-    if (level == 2)
-        extra = static_cast<i32>(blur_radius - 2.0f);
-    else if (level == 3)
-        extra = static_cast<i32>((blur_radius - 6.0f) / 4.0f);
-    else
-        extra = static_cast<i32>((blur_radius - 20.0f) / 8.0f);
-    if (extra < 0) extra = 0;
-    if (extra > 4) extra = 4;
-
-    c->device->blit(scene, &src, bs->half, &half_dst);
-    c->device->blit(bs->half, &half_dst, bs->quarter, &quarter_dst);
-    if (level >= 3) c->device->blit(bs->quarter, &quarter_dst, bs->eighth, &eighth_dst);
-    if (level >= 4) c->device->blit(bs->eighth, &eighth_dst, bs->sixteenth, &sixteenth_dst);
-
-    for (i32 i = 0; i < extra; ++i)
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    paint_detail::blur_result native_blur;
+    const bool custom_blur =
+        paint_detail::vulkan_blur(c->device, scene, src, blur_radius, native_blur);
+#else
+    struct
     {
-        if (level >= 4)
-        {
-            c->device->blit(bs->sixteenth, &sixteenth_dst, bs->eighth, &eighth_dst);
-            c->device->blit(bs->eighth, &eighth_dst, bs->sixteenth, &sixteenth_dst);
-        }
-        else if (level >= 3)
-        {
-            c->device->blit(bs->eighth, &eighth_dst, bs->quarter, &quarter_dst);
-            c->device->blit(bs->quarter, &quarter_dst, bs->eighth, &eighth_dst);
-        }
-        else
-        {
-            c->device->blit(bs->quarter, &quarter_dst, bs->half, &half_dst);
-            c->device->blit(bs->half, &half_dst, bs->quarter, &quarter_dst);
-        }
-    }
+        texture_handle image = nullptr;
+        f32 scale_u = 0, scale_v = 0;
+    } native_blur;
+    const bool custom_blur = false;
+#endif
+    blur_store *bs = nullptr;
+    if (!custom_blur)
+    {
+        bs = detail::ensure_blur(c, ow, oh, blur_radius);
+        if (!bs) return;
+        const rect half_dst{0.0f, 0.0f, fw * 0.5f, fh * 0.5f};
+        const rect quarter_dst{0.0f, 0.0f, fw * 0.25f, fh * 0.25f};
+        const rect eighth_dst{0.0f, 0.0f, fw * 0.125f, fh * 0.125f};
+        const rect sixteenth_dst{0.0f, 0.0f, fw * 0.0625f, fh * 0.0625f};
 
-    // Upsample back to the quarter, which the composite samples.
-    if (level >= 4) c->device->blit(bs->sixteenth, &sixteenth_dst, bs->eighth, &eighth_dst);
-    if (level >= 3) c->device->blit(bs->eighth, &eighth_dst, bs->quarter, &quarter_dst);
+        // A scaled blit is the only sampling primitive a backend must provide, so the
+        // requested radius is approximated by how deep the pyramid goes (each level
+        // roughly doubles the smoothing) plus extra down/up round trips at that level
+        // for finer steps. The response is monotonic but stepwise, not linear.
+        const i32 level = (blur_radius > 20.0f && bs->sixteenth) ? 4
+                          : (blur_radius > 4.0f && bs->eighth)   ? 3
+                                                                 : 2;
+        i32 extra = 0;
+        if (level == 2)
+            extra = static_cast<i32>(blur_radius - 2.0f);
+        else if (level == 3)
+            extra = static_cast<i32>((blur_radius - 6.0f) / 4.0f);
+        else
+            extra = static_cast<i32>((blur_radius - 20.0f) / 8.0f);
+        if (extra < 0) extra = 0;
+        if (extra > 4) extra = 4;
+
+        c->device->blit(scene, &src, bs->half, &half_dst);
+        c->device->blit(bs->half, &half_dst, bs->quarter, &quarter_dst);
+        if (level >= 3) c->device->blit(bs->quarter, &quarter_dst, bs->eighth, &eighth_dst);
+        if (level >= 4) c->device->blit(bs->eighth, &eighth_dst, bs->sixteenth, &sixteenth_dst);
+
+        for (i32 i = 0; i < extra; ++i)
+        {
+            if (level >= 4)
+            {
+                c->device->blit(bs->sixteenth, &sixteenth_dst, bs->eighth, &eighth_dst);
+                c->device->blit(bs->eighth, &eighth_dst, bs->sixteenth, &sixteenth_dst);
+            }
+            else if (level >= 3)
+            {
+                c->device->blit(bs->eighth, &eighth_dst, bs->quarter, &quarter_dst);
+                c->device->blit(bs->quarter, &quarter_dst, bs->eighth, &eighth_dst);
+            }
+            else
+            {
+                c->device->blit(bs->quarter, &quarter_dst, bs->half, &half_dst);
+                c->device->blit(bs->half, &half_dst, bs->quarter, &quarter_dst);
+            }
+        }
+
+        // Upsample back to the quarter, which the composite samples.
+        if (level >= 4) c->device->blit(bs->sixteenth, &sixteenth_dst, bs->eighth, &eighth_dst);
+        if (level >= 3) c->device->blit(bs->eighth, &eighth_dst, bs->quarter, &quarter_dst);
+    }
 
     // composite the blurred quarter back over the scene
     c->device->set_target(scene);
     // The composite honours the active clip like every other draw: a blur that
     // straddles a clip edge must not bleed past it.
     const rect *clip = c->clip_depth > 0 ? &c->clip_stack[c->clip_depth - 1] : nullptr;
-    detail::dl_prepare(c, bs->quarter, clip);
+    detail::dl_prepare(c, custom_blur ? native_blur.image : bs->quarter, clip);
     const i32 qw = (ow + 3) / 4, qh = (oh + 3) / 4;
     // The quarter texture's origin is the *source* rect, which sits `margin`
     // pixels up/left of the user rect (sampling must reach outside for a correct
     // blur). UVs therefore come from each vertex's scene position - using 0..1/pts
     // would shift the blurred image by `margin` and pull outside content in.
-    const f32 du = density * 0.25f / static_cast<f32>(qw);
-    const f32 dv = density * 0.25f / static_cast<f32>(qh);
+    const f32 du =
+        custom_blur ? density * native_blur.scale_u : density * 0.25f / static_cast<f32>(qw);
+    const f32 dv =
+        custom_blur ? density * native_blur.scale_v : density * 0.25f / static_cast<f32>(qh);
     const f32 ox = static_cast<f32>(rx) / density, oy = static_cast<f32>(ry) / density;
     const color col{255, 255, 255, static_cast<u8>(clampf(alpha * 255.0f, 0.0f, 255.0f))};
 

@@ -1,0 +1,461 @@
+{
+  "summary": {
+    "baseline": {
+      "mean_ms": 2.366638611111111,
+      "max_ms": 33.2527,
+      "first_ms": 33.2527,
+      "gpu_ms": 87.953
+    },
+    "host": {
+      "mean_ms": 2.2213044444444447,
+      "max_ms": 32.800200000000004,
+      "first_ms": 32.800200000000004,
+      "gpu_ms": 83.8811
+    },
+    "device": {
+      "mean_ms": 2.256536666666667,
+      "max_ms": 31.941499999999998,
+      "first_ms": 31.941499999999998,
+      "gpu_ms": 84.7302
+    }
+  },
+  "runs": [
+    {
+      "side": "baseline",
+      "repeat": 0,
+      "mean_ms": 2.32922,
+      "max_ms": 33.137,
+      "first_ms": 33.137,
+      "gpu_ms": 97.0094
+    },
+    {
+      "side": "host",
+      "repeat": 0,
+      "mean_ms": 2.1967327777777776,
+      "max_ms": 32.43,
+      "first_ms": 32.43,
+      "gpu_ms": 96.43788
+    },
+    {
+      "side": "device",
+      "repeat": 0,
+      "mean_ms": 2.6167527777777777,
+      "max_ms": 98.2284,
+      "first_ms": 98.2284,
+      "gpu_ms": 93.0178
+    },
+    {
+      "side": "host",
+      "repeat": 1,
+      "mean_ms": 3.0080766666666667,
+      "max_ms": 40.693,
+      "first_ms": 40.693,
+      "gpu_ms": 104.00431999999999
+    },
+    {
+      "side": "device",
+      "repeat": 1,
+      "mean_ms": 2.9320427777777778,
+      "max_ms": 37.973,
+      "first_ms": 37.973,
+      "gpu_ms": 106.36112
+    },
+    {
+      "side": "baseline",
+      "repeat": 1,
+      "mean_ms": 2.5211461111111113,
+      "max_ms": 37.6923,
+      "first_ms": 37.6923,
+      "gpu_ms": 97.12352
+    },
+    {
+      "side": "device",
+      "repeat": 2,
+      "mean_ms": 2.3468583333333335,
+      "max_ms": 32.4724,
+      "first_ms": 32.4724,
+      "gpu_ms": 86.29772
+    },
+    {
+      "side": "baseline",
+      "repeat": 2,
+      "mean_ms": 2.5214833333333333,
+      "max_ms": 35.186,
+      "first_ms": 35.186,
+      "gpu_ms": 98.08788
+    },
+    {
+      "side": "host",
+      "repeat": 2,
+      "mean_ms": 3.2802355555555556,
+      "max_ms": 87.3597,
+      "first_ms": 87.3597,
+      "gpu_ms": 101.3812
+    },
+    {
+      "side": "device",
+      "repeat": 3,
+      "mean_ms": 3.5350544444444445,
+      "max_ms": 42.6501,
+      "first_ms": 42.6501,
+      "gpu_ms": 98.33772
+    },
+    {
+      "side": "host",
+      "repeat": 3,
+      "mean_ms": 2.363493888888889,
+      "max_ms": 36.7873,
+      "first_ms": 36.7873,
+      "gpu_ms": 86.98272
+    },
+    {
+      "side": "baseline",
+      "repeat": 3,
+      "mean_ms": 2.8378394444444446,
+      "max_ms": 35.2825,
+      "first_ms": 35.2825,
+      "gpu_ms": 91.65444
+    },
+    {
+      "side": "host",
+      "repeat": 4,
+      "mean_ms": 2.2207394444444444,
+      "max_ms": 34.3829,
+      "first_ms": 34.3829,
+      "gpu_ms": 87.02068
+    },
+    {
+      "side": "baseline",
+      "repeat": 4,
+      "mean_ms": 2.3559083333333333,
+      "max_ms": 33.3045,
+      "first_ms": 33.3045,
+      "gpu_ms": 92.769
+    },
+    {
+      "side": "device",
+      "repeat": 4,
+      "mean_ms": 2.223987222222222,
+      "max_ms": 33.1011,
+      "first_ms": 33.1011,
+      "gpu_ms": 88.34928
+    },
+    {
+      "side": "baseline",
+      "repeat": 5,
+      "mean_ms": 2.3816255555555554,
+      "max_ms": 32.1538,
+      "first_ms": 32.1538,
+      "gpu_ms": 86.39244
+    },
+    {
+      "side": "device",
+      "repeat": 5,
+      "mean_ms": 2.2178294444444444,
+      "max_ms": 30.7732,
+      "first_ms": 30.7732,
+      "gpu_ms": 84.8716
+    },
+    {
+      "side": "host",
+      "repeat": 5,
+      "mean_ms": 2.210945,
+      "max_ms": 31.2554,
+      "first_ms": 31.2554,
+      "gpu_ms": 80.9792
+    },
+    {
+      "side": "baseline",
+      "repeat": 6,
+      "mean_ms": 2.370175,
+      "max_ms": 33.9652,
+      "first_ms": 33.9652,
+      "gpu_ms": 84.54352
+    },
+    {
+      "side": "host",
+      "repeat": 6,
+      "mean_ms": 2.2591616666666665,
+      "max_ms": 31.2577,
+      "first_ms": 31.2577,
+      "gpu_ms": 80.38076
+    },
+    {
+      "side": "device",
+      "repeat": 6,
+      "mean_ms": 2.183775,
+      "max_ms": 32.0184,
+      "first_ms": 32.0184,
+      "gpu_ms": 82.10924
+    },
+    {
+      "side": "host",
+      "repeat": 7,
+      "mean_ms": 2.1772216666666666,
+      "max_ms": 30.6096,
+      "first_ms": 30.6096,
+      "gpu_ms": 90.15688
+    },
+    {
+      "side": "device",
+      "repeat": 7,
+      "mean_ms": 2.252231666666667,
+      "max_ms": 33.8792,
+      "first_ms": 33.8792,
+      "gpu_ms": 80.9408
+    },
+    {
+      "side": "baseline",
+      "repeat": 7,
+      "mean_ms": 2.371147777777778,
+      "max_ms": 32.3988,
+      "first_ms": 32.3988,
+      "gpu_ms": 89.11128
+    },
+    {
+      "side": "device",
+      "repeat": 8,
+      "mean_ms": 2.4610044444444443,
+      "max_ms": 31.6243,
+      "first_ms": 31.6243,
+      "gpu_ms": 81.31844
+    },
+    {
+      "side": "baseline",
+      "repeat": 8,
+      "mean_ms": 2.3225455555555556,
+      "max_ms": 33.2009,
+      "first_ms": 33.2009,
+      "gpu_ms": 86.66632
+    },
+    {
+      "side": "host",
+      "repeat": 8,
+      "mean_ms": 2.2190155555555555,
+      "max_ms": 33.716,
+      "first_ms": 33.716,
+      "gpu_ms": 81.5642
+    },
+    {
+      "side": "device",
+      "repeat": 9,
+      "mean_ms": 2.260841666666667,
+      "max_ms": 31.5385,
+      "first_ms": 31.5385,
+      "gpu_ms": 83.55656
+    },
+    {
+      "side": "host",
+      "repeat": 9,
+      "mean_ms": 2.34437,
+      "max_ms": 32.7874,
+      "first_ms": 32.7874,
+      "gpu_ms": 82.05672
+    },
+    {
+      "side": "baseline",
+      "repeat": 9,
+      "mean_ms": 2.3236683333333334,
+      "max_ms": 32.3387,
+      "first_ms": 32.3387,
+      "gpu_ms": 89.66188
+    },
+    {
+      "side": "host",
+      "repeat": 10,
+      "mean_ms": 2.2218694444444447,
+      "max_ms": 31.126,
+      "first_ms": 31.126,
+      "gpu_ms": 81.24704
+    },
+    {
+      "side": "baseline",
+      "repeat": 10,
+      "mean_ms": 2.3655055555555555,
+      "max_ms": 32.0521,
+      "first_ms": 32.0521,
+      "gpu_ms": 87.26652
+    },
+    {
+      "side": "device",
+      "repeat": 10,
+      "mean_ms": 2.3060283333333333,
+      "max_ms": 31.1238,
+      "first_ms": 31.1238,
+      "gpu_ms": 81.2858
+    },
+    {
+      "side": "baseline",
+      "repeat": 11,
+      "mean_ms": 2.342223888888889,
+      "max_ms": 33.5839,
+      "first_ms": 33.5839,
+      "gpu_ms": 85.19448
+    },
+    {
+      "side": "device",
+      "repeat": 11,
+      "mean_ms": 2.181878888888889,
+      "max_ms": 31.3291,
+      "first_ms": 31.3291,
+      "gpu_ms": 85.75748
+    },
+    {
+      "side": "host",
+      "repeat": 11,
+      "mean_ms": 2.2559816666666666,
+      "max_ms": 32.7793,
+      "first_ms": 32.7793,
+      "gpu_ms": 84.30532
+    },
+    {
+      "side": "baseline",
+      "repeat": 12,
+      "mean_ms": 2.3677716666666666,
+      "max_ms": 31.7388,
+      "first_ms": 31.7388,
+      "gpu_ms": 86.06388
+    },
+    {
+      "side": "host",
+      "repeat": 12,
+      "mean_ms": 2.206027777777778,
+      "max_ms": 31.8614,
+      "first_ms": 31.8614,
+      "gpu_ms": 83.66908
+    },
+    {
+      "side": "device",
+      "repeat": 12,
+      "mean_ms": 2.148756111111111,
+      "max_ms": 31.4611,
+      "first_ms": 31.4611,
+      "gpu_ms": 83.21784
+    },
+    {
+      "side": "host",
+      "repeat": 13,
+      "mean_ms": 2.206976111111111,
+      "max_ms": 32.813,
+      "first_ms": 32.813,
+      "gpu_ms": 84.09312
+    },
+    {
+      "side": "device",
+      "repeat": 13,
+      "mean_ms": 2.2730955555555554,
+      "max_ms": 30.8077,
+      "first_ms": 30.8077,
+      "gpu_ms": 84.5888
+    },
+    {
+      "side": "baseline",
+      "repeat": 13,
+      "mean_ms": 2.3487744444444445,
+      "max_ms": 32.0823,
+      "first_ms": 32.0823,
+      "gpu_ms": 90.23892
+    },
+    {
+      "side": "device",
+      "repeat": 14,
+      "mean_ms": 2.1779433333333333,
+      "max_ms": 36.722,
+      "first_ms": 36.722,
+      "gpu_ms": 81.53972
+    },
+    {
+      "side": "baseline",
+      "repeat": 14,
+      "mean_ms": 2.468475,
+      "max_ms": 34.0315,
+      "first_ms": 34.0315,
+      "gpu_ms": 88.05328
+    },
+    {
+      "side": "host",
+      "repeat": 14,
+      "mean_ms": 2.770757777777778,
+      "max_ms": 128.3423,
+      "first_ms": 128.3423,
+      "gpu_ms": 84.10452
+    },
+    {
+      "side": "device",
+      "repeat": 15,
+      "mean_ms": 2.2269216666666667,
+      "max_ms": 32.3271,
+      "first_ms": 32.3271,
+      "gpu_ms": 85.03736
+    },
+    {
+      "side": "host",
+      "repeat": 15,
+      "mean_ms": 2.1918533333333334,
+      "max_ms": 33.5264,
+      "first_ms": 33.5264,
+      "gpu_ms": 80.81496
+    },
+    {
+      "side": "baseline",
+      "repeat": 15,
+      "mean_ms": 2.3272444444444442,
+      "max_ms": 34.311,
+      "first_ms": 34.311,
+      "gpu_ms": 87.85272
+    },
+    {
+      "side": "host",
+      "repeat": 16,
+      "mean_ms": 2.241591111111111,
+      "max_ms": 30.7385,
+      "first_ms": 30.7385,
+      "gpu_ms": 82.33008
+    },
+    {
+      "side": "baseline",
+      "repeat": 16,
+      "mean_ms": 2.356671111111111,
+      "max_ms": 32.2506,
+      "first_ms": 32.2506,
+      "gpu_ms": 87.08864
+    },
+    {
+      "side": "device",
+      "repeat": 16,
+      "mean_ms": 2.207316111111111,
+      "max_ms": 31.8646,
+      "first_ms": 31.8646,
+      "gpu_ms": 84.93012
+    },
+    {
+      "side": "baseline",
+      "repeat": 17,
+      "mean_ms": 2.3972711111111114,
+      "max_ms": 33.7809,
+      "first_ms": 33.7809,
+      "gpu_ms": 86.02932
+    },
+    {
+      "side": "device",
+      "repeat": 17,
+      "mean_ms": 2.3656894444444445,
+      "max_ms": 31.8418,
+      "first_ms": 31.8418,
+      "gpu_ms": 80.96176
+    },
+    {
+      "side": "host",
+      "repeat": 17,
+      "mean_ms": 2.1799105555555554,
+      "max_ms": 32.814,
+      "first_ms": 32.814,
+      "gpu_ms": 80.99808
+    }
+  ],
+  "binaries": {
+    "baseline": "4c29fbcbfd725ab5ceb8eeed1bd8addaa6d2dea7986b66f91b63edcc821c9c2a",
+    "host": "09cb0496ee185001c906cf83203b46dbafc0c759ed18c96924919402d9922533",
+    "device": "cc2c7bec8632fdf5bffca4db00ef61abbbc7d08d368e59e6d1adb26539d44e5c"
+  }
+}

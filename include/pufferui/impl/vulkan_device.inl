@@ -7,6 +7,7 @@ namespace vk_detail
 {
 struct device;
 struct sdf_gpu_job;
+struct sdf_slot_resources;
 struct rgba8_blend_lut;
 struct primitive_recorder : paint_detail::primitive_sink
 {
@@ -76,6 +77,8 @@ struct page
     bool coherent = false;
     bool staged = false;
     VkDeviceSize device_allocation = 0;
+    VkDeviceSize offset = 0; // non-owning metadata arena view; zero for owned pages
+    bool borrowed = false;
 };
 struct image_allocation_opts
 {
@@ -86,11 +89,30 @@ struct image_allocation_opts
     VkImageUsageFlags extra_usage = 0;
     u64 allocation_budget = ~0ull;
 };
+struct sdf_slot_resources
+{
+    device *dev = nullptr;
+    page banks[2], metadata;
+    std::vector<sdf_gpu_job *> jobs;
+    VkDescriptorPool descriptors = VK_NULL_HANDLE;
+    u32 bank = 0, width = 0, height = 0;
+    u64 required_bytes = 0, peak_required_bytes = 0;
+    u64 budget_stamp = 0;
+    bool cache_requested = false;
+    bool pending = true;
+    ~sdf_slot_resources();
+};
 struct frame_slot
 {
+    VkDescriptorPool kawase_pool = VK_NULL_HANDLE;
+    std::vector<VkDescriptorSet> kawase_sets;
+    usize kawase_cursor = 0;
     std::vector<sdf_gpu_job *> sdf_jobs;
     usize sdf_job_cursor = 0;
+    sdf_slot_resources *sdf_resources = nullptr;
     std::vector<VkDescriptorPool> sdf_pools;
+    std::vector<VkDescriptorSet> sdf_descriptors;
+    usize sdf_descriptor_cursor = 0;
     u64 sdf_sets = 0;
     VkCommandPool pool = VK_NULL_HANDLE;
     VkCommandBuffer command = VK_NULL_HANDLE;
@@ -131,9 +153,11 @@ struct surface : render_surface, dispatch
     std::vector<bool> initialized;
     std::vector<frame_slot> slots;
     texture *scene = nullptr;
+    texture *kawase[4]{};
     u32 slot = 0, image_index = 0;
     bool acquired = false, presented = true, dirty = true;
     bool suspended = true;
+    bool sdf_compute_requested = false, sdf_preparation_pending = false;
     bool history_valid = false;
     u32 cache_full_misses = 0, cache_cooldown = 0;
     u64 history_bytes = 0;
@@ -174,8 +198,20 @@ struct device : render_device, dispatch
     std::vector<sdf_shape> sdf_shapes;
     std::vector<sdf_span> sdf_spans;
     std::vector<u8> slug_data;
+    page slug_storage; // append-only staging + device-local outlines, shared by slots
+    VkDeviceSize slug_committed = 0;
     paint_detail::command_tape sdf_tape;
     rgba8_blend_lut *sdf_blend = nullptr;
+    VkDescriptorSetLayout bin_descriptor_layout = VK_NULL_HANDLE;
+    VkDescriptorSetLayout sdf_image_layout = VK_NULL_HANDLE;
+    VkPipelineLayout bin_pipeline_layout = VK_NULL_HANDLE;
+    VkPipelineLayout sdf_compute_layout = VK_NULL_HANDLE;
+    VkPipeline bin_pipelines[4]{}, sdf_pipelines[6]{};
+    VkDescriptorSetLayout kawase_descriptor_layout = VK_NULL_HANDLE;
+    VkPipelineLayout kawase_layout = VK_NULL_HANDLE;
+    VkPipeline kawase_pipeline = VK_NULL_HANDLE;
+    u32 paint_depth = 0;
+    bool initializing = true;
     u32 sdf_cache_faults = 0; // private fault-injection hooks used only by regression tests
     u32 sdf_adaptive_cooldown = 0;
     std::vector<VkDescriptorPool> descriptor_pools;
@@ -242,10 +278,21 @@ struct device : render_device, dispatch
     VkPipeline pipeline(VkFormat format, bool blend, bool sdf = false);
     VkDescriptorSet sdf_descriptor(const VkDescriptorBufferInfo (&buffers)[4]);
     bool initialize_sdf_compute();
+    bool initialize_sdf_cache_kernels();
+    bool initialize_bin_kernels();
+    bool prepare_sdf_surface(surface &s);
+    bool initialize_kawase();
+    bool prepare_kawase(surface &s);
+    bool kawase_blur(texture *, rect, f32, paint_detail::blur_result &);
+    bool begin_sdf_slot(frame_slot &slot);
+    bool prepare_sdf_descriptors(frame_slot &slot);
+    bool upload_slug_data();
+    bool prepare_geometry(const geometry_capacity &capacity) override;
     void release_sdf_compute();
     void destroy_sdf_jobs(frame_slot &slot);
     sdf_gpu_job *prepare_sdf_compute();
     VkDescriptorBufferInfo sdf_route(sdf_gpu_job *job);
+    VkDescriptorBufferInfo sdf_shape_data(sdf_gpu_job *job);
     VkDescriptorBufferInfo sdf_lut();
     bool execute_sdf_compute(sdf_gpu_job *job, VkDescriptorSet shapes,
                              const VkDescriptorBufferInfo &shape_data);
@@ -558,8 +605,11 @@ bool device::initialize(const vulkan_device_opts &opts)
     }
     const u8 pixel[4] = {255, 255, 255, 255};
     white = make_texture(1, 1, false, pixel);
-    return white && pipeline(VK_FORMAT_R8G8B8A8_UNORM, true) &&
-           pipeline(VK_FORMAT_R8G8B8A8_UNORM, false) && initialize_sdf_compute();
+    const bool ready = white && pipeline(VK_FORMAT_R8G8B8A8_UNORM, true) &&
+                       pipeline(VK_FORMAT_R8G8B8A8_UNORM, false) && initialize_sdf_compute() &&
+                       initialize_kawase();
+    initializing = false;
+    return ready;
 }
 device::~device()
 {
@@ -578,6 +628,10 @@ device::~device()
         }
         if (timeline) wait(next_serial - 1);
         release_sdf_compute();
+        if (kawase_pipeline) vkDestroyPipeline(native.device, kawase_pipeline, nullptr);
+        if (kawase_layout) vkDestroyPipelineLayout(native.device, kawase_layout, nullptr);
+        if (kawase_descriptor_layout)
+            vkDestroyDescriptorSetLayout(native.device, kawase_descriptor_layout, nullptr);
         for (surface *s : surfaces)
         {
             s->release_swapchain();
@@ -686,7 +740,13 @@ vulkan_stats vulkan_statistics(render_device *d)
 }
 void vulkan_set_cache(render_device *d, bool enabled)
 {
-    if (auto *v = dynamic_cast<vk_detail::device *>(d)) v->options.tile_cache = enabled;
+    if (auto *v = dynamic_cast<vk_detail::device *>(d))
+    {
+        if (v->options.tile_cache == enabled) return;
+        v->options.tile_cache = enabled;
+        if (v->options.painter == vulkan_painter_mode::COMPUTE_SDF)
+            for (auto *s : v->surfaces) s->sdf_preparation_pending = true;
+    }
 }
 #else
 render_device *create_vulkan_device(const vulkan_device_opts &)

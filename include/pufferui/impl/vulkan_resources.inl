@@ -132,6 +132,7 @@ texture *device::make_texture(const image_allocation_opts &opts)
         free_texture(t);
         return nullptr;
     }
+    if (paint_depth && !initializing) ++stats.draw_memory_allocations;
     t->allocation = req.size;
     stats.image_bytes += req.size;
     if (!check(vkBindImageMemory(native.device, t->image, t->memory, 0), "vkBindImageMemory"))

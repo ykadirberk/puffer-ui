@@ -262,6 +262,15 @@ bool primitive_recorder::glyph(context *c, font_handle font, u32 index, vec2 bas
         outline->location = static_cast<u32>(owner->slug_data.size() / 8);
         owner->slug_data.insert(owner->slug_data.end(), outline->data.begin(), outline->data.end());
         while (owner->slug_data.size() % 8) owner->slug_data.push_back(0);
+        auto &resident = owner->slug_storage;
+        if (resident.buffer && owner->slug_data.size() <= resident.capacity)
+        {
+            const usize added = owner->slug_data.size() - static_cast<usize>(resident.used);
+            std::memcpy(resident.mapped + resident.used, owner->slug_data.data() + resident.used,
+                        added);
+            resident.used = owner->slug_data.size();
+            owner->stats.glyph_upload_bytes += added;
+        }
         outline->uploaded = true;
     }
     const f32 density = c->render_scale;

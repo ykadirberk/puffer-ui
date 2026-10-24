@@ -136,46 +136,24 @@ VkPipeline device::pipeline(VkFormat format, bool blend, bool sdf)
 }
 VkDescriptorSet device::sdf_descriptor(const VkDescriptorBufferInfo (&buffers)[4])
 {
-    for (u32 attempt = 0; attempt < 2; ++attempt)
+    if (frame->sdf_descriptor_cursor >= frame->sdf_descriptors.size())
     {
-        if (frame->sdf_pools.empty() || attempt)
-        {
-            const VkDescriptorPoolSize size{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1024};
-            VkDescriptorPoolCreateInfo pc{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
-            pc.maxSets = 256;
-            pc.poolSizeCount = 1;
-            pc.pPoolSizes = &size;
-            VkDescriptorPool pool{};
-            if (!check(vkCreateDescriptorPool(native.device, &pc, nullptr, &pool),
-                       "vkCreateDescriptorPool(SDF)"))
-                return VK_NULL_HANDLE;
-            frame->sdf_pools.push_back(pool);
-        }
-        VkDescriptorSetAllocateInfo ai{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
-        ai.descriptorPool = frame->sdf_pools.back();
-        ai.descriptorSetCount = 1;
-        ai.pSetLayouts = &sdf_layout;
-        VkDescriptorSet set{};
-        const VkResult result = vkAllocateDescriptorSets(native.device, &ai, &set);
-        if (result == VK_ERROR_OUT_OF_POOL_MEMORY || result == VK_ERROR_FRAGMENTED_POOL) continue;
-        if (!check(result, "vkAllocateDescriptorSets(SDF)")) return VK_NULL_HANDLE;
-        VkWriteDescriptorSet writes[4]{};
-        for (u32 i = 0; i < 4; ++i)
-        {
-            writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            writes[i].dstSet = set;
-            writes[i].dstBinding = i;
-            writes[i].descriptorCount = 1;
-            writes[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            writes[i].pBufferInfo = &buffers[i];
-        }
-        vkUpdateDescriptorSets(native.device, 4, writes, 0, nullptr);
-        ++frame->sdf_sets;
-        ++stats.descriptor_sets;
-        return set;
+        fail("unprepared SDF descriptor capacity");
+        return VK_NULL_HANDLE;
     }
-    fail("SDF descriptor pool exhausted");
-    return VK_NULL_HANDLE;
+    const auto set = frame->sdf_descriptors[frame->sdf_descriptor_cursor++];
+    VkWriteDescriptorSet writes[4]{};
+    for (u32 i = 0; i < 4; ++i)
+    {
+        writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writes[i].dstSet = set;
+        writes[i].dstBinding = i;
+        writes[i].descriptorCount = 1;
+        writes[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        writes[i].pBufferInfo = &buffers[i];
+    }
+    vkUpdateDescriptorSets(native.device, 4, writes, 0, nullptr);
+    return set;
 }
 void device::set_target(texture_handle handle)
 {
@@ -213,6 +191,12 @@ void device::clear(color c)
 }
 void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32 ic, bool blend)
 {
+    struct recording_scope
+    {
+        u32 &depth;
+        explicit recording_scope(u32 &value) : depth(value) { ++depth; }
+        ~recording_scope() { --depth; }
+    } recording(paint_depth);
     if (current_surface && current_surface->suspended && target == current_surface->scene) return;
     if (!valid(target) || !sample || !v || !idx || vc <= 0 || ic <= 0 || ic % 3) return;
     if (!valid(sample))
@@ -257,6 +241,15 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
     }
     const bool sdf = blend && paint_detail::sdf_painter(options.painter);
     if (sdf && !commands()) return;
+    if (sdf && !upload_slug_data()) return;
+    if (sdf && frame->sdf_descriptor_cursor == frame->sdf_descriptors.size())
+    {
+        // Reuse the already allocated sets after completion. Do this before
+        // reserving the metadata/geometry lease, never between it and its draw.
+        const auto serial = submit();
+        if (!serial || !wait(serial) || !begin(*frame)) return;
+        ++stats.budget_waits;
+    }
     sdf_gpu_job *compute = nullptr;
     VkDescriptorSet shapes = VK_NULL_HANDLE;
     const VkDeviceSize stride = sdf ? 48 : 32;
@@ -265,7 +258,10 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
     const VkDeviceSize bytes =
         sdf ? (sdf_shapes.empty() ? 1 : sdf_shapes.size()) * sizeof(sdf_shape) : 0;
     const VkDeviceSize alignment = sdf ? properties.limits.minStorageBufferOffsetAlignment : 1;
-    const VkDeviceSize outline_bytes = sdf ? (slug_data.empty() ? 8 : slug_data.size()) : 0;
+    const bool resident_text =
+        sdf && slug_storage.buffer && !slug_data.empty() && slug_storage.used == slug_data.size();
+    const VkDeviceSize outline_bytes =
+        sdf ? (resident_text || slug_data.empty() ? 8 : slug_data.size()) : 0;
     const VkDeviceSize outline_at = (bytes + alignment - 1) & ~(alignment - 1);
     const VkDeviceSize prefix = sdf ? outline_at + outline_bytes + alignment + 31 : 0;
     // Reserve metadata and geometry together. A budget-induced submission can
@@ -284,13 +280,18 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
             std::memset(p->mapped + at, 0, sizeof(sdf_shape));
         else
             std::memcpy(p->mapped + at, sdf_shapes.data(), static_cast<usize>(bytes));
-        if (slug_data.empty())
+        if (resident_text || slug_data.empty())
             std::memset(p->mapped + at + outline_at, 0, 8);
         else
+        {
             std::memcpy(p->mapped + at + outline_at, slug_data.data(), slug_data.size());
+            stats.glyph_upload_bytes += slug_data.size();
+        }
+        if (resident_text) ++stats.glyph_resident_batches;
         const VkDescriptorBufferInfo buffers[4] = {
-            {p->buffer, at, bytes},
-            {p->buffer, at + outline_at, outline_bytes},
+            compute ? sdf_shape_data(compute) : VkDescriptorBufferInfo{p->buffer, at, bytes},
+            resident_text ? VkDescriptorBufferInfo{slug_storage.device_buffer, 0, slug_storage.used}
+                          : VkDescriptorBufferInfo{p->buffer, at + outline_at, outline_bytes},
             compute ? sdf_route(compute) : VkDescriptorBufferInfo{p->buffer, at, 4},
             compute ? sdf_lut() : VkDescriptorBufferInfo{p->buffer, at, 4}};
         shapes = sdf_descriptor(buffers);

@@ -10,11 +10,15 @@ layout(std430,set=1,binding=3) readonly buffer BlendLut { uint words[]; } blend_
 #include "rgba8_blend.glsl"
 layout(rgba8,set=2,binding=0) uniform writeonly image2D scene;
 layout(local_size_x=8,local_size_y=8) in;
+shared uint group_pixels;
 void main() {
     uint group=gl_WorkGroupID.x+gl_WorkGroupID.y*gl_NumWorkGroups.x;
     if(p.cache.x!=0u && group>=control.words[5]) return;
     uint tile=p.cache.x!=0u?tile_state.words[p.limits.w*3u+group]:group;
     if(tile>=p.limits.w || control.words[3]!=0u) return;
+    if(gl_LocalInvocationIndex==0u) group_pixels=0u;
+    barrier();
+    uint pixels_written=0u;
     uvec2 origin=uvec2(tile%p.grid.x,tile/p.grid.x)*p.extent.z;
     uint first=work.words[p.limits.w+tile],end=work.words[p.limits.w+tile+1];
     for(uint y=gl_LocalInvocationID.y;y<p.extent.z;y+=8)
@@ -46,8 +50,13 @@ void main() {
             if(qualified) {
                 uint offset=pixel.y*p.extent.x+pixel.x;
                 atomicOr(route.words[offset>>5],1u<<(offset&31u));
-                atomicAdd(control.words[6],1);
-                imageStore(scene,ivec2(pixel),vec4(color&255u,(color>>8)&255u,(color>>16)&255u,color>>24)/255.0);
+                ++pixels_written;
+                vec4 value=vec4(color&255u,(color>>8)&255u,(color>>16)&255u,color>>24)/255.0;
+                imageStore(scene,ivec2(pixel),value);
+                if(p.cache.x!=0u) imageStore(saved_pixels,ivec2(pixel),value);
             }
         }
+    if(pixels_written!=0u) atomicAdd(group_pixels,pixels_written);
+    barrier();
+    if(gl_LocalInvocationIndex==0u && group_pixels!=0u) atomicAdd(control.words[6],group_pixels);
 }

@@ -1693,6 +1693,11 @@ enum class vulkan_painter_mode : u8
     SDF_RASTER,
     COMPUTE_SDF
 };
+enum class vulkan_blur_mode : u8
+{
+    LEGACY,
+    KAWASE
+};
 struct vulkan_device_opts
 {
     vulkan_host *host = nullptr;                  // non-owning; nullptr supports offscreen targets
@@ -1702,6 +1707,7 @@ struct vulkan_device_opts
     vulkan_painter_mode painter = vulkan_painter_mode::REFERENCE;
     bool vector_text = false; // HarfBuzz shaping + GPU Slug outlines (optional build dependency)
     bool adaptive_compute = false; // conservative eligibility + completed coverage feedback
+    vulkan_blur_mode blur = vulkan_blur_mode::LEGACY;
     u64 command_budget_bytes = 128ull * 1024 * 1024; // diagnostic tape, only allocated on request
     u64 gpu_command_budget_bytes = 64ull * 1024 * 1024;
     vulkan_upload_mode upload_mode = vulkan_upload_mode::DIRECT;
@@ -3674,6 +3680,8 @@ namespace pui
 #include "impl/vulkan_blend_lut.inl"
 #include "impl/vulkan_compute.inl"
 #include "impl/vulkan_sdf.inl"
+#include "impl/vulkan_preparation.inl"
+#include "impl/vulkan_kawase.inl"
 #endif
 #include "impl/sdl3.inl"
 #include "impl/sdl3_vulkan_host.inl"

@@ -1,0 +1,43 @@
+#version 450
+layout(local_size_x=8,local_size_y=8) in;
+layout(set=0,binding=0) uniform sampler2D source_image;
+layout(rgba8,set=0,binding=1) uniform writeonly image2D destination;
+layout(push_constant) uniform Parameters {
+    vec4 source_rect;
+    uvec2 destination_size;
+    float offset;
+    uint upsample;
+} p;
+vec4 sample_at(vec2 pixel) {
+    // Only the valid ROI has been written. Clamp to texel centers inside it;
+    // never sample stale storage outside an odd-sized intermediate rectangle.
+    vec2 lo=p.source_rect.xy+vec2(0.5);
+    vec2 hi=p.source_rect.xy+max(vec2(0.5),p.source_rect.zw-vec2(0.5));
+    return textureLod(source_image,clamp(pixel,lo,hi)/vec2(textureSize(source_image,0)),0.0);
+}
+void main() {
+    uvec2 pixel=gl_GlobalInvocationID.xy;
+    if(any(greaterThanEqual(pixel,p.destination_size))) return;
+    vec2 center=p.source_rect.xy+(vec2(pixel)+0.5)*p.source_rect.zw/vec2(p.destination_size);
+    vec2 d=vec2(p.offset);
+    vec4 value;
+    if(p.upsample==0u) {
+        value=sample_at(center)*4.0;
+        value+=sample_at(center+vec2(-d.x,-d.y));
+        value+=sample_at(center+vec2(d.x,-d.y));
+        value+=sample_at(center+vec2(-d.x,d.y));
+        value+=sample_at(center+d);
+        value*=0.125;
+    } else {
+        value=sample_at(center+vec2(-2.0*d.x,0.0));
+        value+=sample_at(center+vec2(2.0*d.x,0.0));
+        value+=sample_at(center+vec2(0.0,-2.0*d.y));
+        value+=sample_at(center+vec2(0.0,2.0*d.y));
+        value+=sample_at(center+vec2(-d.x,-d.y))*2.0;
+        value+=sample_at(center+vec2(d.x,-d.y))*2.0;
+        value+=sample_at(center+vec2(-d.x,d.y))*2.0;
+        value+=sample_at(center+d)*2.0;
+        value/=12.0;
+    }
+    imageStore(destination,ivec2(pixel),value);
+}

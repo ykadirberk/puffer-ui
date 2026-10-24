@@ -1,0 +1,226 @@
+{
+  "baseline_commit": "29d7a0602b2f2a0a707a6a691a68904adbabf130",
+  "goldens": {
+    "binary_sha256": "1235650800c56a2a3d53c4460b570de755f9069084567b0a7ce99cdda726030b",
+    "cases": [
+      {
+        "case": "reference",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_compute_spiral_tests.exe",
+          "--golden",
+          "--reference",
+          "build-vulkan-compute/r0/pixels-5000"
+        ],
+        "exit": 0,
+        "frames": 180
+      },
+      {
+        "case": "sdf",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_compute_spiral_tests.exe",
+          "--sdf",
+          "--vector-text",
+          "--golden",
+          "--reference",
+          "build-vulkan-compute/r1/pixels-5000"
+        ],
+        "exit": 0,
+        "frames": 180
+      },
+      {
+        "case": "compute",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_compute_spiral_tests.exe",
+          "--compute",
+          "--vector-text",
+          "--golden",
+          "--reference",
+          "build-vulkan-compute/r1/pixels-5000"
+        ],
+        "exit": 0,
+        "frames": 180
+      },
+      {
+        "case": "cache",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_compute_spiral_tests.exe",
+          "--compute",
+          "--vector-text",
+          "--cache",
+          "--golden",
+          "--reference",
+          "build-vulkan-compute/r1/pixels-5000"
+        ],
+        "exit": 0,
+        "frames": 180
+      },
+      {
+        "case": "adaptive",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_compute_spiral_tests.exe",
+          "--adaptive",
+          "--vector-text",
+          "--golden",
+          "--reference",
+          "build-vulkan-compute/r1/pixels-5000"
+        ],
+        "exit": 0,
+        "frames": 180
+      },
+      {
+        "case": "staged-cache",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_compute_spiral_tests.exe",
+          "--compute",
+          "--vector-text",
+          "--cache",
+          "--staged",
+          "--golden",
+          "--reference",
+          "build-vulkan-compute/r1/pixels-5000"
+        ],
+        "exit": 0,
+        "frames": 180
+      },
+      {
+        "case": "staged-reference",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_compute_spiral_tests.exe",
+          "--staged",
+          "--golden",
+          "--reference",
+          "build-vulkan-compute/r0/pixels-5000"
+        ],
+        "exit": 0,
+        "frames": 180
+      },
+      {
+        "case": "1150-cache",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_compute_spiral_tests.exe",
+          "--compute",
+          "--vector-text",
+          "--cache",
+          "--tiles",
+          "1150",
+          "--golden",
+          "--reference",
+          "build-vulkan-compute/r1/pixels-1150"
+        ],
+        "exit": 0,
+        "frames": 180
+      }
+    ]
+  },
+  "all_frame_count_per_case": 180,
+  "peak_union_with_two_neighbours": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    29,
+    30,
+    31,
+    32,
+    33,
+    38,
+    39,
+    40,
+    41,
+    42,
+    68,
+    69,
+    70,
+    71,
+    72,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    106,
+    107,
+    108,
+    109,
+    110,
+    114,
+    115,
+    116,
+    117,
+    118,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    146,
+    147,
+    148,
+    149,
+    150,
+    154,
+    155,
+    156,
+    157,
+    158,
+    159,
+    160,
+    161,
+    162,
+    163,
+    164,
+    165,
+    166,
+    167,
+    168
+  ],
+  "all_peak_frames_covered": true,
+  "existing_tracked_test_changes": [],
+  "shader_manifest_sha256": "deda1abe30c0162e3dadd56c9bcc066b25665e02812ee7b63db5ec0139fe8760",
+  "validation": [
+    "full Debug --vulkan --format",
+    "full Release --vulkan --format",
+    "latest incremental glyph regression",
+    "18 SPIR-V hashes and 5 source/include hashes"
+  ],
+  "limitations": [
+    "hidden WSI, not foreground pacing",
+    "application VkDeviceMemory counters, not Task Manager dedicated VRAM",
+    "GPU clock/residency not measured",
+    "process_ms includes all process lifetime, not process-to-first-present"
+  ]
+}

@@ -168,8 +168,16 @@ void surface::make_current(render_device &)
     output_size(w, h);
     if (window && (w != static_cast<i32>(extent.width) || h != static_cast<i32>(extent.height)))
         dirty = true;
-    if (dirty && !rebuild()) return;
+    if (dirty)
+    {
+        if (!rebuild() || !dev->prepare_sdf_surface(*this)) return;
+    }
     if (!extent.width || !extent.height || !scene) return;
+    if (sdf_preparation_pending)
+    {
+        sdf_preparation_pending = false;
+        if (!dev->wait(dev->next_serial - 1) || !dev->prepare_sdf_surface(*this)) return;
+    }
     if (dev->frame && dev->frame->recording) dev->submit();
     slot = (slot + 1) % static_cast<u32>(slots.size());
     if (!dev->begin(slots[slot])) return;
@@ -310,7 +318,7 @@ render_surface *device::make_surface(void *window, i32 width, i32 height)
                 return nullptr;
             }
     }
-    if (!s->rebuild())
+    if (!s->rebuild() || !prepare_sdf_surface(*s))
     {
         s->release_swapchain();
         for (auto &f : s->slots) destroy_slot(f);
@@ -339,6 +347,8 @@ void device::destroy_surface(render_surface *base)
     s->release_swapchain();
     if (target == s->scene) target = nullptr;
     if (s->scene) destroy_texture(s->scene);
+    for (auto *image : s->kawase)
+        if (image) destroy_texture(image);
     for (auto &slot : s->slots)
     {
         if (frame == &slot) frame = nullptr;

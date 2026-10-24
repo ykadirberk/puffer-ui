@@ -24,6 +24,8 @@ inline VkPipeline compute_pipeline(device &dev, VkPipelineLayout layout, const u
     VkPipeline pipeline = VK_NULL_HANDLE;
     const VkResult result =
         dev.vkCreateComputePipelines(dev.native.device, VK_NULL_HANDLE, 1, &pc, nullptr, &pipeline);
+    ++dev.stats.gpu_compute_pipeline_creations;
+    if (dev.paint_depth && !dev.initializing) ++dev.stats.draw_resource_creations;
     dev.vkDestroyShaderModule(dev.native.device, module, nullptr);
     if (!dev.check(result, "compute pipeline"))
     {
@@ -31,6 +33,38 @@ inline VkPipeline compute_pipeline(device &dev, VkPipelineLayout layout, const u
         return VK_NULL_HANDLE;
     }
     return pipeline;
+}
+bool device::initialize_bin_kernels()
+{
+    if (bin_pipelines[3]) return true;
+    VkDescriptorSetLayoutBinding bindings[5]{};
+    for (u32 i = 0; i < 5; ++i)
+        bindings[i] = {i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT,
+                       nullptr};
+    VkDescriptorSetLayoutCreateInfo dc{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
+    dc.bindingCount = 5;
+    dc.pBindings = bindings;
+    if (!check(vkCreateDescriptorSetLayout(native.device, &dc, nullptr, &bin_descriptor_layout),
+               "bin descriptors"))
+        return false;
+    VkPushConstantRange range{VK_SHADER_STAGE_COMPUTE_BIT, 0, 48};
+    VkPipelineLayoutCreateInfo lc{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
+    lc.setLayoutCount = 1;
+    lc.pSetLayouts = &bin_descriptor_layout;
+    lc.pushConstantRangeCount = 1;
+    lc.pPushConstantRanges = &range;
+    if (!check(vkCreatePipelineLayout(native.device, &lc, nullptr, &bin_pipeline_layout),
+               "bin layout"))
+        return false;
+    const u32 *sources[] = {vulkan_bin_coarse, vulkan_bin_count, vulkan_bin_scan, vulkan_bin_emit};
+    const usize sizes[] = {sizeof(vulkan_bin_coarse), sizeof(vulkan_bin_count),
+                           sizeof(vulkan_bin_scan), sizeof(vulkan_bin_emit)};
+    for (u32 i = 0; i < 4; ++i)
+    {
+        bin_pipelines[i] = compute_pipeline(*this, bin_pipeline_layout, sources[i], sizes[i]);
+        if (!bin_pipelines[i]) return false;
+    }
+    return true;
 }
 struct gpu_bin_job
 {
@@ -44,6 +78,7 @@ struct gpu_bin_job
     u32 parameters[12]{};
     u64 serial = 0;
     bool recorded = false;
+    page *arena = nullptr; // prepared slot storage; standalone binning owns its pages
     gpu_bin_job() = default;
     gpu_bin_job(const gpu_bin_job &) = delete;
     gpu_bin_job &operator=(const gpu_bin_job &) = delete;
@@ -52,6 +87,25 @@ struct gpu_bin_job
     bool storage(page &p, u64 bytes)
     {
         bytes = bytes ? bytes : 4;
+        if (arena)
+        {
+            const u64 alignment =
+                std::max<u64>(4, dev->properties.limits.minStorageBufferOffsetAlignment);
+            const u64 size = (bytes + alignment - 1) & ~(alignment - 1);
+            const u64 at = (arena->used + alignment - 1) & ~(alignment - 1);
+            if (size > dev->properties.limits.maxStorageBufferRange || at > arena->capacity ||
+                size > arena->capacity - at)
+                return false;
+            p.buffer = arena->buffer;
+            p.memory = arena->memory;
+            p.mapped = arena->mapped + at;
+            p.offset = at;
+            p.capacity = size;
+            p.coherent = arena->coherent;
+            p.borrowed = true;
+            arena->used = at + size;
+            return true;
+        }
         VkBufferCreateInfo bc{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
         bc.size = bytes;
         bc.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
@@ -73,6 +127,8 @@ struct gpu_bin_job
         if (!dev->check(dev->vkAllocateMemory(dev->native.device, &ac, nullptr, &p.memory),
                         "bin allocation"))
             return false;
+        ++dev->stats.gpu_metadata_allocations;
+        if (dev->paint_depth && !dev->initializing) ++dev->stats.draw_memory_allocations;
         p.allocation = req.size;
         dev->stats.gpu_metadata_allocated_bytes += req.size;
         if (dev->stats.gpu_metadata_allocated_bytes > dev->stats.peak_gpu_metadata_allocated_bytes)
@@ -90,6 +146,11 @@ struct gpu_bin_job
     }
     void free_storage(page &p)
     {
+        if (p.borrowed)
+        {
+            p = {};
+            return;
+        }
         if (p.mapped) dev->vkUnmapMemory(dev->native.device, p.memory);
         if (p.buffer) dev->vkDestroyBuffer(dev->native.device, p.buffer, nullptr);
         if (p.memory) dev->vkFreeMemory(dev->native.device, p.memory, nullptr);
@@ -104,7 +165,8 @@ struct gpu_bin_job
         {
             free_storage(buffers[index]);
             if (!storage(buffers[index], bytes)) return false;
-            VkDescriptorBufferInfo info{buffers[index].buffer, 0, buffers[index].capacity};
+            VkDescriptorBufferInfo info{buffers[index].buffer, buffers[index].offset,
+                                        buffers[index].capacity};
             VkWriteDescriptorSet write{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
             write.dstSet = descriptor;
             write.dstBinding = index;
@@ -129,12 +191,7 @@ struct gpu_bin_job
             serial = dev->submit();
         if (serial && serial < dev->next_serial) dev->wait(serial);
         if (descriptor) --dev->stats.descriptor_sets;
-        for (auto pipeline : pipelines)
-            if (pipeline) dev->vkDestroyPipeline(dev->native.device, pipeline, nullptr);
         if (pool) dev->vkDestroyDescriptorPool(dev->native.device, pool, nullptr);
-        if (layout) dev->vkDestroyPipelineLayout(dev->native.device, layout, nullptr);
-        if (descriptor_layout)
-            dev->vkDestroyDescriptorSetLayout(dev->native.device, descriptor_layout, nullptr);
         for (auto &p : buffers) free_storage(p);
         for (auto &pipeline : pipelines) pipeline = VK_NULL_HANDLE;
         descriptor_layout = VK_NULL_HANDLE;
@@ -164,6 +221,10 @@ struct gpu_bin_job
         if (owner.native.queue_family >= family_count ||
             !(families[owner.native.queue_family].queueFlags & VK_QUEUE_COMPUTE_BIT))
             return false;
+        if (!owner.initialize_bin_kernels()) return false;
+        descriptor_layout = owner.bin_descriptor_layout;
+        layout = owner.bin_pipeline_layout;
+        std::copy(std::begin(owner.bin_pipelines), std::end(owner.bin_pipelines), pipelines);
         const u64 tx = (static_cast<u64>(width) + tile - 1) / tile;
         const u64 ty = (static_cast<u64>(height) + tile - 1) / tile;
         const u64 cx = (static_cast<u64>(width) + coarse - 1) / coarse;
@@ -203,35 +264,6 @@ struct gpu_bin_job
             std::memcpy(buffers[0].mapped, tape.commands.data(), static_cast<usize>(sizes[0]));
         buffers[0].used = sizes[0];
         if (!owner.flush_page(buffers[0])) return false;
-        VkDescriptorSetLayoutBinding bindings[5]{};
-        for (u32 i = 0; i < 5; ++i)
-            bindings[i] = {i, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_COMPUTE_BIT,
-                           nullptr};
-        VkDescriptorSetLayoutCreateInfo dc{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
-        dc.bindingCount = 5;
-        dc.pBindings = bindings;
-        if (!owner.check(owner.vkCreateDescriptorSetLayout(owner.native.device, &dc, nullptr,
-                                                           &descriptor_layout),
-                         "bin descriptors"))
-            return false;
-        VkPushConstantRange range{VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(parameters)};
-        VkPipelineLayoutCreateInfo lc{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
-        lc.setLayoutCount = 1;
-        lc.pSetLayouts = &descriptor_layout;
-        lc.pushConstantRangeCount = 1;
-        lc.pPushConstantRanges = &range;
-        if (!owner.check(owner.vkCreatePipelineLayout(owner.native.device, &lc, nullptr, &layout),
-                         "bin layout"))
-            return false;
-        const u32 *sources[] = {vulkan_bin_coarse, vulkan_bin_count, vulkan_bin_scan,
-                                vulkan_bin_emit};
-        const usize sizes_spv[] = {sizeof(vulkan_bin_coarse), sizeof(vulkan_bin_count),
-                                   sizeof(vulkan_bin_scan), sizeof(vulkan_bin_emit)};
-        for (u32 i = 0; i < 4; ++i)
-        {
-            pipelines[i] = compute_pipeline(owner, layout, sources[i], sizes_spv[i]);
-            if (!pipelines[i]) return false;
-        }
         VkDescriptorPoolSize ps{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 5};
         VkDescriptorPoolCreateInfo pi{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
         pi.maxSets = 1;
@@ -252,7 +284,7 @@ struct gpu_bin_job
         VkWriteDescriptorSet writes[5]{};
         for (u32 i = 0; i < 5; ++i)
         {
-            infos[i] = {buffers[i].buffer, 0, buffers[i].capacity};
+            infos[i] = {buffers[i].buffer, buffers[i].offset, buffers[i].capacity};
             writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             writes[i].dstSet = descriptor;
             writes[i].dstBinding = i;
@@ -302,7 +334,8 @@ struct gpu_bin_job
         recorded = true;
         serial = dev->next_serial;
         for (u32 i = 1; i < 5; ++i)
-            dev->vkCmdFillBuffer(dev->frame->command, buffers[i].buffer, 0, VK_WHOLE_SIZE, 0);
+            dev->vkCmdFillBuffer(dev->frame->command, buffers[i].buffer, buffers[i].offset,
+                                 buffers[i].capacity, 0);
         barrier(VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
                 VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
                 VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT);
@@ -315,7 +348,8 @@ struct gpu_bin_job
             dev->vkCmdBindPipeline(dev->frame->command, VK_PIPELINE_BIND_POINT_COMPUTE,
                                    pipelines[i]);
             if (i == 3)
-                dev->vkCmdDispatchIndirect(dev->frame->command, buffers[4].buffer, 0);
+                dev->vkCmdDispatchIndirect(dev->frame->command, buffers[4].buffer,
+                                           buffers[4].offset);
             else
                 dev->vkCmdDispatch(
                     dev->frame->command,

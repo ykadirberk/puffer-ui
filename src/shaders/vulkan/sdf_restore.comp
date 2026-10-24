@@ -7,9 +7,13 @@
 layout(rgba8,set=2,binding=0) uniform writeonly image2D scene;
 layout(std430,set=1,binding=2) buffer Route { uint words[]; } route;
 layout(local_size_x=8,local_size_y=8) in;
+shared uint group_pixels;
 void main() {
     uint tile=gl_WorkGroupID.x+gl_WorkGroupID.y*gl_NumWorkGroups.x;
     if(tile>=p.limits.w || control.words[3]!=0u || tile_state.words[tile]!=0u) return;
+    if(gl_LocalInvocationIndex==0u) group_pixels=0u;
+    barrier();
+    uint pixels_written=0u;
     uvec2 origin=uvec2(tile%p.grid.x,tile/p.grid.x)*p.extent.z;
     for(uint y=gl_LocalInvocationID.y;y<p.extent.z;y+=8)
         for(uint x=gl_LocalInvocationID.x;x<p.extent.z;x+=8) {
@@ -20,7 +24,10 @@ void main() {
             uint at=pixel.y*p.extent.x+pixel.x;
             if((old_route.words[at>>5]&(1u<<(at&31u)))==0u) continue;
             atomicOr(route.words[at>>5],1u<<(at&31u));
-            atomicAdd(control.words[8],1u);
+            ++pixels_written;
             imageStore(scene,ivec2(pixel),imageLoad(saved_pixels,ivec2(pixel)));
         }
+    if(pixels_written!=0u) atomicAdd(group_pixels,pixels_written);
+    barrier();
+    if(gl_LocalInvocationIndex==0u && group_pixels!=0u) atomicAdd(control.words[8],group_pixels);
 }
