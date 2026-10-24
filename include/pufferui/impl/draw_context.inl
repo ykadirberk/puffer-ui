@@ -20,7 +20,43 @@ struct draw_list
     std::vector<i32> scratch_i;
     // Cold setup metadata must not displace the hot texture/clip batch fields.
     usize prepared_vertices = 0, prepared_indices = 0;
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    paint_detail::primitive_sink *painter = nullptr;
+#endif
 };
+
+#if defined(PUFFERUI_ENABLE_VULKAN)
+namespace paint_detail
+{
+inline bool try_shape(context *c, primitive_input input)
+{
+    auto *sink = c->dl ? c->dl->painter : nullptr;
+    if (!sink) return false;
+    input.scale = c->render_scale;
+    input.disabled_alpha = c->disabled_depth > 0 ? clampf(c->disabled_alpha, 0.0f, 1.0f) : 1;
+    return sink->shape(c, input);
+}
+struct primitive_scope
+{
+    primitive_sink *sink = nullptr;
+    primitive_scope(context *c, primitive_input input)
+    {
+        sink = c->dl ? c->dl->painter : nullptr;
+        if (sink)
+        {
+            input.scale = c->render_scale;
+            input.disabled_alpha =
+                c->disabled_depth > 0 ? clampf(c->disabled_alpha, 0.0f, 1.0f) : 1;
+            sink->enter(input);
+        }
+    }
+    ~primitive_scope()
+    {
+        if (sink) sink->leave();
+    }
+};
+} // namespace paint_detail
+#endif
 
 // Open-addressing map with inline values: power-of-two capacity, linear
 // probing, no tombstones (wholesale clears or rebuilds only). Keys are uiid
@@ -191,6 +227,11 @@ inline void dl_add(context *c, const vertex *verts, i32 vcount, const i32 *idx, 
     }
     // Grow geometrically, then append in one pass without a capacity check per
     // index. Exact-size reserve on every primitive would relocate the batch.
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    if (dl.painter)
+        dl.painter->mesh(dl.cur_tex, dl.verts.data() + dl.verts.size() - static_cast<usize>(vcount),
+                         vcount, idx, icount);
+#endif
     const usize first_index = dl.idx.size();
     const usize required = first_index + static_cast<usize>(icount);
     if (required > dl.idx.capacity())
@@ -274,6 +315,9 @@ inline bool overlay_begin(context *c, uiid id, rect area)
     dl_flush(c); // what was drawn so far belongs to the window
     c->st->overlay_real = c->device;
     c->device = &e->rec;
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    c->dl->painter = nullptr;
+#endif
     c->dl->clip_known = false; // re-issue clip/texture state into the recorder
     c->dl->tex_known = false;
     c->overlay_depth = 1;
@@ -286,6 +330,9 @@ inline void overlay_end(context *c)
     if (c->overlay_depth == 0) return;
     dl_flush(c);
     c->device = c->st->overlay_real;
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    c->dl->painter = paint_detail::vulkan_primitive_sink(c->device);
+#endif
     c->st->overlay_real = nullptr;
     c->dl->clip_known = false;
     c->dl->tex_known = false;
@@ -1055,12 +1102,18 @@ void begin_frame(context *c, window &w, f64 now, f64 dt)
     c->dl->clip_active = false;
     c->dl->tex_known = false;
     c->dl->cur_tex = nullptr;
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    c->dl->painter = nullptr;
+#endif
 
     if (c->device)
     {
         c->device->begin_frame();
         if (w.surface) w.surface->make_current(*c->device);
         c->device->clear(c->active_theme.bg);
+#if defined(PUFFERUI_ENABLE_VULKAN)
+        c->dl->painter = paint_detail::vulkan_primitive_sink(c->device);
+#endif
     }
 }
 

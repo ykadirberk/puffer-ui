@@ -8,6 +8,15 @@
 
 namespace pui
 {
+// Optional analytic counterpart of a rounded gradient fan and its underlay.
+// False means no draw was recorded; callers retain their legacy fallback.
+struct vulkan_rounded_gradient_opts
+{
+    rect area{};
+    corner_radii radii{};
+    color underlay{}, top_left{}, top_right{}, bottom_right{}, bottom_left{};
+};
+bool vulkan_try_rounded_gradient(ui &u, const vulkan_rounded_gradient_opts &opts);
 // Borrowed handles. The caller enabled these three Vulkan 1.3 features and
 // externally serializes its queue submissions with PufferUI calls.
 struct vulkan_native_device
@@ -69,6 +78,17 @@ const char *vulkan_last_error(render_device *device);
 struct vulkan_stats
 {
     u64 submissions = 0, draws = 0, vertices = 0, indices = 0;
+    u64 shadow_commands = 0, shadow_payload_bytes = 0, shadow_overflows = 0;
+    u64 gpu_metadata_allocated_bytes = 0, peak_gpu_metadata_allocated_bytes = 0;
+    u64 gpu_metadata_readbacks = 0;
+    u64 gpu_sdf_batches = 0, gpu_sdf_pixels = 0, gpu_sdf_telemetry_reads = 0;
+    u64 sdf_shapes = 0, sdf_avoided_vertices = 0, sdf_avoided_indices = 0;
+    u64 gpu_sdf_cache_hits = 0, gpu_sdf_cache_misses = 0, gpu_sdf_cache_image_bytes = 0;
+    u64 gpu_sdf_cached_pixels = 0;
+    u64 gpu_sdf_bypasses = 0;
+    f64 gpu_sdf_calibration_ms = 0;
+    f64 sdf_prepare_ms = 0, sdf_record_ms = 0; // CPU intervals, not GPU timestamps
+    u64 sdf_job_creations = 0;
     u64 upload_bytes = 0, upload_allocated_bytes = 0, budget_waits = 0;
     u64 cache_hits = 0, cache_misses = 0, cache_fallbacks = 0;
     u64 cache_bypasses = 0;

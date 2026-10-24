@@ -219,11 +219,40 @@ struct glyph
     u32 gen = 0;   // that page's generation when packed (stale once it is recycled)
 };
 
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+struct harfbuzz_font_data
+{
+    struct outline
+    {
+        hb_glyph_extents_t extents{};
+        std::vector<u8> data;
+        u32 location = 0;
+        bool uploaded = false;
+    };
+    hb_font_t *shaping = nullptr;
+    hb_gpu_draw_t *encoder = nullptr;
+    std::unordered_map<u32, outline> outlines;
+    ~harfbuzz_font_data()
+    {
+        hb_font_destroy(shaping);
+        hb_gpu_draw_destroy(encoder);
+    }
+};
+#endif
 struct font_data
 {
     std::vector<u8> buffer;
     stbtt_fontinfo info{};
     bool ok = false;
+    font_data() = default;
+    font_data(const font_data &) = delete;
+    font_data &operator=(const font_data &) = delete;
+    font_data(font_data &&) noexcept = default;
+    font_data &operator=(font_data &&) noexcept = default;
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    using outline = harfbuzz_font_data::outline;
+    harfbuzz_font_data *harfbuzz = nullptr; // owned by text_store; stable across font-vector growth
+#endif
 };
 
 template <class V> struct flat_map
@@ -355,6 +384,18 @@ struct kerning_memo
 
 struct text_store
 {
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    hb_buffer_t *shaping_buffer = nullptr;
+    bool vector_enabled = false;
+    ~text_store()
+    {
+        hb_buffer_destroy(shaping_buffer);
+        for (auto &font : fonts)
+        {
+            delete font.harfbuzz;
+        }
+    }
+#endif
     std::vector<font_data> fonts;
     std::vector<font_handle> fallbacks;
     text_shaper *shaper = nullptr; // set_text_shaper; nullptr = built-in
@@ -371,6 +412,9 @@ struct text_store
         i32 sub;
         i32 density_q;
         i32 gamma_q; // theme::text_gamma, hundredths
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+        bool glyph_index = false;
+#endif
         bool operator==(const glyph_key &) const = default;
     };
     struct glyph_key_hash
@@ -383,6 +427,9 @@ struct text_store
             h = h * 0x9E3779B97F4A7C15ull + static_cast<u64>(k.sub);
             h = h * 0x9E3779B97F4A7C15ull + static_cast<u64>(k.density_q);
             h = h * 0x9E3779B97F4A7C15ull + static_cast<u64>(k.gamma_q);
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+            if (k.glyph_index) h ^= 0x4842474c595048ull;
+#endif
             h ^= h >> 33;
             h *= 0xff51afd7ed558ccdull;
             h ^= h >> 33;
@@ -398,6 +445,11 @@ struct text_store
     // from the run — one cache, no decode and no glyph-map lookups on hit.
     struct cached_glyph
     {
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+        u32 glyph_index = 0, cluster = 0;
+        vec2 offset{};
+        bool vector = false;
+#endif
         f32 kern_in = 0.0f; // kerning between the previous glyph and this one
         u32 cp = 0;
         glyph g{};      // subpixel bin 0 (also the advance)

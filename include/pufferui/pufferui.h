@@ -1686,12 +1686,24 @@ enum class vulkan_upload_mode : u8
     DIRECT,
     STAGED
 };
+enum class vulkan_painter_mode : u8
+{
+    REFERENCE,
+    COMMAND_SHADOW,
+    SDF_RASTER,
+    COMPUTE_SDF
+};
 struct vulkan_device_opts
 {
     vulkan_host *host = nullptr;                  // non-owning; nullptr supports offscreen targets
     const vulkan_native_device *native = nullptr; // borrowed; copied during creation
     bool validation = false;
     bool tile_cache = false;
+    vulkan_painter_mode painter = vulkan_painter_mode::REFERENCE;
+    bool vector_text = false; // HarfBuzz shaping + GPU Slug outlines (optional build dependency)
+    bool adaptive_compute = false; // conservative eligibility + completed coverage feedback
+    u64 command_budget_bytes = 128ull * 1024 * 1024; // diagnostic tape, only allocated on request
+    u64 gpu_command_budget_bytes = 64ull * 1024 * 1024;
     vulkan_upload_mode upload_mode = vulkan_upload_mode::DIRECT;
     u32 physical_device_index = 0xffffffffu; // automatic: prefer a compatible discrete GPU
     u32 frames_in_flight = 2;
@@ -1703,6 +1715,7 @@ struct vulkan_device_opts
 render_device *create_vulkan_device(const vulkan_device_opts &opts = {});
 void destroy_vulkan_device(render_device *device);
 bool is_vulkan_device(render_device *device);
+vulkan_painter_mode vulkan_painter(render_device *device);
 render_device *create_sdl3_vulkan_device(const vulkan_device_opts &opts = {});
 struct vulkan_surface_opts
 {
@@ -3608,9 +3621,15 @@ i32 violation_count(context *c);
 #include <unordered_map>
 #include <fstream>
 #include <chrono>
+#include <algorithm>
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+#include <hb.h>
+#include <hb-ot.h>
+#include <hb-gpu.h>
+#endif
 
 #if defined(PUFFERUI_ENABLE_SDL3)
 #include <SDL3/SDL.h>
@@ -3626,6 +3645,10 @@ namespace pui
 {
 // The implementation, in order (one namespace; slices are plain text cuts).
 #include "impl/core_state.inl"
+#if defined(PUFFERUI_ENABLE_VULKAN)
+#include "impl/paint_commands.inl"
+#endif
+#include "impl/harfbuzz_text.inl"
 #include "impl/draw_context.inl"
 #include "impl/input_interact.inl"
 #include "impl/layout_text.inl"
@@ -3645,6 +3668,13 @@ namespace pui
 #include "impl/vulkan_draw.inl"
 #include "impl/vulkan_surface.inl"
 #include "impl/vulkan_cache.inl"
+#if defined(PUFFERUI_ENABLE_VULKAN)
+#include "impl/vulkan_commands.inl"
+#include "impl/vulkan_binning.inl"
+#include "impl/vulkan_blend_lut.inl"
+#include "impl/vulkan_compute.inl"
+#include "impl/vulkan_sdf.inl"
+#endif
 #include "impl/sdl3.inl"
 #include "impl/sdl3_vulkan_host.inl"
 } // namespace pui

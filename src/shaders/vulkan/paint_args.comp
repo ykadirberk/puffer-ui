@@ -1,0 +1,10 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#include "bin_common.glsl"
+layout(local_size_x=1) in;
+void main() {
+    uint x=min(p.limits.w,p.grid.w);
+    control.words[0]=control.words[3]==0 ? x : 0;
+    control.words[1]=(p.limits.w+x-1)/x;
+    control.words[2]=1;
+}

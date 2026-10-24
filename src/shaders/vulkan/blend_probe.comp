@@ -1,0 +1,32 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#include "bin_common.glsl"
+#include "rgba8_blend.glsl"
+layout(local_size_x=64) in;
+vec4 half_round(vec4 value) {
+    return vec4(unpackHalf2x16(packHalf2x16(value.xy)),unpackHalf2x16(packHalf2x16(value.zw)));
+}
+void main() {
+    uint id = gl_GlobalInvocationID.x;
+    if (id >= p.limits.x) return;
+    uvec4 header = tape.commands[id].header;
+    uint mode = p.grid.w;
+    if ((mode&64u) != 0) {
+        output_list.values[id] = blend_rgba8(header.x,header.y);
+        return;
+    }
+    precise vec4 s = vec4(header.x&255u,(header.x>>8)&255u,(header.x>>16)&255u,header.x>>24)/255.0;
+    precise vec4 d = vec4(header.y&255u,(header.y>>8)&255u,(header.y>>16)&255u,header.y>>24)/255.0;
+    if ((mode&2u) != 0) { s=half_round(s); d=half_round(d); }
+    precise float alpha = tape.commands[id].identity.w != 0 ? uintBitsToFloat(tape.commands[id].payload.w) : s.a;
+    if ((mode&16u) != 0) alpha=half_round(vec4(alpha)).x;
+    precise float inverse = 1.0-alpha;
+    if ((mode&8u) != 0) inverse=half_round(vec4(inverse)).x;
+    precise vec4 first = vec4(s.rgb*alpha,alpha);
+    precise vec4 second = d*inverse;
+    if ((mode&4u) != 0) { first=half_round(first); second=half_round(second); }
+    precise vec4 result = first+second;
+    if ((mode&1u) != 0) result=half_round(result);
+    uvec4 q = uvec4(roundEven(clamp(result,0.0,1.0)*255.0));
+    output_list.values[id] = q.x | (q.y<<8) | (q.z<<16) | (q.w<<24);
+}

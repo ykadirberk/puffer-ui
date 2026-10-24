@@ -1,0 +1,11 @@
+{
+  "CMakeLists.txt": "cfe128f901605bcea0f1d865ec9986ca1f13aeb265a027b47ba3f06848cc294a",
+  "cmake/PufferUIHarfBuzz.cmake": "d001b23e69c1fae59c2c119ba8ab1e762a4e17da0433e1464bc39cd06a529826",
+  "cmake/PufferUIVulkan.cmake": "db9888b32834a55b59181cf9268db64c95ab0689f6d446d01dd37455f3d0940e",
+  "tests/bench_vulkan_painter.cpp": "86606eab33df2a6948fce625e69e3fab6fa55cee4984f5794f380e47ae435e4a",
+  "tests/test_vulkan_compute_spiral.cpp": "743f65ab2d5460f6f9be94f5da6a035b2c2fa011469cf5111ba8c743f9ee19ac",
+  "tests/golden/vulkan_painter_rx9070xt.inl": "fa35a0dd15563aae43e32ca973b32b0fd0c994ece009f3ac8ea76efd893e7e6d",
+  "tools/compare_vulkan_compute.py": "ee7786071a7228db5bef37a1c9259b2c31063a466faaf26824846c88e2371273",
+  "tools/compare_showcase_controls.py": "de1454a4d296bb6df90012e528beb2213961c54b20abecde870d48c061f2eabb",
+  "src/pufferui_impl.cpp": "051e536cd60510397b461242a0a195c30e55ba931e4ebd0630199cbde9c7c1c1"
+}

@@ -1,0 +1,16 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#define PUI_SDF_PROGRAM
+#include "bin_common.glsl"
+#include "shape_common.glsl"
+#include "sdf_history.glsl"
+layout(local_size_x=1) in;
+void main() {
+    uint count=0;
+    if(control.words[3]==0u)
+        for(uint tile=0;tile<p.limits.w;++tile)
+            if(tile_state.words[tile]!=0u) tile_state.words[p.limits.w*3u+count++]=tile;
+    control.words[0]=min(count,p.grid.w);
+    control.words[1]=count/p.grid.w+uint(count%p.grid.w!=0u);
+    control.words[2]=1u;
+}

@@ -1,0 +1,24 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#include "bin_common.glsl"
+// A deterministic scalar scan is the initial correctness baseline. Its cost
+// remains separately measurable; replacing it with a parallel scan is gated.
+layout(local_size_x=1) in;
+void main() {
+    uint sum = 0;
+    control.words[3] = 0;
+    for (uint tile=0; tile<p.limits.w; ++tile) {
+        work.words[p.limits.w+tile] = sum;
+        uint count = work.words[tile];
+        if (count > p.limits.z-sum) {
+            control.words[3] = 1;
+            break;
+        }
+        sum += count;
+    }
+    work.words[p.limits.w*2] = sum;
+    control.words[0] = control.words[3] == 0 ? (p.limits.w+63)/64 : 0;
+    control.words[1] = 1;
+    control.words[2] = 1;
+    control.words[4] = sum;
+}

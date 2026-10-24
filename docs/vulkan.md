@@ -295,3 +295,10 @@ Existing SDL goldens and tests remain unchanged. Cross-API/GPU raster equality
 is not assumed; Vulkan remains optional. The Vulkan cache must be exactly equal
 to its uncached Vulkan reference. See [the architecture](vulkan_renderer_design.md)
 and the qualification report for measured behavior and remaining platform limits.
+
+Optional analytic shapes, HarfBuzz/Slug text, GPU command binning and compute
+painting are described in [the GPU painter contract](vulkan_gpu_painter.md).
+REFERENCE remains the default. The independent SDF raster path is the visual
+reference for compute/cache; existing bitmap goldens are unchanged. The original
+[detailed architecture](vulkan_compute_architecture.md) retains the design and
+qualification protocol. Compute is opt-in and is not assumed faster than raster.

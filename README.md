@@ -1539,6 +1539,27 @@ runs start with VSync enabled; selftests start uncapped and the HUD reflects it.
 can use an existing DriverStore manifest when Windows registration is stale,
 without a manually entered path or system configuration changes.
 
+### Analytic Vulkan shapes and GPU text
+
+![Analytic shapes and HarfBuzz / Slug text](docs/img/readme/vulkan-painter.png)
+
+Run: `pui_ex_vulkan_painter` (configure with `-DPUFFERUI_WITH_VULKAN=ON`).
+
+This atomic starts with the analytic SDF raster painter. Add
+`-DPUFFERUI_WITH_HARFBUZZ=ON` when configuring to enable HarfBuzz shaping and the
+upstream Slug GPU outline renderer. It draws rounded gradients and shaped text;
+the default core and SDL renderers retain their bitmap text and existing pixels.
+
+`pui_showcase_vulkan --vulkan-painter sdf --vector-text` selects this visual path
+in the actual showcase. `--vulkan-painter compute` forces GPU binning/painting;
+`--vulkan-painter adaptive` enables conservative eligibility and completed
+coverage feedback. Compute stays opt-in: the Spiral workload can be faster on
+the SDF raster path. Cache/compute results must match that independent raster
+reference exactly. See [the renderer architecture](docs/vulkan_compute_architecture.md)
+and [font contracts and limits](docs/harfbuzz.md).
+
+Full source: `examples/atomic/vulkan_painter.cpp`.
+
 ## Examples index
 
 | Target | Capability |
@@ -1591,6 +1612,7 @@ without a manually entered path or system configuration changes.
 | `pui_ex_headless` | `examples/atomic/headless.cpp` | `null_device`, violations, caps, no display |
 | `pui_ex_renderer` | `examples/atomic/renderer.cpp` | a CPU `render_device` writing a PPM |
 | `pui_ex_vulkan` | `examples/atomic/vulkan.cpp` | optional native Vulkan renderer, SDL windows, application-owned VkImage |
+| `pui_ex_vulkan_painter` | `examples/atomic/vulkan_painter.cpp` | analytic rounded shapes, GPU tile painter, optional HarfBuzz / Slug text |
 | `pui_showcase_vulkan` | `examples/pui_showcase.cpp` | the existing motion showcase on the optional native Vulkan backend |
 
 Every example supports:

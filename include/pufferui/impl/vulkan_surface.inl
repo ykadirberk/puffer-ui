@@ -197,6 +197,11 @@ void surface::make_current(render_device &)
     dev->clip = scene->clip;
     presented = false;
     dev->cache_begin(this);
+    if (dev->options.painter != vulkan_painter_mode::REFERENCE)
+    {
+        dev->primitive_commands.owner = dev;
+        dev->primitive_commands.reset();
+    }
 }
 void surface::present()
 {

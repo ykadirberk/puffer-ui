@@ -252,6 +252,9 @@ font_handle load_font(context *c, const char *path)
 {
     if (!c->ts) c->ts = new text_store();
     text_store *ts = c->ts;
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    ts->vector_enabled = ts->vector_enabled || paint_detail::vulkan_vector_text(c->device);
+#endif
 
     std::ifstream file(path, std::ios::binary | std::ios::ate);
     if (!file.is_open()) return FONT_INVALID;
@@ -340,6 +343,14 @@ inline u64 layout_key(context *c, font_handle font, f32 size, std::string_view t
     // coverage curve or a shaper of its own makes a different layout.
     if (c->render_scale != 1.0f) key = id_child(key, static_cast<uiid>(c->render_scale * 1024));
     if (gamma_q(c) != 100) key = id_child(key, static_cast<uiid>(gamma_q(c)) + 0x67616D00ull);
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    if (c->ts->vector_enabled)
+    {
+        u32 bits;
+        std::memcpy(&bits, &size, sizeof(bits));
+        key = id_child(key, static_cast<uiid>(bits) + 0x484252554eull);
+    }
+#endif
     return key;
 }
 
@@ -383,13 +394,24 @@ inline bool recycle_atlas_page(context *c, text_store *ts)
     return true;
 }
 
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+inline glyph get_glyph(context *c, i32 font_index, f32 size, u32 cp, i32 sub = 0,
+                       bool indexed = false)
+#else
 inline glyph get_glyph(context *c, i32 font_index, f32 size, u32 cp, i32 sub = 0)
+#endif
 {
     text_store *ts = c->ts;
-    font_index = font_for(c, font_index, cp);
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    if (!indexed)
+#endif
+        font_index = font_for(c, font_index, cp);
     const f32 density = c->render_scale;
     text_store::glyph_key key{font_index, static_cast<i32>(size * 4.0f),    cp,
                               sub,        static_cast<i32>(density * 1024), gamma_q(c)};
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    key.glyph_index = indexed;
+#endif
     auto it = ts->glyphs.find(key);
     if (it != ts->glyphs.end()) return it->second;
 
@@ -397,14 +419,25 @@ inline glyph get_glyph(context *c, i32 font_index, f32 size, u32 cp, i32 sub = 0
     font_data &fd = ts->fonts[static_cast<usize>(font_index)];
     f32 scale = stbtt_ScaleForPixelHeight(&fd.info, size * density);
     i32 advance = 0, lsb = 0;
-    stbtt_GetCodepointHMetrics(&fd.info, static_cast<i32>(cp), &advance, &lsb);
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    if (indexed)
+        stbtt_GetGlyphHMetrics(&fd.info, static_cast<i32>(cp), &advance, &lsb);
+    else
+#endif
+        stbtt_GetCodepointHMetrics(&fd.info, static_cast<i32>(cp), &advance, &lsb);
     g.advance = static_cast<f32>(advance) * stbtt_ScaleForPixelHeight(&fd.info, size);
 
     i32 gw = 0, gh = 0, xo = 0, yo = 0;
     // `sub` shifts the outline right by sub/4 of a pixel before rasterizing.
     unsigned char *bitmap =
-        stbtt_GetCodepointBitmapSubpixel(&fd.info, scale, scale, static_cast<f32>(sub) * 0.25f,
-                                         0.0f, static_cast<i32>(cp), &gw, &gh, &xo, &yo);
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+        indexed
+            ? stbtt_GetGlyphBitmapSubpixel(&fd.info, scale, scale, static_cast<f32>(sub) * 0.25f,
+                                           0.0f, static_cast<i32>(cp), &gw, &gh, &xo, &yo)
+            :
+#endif
+            stbtt_GetCodepointBitmapSubpixel(&fd.info, scale, scale, static_cast<f32>(sub) * 0.25f,
+                                             0.0f, static_cast<i32>(cp), &gw, &gh, &xo, &yo);
     g.xoff = static_cast<f32>(xo) / density;
     g.yoff = static_cast<f32>(yo) / density;
     g.w = static_cast<f32>(gw) / density;
@@ -506,6 +539,10 @@ inline text_store::text_layout build_layout(context *c, font_handle fh, f32 size
                                             std::string_view s)
 {
     text_store::text_layout built;
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    if (!c->ts->shaper && c->ts->vector_enabled && harfbuzz_layout(c, fh, size, s, built))
+        return built;
+#endif
     // Fresh copies; a page recycled while they are fetched leaves the epoch
     // behind, so the first draw checks them.
     const i32 epoch = c->ts->recycled;
@@ -758,6 +795,45 @@ void ui::text(rect r, std::string_view s, color c, align a)
     for (text_store::cached_glyph &e : lay->gs)
     {
         pen += e.kern_in;
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+        if (e.vector)
+        {
+            const bool emitted =
+                cc->dl && cc->dl->painter &&
+                cc->dl->painter->glyph(cc, fh, e.glyph_index,
+                                       {pen + e.offset.x, baseline - e.offset.y}, scale, c);
+            if (!emitted)
+            {
+                // Overlay recorders and user wrappers have no native sink.
+                // Preserve shaping via a bitmap of the actual glyph ID.
+                const f32 x = pen + e.offset.x;
+                f32 ix = std::floor(x * density);
+                i32 sub = static_cast<i32>((x * density - ix) * 4 + 0.5f);
+                if (sub >= 4)
+                {
+                    sub = 0;
+                    ix += 1;
+                }
+                const auto g = detail::get_glyph(cc, fh, size, e.glyph_index, sub, true);
+                if (g.tex)
+                {
+                    ts->atlases[static_cast<usize>(g.page)].last_used = cc->frame;
+                    detail::dl_prepare(cc, g.tex, clip);
+                    const f32 gx = ix / density + g.xoff,
+                              gy = std::floor((baseline - e.offset.y) * density + 0.5f) / density +
+                                   g.yoff;
+                    const vertex v[] = {{gx, gy, g.u0, g.v0, c},
+                                        {gx + g.w, gy, g.u1, g.v0, c},
+                                        {gx + g.w, gy + g.h, g.u1, g.v1, c},
+                                        {gx, gy + g.h, g.u0, g.v1, c}};
+                    constexpr i32 indices[] = {0, 1, 2, 0, 2, 3};
+                    detail::dl_add(cc, v, 4, indices, 6);
+                }
+            }
+            pen += e.g.advance;
+            continue;
+        }
+#endif
         f32 ix = std::floor(pen * density);
         i32 bin = static_cast<i32>((pen * density - ix) * 4.0f + 0.5f);
         if (bin >= 4)

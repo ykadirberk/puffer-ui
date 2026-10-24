@@ -7,7 +7,7 @@ backend, borrowed device/image arayüzü, SDL host ve CPU cache uygulaması art�
 çalışma ağacında; güncel kullanım ve sınırlar [vulkan.md](vulkan.md) içindedir.
 Windows/RX9070XT uygulaması ve seçilen V0-V4/V6 doğrulaması tamamlandı;
 [ölçüm ve kabul raporu](vulkan_qualification.md) güncel kanıtları ve sınırları içerir.
-V5 GPU preprocessing henüz uygulanmadı veya ölçülmedi. CPU cache sonuçları,
+Bu ilk rapor yazılırken V5 GPU preprocessing uygulanmamıştı. CPU cache sonuçları,
 makaledeki compute painter'ın daha yavaş olduğunu göstermiyor; GPU komut
 yorumlayıcısı, coarse/fine binning ve GPU dirty-tile dispatch yolu sonraki
 ayrı deneyin kapsamıdır. Sonraki kullanıcı talebi dışarıdan
@@ -20,6 +20,14 @@ graphics/present family belgelenmiş unsupported sonuçtur. V5 GPU preprocessing
 Uygulama sırası, bağımlılıklar ve çıkış kapıları tek plan olan
 `~/.opencode/plan/pufferui-roadmap.md` içindeki Vulkan önerisi bölümündedir.
 Bu belge o planın teknik sözleşmesini tanımlar.
+
+24 Ekim 2026 kapsam eklemesi: Kullanıcının yeni GPU komut akışı, tile binning
+ve compute painter talebi için [ayrı teknik mimari](vulkan_compute_architecture.md)
+hazırlandı. Bu belgenin tarihsel V5 sınırını genişleten G0–G9 aşamaları ana
+roadmap'tedir. Sonraki kullanıcı isteği uygulamayı yetkilendirdi; güncel modlar
+ve destek kapsamı [GPU painter sözleşmesinde](vulkan_gpu_painter.md) açıklanır.
+Aşağıdaki eski referans tasarımı teknik geçmiş olarak korunur; native üçgen
+backend'in tek başına compute painter olduğu iddia edilmez.
 
 ## 1. Karar ve kapsam
 

@@ -1,0 +1,16 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#include "bin_common.glsl"
+layout(local_size_x=64) in;
+void main() {
+    uint id = gl_GlobalInvocationID.x;
+    if (id >= p.limits.x) return;
+    vec4 b = tape.commands[id].bounds;
+    if (b.x >= b.z || b.y >= b.w || b.z <= 0 || b.w <= 0 ||
+        b.x >= float(p.extent.x) || b.y >= float(p.extent.y)) return;
+    uvec2 low = uvec2(floor(max(b.xy, vec2(0)) / float(p.extent.w)));
+    uvec2 high = uvec2(ceil(min(b.zw, vec2(p.extent.xy)) / float(p.extent.w)));
+    for (uint y=low.y; y<high.y; ++y)
+        for (uint x=low.x; x<high.x; ++x)
+            atomicOr(coarse_bits.words[(y*p.grid.z+x)*p.limits.y+(id>>5)], 1u<<(id&31));
+}

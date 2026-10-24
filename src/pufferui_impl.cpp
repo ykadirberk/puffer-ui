@@ -23,3 +23,27 @@
 #if defined(PUFFERUI_VULKAN_INTERNAL_TESTS)
 #include "../tests/test_vulkan_internal.inl"
 #endif
+
+#if defined(PUFFERUI_VULKAN_COMMAND_TESTS)
+#include "../tests/test_vulkan_commands.inl"
+#endif
+
+#if defined(PUFFERUI_VULKAN_BINNING_TESTS)
+#include "../tests/test_vulkan_binning.inl"
+#endif
+
+#if defined(PUFFERUI_VULKAN_SPIRAL_BINNING_TESTS)
+#include "../tests/test_vulkan_spiral_binning.inl"
+#endif
+
+#if defined(PUFFERUI_VULKAN_NUMERIC_PROBE)
+#include "../tests/test_vulkan_numeric_probe.inl"
+#endif
+
+#if defined(PUFFERUI_VULKAN_COMPUTE_TESTS)
+#include "../tests/test_vulkan_compute.inl"
+#endif
+
+#if defined(PUFFERUI_VULKAN_SDF_CACHE_TESTS)
+#include "../tests/test_vulkan_sdf_cache.inl"
+#endif

@@ -51,6 +51,13 @@ bool device::begin(frame_slot &slot)
         return true;
     }
     if (!wait(slot.serial)) return false;
+    harvest_sdf_stats();
+    for (auto pool : slot.sdf_pools)
+        if (!check(vkResetDescriptorPool(native.device, pool, 0), "vkResetDescriptorPool(SDF)"))
+            return false;
+    stats.descriptor_sets -= slot.sdf_sets;
+    slot.sdf_sets = 0;
+    slot.sdf_job_cursor = 0;
     collect();
     if (!slot.pool)
     {
@@ -310,7 +317,8 @@ page *device::upload(VkDeviceSize bytes, VkDeviceSize &offset, bool geometry)
     page fresh;
     if (!allocate_buffer(fresh, capacity,
                          VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
-                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT))
+                             VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
+                             VK_BUFFER_USAGE_TRANSFER_DST_BIT))
         return nullptr;
     stats.upload_bytes += bytes;
     fresh.staged = staged;
@@ -326,6 +334,9 @@ page *device::upload(VkDeviceSize bytes, VkDeviceSize &offset, bool geometry)
 }
 void device::destroy_slot(frame_slot &slot)
 {
+    destroy_sdf_jobs(slot);
+    for (auto pool : slot.sdf_pools) vkDestroyDescriptorPool(native.device, pool, nullptr);
+    stats.descriptor_sets -= slot.sdf_sets;
     for (auto &p : slot.pages)
     {
         free_page(p);

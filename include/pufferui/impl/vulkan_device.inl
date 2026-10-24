@@ -6,6 +6,39 @@
 namespace vk_detail
 {
 struct device;
+struct sdf_gpu_job;
+struct rgba8_blend_lut;
+struct primitive_recorder : paint_detail::primitive_sink
+{
+    device *owner = nullptr;
+    paint_detail::command_tape tape;
+    paint_detail::primitive_input stack[8]{};
+    u32 depth = 0;
+    bool reported_overflow = false;
+    u32 pending_shape = 0xffffffffu;
+    void invalidate();
+    void reset();
+    void enter(const paint_detail::primitive_input &input) override;
+    void leave() override;
+    void mesh(texture_handle sample, const vertex *v, i32 vc, const i32 *idx, i32 ic) override;
+    bool shape(context *c, const paint_detail::primitive_input &input) override;
+    bool vector_text() const override;
+    bool glyph(context *c, font_handle font, u32 index, vec2 baseline, f32 scale,
+               color tint) override;
+};
+struct alignas(16) sdf_shape
+{
+    rect bounds{};
+    corner_radii radii{};
+    f32 feather = 1, reserved[3]{};
+    u32 corners[4]{};
+};
+static_assert(sizeof(sdf_shape) == 64);
+struct sdf_span
+{
+    usize vertex = 0;
+    u32 shape = 0;
+};
 struct cache_record
 {
     std::vector<u8> canonical;
@@ -20,6 +53,7 @@ struct texture
     VkDeviceMemory memory = VK_NULL_HANDLE;
     VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
     VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+    VkImageUsageFlags usage = 0;
     VkDescriptorSet descriptors[2]{};
     VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
     i32 width = 0, height = 0;
@@ -43,8 +77,21 @@ struct page
     bool staged = false;
     VkDeviceSize device_allocation = 0;
 };
+struct image_allocation_opts
+{
+    i32 width = 0, height = 0;
+    bool render_target = false;
+    const u8 *rgba = nullptr;
+    VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+    VkImageUsageFlags extra_usage = 0;
+    u64 allocation_budget = ~0ull;
+};
 struct frame_slot
 {
+    std::vector<sdf_gpu_job *> sdf_jobs;
+    usize sdf_job_cursor = 0;
+    std::vector<VkDescriptorPool> sdf_pools;
+    u64 sdf_sets = 0;
     VkCommandPool pool = VK_NULL_HANDLE;
     VkCommandBuffer command = VK_NULL_HANDLE;
     VkSemaphore acquired = VK_NULL_HANDLE;
@@ -104,6 +151,7 @@ struct pipeline_pair
 {
     VkFormat format = VK_FORMAT_UNDEFINED;
     VkPipeline blend = VK_NULL_HANDLE, copy = VK_NULL_HANDLE;
+    VkPipeline sdf = VK_NULL_HANDLE;
 };
 struct device : render_device, dispatch
 {
@@ -118,9 +166,18 @@ struct device : render_device, dispatch
     VkDebugUtilsMessengerEXT debug = VK_NULL_HANDLE;
     VkSemaphore timeline = VK_NULL_HANDLE;
     VkDescriptorSetLayout descriptor_layout = VK_NULL_HANDLE;
+    VkDescriptorSetLayout sdf_layout = VK_NULL_HANDLE;
     VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
     VkSampler samplers[2]{};
     VkShaderModule vertex_shader = VK_NULL_HANDLE, fragment_shader = VK_NULL_HANDLE;
+    VkShaderModule sdf_vertex_shader = VK_NULL_HANDLE, sdf_fragment_shader = VK_NULL_HANDLE;
+    std::vector<sdf_shape> sdf_shapes;
+    std::vector<sdf_span> sdf_spans;
+    std::vector<u8> slug_data;
+    paint_detail::command_tape sdf_tape;
+    rgba8_blend_lut *sdf_blend = nullptr;
+    u32 sdf_cache_faults = 0; // private fault-injection hooks used only by regression tests
+    u32 sdf_adaptive_cooldown = 0;
     std::vector<VkDescriptorPool> descriptor_pools;
     std::vector<pipeline_pair> pipelines;
     std::vector<texture *> textures, retired;
@@ -134,6 +191,7 @@ struct device : render_device, dispatch
     u64 next_serial = 1, generation = 1;
     u32 timestamp_bits = 0;
     vulkan_stats stats{};
+    primitive_recorder primitive_commands;
     bool cache_active = false, replay_clipped = false;
     rect replay_clip{};
     u64 cache_bytes = 0;
@@ -170,13 +228,28 @@ struct device : render_device, dispatch
     bool flush_page(page &p);
     page *upload(VkDeviceSize bytes, VkDeviceSize &offset, bool geometry = false);
     u32 memory_type(u32 bits, VkMemoryPropertyFlags required, VkMemoryPropertyFlags preferred);
-    texture *make_texture(i32 w, i32 h, bool render_target, const u8 *rgba);
+    texture *make_texture(const image_allocation_opts &opts);
+    texture *make_texture(i32 w, i32 h, bool render_target, const u8 *rgba)
+    {
+        return make_texture(
+            {.width = w, .height = h, .render_target = render_target, .rgba = rgba});
+    }
     void free_texture(texture *t);
     bool descriptors(texture *t);
     bool valid(texture *t) const;
     bool commands();
     void transition(texture *t, VkImageLayout layout);
-    VkPipeline pipeline(VkFormat format, bool blend);
+    VkPipeline pipeline(VkFormat format, bool blend, bool sdf = false);
+    VkDescriptorSet sdf_descriptor(const VkDescriptorBufferInfo (&buffers)[4]);
+    bool initialize_sdf_compute();
+    void release_sdf_compute();
+    void destroy_sdf_jobs(frame_slot &slot);
+    sdf_gpu_job *prepare_sdf_compute();
+    VkDescriptorBufferInfo sdf_route(sdf_gpu_job *job);
+    VkDescriptorBufferInfo sdf_lut();
+    bool execute_sdf_compute(sdf_gpu_job *job, VkDescriptorSet shapes,
+                             const VkDescriptorBufferInfo &shape_data);
+    void harvest_sdf_stats();
     void paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32 ic, bool blend);
     backend_caps caps() const override
     {
@@ -254,11 +327,20 @@ debug_message(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessa
 bool device::initialize(const vulkan_device_opts &opts)
 {
     options = opts;
+    if (opts.vector_text && !paint_detail::sdf_painter(opts.painter))
+        return fail("GPU vector text requires the SDF painter");
+#if !defined(PUFFERUI_ENABLE_HARFBUZZ)
+    if (opts.vector_text) return fail("HarfBuzz GPU text was not enabled at build time");
+#endif
     if (!opts.frames_in_flight || opts.frames_in_flight > 8 || !opts.upload_budget_bytes)
         return fail("invalid Vulkan frame count or upload budget");
     if (opts.upload_mode != vulkan_upload_mode::DIRECT &&
         opts.upload_mode != vulkan_upload_mode::STAGED)
         return fail("invalid Vulkan upload mode");
+    if (opts.painter != vulkan_painter_mode::REFERENCE &&
+        opts.painter != vulkan_painter_mode::COMMAND_SHADOW &&
+        !paint_detail::sdf_painter(opts.painter))
+        return fail("invalid or unimplemented Vulkan painter mode");
     if (opts.native)
     {
         native = *opts.native;
@@ -435,10 +517,32 @@ bool device::initialize(const vulkan_device_opts &opts)
     range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
     range.size = sizeof(float) * 2;
     VkPipelineLayoutCreateInfo pl{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
+    VkDescriptorSetLayout layouts[2] = {descriptor_layout, VK_NULL_HANDLE};
     pl.setLayoutCount = 1;
-    pl.pSetLayouts = &descriptor_layout;
+    pl.pSetLayouts = layouts;
+    if (paint_detail::sdf_painter(opts.painter))
+    {
+        VkDescriptorSetLayoutBinding sdf_bindings[4] = {
+            {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+            {1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+            {2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+            {3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}};
+        for (auto &b : sdf_bindings) b.stageFlags |= VK_SHADER_STAGE_COMPUTE_BIT;
+        dl.bindingCount = 4;
+        dl.pBindings = sdf_bindings;
+        if (!check(vkCreateDescriptorSetLayout(native.device, &dl, nullptr, &sdf_layout),
+                   "vkCreateDescriptorSetLayout(SDF)"))
+            return false;
+        layouts[1] = sdf_layout;
+        pl.setLayoutCount = 2;
+    }
     pl.pushConstantRangeCount = 1;
     pl.pPushConstantRanges = &range;
+    if (paint_detail::sdf_painter(opts.painter))
+    {
+        range.stageFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
+        range.size = 16;
+    }
     if (!check(vkCreatePipelineLayout(native.device, &pl, nullptr, &pipeline_layout),
                "vkCreatePipelineLayout"))
         return false;
@@ -455,7 +559,7 @@ bool device::initialize(const vulkan_device_opts &opts)
     const u8 pixel[4] = {255, 255, 255, 255};
     white = make_texture(1, 1, false, pixel);
     return white && pipeline(VK_FORMAT_R8G8B8A8_UNORM, true) &&
-           pipeline(VK_FORMAT_R8G8B8A8_UNORM, false);
+           pipeline(VK_FORMAT_R8G8B8A8_UNORM, false) && initialize_sdf_compute();
 }
 device::~device()
 {
@@ -473,6 +577,7 @@ device::~device()
             }
         }
         if (timeline) wait(next_serial - 1);
+        release_sdf_compute();
         for (surface *s : surfaces)
         {
             s->release_swapchain();
@@ -487,15 +592,19 @@ device::~device()
         {
             vkDestroyPipeline(native.device, p.blend, nullptr);
             vkDestroyPipeline(native.device, p.copy, nullptr);
+            if (p.sdf) vkDestroyPipeline(native.device, p.sdf, nullptr);
         }
         for (auto pool : descriptor_pools) vkDestroyDescriptorPool(native.device, pool, nullptr);
         if (vertex_shader) vkDestroyShaderModule(native.device, vertex_shader, nullptr);
         if (fragment_shader) vkDestroyShaderModule(native.device, fragment_shader, nullptr);
+        if (sdf_vertex_shader) vkDestroyShaderModule(native.device, sdf_vertex_shader, nullptr);
+        if (sdf_fragment_shader) vkDestroyShaderModule(native.device, sdf_fragment_shader, nullptr);
         for (auto sampler : samplers)
             if (sampler) vkDestroySampler(native.device, sampler, nullptr);
         if (pipeline_layout) vkDestroyPipelineLayout(native.device, pipeline_layout, nullptr);
         if (descriptor_layout)
             vkDestroyDescriptorSetLayout(native.device, descriptor_layout, nullptr);
+        if (sdf_layout) vkDestroyDescriptorSetLayout(native.device, sdf_layout, nullptr);
         if (timeline) vkDestroySemaphore(native.device, timeline, nullptr);
         if (owns_native) vkDestroyDevice(native.device, nullptr);
     }
@@ -526,6 +635,11 @@ void destroy_vulkan_device(render_device *d)
 bool is_vulkan_device(render_device *d)
 {
     return dynamic_cast<vk_detail::device *>(d) != nullptr;
+}
+vulkan_painter_mode vulkan_painter(render_device *d)
+{
+    auto *native = dynamic_cast<vk_detail::device *>(d);
+    return native ? native->options.painter : vulkan_painter_mode::REFERENCE;
 }
 vulkan_native_device vulkan_handles(render_device *d)
 {
@@ -565,6 +679,7 @@ vulkan_stats vulkan_statistics(render_device *d)
 {
     auto *v = dynamic_cast<vk_detail::device *>(d);
     if (!v) return {};
+    v->harvest_sdf_stats();
     auto stats = v->stats;
     stats.cache_metadata_bytes = v->cache_usage();
     return stats;
@@ -585,6 +700,10 @@ void destroy_vulkan_device(render_device *d)
 bool is_vulkan_device(render_device *)
 {
     return false;
+}
+vulkan_painter_mode vulkan_painter(render_device *)
+{
+    return vulkan_painter_mode::REFERENCE;
 }
 render_surface *create_vulkan_surface(render_device *, const vulkan_surface_opts &)
 {

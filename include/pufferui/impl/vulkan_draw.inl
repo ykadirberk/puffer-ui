@@ -5,10 +5,10 @@
 #if defined(PUFFERUI_ENABLE_VULKAN)
 namespace vk_detail
 {
-VkPipeline device::pipeline(VkFormat format, bool blend)
+VkPipeline device::pipeline(VkFormat format, bool blend, bool sdf)
 {
     for (auto &p : pipelines)
-        if (p.format == format) return blend ? p.blend : p.copy;
+        if (p.format == format) return sdf ? p.sdf : blend ? p.blend : p.copy;
     if (!vertex_shader)
     {
         VkShaderModuleCreateInfo sc{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
@@ -102,8 +102,80 @@ VkPipeline device::pipeline(VkFormat format, bool blend)
         vkDestroyPipeline(native.device, pair.blend, nullptr);
         return VK_NULL_HANDLE;
     }
+    if (paint_detail::sdf_painter(options.painter))
+    {
+        if (!sdf_vertex_shader)
+        {
+            VkShaderModuleCreateInfo sc{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
+            sc.codeSize = sizeof(vulkan_sdf_vert);
+            sc.pCode = vulkan_sdf_vert;
+            if (!check(vkCreateShaderModule(native.device, &sc, nullptr, &sdf_vertex_shader),
+                       "vkCreateShaderModule(SDF vertex)"))
+                return VK_NULL_HANDLE;
+            sc.codeSize = sizeof(vulkan_sdf_frag);
+            sc.pCode = vulkan_sdf_frag;
+            if (!check(vkCreateShaderModule(native.device, &sc, nullptr, &sdf_fragment_shader),
+                       "vkCreateShaderModule(SDF fragment)"))
+                return VK_NULL_HANDLE;
+        }
+        stages[0].module = sdf_vertex_shader;
+        stages[1].module = sdf_fragment_shader;
+        binding.stride = 48;
+        VkVertexInputAttributeDescription sdf_attributes[4] = {
+            attributes[0], attributes[1], attributes[2], {3, 0, VK_FORMAT_R32_UINT, 32}};
+        vi.vertexAttributeDescriptionCount = 4;
+        vi.pVertexAttributeDescriptions = sdf_attributes;
+        attachment.blendEnable = VK_TRUE;
+        if (!check(vkCreateGraphicsPipelines(native.device, VK_NULL_HANDLE, 1, &pc, nullptr,
+                                             &pair.sdf),
+                   "vkCreateGraphicsPipelines(SDF)"))
+            return VK_NULL_HANDLE;
+    }
     pipelines.push_back(pair);
-    return blend ? pair.blend : pair.copy;
+    return sdf ? pair.sdf : blend ? pair.blend : pair.copy;
+}
+VkDescriptorSet device::sdf_descriptor(const VkDescriptorBufferInfo (&buffers)[4])
+{
+    for (u32 attempt = 0; attempt < 2; ++attempt)
+    {
+        if (frame->sdf_pools.empty() || attempt)
+        {
+            const VkDescriptorPoolSize size{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1024};
+            VkDescriptorPoolCreateInfo pc{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
+            pc.maxSets = 256;
+            pc.poolSizeCount = 1;
+            pc.pPoolSizes = &size;
+            VkDescriptorPool pool{};
+            if (!check(vkCreateDescriptorPool(native.device, &pc, nullptr, &pool),
+                       "vkCreateDescriptorPool(SDF)"))
+                return VK_NULL_HANDLE;
+            frame->sdf_pools.push_back(pool);
+        }
+        VkDescriptorSetAllocateInfo ai{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
+        ai.descriptorPool = frame->sdf_pools.back();
+        ai.descriptorSetCount = 1;
+        ai.pSetLayouts = &sdf_layout;
+        VkDescriptorSet set{};
+        const VkResult result = vkAllocateDescriptorSets(native.device, &ai, &set);
+        if (result == VK_ERROR_OUT_OF_POOL_MEMORY || result == VK_ERROR_FRAGMENTED_POOL) continue;
+        if (!check(result, "vkAllocateDescriptorSets(SDF)")) return VK_NULL_HANDLE;
+        VkWriteDescriptorSet writes[4]{};
+        for (u32 i = 0; i < 4; ++i)
+        {
+            writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writes[i].dstSet = set;
+            writes[i].dstBinding = i;
+            writes[i].descriptorCount = 1;
+            writes[i].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            writes[i].pBufferInfo = &buffers[i];
+        }
+        vkUpdateDescriptorSets(native.device, 4, writes, 0, nullptr);
+        ++frame->sdf_sets;
+        ++stats.descriptor_sets;
+        return set;
+    }
+    fail("SDF descriptor pool exhausted");
+    return VK_NULL_HANDLE;
 }
 void device::set_target(texture_handle handle)
 {
@@ -183,25 +255,81 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
         if (replay_clip.bottom() < bottom) bottom = replay_clip.bottom();
         if (right <= left || bottom <= top) return;
     }
-    const VkDeviceSize vertex_bytes = static_cast<VkDeviceSize>(vc) * 32;
+    const bool sdf = blend && paint_detail::sdf_painter(options.painter);
+    if (sdf && !commands()) return;
+    sdf_gpu_job *compute = nullptr;
+    VkDescriptorSet shapes = VK_NULL_HANDLE;
+    const VkDeviceSize stride = sdf ? 48 : 32;
+    const VkDeviceSize vertex_bytes = static_cast<VkDeviceSize>(vc) * stride;
     const VkDeviceSize index_bytes = static_cast<VkDeviceSize>(ic) * 4;
-    VkDeviceSize offset = 0;
-    page *p = upload(vertex_bytes + index_bytes, offset, true);
+    const VkDeviceSize bytes =
+        sdf ? (sdf_shapes.empty() ? 1 : sdf_shapes.size()) * sizeof(sdf_shape) : 0;
+    const VkDeviceSize alignment = sdf ? properties.limits.minStorageBufferOffsetAlignment : 1;
+    const VkDeviceSize outline_bytes = sdf ? (slug_data.empty() ? 8 : slug_data.size()) : 0;
+    const VkDeviceSize outline_at = (bytes + alignment - 1) & ~(alignment - 1);
+    const VkDeviceSize prefix = sdf ? outline_at + outline_bytes + alignment + 31 : 0;
+    // Reserve metadata and geometry together. A budget-induced submission can
+    // then occur only before descriptors/jobs are selected, never between their
+    // creation and the graphics draw that consumes the same upload storage.
+    VkDeviceSize base = 0;
+    page *p = upload(prefix + vertex_bytes + index_bytes, base, true);
     if (!p) return;
+    const VkDeviceSize at = (base + alignment - 1) & ~(alignment - 1);
+    const VkDeviceSize offset =
+        sdf ? (at + outline_at + outline_bytes + 31) & ~VkDeviceSize(31) : base;
+    if (sdf)
+    {
+        compute = prepare_sdf_compute();
+        if (sdf_shapes.empty())
+            std::memset(p->mapped + at, 0, sizeof(sdf_shape));
+        else
+            std::memcpy(p->mapped + at, sdf_shapes.data(), static_cast<usize>(bytes));
+        if (slug_data.empty())
+            std::memset(p->mapped + at + outline_at, 0, 8);
+        else
+            std::memcpy(p->mapped + at + outline_at, slug_data.data(), slug_data.size());
+        const VkDescriptorBufferInfo buffers[4] = {
+            {p->buffer, at, bytes},
+            {p->buffer, at + outline_at, outline_bytes},
+            compute ? sdf_route(compute) : VkDescriptorBufferInfo{p->buffer, at, 4},
+            compute ? sdf_lut() : VkDescriptorBufferInfo{p->buffer, at, 4}};
+        shapes = sdf_descriptor(buffers);
+        if (!shapes) return;
+        if (compute && !execute_sdf_compute(compute, shapes, buffers[0])) return;
+    }
     struct gpu_vertex
     {
         float x, y, u, v, r, g, b, a;
     };
-    auto *vertices = reinterpret_cast<gpu_vertex *>(p->mapped + offset);
     for (i32 i = 0; i < vc; ++i)
-        vertices[i] = {v[i].x,
-                       v[i].y,
-                       v[i].u,
-                       v[i].v,
-                       v[i].c.r / 255.0f,
-                       v[i].c.g / 255.0f,
-                       v[i].c.b / 255.0f,
-                       v[i].c.a / 255.0f};
+    {
+        const gpu_vertex value = {v[i].x,
+                                  v[i].y,
+                                  v[i].u,
+                                  v[i].v,
+                                  v[i].c.r / 255.0f,
+                                  v[i].c.g / 255.0f,
+                                  v[i].c.b / 255.0f,
+                                  v[i].c.a / 255.0f};
+        std::memcpy(p->mapped + offset + i * stride, &value, sizeof(value));
+        if (sdf)
+        {
+            const u32 key = 0xffffffffu;
+            std::memcpy(p->mapped + offset + i * stride + 32, &key, sizeof(key));
+        }
+    }
+    if (sdf)
+        for (const auto &span : sdf_spans)
+        {
+            if (span.vertex + 4 > static_cast<usize>(vc) || span.shape >= sdf_shapes.size())
+            {
+                fail("SDF span outside batch");
+                return;
+            }
+            for (usize i = 0; i < 4; ++i)
+                std::memcpy(p->mapped + offset + (span.vertex + i) * stride + 32, &span.shape,
+                            sizeof(span.shape));
+        }
     std::memcpy(p->mapped + offset + vertex_bytes, idx, static_cast<usize>(index_bytes));
     const VkBuffer geometry_buffer = p->staged ? p->device_buffer : p->buffer;
     if (p->staged)
@@ -244,7 +372,7 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
         end_rendering();
     transition(sample, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     if (!start_rendering(target)) return;
-    const VkPipeline pipe = pipeline(target->format, blend);
+    const VkPipeline pipe = pipeline(target->format, blend, sdf);
     if (!pipe) return;
     vkCmdBindPipeline(frame->command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipe);
     VkViewport viewport{0, 0, static_cast<float>(target->width), static_cast<float>(target->height),
@@ -253,15 +381,26 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
                      {static_cast<u32>(right - left), static_cast<u32>(bottom - top)}};
     vkCmdSetViewport(frame->command, 0, 1, &viewport);
     vkCmdSetScissor(frame->command, 0, 1, &scissor);
-    const float extent[2] = {static_cast<float>(target->width), static_cast<float>(target->height)};
-    vkCmdPushConstants(frame->command, pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0,
-                       sizeof(extent), extent);
+    struct projection
+    {
+        f32 width, height;
+        u32 routed, reserved;
+    } extent{static_cast<float>(target->width), static_cast<float>(target->height),
+             compute ? 1u : 0u, 0};
+    const bool sdf_layout_active = paint_detail::sdf_painter(options.painter);
+    vkCmdPushConstants(frame->command, pipeline_layout,
+                       VK_SHADER_STAGE_VERTEX_BIT |
+                           (sdf_layout_active ? VK_SHADER_STAGE_FRAGMENT_BIT : 0),
+                       0, sdf_layout_active ? sizeof(extent) : 8, &extent);
     vkCmdBindVertexBuffers(frame->command, 0, 1, &geometry_buffer, &offset);
     vkCmdBindIndexBuffer(frame->command, geometry_buffer, offset + vertex_bytes,
                          VK_INDEX_TYPE_UINT32);
     const VkDescriptorSet descriptor = sample->descriptors[!blend || sample->linear ? 1 : 0];
     vkCmdBindDescriptorSets(frame->command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout, 0, 1,
                             &descriptor, 0, nullptr);
+    if (sdf)
+        vkCmdBindDescriptorSets(frame->command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout, 1,
+                                1, &shapes, 0, nullptr);
     vkCmdDrawIndexed(frame->command, static_cast<u32>(ic), 1, 0, 0, 0);
     target->last_use = sample->last_use = next_serial;
     ++target->revision;
@@ -271,6 +410,18 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
 }
 void device::draw(texture_handle tex, const vertex *v, i32 vc, const i32 *idx, i32 ic)
 {
+    struct batch_reset
+    {
+        device &owner;
+        ~batch_reset()
+        {
+            owner.sdf_shapes.clear();
+            owner.sdf_spans.clear();
+            owner.primitive_commands.pending_shape = 0xffffffffu;
+            owner.sdf_tape.commands.clear();
+            owner.sdf_tape.valid = owner.sdf_tape.command_limit != 0;
+        }
+    } reset{*this};
     ++stats.requested_draws;
     if (vc > 0) stats.requested_vertices += static_cast<u64>(vc);
     if (ic > 0) stats.requested_indices += static_cast<u64>(ic);

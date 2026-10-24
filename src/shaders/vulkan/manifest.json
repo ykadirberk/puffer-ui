@@ -1,14 +1,172 @@
 {
   "compiler": "Glslang Version: 11:16.0.0\nESSL Version: OpenGL ES GLSL 3.20 glslang Khronos. 16.0.0\nGLSL Version: 4.60 glslang Khronos. 16.0.0\nSPIR-V Version 0x00010600, Revision 1\nGLSL.std.450 Version 100, Revision 1\nKhronos Tool ID 8\nSPIR-V Generator Version 11\nGL_KHR_vulkan_glsl version 100\nARB_GL_gl_spirv version 100\n",
-  "command_flags": ["-V", "--target-env", "vulkan1.3"],
+  "command_flags": [
+    "-V",
+    "--target-env",
+    "vulkan1.3"
+  ],
   "shaders": {
     "vert": {
       "source_sha256": "bcf9c2f2bffb823fe84e9d27b86110ec67375aa669dbe589429f4db333239eb1",
-      "spirv_sha256": "4b57d6ba57a0ec0778b9fb2d767d4a291b4f8036a7affd86f60a6224f83b7c65"
+      "spirv_sha256": "4b57d6ba57a0ec0778b9fb2d767d4a291b4f8036a7affd86f60a6224f83b7c65",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
     },
     "frag": {
       "source_sha256": "fcd4245a4d741301ced56f1df47a4f571a8935167d194904d27147250e525361",
-      "spirv_sha256": "07bc0debcfbfb667f0a36c6cf64c6405dcf0903d51b57d6212609d025c079429"
+      "spirv_sha256": "07bc0debcfbfb667f0a36c6cf64c6405dcf0903d51b57d6212609d025c079429",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "sdf_frag": {
+      "source_sha256": "ae5e9e007d1bd8dd95f906ec9d31bee9becaefd7d27d4aba76c7e648f852b973",
+      "spirv_sha256": "96e7492f7b79733890f4b6d1acaad2776695a37d77f883f7d39ed531a59f94e4",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3",
+        "--target-env",
+        "spirv1.5"
+      ]
+    },
+    "sdf_vert": {
+      "source_sha256": "3ff8443224eb24b3ebcd0f37c06298b95a0442500c0951c4c8f99998b44b85c6",
+      "spirv_sha256": "7f3706bef540d6bfd7bc6eaa5b017a3ec848efa8c36b775d4ce73cdf5ba9672b",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "bin_coarse": {
+      "source_sha256": "304b69b47b13b869a6983056d123dd4be608d0b2dde46cd131dcd8a5ccefe746",
+      "spirv_sha256": "5ef19283b07b3be639a62a6f957cdd7f9f099dd34959012e4da677078539637e",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "bin_count": {
+      "source_sha256": "1bcc180a25a32187f590bace9e01e1c6e7268b6df7e9b8c52dbe3e25ed83c82a",
+      "spirv_sha256": "abbf388a81e6a1223408c9634b219a7aa90fd4f03256bd3cc8b1adfffa0e45c4",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "bin_emit": {
+      "source_sha256": "8cb989d17d5c6709ab916d57ef98f1143534183ad5350d6201c5c3e737da30c2",
+      "spirv_sha256": "4adfb65943f5d72e815c3b96661c0ec866458745f80acc89cabc09ec4111aab8",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "bin_scan": {
+      "source_sha256": "ee34e8c65bf48b7c2c0720520aee65a821586d7103c5b721055aea3d8e34268c",
+      "spirv_sha256": "67c48c1ce8593f06114ffcefcfa47efdf2323ed6ae61b36d3d598109d8ab4227",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "blend_calibrate": {
+      "source_sha256": "68efbe57ab46ea913d7eb37b489be3deee0c93eb1030929d439687170e839dac",
+      "spirv_sha256": "ef115ba4ff6949a7820f961a8c74c22b9a75dbe828bc3b777a4af1c35eb1023f",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "blend_probe": {
+      "source_sha256": "7b1c46807711250cec674dee779c7eadbe95552a64cd7d1815d7f81041aa22b5",
+      "spirv_sha256": "c7d21f85b8af19d03f3def97afdd56b62bbc09102af62b60e7816cadc02d8df4",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "paint_args": {
+      "source_sha256": "9629ddfa3e10141aed3f81ccc3b1197623ec7dee0e2622734c5bd97de89e9536",
+      "spirv_sha256": "e14b926d7ac32354e0eaa0e82fcb6879e6ee3f0d07649726799a70187b56b497",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "paint_compat": {
+      "source_sha256": "d587fb7f661023f719da9cff681e2bed5ff3d15ed0f83dfe4d2e810af17fa0f7",
+      "spirv_sha256": "0669d9244d1625465e37f185b2f78cd40ab2b92031cddf86600c31de28977d5f",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "sdf_commit": {
+      "source_sha256": "8b896c37b45c454a9c739a2f88d414ca7011e29e0910d1a73f4f6ab5c8a591fe",
+      "spirv_sha256": "6272665a03e7172a836e7520d4c0c9292abf99dac8451bb33c1602e9abcb70d1",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "sdf_compact": {
+      "source_sha256": "44750148a247beb056bf598ffbac414cf22adeaf24977b09a2db65c10d37a307",
+      "spirv_sha256": "c0d133b880469bd8bc409ac31631b641c17570dd1ac4778189dcba3847007386",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "sdf_compare": {
+      "source_sha256": "8e6edd9a4fea8cb33090086f3fb30d3ba681646fbb2982d56f023c450bf24306",
+      "spirv_sha256": "dde4b9322ac0eff290b8f6b3066f0e927ff74c19cbf42c4101a36949d7c69654",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "sdf_paint": {
+      "source_sha256": "1fe0ea872085599664a8c7450b1726d339af38bc5f305fe389f706c9bf16b40c",
+      "spirv_sha256": "47ae44ad7a15fbccfeae519275932737edf339bf01386970594e95c172179aeb",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "sdf_restore": {
+      "source_sha256": "35cb0aff4a88bbbff6225d305a694bb252bd15e9bafe1c3ace6ecbb3a8796183",
+      "spirv_sha256": "c87f3a382e5f0ad3fc8195f24c1f7b2222f30eed88f5baebe064cfa11ce5f503",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
     }
+  },
+  "includes": {
+    "bin_common.glsl": "b5f9821845b417700c0cecf9c8de641719293b15eb6b7684331b700f11de1b6c",
+    "harfbuzz_slug.glsl": "a83b9587e42b1e3db726be5b6237589007ce33a1bf607c8aea8e8c7bdffa12df",
+    "rgba8_blend.glsl": "c9347153254b4fd1730c1bb92c08bfa52d7f29c88e0cd7c6cbf84663a5153a26",
+    "sdf_history.glsl": "4e415e33aafd90bb564c77f013943fa242b7b8430a6c8e04647f171dffafcbde",
+    "shape_common.glsl": "f41d59d2bdc0420c2c6fb4f62a95ec6c97665c9dd1027cbaf9185a58e56c747a"
   }
 }

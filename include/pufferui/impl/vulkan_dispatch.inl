@@ -59,12 +59,14 @@ namespace vk_detail
     X(DestroyDescriptorPool)                                                                       \
     X(AllocateDescriptorSets)                                                                      \
     X(FreeDescriptorSets)                                                                          \
+    X(ResetDescriptorPool)                                                                         \
     X(UpdateDescriptorSets)                                                                        \
     X(CreatePipelineLayout)                                                                        \
     X(DestroyPipelineLayout)                                                                       \
     X(CreateShaderModule)                                                                          \
     X(DestroyShaderModule)                                                                         \
     X(CreateGraphicsPipelines)                                                                     \
+    X(CreateComputePipelines)                                                                      \
     X(DestroyPipeline)                                                                             \
     X(CmdBeginRendering)                                                                           \
     X(CmdEndRendering)                                                                             \
@@ -73,6 +75,7 @@ namespace vk_detail
     X(CmdClearAttachments)                                                                         \
     X(CmdCopyBufferToImage)                                                                        \
     X(CmdCopyImageToBuffer)                                                                        \
+    X(CmdCopyImage)                                                                                \
     X(CmdCopyBuffer)                                                                               \
     X(CmdBlitImage)                                                                                \
     X(CmdBindPipeline)                                                                             \
@@ -83,6 +86,9 @@ namespace vk_detail
     X(CmdSetViewport)                                                                              \
     X(CmdSetScissor)                                                                               \
     X(CmdDrawIndexed)                                                                              \
+    X(CmdDispatch)                                                                                 \
+    X(CmdDispatchIndirect)                                                                         \
+    X(CmdFillBuffer)                                                                               \
     X(CreateSwapchainKHR)                                                                          \
     X(DestroySwapchainKHR)                                                                         \
     X(GetSwapchainImagesKHR)                                                                       \

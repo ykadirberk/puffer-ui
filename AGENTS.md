@@ -86,7 +86,27 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   equality must remain exact. Never use `--update` to hide a backend difference.
 - GLSL lives in `src/shaders/vulkan/`; `tools/compile_vulkan_shaders.py` generates
   checked-in SPIR-V plus a compiler/source manifest. Ordinary consumers do not
-  run the shader compiler. Cache is opt-in; GPU binning is not implemented.
+  run the shader compiler. REFERENCE remains the default. Optional SDF_RASTER
+  and COMPUTE_SDF modes use analytic shapes; compute performs ordered GPU tile
+  binning and qualified RGBA8 suffix painting, with complete raster replay for
+  other pixels. Cache and adaptive compute remain opt-in. See
+  `docs/vulkan_gpu_painter.md` for the exact eligibility and lifetime contract.
+- `PUFFERUI_WITH_HARFBUZZ=ON` adds pinned HarfBuzz shaping and upstream Slug GPU
+  outline rendering to the Vulkan variant only. `vector_text` requires an SDF
+  painter. Core/SDL and existing bitmap goldens remain independent. See
+  `docs/harfbuzz.md`; paragraph bidi and cluster-aware editing are not implied.
+- `pui_vulkan_command_tests`, `pui_vulkan_binning_tests`,
+  `pui_vulkan_compute_tests`, `pui_vulkan_sdf_tests` and
+  `pui_vulkan_sdf_cache_tests` cover command ABI/order, actual GPU lists,
+  calibrated finite blending, SDF isolation, exact cache comparison and budgets.
+  `pui_vulkan_compute_spiral_tests` compares all frames using the actual showcase;
+  `--sdf --vector-text --capture NEW_DIR` freezes a separate new raster reference,
+  `--compute --vector-text [--cache] --reference DIR` compares against it, and
+  `--adaptive` permits eligibility-based raster selection. `--long-run` runs
+  3600 frames with 60 actual Add activations. Never overwrite a captured golden.
+  `pui_harfbuzz_interaction_tests` covers 180 vector-text interaction frames.
+  `pui_vulkan_painter_bench` and `tools/compare_vulkan_compute.py` retain separate
+  readback-free 180-frame timings; do not overlap measurements with builds/tests.
 - `pui_ex_vulkan` is the external VkImage atomic; `pui_showcase_vulkan` uses the
   actual showcase helpers. Both support the normal example selftest interface.
 - Register a native test once with `pui_add_vulkan_test` in `CMakeLists.txt`;

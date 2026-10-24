@@ -104,6 +104,7 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `render_device *create_vulkan_device(const vulkan_device_opts &opts = {});`
 - `void destroy_vulkan_device(render_device *device);`
 - `bool is_vulkan_device(render_device *device);`
+- `vulkan_painter_mode vulkan_painter(render_device *device);`
 - `render_device *create_sdl3_vulkan_device(const vulkan_device_opts &opts = {});`
 - `render_surface *create_vulkan_surface(render_device *device, const vulkan_surface_opts &opts = {});`
 - `bool sdl3_route(context *c, void *sdl_event);`

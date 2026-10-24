@@ -1335,11 +1335,14 @@ static void ch_vulkan(ui &u, example_app &app, rect body)
         u.th().text_dim);
     rect engine = example_section(u, cards.next(u.control_h() * 5), "Engine integration",
                                   "borrow the device and images; keep ownership", app.font_bold);
-    u.text_wrapped(engine,
-                   "vulkan_native_device accepts an existing instance, device, queue and loader. "
-                   "Imported images use an explicit ready semaphore and release timeline. See "
-                   "docs/vulkan.md and pui_ex_vulkan.",
-                   u.th().text_dim);
+    u.text_wrapped(
+        engine,
+        "vulkan_native_device accepts an existing instance, device, queue and loader. "
+        "Imported images use an explicit ready semaphore and release timeline. See "
+        "docs/vulkan.md and pui_ex_vulkan. The pui_ex_vulkan_painter atomic demonstrates "
+        "analytic shapes, GPU tile painting and optional HarfBuzz / Slug text. "
+        "See docs/harfbuzz.md for shaping and font support limits.",
+        u.th().text_dim);
 }
 
 static const tour_chapter CHAPTERS[] = {

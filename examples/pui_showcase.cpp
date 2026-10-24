@@ -270,6 +270,9 @@ struct showcase
     u32 next_tile = 1, lab_selected = 0;
     i32 lab_mode = 0;
     f32 lab_size = 112.0f, lab_gap = 12.0f;
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    bool analytic_shapes = false;
+#endif
 
     // board
     std::vector<board_card> cards;
@@ -349,15 +352,26 @@ static void gradient_round(ui &u, rect r, f32 radius, color tl, color tr, color 
     // State and interaction still run for tiles outside the paint area.
     if (!u.is_visible(r.pad(-1.5f))) return;
     radius = clampf(radius, 0.0f, min2(r.w, r.h) * 0.5f);
-    constexpr i32 SEG = 6;
-    constexpr i32 RING = 4 * (SEG + 1);
-    vertex v[1 + RING];
-    i32 idx[3 * RING];
     const auto col_at = [&](f32 x, f32 y)
     {
         const f32 fx = sat((x - r.x) / r.w), fy = sat((y - r.y) / r.h);
         return mixc(mixc(tl, tr, fx), mixc(bl, br, fx), fy);
     };
+    const color mid = col_at(r.center_x(), r.center_y());
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    if (g_app.analytic_shapes && vulkan_try_rounded_gradient(u, {.area = r,
+                                                                 .radii = corner_radii::all(radius),
+                                                                 .underlay = mid,
+                                                                 .top_left = tl,
+                                                                 .top_right = tr,
+                                                                 .bottom_right = br,
+                                                                 .bottom_left = bl}))
+        return;
+#endif
+    constexpr i32 SEG = 6;
+    constexpr i32 RING = 4 * (SEG + 1);
+    vertex v[1 + RING];
+    i32 idx[3 * RING];
     const vec2 centers[4] = {{r.x + radius, r.y + radius},
                              {r.right() - radius, r.y + radius},
                              {r.right() - radius, r.bottom() - radius},
@@ -380,7 +394,6 @@ static void gradient_round(ui &u, rect r, f32 radius, color tl, color tr, color 
         }
     };
     static const arc_table arcs;
-    const color mid = col_at(r.center_x(), r.center_y());
     v[0] = {r.center_x(), r.center_y(), 0.0f, 0.0f, mid};
     i32 n = 1;
     for (i32 c = 0; c < 4; ++c)
@@ -2297,16 +2310,19 @@ static void lab_tile_draw(ui &u, showcase &s, const lab_tile &tl, rect d, bool h
 // an outline on every hovered tile and the longest u32 label. Spare tile buckets
 // absorb nearby Adds. A 128 MiB CPU preparation budget is split between core
 // vertices, core indices and SDL colors; larger scenes retain normal growth.
-static geometry_capacity lab_geometry_capacity(usize tiles)
+static geometry_capacity lab_geometry_capacity(usize tiles, bool analytic = false)
 {
-    constexpr usize fan_ring = 4 * (8 + 1), fan_v = 1 + 2 * fan_ring, fan_i = 9 * fan_ring;
+    constexpr usize fan_ring = 4 * (8 + 1);
+    const usize fan_v = analytic ? 4 : 1 + 2 * fan_ring, fan_i = analytic ? 6 : 9 * fan_ring;
     constexpr usize gradient_ring = 4 * (6 + 1);
+    const usize gradient_v = analytic ? 4 : 1 + gradient_ring,
+                gradient_i = analytic ? 6 : 3 * gradient_ring;
     constexpr usize outline_points = 4 * (ROUND_SEG + 1) + 1;
     constexpr usize label_chars = 11; // '#' plus UINT32_MAX
-    constexpr usize tile_v =
-        4 * fan_v + 2 * (fan_v + 1 + gradient_ring) + 4 * outline_points + 4 * label_chars;
-    constexpr usize tile_i =
-        4 * fan_i + 2 * (fan_i + 3 * gradient_ring) + 18 * (outline_points - 1) + 6 * label_chars;
+    const usize tile_v =
+        4 * fan_v + 2 * (fan_v + gradient_v) + 4 * outline_points + 4 * label_chars;
+    const usize tile_i =
+        4 * fan_i + 2 * (fan_i + gradient_i) + 18 * (outline_points - 1) + 6 * label_chars;
     constexpr usize share = (128 * 1024 * 1024) / 3;
     const auto power_limit = [](usize n)
     {
@@ -4004,6 +4020,9 @@ static void showcase_frame(ui &u, example_app &app)
         s.font = app.font;
         s.bold = app.font_bold;
 #if defined(PUFFERUI_ENABLE_VULKAN)
+        const auto painter = vulkan_painter(app.device);
+        s.analytic_shapes = painter == vulkan_painter_mode::SDF_RASTER ||
+                            painter == vulkan_painter_mode::COMPUTE_SDF;
         if (is_vulkan_device(app.device))
         {
             // The selftest bootstrap is uncapped. Establish the interactive
@@ -4020,7 +4039,11 @@ static void showcase_frame(ui &u, example_app &app)
 
     if (s.page == PAGE_LAYOUT && s.lab_mode == 4)
     {
-        const geometry_capacity capacity = lab_geometry_capacity(s.tiles.size());
+        bool analytic = false;
+#if defined(PUFFERUI_ENABLE_VULKAN)
+        analytic = s.analytic_shapes;
+#endif
+        const geometry_capacity capacity = lab_geometry_capacity(s.tiles.size(), analytic);
         (void)u.prepare_geometry(capacity);
         if (app.device) (void)app.device->prepare_geometry(capacity);
     }

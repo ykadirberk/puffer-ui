@@ -1,0 +1,591 @@
+[
+  {
+    "name": "native-release",
+    "command": [
+      "cmake",
+      "--build",
+      "out/build/x64-release",
+      "--target",
+      "vulkan_selftest",
+      "pui_vulkan_painter_bench",
+      "pui_showcase_vulkan",
+      "pui_ex_vulkan",
+      "pui_ex_vulkan_painter"
+    ],
+    "exit": 0,
+    "seconds": 293.65600000001723
+  },
+  {
+    "name": "native-debug",
+    "command": [
+      "cmake",
+      "--build",
+      "out/build/x64-debug",
+      "--target",
+      "vulkan_selftest",
+      "pui_vulkan_painter_bench",
+      "pui_showcase_vulkan",
+      "pui_ex_vulkan",
+      "pui_ex_vulkan_painter"
+    ],
+    "exit": 0,
+    "seconds": 238.93799999999464
+  },
+  {
+    "name": "asan-build",
+    "command": [
+      "cmake",
+      "--build",
+      "out/build/compute-asan",
+      "--target",
+      "pui_vulkan_command_tests",
+      "pui_vulkan_sdf_cache_tests",
+      "pui_vulkan_compute_spiral_tests"
+    ],
+    "exit": 0,
+    "seconds": 3.8429999999934807
+  },
+  {
+    "name": "asan-pui_vulkan_command_tests",
+    "command": [
+      "out/build/compute-asan/Debug/pui_vulkan_command_tests.exe"
+    ],
+    "exit": 0,
+    "seconds": 0.0629999999946449
+  },
+  {
+    "name": "asan-pui_vulkan_sdf_cache_tests",
+    "command": [
+      "out/build/compute-asan/Debug/pui_vulkan_sdf_cache_tests.exe"
+    ],
+    "exit": 0,
+    "seconds": 5.469000000011874
+  },
+  {
+    "name": "asan-pui_vulkan_compute_spiral_tests",
+    "command": [
+      "out/build/compute-asan/Debug/pui_vulkan_compute_spiral_tests.exe",
+      "--compute",
+      "--vector-text",
+      "--cache",
+      "--golden"
+    ],
+    "exit": 0,
+    "seconds": 23.062000000005355
+  },
+  {
+    "name": "nohb-build",
+    "command": [
+      "cmake",
+      "--build",
+      "out/build/vulkan-nohb",
+      "--target",
+      "pui_vulkan_sdf_tests",
+      "pui_vulkan_sdf_cache_tests"
+    ],
+    "exit": 0,
+    "seconds": 2.4689999999827705
+  },
+  {
+    "name": "nohb-pui_vulkan_sdf_tests",
+    "command": [
+      "out/build/vulkan-nohb/Debug/pui_vulkan_sdf_tests.exe"
+    ],
+    "exit": 0,
+    "seconds": 2.01500000001397
+  },
+  {
+    "name": "nohb-pui_vulkan_sdf_cache_tests",
+    "command": [
+      "out/build/vulkan-nohb/Debug/pui_vulkan_sdf_cache_tests.exe"
+    ],
+    "exit": 0,
+    "seconds": 3.312999999994645
+  },
+  {
+    "name": "amalgamate",
+    "command": [
+      "pwsh",
+      "-NoProfile",
+      "-File",
+      "tools/amalgamate.ps1",
+      "-Out",
+      "build-vulkan-compute/pufferui_single.h"
+    ],
+    "exit": 0,
+    "seconds": 0.7190000000118744
+  },
+  {
+    "name": "amalgam-core-build",
+    "command": [
+      "cl",
+      "/nologo",
+      "/std:c++20",
+      "/EHsc",
+      "/O2",
+      "/MD",
+      "/D_CRT_SECURE_NO_WARNINGS",
+      "/Ivendored/stb",
+      "build-vulkan-compute/amalgam_smoke.cpp",
+      "/Fobuild-vulkan-compute/amalgam-core.obj",
+      "/Febuild-vulkan-compute/amalgam-core.exe"
+    ],
+    "exit": 0,
+    "seconds": 2.625
+  },
+  {
+    "name": "amalgam-core",
+    "command": [
+      "build-vulkan-compute/amalgam-core.exe"
+    ],
+    "exit": 0,
+    "seconds": 0.03200000000651926
+  },
+  {
+    "name": "amalgam-vulkan-build",
+    "command": [
+      "cl",
+      "/nologo",
+      "/std:c++20",
+      "/EHsc",
+      "/O2",
+      "/MD",
+      "/D_CRT_SECURE_NO_WARNINGS",
+      "/Ivendored/stb",
+      "build-vulkan-compute/amalgam_smoke.cpp",
+      "/DPUFFERUI_ENABLE_VULKAN",
+      "/DPUFFERUI_ENABLE_HARFBUZZ",
+      "/IE:\\VulkanSDK\\1.4.335.0/Include",
+      "/Ibuild-vulkan-compute/harfbuzz-src/src",
+      "/Iout/build/x64-release/_deps/pufferui_harfbuzz-build/src",
+      "/Fobuild-vulkan-compute/amalgam-vulkan.obj",
+      "/Febuild-vulkan-compute/amalgam-vulkan.exe",
+      "/link",
+      "E:\\VulkanSDK\\1.4.335.0/Lib/vulkan-1.lib",
+      "out/build/x64-release/_deps/pufferui_harfbuzz-build/harfbuzz.lib",
+      "out/build/x64-release/_deps/pufferui_harfbuzz-build/harfbuzz-gpu.lib"
+    ],
+    "exit": 0,
+    "seconds": 9.921000000002095
+  },
+  {
+    "name": "amalgam-vulkan",
+    "command": [
+      "build-vulkan-compute/amalgam-vulkan.exe"
+    ],
+    "exit": 0,
+    "seconds": 0.39100000000325963
+  },
+  {
+    "name": "external-sdf",
+    "command": [
+      "out/build/x64-release/Release/pui_ex_vulkan.exe",
+      "--selftest",
+      "--frames",
+      "12",
+      "--no-script",
+      "--vulkan-painter",
+      "sdf",
+      "--vector-text",
+      "--screenshot",
+      "build-vulkan-compute\\final-delivery\\external-sdf.bmp"
+    ],
+    "exit": 0,
+    "seconds": 0.5629999999946449
+  },
+  {
+    "name": "external-compute",
+    "command": [
+      "out/build/x64-release/Release/pui_ex_vulkan.exe",
+      "--selftest",
+      "--frames",
+      "12",
+      "--no-script",
+      "--vulkan-painter",
+      "compute",
+      "--vector-text",
+      "--screenshot",
+      "build-vulkan-compute\\final-delivery\\external-compute.bmp"
+    ],
+    "exit": 0,
+    "seconds": 0.7030000000086147
+  },
+  {
+    "name": "readme-shot",
+    "command": [
+      "pwsh",
+      "-NoProfile",
+      "-File",
+      "tools/readme_shots.ps1",
+      "-Names",
+      "vulkan-painter"
+    ],
+    "exit": 0,
+    "seconds": 0.985000000015134
+  },
+  {
+    "name": "format",
+    "command": [
+      "clang-format",
+      "--dry-run",
+      "--Werror",
+      "examples/atomic/vulkan_painter.cpp",
+      "include/pufferui/impl/harfbuzz_text.inl",
+      "include/pufferui/impl/paint_commands.inl",
+      "include/pufferui/impl/vulkan_binning.inl",
+      "include/pufferui/impl/vulkan_blend_lut.inl",
+      "include/pufferui/impl/vulkan_commands.inl",
+      "include/pufferui/impl/vulkan_compute.inl",
+      "include/pufferui/impl/vulkan_sdf.inl",
+      "tests/bench_vulkan_painter.cpp",
+      "tests/golden/vulkan_painter_rx9070xt.inl",
+      "tests/test_harfbuzz.cpp",
+      "tests/test_harfbuzz_interaction.cpp",
+      "tests/test_vulkan_binning.inl",
+      "tests/test_vulkan_commands.inl",
+      "tests/test_vulkan_compute.inl",
+      "tests/test_vulkan_compute_spiral.cpp",
+      "tests/test_vulkan_numeric_probe.inl",
+      "tests/test_vulkan_sdf.cpp",
+      "tests/test_vulkan_sdf_cache.inl",
+      "tests/test_vulkan_sdf_interaction.cpp",
+      "tests/test_vulkan_spiral_binning.inl",
+      "examples/example_common.h",
+      "examples/pui_showcase.cpp",
+      "examples/pui_tour.cpp",
+      "include/pufferui/impl/core_state.inl",
+      "include/pufferui/impl/draw_context.inl",
+      "include/pufferui/impl/draw_primitives.inl",
+      "include/pufferui/impl/layout_text.inl",
+      "include/pufferui/impl/vulkan_cache.inl",
+      "include/pufferui/impl/vulkan_device.inl",
+      "include/pufferui/impl/vulkan_dispatch.inl",
+      "include/pufferui/impl/vulkan_draw.inl",
+      "include/pufferui/impl/vulkan_memory.inl",
+      "include/pufferui/impl/vulkan_native.inl",
+      "include/pufferui/impl/vulkan_resources.inl",
+      "include/pufferui/impl/vulkan_shaders.inl",
+      "include/pufferui/impl/vulkan_surface.inl",
+      "include/pufferui/pufferui.h",
+      "src/pufferui_impl.cpp"
+    ],
+    "exit": 0,
+    "seconds": 0.8589999999967404
+  },
+  {
+    "name": "python-tools",
+    "command": [
+      "C:\\Users\\Kadir Berk\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*tools.py"
+    ],
+    "exit": 0,
+    "seconds": 0.28100000001722947
+  },
+  {
+    "name": "old-tests-unchanged",
+    "command": [
+      "git",
+      "diff",
+      "--exit-code",
+      "--",
+      "tests"
+    ],
+    "exit": 0,
+    "seconds": 0.030999999988125637
+  },
+  {
+    "name": "timing-5000",
+    "command": [
+      "C:\\Users\\Kadir Berk\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/compare_vulkan_compute.py",
+      "--baseline",
+      "build-vulkan-compute/r0/bin/pui_vulkan_spiral_tests.exe",
+      "--candidate",
+      "out/build/x64-release/Release/pui_vulkan_painter_bench.exe",
+      "--output",
+      "build-vulkan-compute\\final-delivery\\timing-5000",
+      "--runs",
+      "7",
+      "--tiles",
+      "5000"
+    ],
+    "exit": 0,
+    "seconds": 59.421999999991385
+  },
+  {
+    "name": "confirm-5000",
+    "command": [
+      "C:\\Users\\Kadir Berk\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/compare_vulkan_compute.py",
+      "--baseline",
+      "build-vulkan-compute/r0/bin/pui_vulkan_spiral_tests.exe",
+      "--candidate",
+      "out/build/x64-release/Release/pui_vulkan_painter_bench.exe",
+      "--output",
+      "build-vulkan-compute\\final-delivery\\confirm-5000",
+      "--runs",
+      "7",
+      "--tiles",
+      "5000"
+    ],
+    "exit": 0,
+    "seconds": 65.06299999999464
+  },
+  {
+    "name": "timing-1150",
+    "command": [
+      "C:\\Users\\Kadir Berk\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/compare_vulkan_compute.py",
+      "--baseline",
+      "build-vulkan-compute/r0/bin/pui_vulkan_spiral_tests.exe",
+      "--candidate",
+      "out/build/x64-release/Release/pui_vulkan_painter_bench.exe",
+      "--output",
+      "build-vulkan-compute\\final-delivery\\timing-1150",
+      "--runs",
+      "7",
+      "--tiles",
+      "1150"
+    ],
+    "exit": 0,
+    "seconds": 56.328000000008615
+  },
+  {
+    "name": "controls-5000",
+    "command": [
+      "C:\\Users\\Kadir Berk\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/compare_showcase_controls.py",
+      "--baseline",
+      "build-vulkan-compute/r0/bin/pui_showcase_tests.exe",
+      "--candidate",
+      "out/build/x64-release/Release/pui_showcase_tests.exe",
+      "--output",
+      "build-vulkan-compute\\final-delivery\\controls-5000",
+      "--runs",
+      "8",
+      "--tiles",
+      "5000"
+    ],
+    "exit": 0,
+    "seconds": 59.0
+  },
+  {
+    "name": "controls-1150",
+    "command": [
+      "C:\\Users\\Kadir Berk\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "tools/compare_showcase_controls.py",
+      "--baseline",
+      "build-vulkan-compute/r0/bin/pui_showcase_tests.exe",
+      "--candidate",
+      "out/build/x64-release/Release/pui_showcase_tests.exe",
+      "--output",
+      "build-vulkan-compute\\final-delivery\\controls-1150",
+      "--runs",
+      "8",
+      "--tiles",
+      "1150"
+    ],
+    "exit": 0,
+    "seconds": 36.312000000005355
+  },
+  {
+    "name": "golden-1150-reference",
+    "command": [
+      "out/build/x64-release/Release/pui_vulkan_compute_spiral_tests.exe",
+      "--tiles",
+      "1150",
+      "--golden",
+      "--reference",
+      "build-vulkan-compute/r0/pixels-1150"
+    ],
+    "exit": 0,
+    "seconds": 2.48499999998603
+  },
+  {
+    "name": "golden-1150-sdf",
+    "command": [
+      "out/build/x64-release/Release/pui_vulkan_compute_spiral_tests.exe",
+      "--tiles",
+      "1150",
+      "--golden",
+      "--reference",
+      "build-vulkan-compute/r1/pixels-1150",
+      "--sdf",
+      "--vector-text"
+    ],
+    "exit": 0,
+    "seconds": 1.8900000000139698
+  },
+  {
+    "name": "golden-1150-compute",
+    "command": [
+      "out/build/x64-release/Release/pui_vulkan_compute_spiral_tests.exe",
+      "--tiles",
+      "1150",
+      "--golden",
+      "--reference",
+      "build-vulkan-compute/r1/pixels-1150",
+      "--compute",
+      "--vector-text"
+    ],
+    "exit": 0,
+    "seconds": 3.6570000000065193
+  },
+  {
+    "name": "golden-1150-cache",
+    "command": [
+      "out/build/x64-release/Release/pui_vulkan_compute_spiral_tests.exe",
+      "--tiles",
+      "1150",
+      "--golden",
+      "--reference",
+      "build-vulkan-compute/r1/pixels-1150",
+      "--compute",
+      "--vector-text",
+      "--cache"
+    ],
+    "exit": 0,
+    "seconds": 4.25
+  },
+  {
+    "name": "golden-1150-adaptive",
+    "command": [
+      "out/build/x64-release/Release/pui_vulkan_compute_spiral_tests.exe",
+      "--tiles",
+      "1150",
+      "--golden",
+      "--reference",
+      "build-vulkan-compute/r1/pixels-1150",
+      "--adaptive",
+      "--vector-text"
+    ],
+    "exit": 0,
+    "seconds": 1.9059999999881256
+  },
+  {
+    "name": "golden-1150-staged",
+    "command": [
+      "out/build/x64-release/Release/pui_vulkan_compute_spiral_tests.exe",
+      "--tiles",
+      "1150",
+      "--golden",
+      "--reference",
+      "build-vulkan-compute/r1/pixels-1150",
+      "--compute",
+      "--vector-text",
+      "--cache",
+      "--staged"
+    ],
+    "exit": 0,
+    "seconds": 4.328000000008615
+  },
+  {
+    "name": "golden-5000-reference",
+    "command": [
+      "out/build/x64-release/Release/pui_vulkan_compute_spiral_tests.exe",
+      "--tiles",
+      "5000",
+      "--golden",
+      "--reference",
+      "build-vulkan-compute/r0/pixels-5000"
+    ],
+    "exit": 0,
+    "seconds": 2.9059999999881256
+  },
+  {
+    "name": "golden-5000-sdf",
+    "command": [
+      "out/build/x64-release/Release/pui_vulkan_compute_spiral_tests.exe",
+      "--tiles",
+      "5000",
+      "--golden",
+      "--reference",
+      "build-vulkan-compute/r1/pixels-5000",
+      "--sdf",
+      "--vector-text"
+    ],
+    "exit": 0,
+    "seconds": 2.062999999994645
+  },
+  {
+    "name": "golden-5000-compute",
+    "command": [
+      "out/build/x64-release/Release/pui_vulkan_compute_spiral_tests.exe",
+      "--tiles",
+      "5000",
+      "--golden",
+      "--reference",
+      "build-vulkan-compute/r1/pixels-5000",
+      "--compute",
+      "--vector-text"
+    ],
+    "exit": 0,
+    "seconds": 3.672000000020489
+  },
+  {
+    "name": "golden-5000-cache",
+    "command": [
+      "out/build/x64-release/Release/pui_vulkan_compute_spiral_tests.exe",
+      "--tiles",
+      "5000",
+      "--golden",
+      "--reference",
+      "build-vulkan-compute/r1/pixels-5000",
+      "--compute",
+      "--vector-text",
+      "--cache"
+    ],
+    "exit": 0,
+    "seconds": 4.35899999999674
+  },
+  {
+    "name": "golden-5000-adaptive",
+    "command": [
+      "out/build/x64-release/Release/pui_vulkan_compute_spiral_tests.exe",
+      "--tiles",
+      "5000",
+      "--golden",
+      "--reference",
+      "build-vulkan-compute/r1/pixels-5000",
+      "--adaptive",
+      "--vector-text"
+    ],
+    "exit": 0,
+    "seconds": 2.0780000000086147
+  },
+  {
+    "name": "golden-5000-staged",
+    "command": [
+      "out/build/x64-release/Release/pui_vulkan_compute_spiral_tests.exe",
+      "--tiles",
+      "5000",
+      "--golden",
+      "--reference",
+      "build-vulkan-compute/r1/pixels-5000",
+      "--compute",
+      "--vector-text",
+      "--cache",
+      "--staged"
+    ],
+    "exit": 0,
+    "seconds": 5.390999999974156
+  },
+  {
+    "name": "long-3600",
+    "command": [
+      "out/build/x64-release/Release/pui_vulkan_compute_spiral_tests.exe",
+      "--compute",
+      "--vector-text",
+      "--cache",
+      "--long-run"
+    ],
+    "exit": 0,
+    "seconds": 72.375
+  }
+]

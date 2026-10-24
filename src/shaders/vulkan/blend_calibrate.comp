@@ -1,0 +1,25 @@
+#version 450
+layout(local_size_x=64) in;
+layout(std430,set=0,binding=0) readonly buffer NativeRGBA { uint values[]; } native_pixels;
+layout(std430,set=0,binding=1) buffer Lookup { uint words[]; } table;
+layout(std430,set=0,binding=4) buffer Control { uint words[]; } control;
+layout(push_constant) uniform Parameters { uvec4 extent; uvec4 grid; uvec4 limits; } p;
+void main() {
+    uint id=gl_GlobalInvocationID.x;
+    if(id>=16384) return;
+    uint alpha=p.grid.w, base=id*4, packed=0, bad=0;
+    uint row_alpha=native_pixels.values[(base/256)*256]>>24;
+    for(uint i=0;i<4;++i) {
+        uint rgba=native_pixels.values[base+i], r=rgba&255;
+        if(((rgba>>8)&255)!=r || ((rgba>>16)&255)!=r) bad|=1;
+        if((rgba>>24)!=row_alpha) bad|=2;
+        packed|=r<<(i*8);
+    }
+    table.words[alpha*16384+id]=packed;
+    if(id<64) {
+        uint a=0;
+        for(uint i=0;i<4;++i) a|=(native_pixels.values[(id*4+i)*256]>>24)<<(i*8);
+        table.words[4194304+alpha*64+id]=a;
+    }
+    if(bad!=0 || id==0) atomicOr(control.words[3],bad);
+}

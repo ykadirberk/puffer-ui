@@ -56,12 +56,31 @@ bool device::descriptors(texture *t)
     }
     return check(VK_ERROR_OUT_OF_POOL_MEMORY, "descriptor pool exhausted");
 }
-texture *device::make_texture(i32 w, i32 h, bool render_target, const u8 *rgba)
+texture *device::make_texture(const image_allocation_opts &opts)
 {
+    const i32 w = opts.width, h = opts.height;
+    const bool render_target = opts.render_target;
+    const u8 *rgba = opts.rgba;
     if (cache_active) cache_flush(false);
     if (w <= 0 || h <= 0 || static_cast<u32>(w) > properties.limits.maxImageDimension2D ||
         static_cast<u32>(h) > properties.limits.maxImageDimension2D || result != VK_SUCCESS)
         return nullptr;
+    if (opts.format != VK_FORMAT_R8G8B8A8_UNORM && rgba) return nullptr;
+    if (opts.extra_usage || opts.format != VK_FORMAT_R8G8B8A8_UNORM)
+    {
+        VkFormatProperties format{};
+        vkGetPhysicalDeviceFormatProperties(native.physical_device, opts.format, &format);
+        VkFormatFeatureFlags needed = VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT |
+                                      VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT |
+                                      VK_FORMAT_FEATURE_TRANSFER_SRC_BIT |
+                                      VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
+        if (render_target)
+            needed |= VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT |
+                      VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT;
+        if (opts.extra_usage & VK_IMAGE_USAGE_STORAGE_BIT)
+            needed |= VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT;
+        if ((format.optimalTilingFeatures & needed) != needed) return nullptr;
+    }
     auto *t = new texture();
     t->owner = this;
     t->width = w;
@@ -69,6 +88,7 @@ texture *device::make_texture(i32 w, i32 h, bool render_target, const u8 *rgba)
     t->generation = new_generation();
     t->target = render_target;
     t->linear = render_target;
+    t->format = opts.format;
     VkImageCreateInfo ic{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
     ic.imageType = VK_IMAGE_TYPE_2D;
     ic.format = t->format;
@@ -79,6 +99,11 @@ texture *device::make_texture(i32 w, i32 h, bool render_target, const u8 *rgba)
     ic.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
                VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     if (render_target) ic.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    ic.usage |= opts.extra_usage;
+    if (render_target && options.painter == vulkan_painter_mode::COMPUTE_SDF &&
+        opts.format == VK_FORMAT_R8G8B8A8_UNORM)
+        ic.usage |= VK_IMAGE_USAGE_STORAGE_BIT;
+    t->usage = ic.usage;
     if (!check(vkCreateImage(native.device, &ic, nullptr, &t->image), "vkCreateImage"))
     {
         free_texture(t);
@@ -86,6 +111,11 @@ texture *device::make_texture(i32 w, i32 h, bool render_target, const u8 *rgba)
     }
     VkMemoryRequirements req{};
     vkGetImageMemoryRequirements(native.device, t->image, &req);
+    if (req.size > opts.allocation_budget)
+    {
+        free_texture(t);
+        return nullptr;
+    }
     const u32 type = memory_type(req.memoryTypeBits, 0, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     if (type == UINT32_MAX)
     {

@@ -47,6 +47,10 @@ void ui::draw_triangles(texture_handle tex, const vertex *vertices, i32 vertex_c
 void ui::draw_rect(rect r, color c)
 {
     PUFFERUI_CHECK(VIOL_INVALID_RECT, r.is_valid(), "draw_rect with invalid rect");
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    paint_detail::primitive_scope capture(
+        ctx, {.operation = paint_detail::opcode::RECT_COMPAT, .shape = r, .tint = c});
+#endif
     vertex v[4] = {
         {r.x, r.y, 0.0f, 0.0f, c},
         {r.right(), r.y, 1.0f, 0.0f, c},
@@ -214,6 +218,18 @@ void ui::draw_rounded_rect(rect r, color c, const corner_radii &radii_in)
     }
     if (!ctx->dl) return;
     // the draw list's scratch buffers: no heap allocation per rounded shape
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    if (paint_detail::try_shape(ctx, {.operation = paint_detail::opcode::ROUNDED_FAN_COMPAT,
+                                      .shape = r,
+                                      .radii = radii,
+                                      .tint = c}))
+        return;
+    paint_detail::primitive_scope capture(ctx,
+                                          {.operation = paint_detail::opcode::ROUNDED_FAN_COMPAT,
+                                           .shape = r,
+                                           .radii = radii,
+                                           .tint = c});
+#endif
     std::vector<vertex> &verts = ctx->dl->scratch_v;
     std::vector<i32> &idx = ctx->dl->scratch_i;
     verts.clear();

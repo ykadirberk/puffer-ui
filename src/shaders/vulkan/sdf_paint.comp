@@ -1,0 +1,53 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#define PUI_SDF_PROGRAM
+#include "bin_common.glsl"
+#include "shape_common.glsl"
+#include "sdf_history.glsl"
+layout(std430,set=1,binding=2) buffer Route { uint words[]; } route;
+layout(std430,set=1,binding=3) readonly buffer BlendLut { uint words[]; } blend_lut;
+#define PUI_BLEND_WORDS blend_lut.words
+#include "rgba8_blend.glsl"
+layout(rgba8,set=2,binding=0) uniform writeonly image2D scene;
+layout(local_size_x=8,local_size_y=8) in;
+void main() {
+    uint group=gl_WorkGroupID.x+gl_WorkGroupID.y*gl_NumWorkGroups.x;
+    if(p.cache.x!=0u && group>=control.words[5]) return;
+    uint tile=p.cache.x!=0u?tile_state.words[p.limits.w*3u+group]:group;
+    if(tile>=p.limits.w || control.words[3]!=0u) return;
+    uvec2 origin=uvec2(tile%p.grid.x,tile/p.grid.x)*p.extent.z;
+    uint first=work.words[p.limits.w+tile],end=work.words[p.limits.w+tile+1];
+    for(uint y=gl_LocalInvocationID.y;y<p.extent.z;y+=8)
+        for(uint x=gl_LocalInvocationID.x;x<p.extent.z;x+=8) {
+            uvec2 pixel=origin+uvec2(x,y);
+            if(any(greaterThanEqual(pixel,p.extent.xy))) continue;
+            vec2 point=vec2(pixel)+vec2(0.5);
+            if(point.x<p.clip.x || point.y<p.clip.y || point.x>=p.clip.z || point.y>=p.clip.w) continue;
+            bool qualified=false;
+            uint color=0;
+            for(uint at=first;at<end;++at) {
+                PaintCommand c=tape.commands[output_list.values[at]];
+                if(point.x<c.bounds.x || point.y<c.bounds.y || point.x>=c.bounds.z || point.y>=c.bounds.w) continue;
+                if(c.header.x==0u) { qualified=false; continue; }
+                vec4 rect_bounds=rect_geometry(c);
+                if(c.header.x==1u && min(min(point.x-rect_bounds.x,rect_bounds.z-point.x),
+                    min(point.y-rect_bounds.y,rect_bounds.w-point.y))<1.0) { qualified=false; continue; }
+                if(c.header.x==2u && shapes.values[c.payload.z].params.y==1.0) { qualified=false; continue; }
+                float coverage=c.header.x==1u?1.0:pui_coverage(shapes.values[c.payload.z],point);
+                if(coverage==0.0) continue;
+                if(coverage!=1.0) { qualified=false; continue; }
+                if(c.header.x==2u && pui_distance(shapes.values[c.payload.z],point)>-max(1.0,
+                    shapes.values[c.payload.z].params.x)) { qualified=false; continue; }
+                uint source=c.header.x==2u && shapes.values[c.payload.z].params.y==2.0 ?
+                    pui_gradient(shapes.values[c.payload.z],point):c.header.y;
+                if((source>>24)==255u) { qualified=true; color=source; }
+                else if(qualified) color=blend_rgba8(source,color);
+            }
+            if(qualified) {
+                uint offset=pixel.y*p.extent.x+pixel.x;
+                atomicOr(route.words[offset>>5],1u<<(offset&31u));
+                atomicAdd(control.words[6],1);
+                imageStore(scene,ivec2(pixel),vec4(color&255u,(color>>8)&255u,(color>>16)&255u,color>>24)/255.0);
+            }
+        }
+}

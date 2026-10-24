@@ -278,6 +278,31 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
             app.no_script = true;
         else if (std::strcmp(argv[i], "--help") == 0)
             app.help = true;
+#if defined(PUFFERUI_ENABLE_VULKAN)
+        else if (std::strcmp(argv[i], "--vulkan-painter") == 0 && i + 1 < argc)
+        {
+            const char *mode = argv[++i];
+            app.boot.vulkan.adaptive_compute = false;
+            if (std::strcmp(mode, "reference") == 0)
+                app.boot.vulkan.painter = vulkan_painter_mode::REFERENCE;
+            else if (std::strcmp(mode, "sdf") == 0)
+                app.boot.vulkan.painter = vulkan_painter_mode::SDF_RASTER;
+            else if (std::strcmp(mode, "compute") == 0)
+                app.boot.vulkan.painter = vulkan_painter_mode::COMPUTE_SDF;
+            else if (std::strcmp(mode, "adaptive") == 0)
+            {
+                app.boot.vulkan.painter = vulkan_painter_mode::COMPUTE_SDF;
+                app.boot.vulkan.tile_cache = app.boot.vulkan.adaptive_compute = true;
+            }
+            else
+            {
+                std::fprintf(stderr, "Unknown Vulkan painter: %s\n", mode);
+                return false;
+            }
+        }
+        else if (std::strcmp(argv[i], "--vector-text") == 0)
+            app.boot.vulkan.vector_text = true;
+#endif
     }
 
     if (app.help)
@@ -292,6 +317,11 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
             "  --violations          draw the violation overlay each frame\n"
             "  --no-script           selftest without the scripted input (screenshots)\n",
             title);
+#if defined(PUFFERUI_ENABLE_VULKAN)
+        std::printf(
+            "  --vulkan-painter reference|sdf|compute|adaptive  select the native painter\n"
+            "  --vector-text         HarfBuzz shaping and Slug GPU text (optional build)\n");
+#endif
         return false;
     }
 

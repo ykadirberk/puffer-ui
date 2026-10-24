@@ -58,7 +58,8 @@ inline bool cache_records_equal(const cache_record &a, const cache_record &b)
 }
 void device::cache_begin(surface *s)
 {
-    cache_active = options.tile_cache && options.cache_budget_bytes && s && s->scene;
+    cache_active = !paint_detail::sdf_painter(options.painter) && options.tile_cache &&
+                   options.cache_budget_bytes && s && s->scene;
     if (s && s->cache_cooldown)
     {
         --s->cache_cooldown;

@@ -1,0 +1,265 @@
+{
+  "tiles": 1150,
+  "runs": [
+    {
+      "run": 0,
+      "mode": "null_baseline",
+      "process_seconds": 0.364629200019408
+    },
+    {
+      "run": 0,
+      "mode": "direct3d11_baseline",
+      "process_seconds": 1.7822166999976616
+    },
+    {
+      "run": 0,
+      "mode": "direct3d11_candidate",
+      "process_seconds": 1.8106201999762561
+    },
+    {
+      "run": 0,
+      "mode": "null_candidate",
+      "process_seconds": 0.3478211000037845
+    },
+    {
+      "run": 1,
+      "mode": "direct3d11_baseline",
+      "process_seconds": 1.7661556999955792
+    },
+    {
+      "run": 1,
+      "mode": "null_candidate",
+      "process_seconds": 0.34963719997904263
+    },
+    {
+      "run": 1,
+      "mode": "null_baseline",
+      "process_seconds": 0.3456941000185907
+    },
+    {
+      "run": 1,
+      "mode": "direct3d11_candidate",
+      "process_seconds": 1.7858751000021584
+    },
+    {
+      "run": 2,
+      "mode": "null_candidate",
+      "process_seconds": 0.3546427999972366
+    },
+    {
+      "run": 2,
+      "mode": "direct3d11_candidate",
+      "process_seconds": 1.768755400000373
+    },
+    {
+      "run": 2,
+      "mode": "direct3d11_baseline",
+      "process_seconds": 1.8279242999851704
+    },
+    {
+      "run": 2,
+      "mode": "null_baseline",
+      "process_seconds": 0.3587182000046596
+    },
+    {
+      "run": 3,
+      "mode": "direct3d11_candidate",
+      "process_seconds": 1.8401354000088759
+    },
+    {
+      "run": 3,
+      "mode": "null_baseline",
+      "process_seconds": 0.358508500008611
+    },
+    {
+      "run": 3,
+      "mode": "null_candidate",
+      "process_seconds": 0.3523810000042431
+    },
+    {
+      "run": 3,
+      "mode": "direct3d11_baseline",
+      "process_seconds": 1.8325333000102546
+    },
+    {
+      "run": 4,
+      "mode": "null_baseline",
+      "process_seconds": 0.35401500001898967
+    },
+    {
+      "run": 4,
+      "mode": "direct3d11_baseline",
+      "process_seconds": 1.8381599000131246
+    },
+    {
+      "run": 4,
+      "mode": "direct3d11_candidate",
+      "process_seconds": 1.7810620999953244
+    },
+    {
+      "run": 4,
+      "mode": "null_candidate",
+      "process_seconds": 0.3626473000040278
+    },
+    {
+      "run": 5,
+      "mode": "direct3d11_baseline",
+      "process_seconds": 1.8671658000093885
+    },
+    {
+      "run": 5,
+      "mode": "null_candidate",
+      "process_seconds": 0.36773579998407513
+    },
+    {
+      "run": 5,
+      "mode": "null_baseline",
+      "process_seconds": 0.349017400003504
+    },
+    {
+      "run": 5,
+      "mode": "direct3d11_candidate",
+      "process_seconds": 1.7981337999808602
+    },
+    {
+      "run": 6,
+      "mode": "null_candidate",
+      "process_seconds": 0.37193339999066666
+    },
+    {
+      "run": 6,
+      "mode": "direct3d11_candidate",
+      "process_seconds": 1.8505204999819398
+    },
+    {
+      "run": 6,
+      "mode": "direct3d11_baseline",
+      "process_seconds": 1.931727699993644
+    },
+    {
+      "run": 6,
+      "mode": "null_baseline",
+      "process_seconds": 0.4002323000167962
+    },
+    {
+      "run": 7,
+      "mode": "direct3d11_candidate",
+      "process_seconds": 1.8382640999916475
+    },
+    {
+      "run": 7,
+      "mode": "null_baseline",
+      "process_seconds": 0.35005620002630167
+    },
+    {
+      "run": 7,
+      "mode": "null_candidate",
+      "process_seconds": 0.3812298999982886
+    },
+    {
+      "run": 7,
+      "mode": "direct3d11_baseline",
+      "process_seconds": 3.020932499988703
+    }
+  ],
+  "summary": {
+    "null_baseline": {
+      "frame": {
+        "mean": 1.896733888888889,
+        "median": 1.6766,
+        "p95": 2.6149,
+        "p99": 3.7002,
+        "max": 7.6805
+      },
+      "add": {
+        "mean": 2.111806666666667,
+        "median": 2.0492,
+        "p95": 2.7128,
+        "p99": 3.7794,
+        "max": 7.6805
+      }
+    },
+    "direct3d11_baseline": {
+      "frame": {
+        "mean": 8.44984,
+        "median": 4.72245,
+        "p95": 33.1545,
+        "p99": 79.74,
+        "max": 91.2424
+      },
+      "add": {
+        "mean": 10.115845138888888,
+        "median": 5.763450000000001,
+        "p95": 40.6384,
+        "p99": 83.1014,
+        "max": 91.2424
+      }
+    },
+    "null_candidate": {
+      "frame": {
+        "mean": 1.9119658333333334,
+        "median": 1.7464499999999998,
+        "p95": 2.6514,
+        "p99": 3.7373,
+        "max": 6.7874
+      },
+      "add": {
+        "mean": 2.09873875,
+        "median": 2.03865,
+        "p95": 2.6913,
+        "p99": 3.8363,
+        "max": 6.7874
+      }
+    },
+    "direct3d11_candidate": {
+      "frame": {
+        "mean": 8.276847152777778,
+        "median": 4.54495,
+        "p95": 33.6953,
+        "p99": 79.2941,
+        "max": 90.624
+      },
+      "add": {
+        "mean": 9.955287222222223,
+        "median": 5.6324000000000005,
+        "p95": 40.5934,
+        "p99": 81.3336,
+        "max": 90.624
+      }
+    }
+  },
+  "binaries": {
+    "baseline": "e7484ff13f5de795255ece0b63eb5d2f3ffa7fcdb2d52ffe4b23b26dc3ca2875",
+    "candidate": "9a56ff4d36d8dd721fa5ede2369e6734783cea5d947a8b52b38e9e284e1ec419"
+  },
+  "commands": {
+    "null_baseline": [
+      "D:\\myimgui\\build-vulkan-compute\\final-delivery\\controls-1150\\baseline\\pui_showcase_tests.exe",
+      "--bench",
+      "null",
+      "--tiles",
+      "1150"
+    ],
+    "direct3d11_baseline": [
+      "D:\\myimgui\\build-vulkan-compute\\final-delivery\\controls-1150\\baseline\\pui_showcase_tests.exe",
+      "--bench",
+      "direct3d11",
+      "--tiles",
+      "1150"
+    ],
+    "null_candidate": [
+      "D:\\myimgui\\build-vulkan-compute\\final-delivery\\controls-1150\\candidate\\pui_showcase_tests.exe",
+      "--bench",
+      "null",
+      "--tiles",
+      "1150"
+    ],
+    "direct3d11_candidate": [
+      "D:\\myimgui\\build-vulkan-compute\\final-delivery\\controls-1150\\candidate\\pui_showcase_tests.exe",
+      "--bench",
+      "direct3d11",
+      "--tiles",
+      "1150"
+    ]
+  }
+}

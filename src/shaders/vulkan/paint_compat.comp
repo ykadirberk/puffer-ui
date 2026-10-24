@@ -1,0 +1,27 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#include "bin_common.glsl"
+#include "rgba8_blend.glsl"
+layout(local_size_x=8,local_size_y=8) in;
+layout(rgba8,set=0,binding=5) uniform writeonly image2D scene;
+void main() {
+    uint tile=gl_WorkGroupID.x+gl_WorkGroupID.y*gl_NumWorkGroups.x;
+    if(tile>=p.limits.w) return;
+    uvec2 origin=uvec2(tile%p.grid.x,tile/p.grid.x)*p.extent.z;
+    uint first=work.words[p.limits.w+tile],end=work.words[p.limits.w+tile+1];
+    if(gl_LocalInvocationIndex==0) atomicAdd(control.words[5],1);
+    for(uint y=gl_LocalInvocationID.y;y<p.extent.z;y+=8)
+        for(uint x=gl_LocalInvocationID.x;x<p.extent.z;x+=8) {
+            uvec2 pixel=origin+uvec2(x,y);
+            if(any(greaterThanEqual(pixel,p.extent.xy))) continue;
+            vec2 point=vec2(pixel)+vec2(0.5);
+            uint color=0;
+            for(uint at=first;at<end;++at) {
+                PaintCommand c=tape.commands[output_list.values[at]];
+                if(point.x<c.bounds.x || point.y<c.bounds.y || point.x>=c.bounds.z || point.y>=c.bounds.w) continue;
+                if(c.header.x==6) color=c.header.y;
+                else color=blend_rgba8(c.header.y,color); // CPU eligibility permits only RECT here
+            }
+            imageStore(scene,ivec2(pixel),vec4(color&255u,(color>>8)&255u,(color>>16)&255u,color>>24)/255.0);
+        }
+}
