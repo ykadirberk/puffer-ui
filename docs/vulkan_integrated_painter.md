@@ -1,11 +1,13 @@
 # Tek Vulkan painter: mimari ve doğrulama
 
-27 Ekim uygulaması: standart `pui_showcase_vulkan.exe`, `INTEGRATED` seçer;
+27 Ekim uygulaması: Vulkan cihazlarının ve standart `pui_showcase_vulkan.exe`'nin
+varsayılanı `INTEGRATED`;
 tile/whole-program reuse ve derleme açıksa HarfBuzz/Slug aynı yapılandırmadadır.
-Python launcher isteğe bağlıdır. Library default'u `REFERENCE` kalır. Açıkça
+Python launcher isteğe bağlıdır. HarfBuzz kapalı derlemede bitmap yazılar kullanılır. Açıkça
 verilen `--vulkan-painter` seçenekleri kendi bağımsız ayarlarıyla başlar.
 Son ölçümler, ham kareler, test kayıtları ve sınırlamalar
-[teslim raporunda](perf_vulkan_integrated.md) tutulur.
+[teslim raporunda](perf_vulkan_integrated.md) tutulur. Example shorthand olmadan
+kurulum için [çalışan tutorial](tutorial/10-vulkan-without-shorthand.md) bulunur.
 
 Normal yolun seçim sırası şöyledir:
 
@@ -118,8 +120,8 @@ Normal painter; shaping, outline/coverage residency, semantik komutlar, GPU
 listeleri, genel cache ve yürütme politikasını birlikte kurar. Constructor ve
 frame-boundary preparation kapasiteleri hazırlar; draw çağrısı storage büyütmez.
 Diagnostic raster ve force-compute aynı input programını bağımsız yürütebilir.
-Normal yol yeterli kanıt olmadan mevcut library default'unu değiştirmez.
-Showcase default'u bütün kabul kapıları geçince tek yeni yolu seçer.
+İlk teslimde library default'u korunmuştu; takip eden varsayılan geçişi,
+doğrulanan INTEGRATED yapılandırmasını bütün Vulkan cihaz fabrikalarına taşır.
 
 ### I2: Renderer programı ve genel tile cache
 

@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // Exact full native-output cache: unknown meshes, images, bitmap/Slug edges,
 // LOAD pixels, late texture updates, state changes and bounded native fallback.
 #undef near
@@ -128,7 +129,7 @@ int main(int argc, char **argv)
             flattened = true;
         else
             return 1;
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.painter = vulkan_painter_mode::INTEGRATED;
     options.tile_cache = true;
     options.validation = true;

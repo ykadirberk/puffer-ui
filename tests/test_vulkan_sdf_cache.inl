@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // White-box cache regressions: GPU history, collision and same-frame fallback.
 #undef near
 #undef far
@@ -14,7 +15,7 @@ void sdf_cache_diagnostic(i32 code, const char *message, void *)
 } // namespace
 void check_sdf_history(u32 dispatch_limit, bool collide = false, bool boundary = false)
 {
-    vulkan_device_opts opts;
+    vulkan_device_opts opts = test_detail::reference_options();
     opts.painter = vulkan_painter_mode::COMPUTE_SDF;
     opts.tile_cache = true;
     opts.validation = true;
@@ -108,7 +109,7 @@ PUI_TEST(sdf_gpu_exact_compare_checks_clip_and_target_even_when_hashes_collide)
 }
 PUI_TEST(sdf_upload_budget_split_keeps_metadata_and_geometry_in_one_submission)
 {
-    vulkan_device_opts opts;
+    vulkan_device_opts opts = test_detail::reference_options();
     opts.painter = vulkan_painter_mode::SDF_RASTER;
     opts.validation = true;
     opts.error_callback = sdf_cache_diagnostic;
@@ -140,7 +141,7 @@ PUI_TEST(sdf_upload_budget_split_keeps_metadata_and_geometry_in_one_submission)
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
 PUI_TEST(harfbuzz_overlay_records_real_glyph_ids_instead_of_dropping_vector_text)
 {
-    vulkan_device_opts opts;
+    vulkan_device_opts opts = test_detail::reference_options();
     opts.painter = vulkan_painter_mode::SDF_RASTER;
     opts.vector_text = true;
     opts.validation = true;
@@ -184,7 +185,7 @@ PUI_TEST(harfbuzz_overlay_records_real_glyph_ids_instead_of_dropping_vector_text
 #endif
 PUI_TEST(sdf_adaptive_uses_compute_for_large_opaque_program_and_bypasses_low_coverage)
 {
-    vulkan_device_opts opts;
+    vulkan_device_opts opts = test_detail::reference_options();
     opts.painter = vulkan_painter_mode::COMPUTE_SDF;
     opts.tile_cache = opts.adaptive_compute = opts.validation = true;
     opts.error_callback = sdf_cache_diagnostic;
@@ -221,7 +222,7 @@ PUI_TEST(sdf_budget_shortfalls_replay_complete_raster_without_partial_scene)
     std::vector<u8> expected;
     for (i32 variant = 0; variant < 4; ++variant)
     {
-        vulkan_device_opts opts;
+        vulkan_device_opts opts = test_detail::reference_options();
         opts.painter = variant ? vulkan_painter_mode::COMPUTE_SDF : vulkan_painter_mode::SDF_RASTER;
         opts.tile_cache = true;
         opts.validation = true;

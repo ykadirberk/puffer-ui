@@ -1,4 +1,5 @@
 #include <pufferui/vulkan.h>
+#include "vulkan_test_options.h"
 #include <cstdio>
 #include <vector>
 using namespace pui;
@@ -13,7 +14,7 @@ void diagnostic(i32 code, const char *message, void *)
 } // namespace
 int main()
 {
-    vulkan_device_opts opts;
+    vulkan_device_opts opts = test_detail::reference_options();
     opts.painter = vulkan_painter_mode::SDF_RASTER;
     opts.vector_text = true;
     opts.validation = true;

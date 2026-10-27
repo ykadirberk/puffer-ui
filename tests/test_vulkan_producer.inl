@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // GPU producer dirty certificates flow to later sampling passes. Updates and
 // unqualified producers retain the literal resource revision dependency.
 #define PUFFERUI_OUTPUT_CACHE_HELPERS_ONLY
@@ -20,7 +21,7 @@ int main(int argc, char **argv)
             staged = true;
         else
             return 1;
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.painter = vulkan_painter_mode::INTEGRATED;
     options.tile_cache = true;
     options.validation = true;

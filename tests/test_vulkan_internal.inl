@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // Private CPU-only tests compile the actual optional renderer implementation.
 // Deliberately equal hashes must not create a false cache hit.
 // No GPU or window is needed by this executable.
@@ -22,6 +23,7 @@ PUI_TEST(vulkan_cache_hash_collision_compares_exact_input)
 PUI_TEST(vulkan_cache_canonicalizes_fields_and_tracks_content_revision)
 {
     vk_detail::device d;
+    d.options = test_detail::reference_options();
     vk_detail::surface surface;
     vk_detail::texture target, sample;
     target.width = target.height = 64;
@@ -68,7 +70,7 @@ PUI_TEST(vulkan_invalid_factory_options_are_captured)
     {
         i32 calls = 0, code = 0;
     } log;
-    vulkan_device_opts opts;
+    vulkan_device_opts opts = test_detail::reference_options();
     opts.frames_in_flight = 0;
     opts.user = &log;
     opts.error_callback = [](i32 code, const char *, void *user)
@@ -87,6 +89,7 @@ PUI_TEST(vulkan_invalid_factory_options_are_captured)
 PUI_TEST(vulkan_generation_wrap_invalidates_and_reidentifies_live_resources)
 {
     vk_detail::device d;
+    d.options = test_detail::reference_options();
     vk_detail::surface s;
     vk_detail::texture a, b;
     s.history_valid = true;
@@ -104,6 +107,7 @@ PUI_TEST(vulkan_generation_wrap_invalidates_and_reidentifies_live_resources)
 PUI_TEST(vulkan_cache_budget_fallback_preserves_the_full_reference_route)
 {
     vk_detail::device d;
+    d.options = test_detail::reference_options();
     vk_detail::surface s;
     vk_detail::texture target;
     target.width = target.height = 16;

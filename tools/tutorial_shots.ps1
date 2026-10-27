@@ -6,7 +6,7 @@
 # The scripted programs (the finished todo app) are captured after enough frames
 # for the typed tasks, the ticked checkbox and the hovered row to show; the scene
 # drifts with the clock, so two runs differ slightly in background position.
-param([string]$BinDir = 'out/build/x64-release/Release')
+param([string]$BinDir = 'out/build/x64-release/Release', [string[]]$Names = @())
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
@@ -26,11 +26,16 @@ $shots = @(
     @('final', 'pui_tut_todo', 28, ''),
     @('glass-wide', 'pui_tut_todo', 28, '900x560'),
     @('glass-group', 'pui_tut_todo', 40, '', '10,180,500,112'),   # a crop: x,y,w,h
-    @('button-states', 'pui_tut_button_states', 3, '')
+    @('button-states', 'pui_tut_button_states', 3, ''),
+    @('vulkan-manual', 'pui_tut_vulkan_manual', 8, '', 'optional')
 )
 foreach ($s in $shots) {
+    if ($Names.Count -gt 0 -and $s[0] -notin $Names) { continue }
     $exe = Join-Path $bin ($s[1] + '.exe')
-    if (-not (Test-Path $exe)) { throw "missing $exe (build the pui_tut_* targets first)" }
+    if (-not (Test-Path $exe)) {
+        if ($s.Count -gt 4 -and $s[4] -eq 'optional') { Write-Host "skip optional $exe"; continue }
+        throw "missing $exe (build the pui_tut_* targets first)"
+    }
     $bmp = Join-Path ([System.IO.Path]::GetTempPath()) ('tut_' + $s[0] + '.bmp')
     $args = @('--selftest', '--frames', $s[2], '--screenshot', $bmp)
     if ($s[3] -ne '') { $args += @('--size', $s[3]) }
@@ -40,7 +45,7 @@ foreach ($s in $shots) {
     $bitmap = [System.Drawing.Bitmap]::FromFile($bmp)
     try {
         $out = $bitmap
-        if ($s.Count -gt 4) {
+        if ($s.Count -gt 4 -and $s[4] -ne 'optional') {
             $c = $s[4].Split(',') | ForEach-Object { [int]$_ }
             $out = $bitmap.Clone((New-Object System.Drawing.Rectangle($c[0], $c[1], $c[2], $c[3])), $bitmap.PixelFormat)
         }

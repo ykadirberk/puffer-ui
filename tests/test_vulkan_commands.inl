@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // Private command ABI and scalar binning-oracle regressions. No GPU required.
 #undef near
 #undef far
@@ -140,6 +141,7 @@ PUI_TEST(command_reference_binning_accounts_for_partial_edge_tiles_and_empty_pro
 PUI_TEST(command_shadow_encoder_captures_visible_primitive_and_legacy_order)
 {
     vk_detail::device owner;
+    owner.options = test_detail::reference_options();
     owner.options.command_budget_bytes = 1024 * 1024;
     owner.options.painter = vulkan_painter_mode::COMMAND_SHADOW;
     vk_detail::primitive_recorder recorder;
@@ -177,6 +179,7 @@ PUI_TEST(command_shadow_encoder_captures_visible_primitive_and_legacy_order)
 PUI_TEST(command_shadow_encoder_owns_resource_versions_and_rejects_budget_overflow)
 {
     vk_detail::device owner;
+    owner.options = test_detail::reference_options();
     owner.options.command_budget_bytes = 1024;
     owner.options.painter = vulkan_painter_mode::COMMAND_SHADOW;
     vk_detail::texture target, sample;
@@ -208,6 +211,7 @@ PUI_TEST(command_shadow_encoder_owns_resource_versions_and_rejects_budget_overfl
 PUI_TEST(command_overflow_consumes_shape_marker_before_the_next_batch)
 {
     vk_detail::device owner;
+    owner.options = test_detail::reference_options();
     owner.options.painter = vulkan_painter_mode::COMPUTE_SDF;
     owner.options.gpu_command_budget_bytes = sizeof(paint_detail::command);
     vk_detail::primitive_recorder recorder;

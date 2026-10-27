@@ -1,6 +1,7 @@
 // Reuse the independent SDL/native host; its existing tests remain unchanged.
 #define main original_wsi_test_main
 #include "test_vulkan_wsi.cpp"
+#include "vulkan_test_options.h"
 #undef main
 #include <cstring>
 #include <vector>
@@ -87,7 +88,7 @@ int main()
         SDL_CreateWindow("Vulkan present stages", 96, 64, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
     REQUIRE(native_window);
     zero_size_host host;
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.host = &host;
     options.validation = true; // also enables synchronization validation
     options.error_callback = diagnostic;

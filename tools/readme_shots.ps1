@@ -63,6 +63,7 @@ $shots = @(
     @('a11y', 'pui_ex_a11y', '--selftest --frames 4 --no-script'),
     @('pickers', 'pui_ex_pickers', '--selftest --frames 6 --no-script'),
     @('vulkan', 'pui_ex_vulkan', '--selftest --frames 6 --no-script', 'optional'),
+    @('vulkan-manual', 'pui_tut_vulkan_manual', '--selftest --frames 8', 'optional'),
     @('vulkan-painter', 'pui_ex_vulkan_painter', '--selftest --frames 6 --no-script', 'optional'),
     @('vulkan-blur', 'pui_ex_vulkan_blur', '--selftest --frames 6 --no-script', 'optional'),
     @('vulkan-groups', 'pui_ex_vulkan_groups', '--selftest --frames 6 --no-script', 'optional'),

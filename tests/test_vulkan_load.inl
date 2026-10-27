@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // General ordered compute starts from actual RGBA8 LOAD, without requiring an
 // opaque suffix. Different destination bytes every frame exercise the native
 // function cache and fully computed packets must skip native vertex execution.
@@ -21,7 +22,7 @@ int main(int argc, char **argv)
             staged = true;
         else
             return 1;
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.painter = vulkan_painter_mode::INTEGRATED;
     options.validation = true;
     options.error_callback = diagnostic;

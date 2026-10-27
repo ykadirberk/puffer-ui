@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // Independent memory-role regressions reuse the unchanged actual showcase driver.
 #include "test_vulkan_preparation.inl"
 
@@ -101,7 +102,7 @@ PUI_TEST(memory_role_selection_prefers_local_work_and_readable_control_with_port
 
 PUI_TEST(memory_role_lut_migration_budget_rejection_preserves_the_calibrated_host_table)
 {
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.painter = vulkan_painter_mode::COMPUTE_SDF;
     options.gpu_command_budget_bytes = 20 * 1024 * 1024;
     auto *base = create_vulkan_device(options);
@@ -126,7 +127,7 @@ PUI_TEST(memory_role_lut_migration_allocation_failure_fails_creation_and_preserv
         reinterpret_cast<PFN_vkAllocateMemory>(role_resolver(native.device, "vkAllocateMemory"));
     role_lut_allocations = 0;
     native.get_device_proc_addr = role_device_proc;
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.native = &native;
     options.painter = vulkan_painter_mode::COMPUTE_SDF;
     u32 errors = 0;

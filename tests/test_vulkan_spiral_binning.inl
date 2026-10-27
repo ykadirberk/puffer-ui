@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // Actual 5000-item showcase tape through the native GPU binner, including peaks.
 // The unchanged raster path paints; G2 validates preprocessing independently.
 #undef near
@@ -16,7 +17,7 @@ int main(int argc, char **argv)
         return 1;
     g_start_page = PAGE_LAYOUT;
     g_no_hud = true;
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.validation = true;
     options.painter = vulkan_painter_mode::COMMAND_SHADOW;
     options.error_callback = diagnostic;

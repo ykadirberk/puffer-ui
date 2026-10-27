@@ -1,13 +1,14 @@
 // Reuse only the existing fixture; all assertions in the original test stay fixed.
 #define main bitmap_interaction_main
 #include "test_vulkan_interaction.cpp"
+#include "vulkan_test_options.h"
 #undef main
 
 int main(int argc, char **argv)
 {
     const bool staged = argc == 2 && std::strcmp(argv[1], "--staged") == 0;
     if (argc > 2 || (argc == 2 && !staged)) return 1;
-    vulkan_device_opts opts;
+    vulkan_device_opts opts = test_detail::reference_options();
     opts.validation = true;
     opts.vector_text = true;
     opts.painter = vulkan_painter_mode::SDF_RASTER;

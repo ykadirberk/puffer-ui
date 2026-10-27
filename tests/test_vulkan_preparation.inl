@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // Resource-lifetime regressions; original tests and golden oracles stay fixed.
 #undef near
 #undef far
@@ -60,7 +61,7 @@ struct prepared_scene
 };
 vulkan_device_opts preparation_options(bool cache = true)
 {
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.painter = vulkan_painter_mode::COMPUTE_SDF;
     options.tile_cache = cache;
     return options;

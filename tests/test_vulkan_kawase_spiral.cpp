@@ -1,6 +1,7 @@
 // Independent all-frame Kawase references; legacy goldens remain immutable.
 #define PUFFERUI_COMPUTE_SPIRAL_HELPERS_ONLY
 #include "test_vulkan_compute_spiral.cpp"
+#include "vulkan_test_options.h"
 #include "golden/vulkan_kawase_rx9070xt.inl"
 
 int main(int argc, char **argv)
@@ -9,7 +10,7 @@ int main(int argc, char **argv)
     if (argc > 1 && !staged) return 1;
     g_start_page = PAGE_LAYOUT;
     g_no_hud = true;
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.painter = vulkan_painter_mode::SDF_RASTER;
     options.vector_text = true;
     options.blur = vulkan_blur_mode::KAWASE;

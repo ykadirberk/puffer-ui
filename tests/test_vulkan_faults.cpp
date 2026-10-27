@@ -1,4 +1,5 @@
 #include <pufferui/vulkan.h>
+#include "vulkan_test_options.h"
 #if defined(PUFFERUI_ENABLE_SDL3)
 #include <SDL3/SDL.h>
 #endif
@@ -165,7 +166,7 @@ vulkan_native_device borrowed(render_device *owner)
 int main()
 {
     capture validation;
-    vulkan_device_opts opts;
+    vulkan_device_opts opts = test_detail::reference_options();
     opts.validation = true;
     opts.error_callback = quiet;
     opts.user = &validation;
@@ -176,7 +177,7 @@ int main()
     for (fault mode : {BUFFER, MEMORY, MAP, DESCRIPTORS, SUBMIT, DESCRIPTOR_RETRY, DEVICE_BUFFER})
     {
         capture error;
-        vulkan_device_opts e;
+        vulkan_device_opts e = test_detail::reference_options();
         e.native = &native;
         e.user = &error;
         e.error_callback = quiet;
@@ -251,7 +252,7 @@ int main()
     padded = true;
     flushes = invalidates = 0;
     capture error;
-    vulkan_device_opts e;
+    vulkan_device_opts e = test_detail::reference_options();
     e.native = &native;
     e.user = &error;
     e.error_callback = quiet;

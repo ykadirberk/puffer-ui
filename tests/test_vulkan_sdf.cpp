@@ -1,4 +1,5 @@
 #include <pufferui/vulkan.h>
+#include "vulkan_test_options.h"
 #include <cstdio>
 #include <cstring>
 #include <vector>
@@ -19,7 +20,7 @@ struct capture
 };
 capture render(vulkan_painter_mode mode, bool rounded, bool staged, bool cache = false)
 {
-    vulkan_device_opts opts;
+    vulkan_device_opts opts = test_detail::reference_options();
     opts.validation = true;
     opts.painter = mode;
     opts.tile_cache = cache;
@@ -118,7 +119,7 @@ int main()
 {
 #if !defined(PUFFERUI_ENABLE_HARFBUZZ)
     i32 rejected = 0;
-    vulkan_device_opts unavailable;
+    vulkan_device_opts unavailable = test_detail::reference_options();
     unavailable.painter = vulkan_painter_mode::SDF_RASTER;
     unavailable.vector_text = true;
     unavailable.user = &rejected;

@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // Acceleration tags must not invalidate an unchanged image. Cold uploads are
 // initialization, not evidence that an otherwise static program keeps changing.
 #define PUFFERUI_OUTPUT_CACHE_HELPERS_ONLY
@@ -47,7 +48,7 @@ int main(int argc, char **argv)
             feedback = true;
         else
             return 1;
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.painter = vulkan_painter_mode::INTEGRATED;
     options.vector_text = true;
     options.tile_cache = true;

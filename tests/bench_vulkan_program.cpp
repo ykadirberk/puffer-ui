@@ -5,6 +5,7 @@
 #define PUFFERUI_PROGRAM_HELPERS "test_vulkan_compute_spiral.cpp"
 #endif
 #include PUFFERUI_PROGRAM_HELPERS
+#include "vulkan_test_options.h"
 #if defined(_WIN32)
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -41,7 +42,7 @@ process_cpu_stamp cpu_stamp(bool thread = false)
 
 int main(int argc, char **argv)
 {
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.error_callback = diagnostic;
     i32 tiles = 5000, frames = FRAMES, hz = 0;
     bool idle = false, local = false, visible = false, vsync = false, program_cache = true;

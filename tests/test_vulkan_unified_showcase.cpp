@@ -1,4 +1,4 @@
-// Compile with the same default-selection definition as the shipped showcase.
+// Exercise the library defaults through the actual showcase bootstrap.
 // Explicit diagnostic painters must retain their independent configuration.
 #define main showcase_original_main
 #include "../examples/pui_showcase.cpp"

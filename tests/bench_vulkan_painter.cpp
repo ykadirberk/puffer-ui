@@ -1,11 +1,12 @@
 // Same actual showcase input stream as the frozen R0 benchmark, without readback.
 #define PUFFERUI_COMPUTE_SPIRAL_HELPERS_ONLY
 #include "test_vulkan_compute_spiral.cpp"
+#include "vulkan_test_options.h"
 #include <chrono>
 
 int main(int argc, char **argv)
 {
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.error_callback = diagnostic;
     i32 tiles = 5000;
     for (i32 i = 1; i < argc; ++i)

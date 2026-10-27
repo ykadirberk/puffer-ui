@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // Actual Vulkan compute results must match the independent ordered CPU oracle.
 // GPU readback is test-only; rendering consumes these buffers without readback.
 #undef near
@@ -92,7 +93,7 @@ PUI_TEST(gpu_binning_budget_and_invalid_grid_rejection_leave_device_usable)
 }
 int main()
 {
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.validation = true;
     options.error_callback = gpu_diagnostic;
     auto *device = create_vulkan_device(options);

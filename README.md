@@ -1532,8 +1532,10 @@ and view through `import_vulkan_image`; `ui::image` accepts the resulting
 passes a ready semaphore and waits for the release timeline before freeing the
 producer's resources. Ownership stays explicit in both directions.
 
-The backend includes targets, the existing blur pyramid, readback and an opt-in
-pixel cache. SDL remains the default. See [Vulkan setup and native integration](docs/vulkan.md)
+The backend includes targets, the existing blur pyramid, readback and exact
+output caches. Its device default is `INTEGRATED`, with whole-program/tile reuse
+and HarfBuzz/Slug text when built. SDL remains the default backend for non-Vulkan
+applications. See [Vulkan setup and native integration](docs/vulkan.md)
 for feature requirements, queue/lifetime rules, validation and build commands.
 Full source: `examples/atomic/vulkan.cpp`. `pui_showcase_vulkan` runs the actual
 motion showcase on the same native backend.
@@ -1557,7 +1559,7 @@ This atomic starts with the analytic SDF raster painter. Add
 upstream Slug GPU outline renderer. It draws rounded gradients and shaped text;
 the default core and SDL renderers retain their bitmap text and existing pixels.
 
-`pui_showcase_vulkan` starts the integrated painter: native command operands,
+All Vulkan device factories, including `pui_showcase_vulkan`, start the integrated painter: native command operands,
 whole-program and tile reuse, and HarfBuzz/Slug text when that build option is
 enabled. Run the executable directly from the project; Python is optional.
 The renderer observes changing programs natively, skips certified unchanged
@@ -1571,6 +1573,20 @@ reference exactly. See [the renderer architecture](docs/vulkan_compute_architect
 and [font contracts and limits](docs/harfbuzz.md).
 
 Full source: `examples/atomic/vulkan_painter.cpp`.
+
+### Vulkan integration without an example bootstrap
+
+![Explicit SDL and Vulkan integration](docs/img/readme/vulkan-manual.png)
+
+Run: `pui_tut_vulkan_manual` (configure with `-DPUFFERUI_WITH_VULKAN=ON`).
+
+[Tutorial chapter 10](docs/tutorial/10-vulkan-without-shorthand.md) implements the
+SDL window, `vulkan_host`, device, surface, context, input, DPI, frame loop,
+VSync and cleanup directly. It uses no `example_common.h`, `example_run`,
+`tut.h` or `sdl3_app` bootstrap. `vulkan_device_opts options; options.host = &host;`
+selects the integrated painter with the normal defaults. The runnable source is
+`examples/tutorial/vulkan_manual.cpp`; `--selftest` checks actual SDL input and
+native resize without requiring Python.
 
 ### Vulkan Kawase blur
 
@@ -1674,6 +1690,7 @@ Full source: `examples/atomic/vulkan_alpha.cpp`.
 | `pui_ex_vulkan_groups` | `examples/atomic/vulkan_groups.cpp` | bounded native distance unions and shared styling |
 | `pui_ex_vulkan_alpha` | `examples/atomic/vulkan_alpha.cpp` | shared opacity for ordered local groups |
 | `pui_showcase_vulkan` | `examples/pui_showcase.cpp` | the existing motion showcase on the optional native Vulkan backend |
+| `pui_tut_vulkan_manual` | `examples/tutorial/vulkan_manual.cpp` | explicit native integration, no example or application bootstrap |
 
 Every example supports:
 

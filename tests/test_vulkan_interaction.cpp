@@ -1,4 +1,5 @@
 #include <pufferui/vulkan.h>
+#include "vulkan_test_options.h"
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -69,7 +70,7 @@ int main(int argc, char **argv)
         else
             return 1;
     }
-    vulkan_device_opts opts;
+    vulkan_device_opts opts = test_detail::reference_options();
     opts.validation = !bench;
     opts.error_callback = diagnostic;
     opts.upload_mode = staged ? vulkan_upload_mode::STAGED : vulkan_upload_mode::DIRECT;

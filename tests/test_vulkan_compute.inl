@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // Real storage-image compute painting must match the established graphics path.
 #undef near
 #undef far
@@ -145,7 +146,7 @@ PUI_TEST(compute_painter_rejects_unqualified_fractional_program_without_scene_wr
 }
 int main()
 {
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.validation = true;
     options.error_callback = compute_diagnostic;
     auto *device = create_vulkan_device(options);

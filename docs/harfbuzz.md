@@ -16,7 +16,9 @@ source. An offline build may set
 commit. Installed Vulkan packages built with this feature find the installed
 HarfBuzz CMake package; core/SDL-only consumers do not acquire that dependency.
 
-Select `vulkan_device_opts::vector_text=true` with an SDF-capable painter mode.
+With HarfBuzz built, `vulkan_device_opts{}` enables `vector_text=true` with the
+default integrated painter. Set `vector_text=false` for bitmap text, or explicitly
+select `vector_text=true` with another SDF-capable diagnostic painter.
 An explicit vector-text request in a build without HarfBuzz fails device
 creation with a diagnostic. It does not silently report the legacy renderer
 as GPU vector text. Legacy rendering remains selected when the option is false.

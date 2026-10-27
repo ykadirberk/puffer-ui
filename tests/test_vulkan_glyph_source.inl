@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // Submitted-token ownership, fixed-capacity keys and final-alpha GPU parity.
 #undef near
 #undef far
@@ -30,7 +31,7 @@ int main(int argc, char **argv)
             staged = true;
         else
             return 1;
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.painter = vulkan_painter_mode::INTEGRATED;
     options.vector_text = true;
     options.validation = true;

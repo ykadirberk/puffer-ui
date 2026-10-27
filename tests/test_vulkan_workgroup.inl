@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // Independent ordered-list oracle plus cooperative scan/compaction regressions.
 #define main original_binning_main
 #include "test_vulkan_binning.inl"
@@ -179,7 +180,7 @@ PUI_TEST(cooperative_scan_cannot_wrap_large_unsigned_counts_into_valid_lists)
 
 PUI_TEST(cooperative_dirty_compaction_matches_ordered_cpu_flags_for_real_cache_frames)
 {
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.painter = vulkan_painter_mode::COMPUTE_SDF;
     options.tile_cache = true;
     options.validation = true;
@@ -239,7 +240,7 @@ PUI_TEST(ordered_translucent_suffix_preserves_native_blends_and_raster_ownership
     std::vector<u8> reference;
     for (i32 mode = 0; mode < 3; ++mode)
     {
-        vulkan_device_opts options;
+        vulkan_device_opts options = test_detail::reference_options();
         options.painter =
             mode == 0 ? vulkan_painter_mode::SDF_RASTER : vulkan_painter_mode::COMPUTE_SDF;
         options.tile_cache = mode == 2;

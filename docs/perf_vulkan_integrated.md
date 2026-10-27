@@ -2,6 +2,11 @@
 
 27 Ekim 2026.
 
+Bu ölçüm raporu `a189807` tesliminin yapılandırmasını kaydeder. Sonraki
+[Vulkan varsayılan geçişi](vulkan_default_validation.md), aynı integrated
+yapılandırmasını library API varsayılanına taşır; aşağıdaki ölçüm seçenekleri
+ve ham sonuçlar tarihsel kayıt olarak korunur.
+
 Standart `pui_showcase_vulkan.exe`, tek `INTEGRATED` yapılandırmasıyla açılır. Python gerekmez. HarfBuzz açık derlemede shaping/Slug, native operandlar, exact cache ve yürütme seçimi birlikte kurulur. Library default'u ve açık tanılama seçenekleri bağımsız kalır.
 
 ## Değişiklik ve seçim

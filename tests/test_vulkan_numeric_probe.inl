@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // Numerical experiment, not a visual acceptance test. The renderer does not use
 // this compute shader. Reports raw native-vs-compute quantization differences.
 #undef near
@@ -53,7 +54,7 @@ int main(int argc, char **argv)
     if (!dump.empty() &&
         (std::filesystem::exists(dump) || !std::filesystem::create_directories(dump)))
         return 1;
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     if (native_lookup && (!lookup.empty() || gradient)) return 1;
     options.validation = true;
     options.error_callback = numeric_diagnostic;

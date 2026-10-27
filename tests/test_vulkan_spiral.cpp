@@ -1,6 +1,7 @@
 // Actual showcase workload, independent of the unchanged SDL test/golden suite.
 #define main showcase_original_main
 #include "../examples/pui_showcase.cpp"
+#include "vulkan_test_options.h"
 #undef main
 #include <chrono>
 
@@ -122,7 +123,7 @@ int main(int argc, char **argv)
     if (upload_reference && !pixels) return 1;
     g_start_page = PAGE_LAYOUT;
     g_no_hud = true;
-    vulkan_device_opts opts;
+    vulkan_device_opts opts = test_detail::reference_options();
     opts.validation = validation;
     opts.error_callback = diagnostic;
     opts.tile_cache = cache;

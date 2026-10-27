@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // Execute the actual immutable Spiral fixture through the integrated float
 // painter and the independent native SDF oracle. No existing test is modified.
 #undef near
@@ -46,7 +47,7 @@ int main(int argc, char **argv)
     REQUIRE(tiles == 1150 || tiles == 5000);
     g_start_page = PAGE_LAYOUT;
     g_no_hud = true;
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.painter = vulkan_painter_mode::INTEGRATED;
     options.validation = true;
     options.error_callback = diagnostic;

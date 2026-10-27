@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // Native fragment vs compute source-float oracle. The production SDF module is
 // unchanged; only this test's F32 attachment disables blending to expose sources.
 #undef near
@@ -96,7 +97,7 @@ int main(int argc, char **argv)
         else
             return 1;
     }
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.painter = vulkan_painter_mode::SDF_RASTER;
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
     options.vector_text = true;

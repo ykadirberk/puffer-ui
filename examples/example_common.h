@@ -278,17 +278,16 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
     app.width = w;
     app.height = h;
     app.show_violations = true; // interactive dev runs watch; selftests clear it
-#if defined(PUFFERUI_ENABLE_VULKAN) && defined(PUFFERUI_SHOWCASE_INTEGRATED)
+#if defined(PUFFERUI_ENABLE_VULKAN)
     bool explicit_painter = false;
     for (int i = 1; i + 1 < argc; ++i)
         if (std::strcmp(argv[i], "--vulkan-painter") == 0) explicit_painter = true;
-    if (!explicit_painter)
+    if (explicit_painter)
     {
-        app.boot.vulkan.painter = vulkan_painter_mode::INTEGRATED;
-        app.boot.vulkan.tile_cache = app.boot.vulkan.whole_program_cache = true;
-#if defined(PUFFERUI_ENABLE_HARFBUZZ)
-        app.boot.vulkan.vector_text = true;
-#endif
+        // A diagnostic override starts from independent features. Preserve
+        // unrelated caller policy such as budgets, uploads, blur and validation.
+        app.boot.vulkan.tile_cache = app.boot.vulkan.whole_program_cache = false;
+        app.boot.vulkan.vector_text = app.boot.vulkan.adaptive_compute = false;
     }
 #endif
     for (int i = 1; i < argc; ++i)

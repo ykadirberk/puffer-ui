@@ -1,4 +1,5 @@
 #include <pufferui/vulkan.h>
+#include "vulkan_test_options.h"
 #include <cstdio>
 using namespace pui;
 #define REQUIRE(x)                                                                                 \
@@ -18,7 +19,7 @@ static void diagnostic(i32 code, const char *message, void *)
 }
 int run(bool cache, bool timeline)
 {
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.validation = true;
     options.tile_cache = cache;
     options.error_callback = diagnostic;

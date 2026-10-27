@@ -16,10 +16,14 @@ and [boundary validation report](perf_renderer_boundary.md).
 
 ## Prepared painter resources
 
-The showcase's default `INTEGRATED` configuration combines whole-program/tile
+The Vulkan device's default `INTEGRATED` configuration combines whole-program/tile
 reuse and optional HarfBuzz/Slug text. Run `pui_showcase_vulkan.exe` directly;
 `--vulkan-painter sdf --vector-text` remains an independent raster control.
-The library default remains `REFERENCE`.
+This is also the default of `create_vulkan_device()`, `create_sdl3_vulkan_device()`
+and the Vulkan bootstrap. A HarfBuzz-disabled build retains bitmap text with the
+integrated shape painter. Core/SDL renderer selection is unchanged. The explicit
+[Vulkan integration tutorial](tutorial/10-vulkan-without-shorthand.md) builds a
+native application without `example_common.h` or an application bootstrap.
 
 Integrated whole-program observation uses native operands. It does not create
 or execute fine-cache kernels merely to learn whether a page is static. A
@@ -87,11 +91,12 @@ HarfBuzz shaping, outline encoding, font selection, gamma and DPI remain unchang
 
 ## Whole native program reuse
 
-`whole_program_cache=true` optionally reuses a complete SDF raster or compute program.
+`whole_program_cache=true` reuses a complete SDF raster or compute program and is
+enabled in the default integrated configuration.
 The showcase's `--vulkan-painter sdf` and `--vulkan-painter compute` enable it.
 The adaptive selector keeps
 its raster fast path without automatically enabling this extra work; applications
-can request the option explicitly. The library default is false. Two frame slots,
+can request the option explicitly. Two frame slots,
 supported RGBA8 targets, a compute-capable queue for certificates and sufficient
 preparation budgets are required. SDF raster reuse does not prepare the suffix
 painter or its finite blend table. A rejected
@@ -497,7 +502,8 @@ and the qualification report for measured behavior and remaining platform limits
 
 Optional analytic shapes, HarfBuzz/Slug text, GPU command binning and compute
 painting are described in [the GPU painter contract](vulkan_gpu_painter.md).
-REFERENCE remains the default. The independent SDF raster path is the visual
+INTEGRATED is the Vulkan default. The independent SDF raster path is the visual
 reference for compute/cache; existing bitmap goldens are unchanged. The original
 [detailed architecture](vulkan_compute_architecture.md) retains the design and
-qualification protocol. Compute is opt-in and is not assumed faster than raster.
+qualification protocol. Integrated selects native observation and qualified reuse;
+forced compute remains a diagnostic mode and is not assumed faster than raster.

@@ -1,4 +1,5 @@
 #include <pufferui/vulkan.h>
+#include "vulkan_test_options.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 #include <cstdio>
@@ -54,7 +55,7 @@ static int zero_size_frames()
         SDL_CreateWindow("Vulkan zero extent", 96, 64, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
     REQUIRE(window);
     zero_size_host host;
-    vulkan_device_opts opts;
+    vulkan_device_opts opts = test_detail::reference_options();
     opts.host = &host;
     opts.validation = true;
     opts.error_callback = diagnostic;

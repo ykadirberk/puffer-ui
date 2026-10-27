@@ -1843,10 +1843,14 @@ struct vulkan_device_opts
     vulkan_host *host = nullptr;                  // non-owning; nullptr supports offscreen targets
     const vulkan_native_device *native = nullptr; // borrowed; copied during creation
     bool validation = false;
-    bool tile_cache = false;
-    bool whole_program_cache = false; // exact native program reuse; requires two frame slots
-    vulkan_painter_mode painter = vulkan_painter_mode::REFERENCE;
-    bool vector_text = false; // HarfBuzz shaping + GPU Slug outlines (optional build dependency)
+    bool tile_cache = true;
+    bool whole_program_cache = true; // exact native program reuse; requires two frame slots
+    vulkan_painter_mode painter = vulkan_painter_mode::INTEGRATED;
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    bool vector_text = true; // shaping + GPU Slug outlines in the optional HarfBuzz build
+#else
+    bool vector_text = false;
+#endif
     bool adaptive_compute = false; // conservative eligibility + completed coverage feedback
     vulkan_blur_mode blur = vulkan_blur_mode::LEGACY;
     u64 command_budget_bytes = 128ull * 1024 * 1024; // diagnostic tape, only allocated on request

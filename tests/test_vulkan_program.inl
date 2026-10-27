@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // Ordered program regressions. Existing test bodies and pixel oracles stay fixed.
 #define main original_program_binning_main
 #include "test_vulkan_binning.inl"
@@ -15,7 +16,7 @@ struct program_scene
     explicit program_scene(vulkan_painter_mode mode, bool staged = false, bool cache = false,
                            bool retained = false)
     {
-        vulkan_device_opts options;
+        vulkan_device_opts options = test_detail::reference_options();
         options.painter = mode;
         options.tile_cache = cache;
         options.whole_program_cache = retained;

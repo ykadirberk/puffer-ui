@@ -1,0 +1,84 @@
+{
+  "baseline_commit": "a189807352acfee6e6617bca543d3cff52600bac",
+  "validation_id": "full-20261027-081856-16472",
+  "complete": true,
+  "runs": [
+    {
+      "mode": "release",
+      "command": [
+        "python",
+        "tools/run_tests.py",
+        "--vulkan",
+        "--format",
+        "--release"
+      ],
+      "exit": 0,
+      "seconds": 1415.3646111999997
+    },
+    {
+      "mode": "debug",
+      "command": [
+        "python",
+        "tools/run_tests.py",
+        "--vulkan",
+        "--format"
+      ],
+      "exit": 0,
+      "seconds": 1304.3331607
+    }
+  ],
+  "native_cases_per_configuration": 94,
+  "source_files": 330,
+  "changed_sources": [],
+  "source_manifest_sha256": "8dcd94513e635b2aec304acfb408b1acabe92219835284eacff6fa9489e60d69",
+  "full_receipt": {
+    "path": "build-vulkan-integrated/final-gate/full-20261027-081856-16472/validation.json",
+    "sha256": "9d7a3f7b6c5e0057b1b36e7ab538aa172950448f6440550aa4c5a16e0e15be9a"
+  },
+  "logs": {
+    "release": {
+      "path": "build-vulkan-integrated/final-gate/full-20261027-081856-16472/release.log",
+      "sha256": "fc6556b37c42d5cc8c4349b9b05d42967764aea1796958ebfb0a945c21343311"
+    },
+    "debug": {
+      "path": "build-vulkan-integrated/final-gate/full-20261027-081856-16472/debug.log",
+      "sha256": "e330efb3ffeaf7a1207da8a6538325075c3dcc1d98c4fc4473cdc50b72a96020"
+    }
+  },
+  "supplemental_harfbuzz_off": {
+    "consumer_cmake": "build-vulkan-integrated/default-renderer/plain-consumer/CMakeLists.txt",
+    "build_log_sha256": "928d5a203fb016706206baf9fcc4286f0af379d45d71dfa4c0754a064fdef410",
+    "tutorial_source_identical": true,
+    "commands": [
+      {
+        "command": "default_policy_probe.exe",
+        "exit": 0,
+        "exact_frames": 24
+      },
+      {
+        "command": "default_policy_probe.exe --staged",
+        "exit": 0,
+        "exact_frames": 24
+      },
+      {
+        "command": "my_vulkan_ui.exe --selftest --resize 760x520",
+        "exit": 0
+      }
+    ],
+    "host_compiler_flags": [
+      "-DCMAKE_POLICY_DEFAULT_CMP0141=NEW",
+      "-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded"
+    ]
+  },
+  "binary_sha256": {
+    "out/build/x64-release/Release/pui_tut_vulkan_manual.exe": "f1cbf08e52d55cb8edfc56721f6a9c482fd72f72ced10392b26992977d11cc1a",
+    "out/build/x64-release/Release/pui_vulkan_default_tests.exe": "30a6722110522d7e2c6ae62af5b44db712f432a1cf396f1ce604512d7e335adc",
+    "out/build/x64-debug/Debug/pui_tut_vulkan_manual.exe": "8ec87b177736d022ce2e09e4097f941cccd87a63f72b70df7b497f3e7779c491",
+    "out/build/x64-debug/Debug/pui_vulkan_default_tests.exe": "35b545b12d22568f2383975239f1fba69df05cd9995061331da136392bd95058",
+    "build-vulkan-integrated/default-renderer/plain-consumer/build/my_vulkan_ui.exe": "35b89d38b2720ca841ac9b1b9e19b9a05a67c1f36d69ec0d85fc1ab1a13157ec",
+    "build-vulkan-integrated/default-renderer/plain-consumer/build/default_policy_probe.exe": "354249172db3de0a5d9be956e1a4ab107f8b664128d8f2edd22412870da369ed"
+  },
+  "preserved_unrelated_drafts": 9,
+  "existing_assertions_changed": false,
+  "committed_golden_oracles_changed": false
+}

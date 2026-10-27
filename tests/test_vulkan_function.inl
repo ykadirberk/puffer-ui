@@ -1,3 +1,4 @@
+#include "vulkan_test_options.h"
 // Real GPU function-cache oracle: native float colors, exact destination bytes,
 // duplicate requests, bounded exhaustion and native state after private draws.
 #undef near
@@ -175,7 +176,7 @@ int main(int argc, char **argv)
             negative = true;
         else
             return 1;
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.validation = true;
     options.error_callback = diagnostic;
     options.upload_mode = staged ? vulkan_upload_mode::STAGED : vulkan_upload_mode::DIRECT;

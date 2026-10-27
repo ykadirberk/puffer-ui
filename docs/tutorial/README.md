@@ -33,12 +33,17 @@ chapter 2 explains what that means.
 | 7 | [Polish and structure](07-polish-and-structure.md) | persistence, focus, tooltips, splitting into modules | `todo` |
 | 8 | [Testing and debugging](08-testing-and-debugging.md) | violations, the overlay, headless tests | `todo_test` |
 | 9 | [Where next](09-where-next.md) | exercises, a cheat sheet, common pitfalls | — |
+| 10 | [Vulkan without shorthand](10-vulkan-without-shorthand.md) | own the SDL window, Vulkan host, device, frame loop and cleanup explicitly | `vulkan_manual` |
 
 Every program is a real file under [`examples/tutorial/`](../../examples/tutorial/),
 built by the project's CMake and run by CI (`--selftest`). The code blocks in the
 chapters are excerpts of those files — each block says which file it comes from,
 and `tools/check_tutorial.ps1` fails CI if a block drifts from its source. So if
 a chapter shows it, it compiled and ran.
+
+Chapter 10 is an independent native Vulkan integration. It needs the optional
+Vulkan build and a compatible driver; its hidden-window selftest uses real Vulkan
+presentation. Chapters 1–9 keep their SDL renderer and software/offscreen tests.
 
 Each chapter ends with a **Try it** list. The exercises are small, and doing a few
 is the quickest way to make the ideas stick.

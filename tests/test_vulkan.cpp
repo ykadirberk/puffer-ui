@@ -1,4 +1,5 @@
 #include <pufferui/vulkan.h>
+#include "vulkan_test_options.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -32,7 +33,7 @@ static void quad(render_device *d, texture_handle texture, rect r, color c)
 }
 int run(bool staged)
 {
-    vulkan_device_opts opts;
+    vulkan_device_opts opts = test_detail::reference_options();
     opts.validation = true;
     opts.upload_mode = staged ? vulkan_upload_mode::STAGED : vulkan_upload_mode::DIRECT;
     opts.error_callback = diagnostic;
@@ -157,7 +158,7 @@ int run(bool staged)
     d = create_vulkan_device(opts);
     REQUIRE(d);
     const auto borrowed = vulkan_handles(d);
-    vulkan_device_opts engine_opts;
+    vulkan_device_opts engine_opts = test_detail::reference_options();
     engine_opts.native = &borrowed;
     engine_opts.error_callback = diagnostic;
     render_device *engine = create_vulkan_device(engine_opts);

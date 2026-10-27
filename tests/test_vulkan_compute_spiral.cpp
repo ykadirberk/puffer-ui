@@ -2,6 +2,7 @@
 // This harness includes the real showcase; existing tests/oracles stay fixed.
 #define main showcase_original_main
 #include "../examples/pui_showcase.cpp"
+#include "vulkan_test_options.h"
 #undef main
 #include <filesystem>
 #include <fstream>
@@ -169,7 +170,7 @@ int main(int argc, char **argv)
     if (!reference.empty() && !fs::is_directory(reference)) return 1;
     g_start_page = PAGE_LAYOUT;
     g_no_hud = true;
-    vulkan_device_opts options;
+    vulkan_device_opts options = test_detail::reference_options();
     options.validation = true;
     options.error_callback = diagnostic;
     options.painter = shadow ? vulkan_painter_mode::COMMAND_SHADOW : vulkan_painter_mode::REFERENCE;

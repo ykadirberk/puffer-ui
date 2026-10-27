@@ -2,9 +2,9 @@
 
 `INTEGRATED` combines native command operands, ordered GPU lists, exact RGBA8
 output reuse, a native blend-function cache, Slug source-alpha residency, producer
-dependencies, shape unions and a common-opacity scope. The Vulkan showcase
-selects it without command-line switches. HarfBuzz/Slug is included when built;
-the library's device default remains `REFERENCE`. Explicit diagnostic modes
+dependencies, shape unions and a common-opacity scope. All Vulkan device factories
+and the Vulkan showcase select it by default. HarfBuzz/Slug is enabled when built;
+without HarfBuzz, integrated shapes use bitmap text. Explicit diagnostic modes
 retain independent configurations. See [the integrated design](vulkan_integrated_painter.md)
 and [the measurement and visual validation report](perf_vulkan_integrated.md).
 
@@ -18,7 +18,7 @@ alpha and producer handling belongs to the same renderer in both paths.
 
 The sections below describe the independent `SDF_RASTER`/`COMPUTE_SDF` paths.
 
-The default `REFERENCE` painter retains the established triangle and bitmap
+The diagnostic `REFERENCE` painter retains the established triangle and bitmap
 renderer. `COMMAND_SHADOW` captures a private command tape while retaining that
 renderer. `SDF_RASTER` replaces rounded fill fans with analytic quads and is the
 independent visual reference for `COMPUTE_SDF`. SDF coverage and the explicitly
@@ -31,14 +31,20 @@ Configure `PUFFERUI_WITH_VULKAN=ON`. Optional
 `PUFFERUI_WITH_HARFBUZZ=ON` adds shaping and Slug curves; see
 [font ownership, upstream provenance and limits](harfbuzz.md).
 
+The default integrated configuration validates RGBA8 storage-image support and
+at least 16 storage-buffer bindings per stage, including when fine-cache kernels
+are deferred. Integrated vector text also requires sampled/storage `R32_UINT`.
+These requirements are additional to the base Vulkan 1.3 device contract.
+
 ```cpp
 pui::vulkan_device_opts options;
 options.painter = pui::vulkan_painter_mode::SDF_RASTER;
 options.vector_text = true; // requires the optional HarfBuzz build
+options.tile_cache = options.whole_program_cache = false; // independent raster oracle
 auto *device = pui::create_vulkan_device(options);
 ```
 
-Set `painter=COMPUTE_SDF` to force compute eligibility. `tile_cache=true` adds
+Set `painter=COMPUTE_SDF` to force compute eligibility. Re-enabling `tile_cache=true` adds
 GPU history comparison. `adaptive_compute=true` allows conservative bypass:
 cache must be enabled, at least 2048 commands must be present, and the batch
 must contain only opaque supported commands. Legacy triangles, Slug glyphs,

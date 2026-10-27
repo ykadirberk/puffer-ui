@@ -1,4 +1,5 @@
 #include <pufferui/vulkan.h>
+#include "vulkan_test_options.h"
 #include <cstdio>
 #include <vector>
 using namespace pui;
@@ -28,7 +29,7 @@ static void quad(render_device *d, texture_handle texture, rect r, color c)
 }
 int main()
 {
-    vulkan_device_opts opts;
+    vulkan_device_opts opts = test_detail::reference_options();
     opts.validation = true;
     opts.error_callback = diagnostic;
     render_device *d = create_vulkan_device(opts);
