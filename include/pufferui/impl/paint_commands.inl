@@ -7,7 +7,12 @@ namespace paint_detail
 {
 inline bool sdf_painter(vulkan_painter_mode mode)
 {
-    return mode == vulkan_painter_mode::SDF_RASTER || mode == vulkan_painter_mode::COMPUTE_SDF;
+    return mode == vulkan_painter_mode::SDF_RASTER || mode == vulkan_painter_mode::COMPUTE_SDF ||
+           mode == vulkan_painter_mode::INTEGRATED;
+}
+inline bool compute_painter(vulkan_painter_mode mode)
+{
+    return mode == vulkan_painter_mode::COMPUTE_SDF || mode == vulkan_painter_mode::INTEGRATED;
 }
 inline constexpr u32 SCHEMA_VERSION = 1;
 enum class opcode : u32

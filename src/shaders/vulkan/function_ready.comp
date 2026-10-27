@@ -1,0 +1,14 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#include "function_common.glsl"
+layout(local_size_x=64) in;
+void main() {
+    uint index=gl_GlobalInvocationID.x;
+    if(index>=functions.words[5]) return;
+    if(index==0u) {
+        functions.words[9]+=1u;
+        if(functions.words[9]==0u) functions.words[10]+=1u;
+    }
+    uint row=functions.words[function_list_base()+index];
+    functions.words[function_row(row)+5u]=1u;
+}

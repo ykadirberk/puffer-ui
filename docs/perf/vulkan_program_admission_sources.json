@@ -1,0 +1,13 @@
+{
+  "note": "Current source hashes; timing executables/earlier harness hashes are separately sealed in each cohort.",
+  "sources": {
+    "include/pufferui/impl/vulkan_program_cache.inl": "b182d6c3135adcbcffc37c07d46d09d2c583fb9538e93653349e6a858efca952",
+    "include/pufferui/impl/vulkan_program_probe.inl": "fe601b133ff823f11c55a7d2974db3324376c8b680e698d687613294e4c538c3",
+    "include/pufferui/impl/vulkan_draw.inl": "af94fca232dcd198a02a3ff8170fe8a92aef2ef810a76bc9442ddb8d82c39742",
+    "include/pufferui/impl/vulkan_device.inl": "73123ff2291c180d3cfdb2eb1d2196ffb7ea97dfa0f3b0706e31832878389464",
+    "tests/test_vulkan_glyph_residency.inl": "337b1cfdad21f1eb2cb634a1cda663fd8b76fb04a553fed9370df22715c41c27",
+    "tests/test_vulkan_program_admission.inl": "f179115b59fa07d96048ed53a8b2e71be525f555069377f74764583371077c33",
+    "tests/bench_vulkan_program.cpp": "0417af8675a5a1b39101c5c725252f899652e407212c2f8bfba8fa695ac8abbc",
+    "tools/compare_vulkan_program.py": "ef8c4f0884cd7d218bdd5da3fd9a7942c4852559663ddda0253422173036ca15"
+  }
+}

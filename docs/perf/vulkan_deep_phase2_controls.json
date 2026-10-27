@@ -1,0 +1,265 @@
+{
+  "tiles": 5000,
+  "runs": [
+    {
+      "run": 0,
+      "mode": "null_baseline",
+      "process_seconds": 0.5606058000121266
+    },
+    {
+      "run": 0,
+      "mode": "direct3d11_baseline",
+      "process_seconds": 3.095361399988178
+    },
+    {
+      "run": 0,
+      "mode": "direct3d11_candidate",
+      "process_seconds": 3.0991443000384606
+    },
+    {
+      "run": 0,
+      "mode": "null_candidate",
+      "process_seconds": 0.5243391999974847
+    },
+    {
+      "run": 1,
+      "mode": "direct3d11_baseline",
+      "process_seconds": 3.045842799998354
+    },
+    {
+      "run": 1,
+      "mode": "null_candidate",
+      "process_seconds": 0.5257172999554314
+    },
+    {
+      "run": 1,
+      "mode": "null_baseline",
+      "process_seconds": 0.5241937999962829
+    },
+    {
+      "run": 1,
+      "mode": "direct3d11_candidate",
+      "process_seconds": 3.1872348000179045
+    },
+    {
+      "run": 2,
+      "mode": "null_candidate",
+      "process_seconds": 0.5166738000116311
+    },
+    {
+      "run": 2,
+      "mode": "direct3d11_candidate",
+      "process_seconds": 3.0612270000274293
+    },
+    {
+      "run": 2,
+      "mode": "direct3d11_baseline",
+      "process_seconds": 3.0573086999938823
+    },
+    {
+      "run": 2,
+      "mode": "null_baseline",
+      "process_seconds": 0.5492997000110336
+    },
+    {
+      "run": 3,
+      "mode": "direct3d11_candidate",
+      "process_seconds": 3.098556599987205
+    },
+    {
+      "run": 3,
+      "mode": "null_baseline",
+      "process_seconds": 0.529682699998375
+    },
+    {
+      "run": 3,
+      "mode": "null_candidate",
+      "process_seconds": 0.5395900000003166
+    },
+    {
+      "run": 3,
+      "mode": "direct3d11_baseline",
+      "process_seconds": 3.157597200013697
+    },
+    {
+      "run": 4,
+      "mode": "null_baseline",
+      "process_seconds": 0.5286786999786273
+    },
+    {
+      "run": 4,
+      "mode": "direct3d11_baseline",
+      "process_seconds": 3.1307601999724284
+    },
+    {
+      "run": 4,
+      "mode": "direct3d11_candidate",
+      "process_seconds": 3.0809169999556616
+    },
+    {
+      "run": 4,
+      "mode": "null_candidate",
+      "process_seconds": 0.5318526999908499
+    },
+    {
+      "run": 5,
+      "mode": "direct3d11_baseline",
+      "process_seconds": 3.0600752000464126
+    },
+    {
+      "run": 5,
+      "mode": "null_candidate",
+      "process_seconds": 0.5233772000065073
+    },
+    {
+      "run": 5,
+      "mode": "null_baseline",
+      "process_seconds": 0.5294995000003837
+    },
+    {
+      "run": 5,
+      "mode": "direct3d11_candidate",
+      "process_seconds": 3.098270600021351
+    },
+    {
+      "run": 6,
+      "mode": "null_candidate",
+      "process_seconds": 0.525089000002481
+    },
+    {
+      "run": 6,
+      "mode": "direct3d11_candidate",
+      "process_seconds": 3.062935900001321
+    },
+    {
+      "run": 6,
+      "mode": "direct3d11_baseline",
+      "process_seconds": 3.053705499973148
+    },
+    {
+      "run": 6,
+      "mode": "null_baseline",
+      "process_seconds": 0.5257711000158451
+    },
+    {
+      "run": 7,
+      "mode": "direct3d11_candidate",
+      "process_seconds": 3.1429217999684624
+    },
+    {
+      "run": 7,
+      "mode": "null_baseline",
+      "process_seconds": 0.5296548000187613
+    },
+    {
+      "run": 7,
+      "mode": "null_candidate",
+      "process_seconds": 0.5261306000174955
+    },
+    {
+      "run": 7,
+      "mode": "direct3d11_baseline",
+      "process_seconds": 3.0532988000195473
+    }
+  ],
+  "summary": {
+    "null_baseline": {
+      "frame": {
+        "mean": 2.852482222222222,
+        "median": 2.4238999999999997,
+        "p95": 5.1585,
+        "p99": 9.538,
+        "max": 13.8357
+      },
+      "add": {
+        "mean": 3.18775375,
+        "median": 2.4694000000000003,
+        "p95": 7.2952,
+        "p99": 9.7148,
+        "max": 13.8357
+      }
+    },
+    "direct3d11_baseline": {
+      "frame": {
+        "mean": 13.629359791666667,
+        "median": 5.24875,
+        "p95": 50.7977,
+        "p99": 187.2019,
+        "max": 210.3664
+      },
+      "add": {
+        "mean": 19.651646944444444,
+        "median": 5.4642,
+        "p95": 141.2097,
+        "p99": 196.0646,
+        "max": 210.3664
+      }
+    },
+    "null_candidate": {
+      "frame": {
+        "mean": 2.817834583333333,
+        "median": 2.4059,
+        "p95": 5.1161,
+        "p99": 9.5218,
+        "max": 11.5892
+      },
+      "add": {
+        "mean": 3.1607534722222224,
+        "median": 2.4583500000000003,
+        "p95": 7.3587,
+        "p99": 9.7029,
+        "max": 11.5892
+      }
+    },
+    "direct3d11_candidate": {
+      "frame": {
+        "mean": 13.618076527777777,
+        "median": 5.2673000000000005,
+        "p95": 48.8628,
+        "p99": 189.3698,
+        "max": 211.0845
+      },
+      "add": {
+        "mean": 19.63142388888889,
+        "median": 5.48195,
+        "p95": 141.8634,
+        "p99": 195.486,
+        "max": 211.0845
+      }
+    }
+  },
+  "binaries": {
+    "baseline": "7e5c5604c43f71e7db514ec43f1a89f5d25a2531caf2857c2bdcd1d79a604f05",
+    "candidate": "d42ac2a6e7111bbdf865d696f766e3dec21de73bc161bb4f35babdabb2679038"
+  },
+  "commands": {
+    "null_baseline": [
+      "D:\\myimgui\\build-vulkan-deep\\final-controls\\baseline\\pui_showcase_tests.exe",
+      "--bench",
+      "null",
+      "--tiles",
+      "5000"
+    ],
+    "direct3d11_baseline": [
+      "D:\\myimgui\\build-vulkan-deep\\final-controls\\baseline\\pui_showcase_tests.exe",
+      "--bench",
+      "direct3d11",
+      "--tiles",
+      "5000"
+    ],
+    "null_candidate": [
+      "D:\\myimgui\\build-vulkan-deep\\final-controls\\candidate\\pui_showcase_tests.exe",
+      "--bench",
+      "null",
+      "--tiles",
+      "5000"
+    ],
+    "direct3d11_candidate": [
+      "D:\\myimgui\\build-vulkan-deep\\final-controls\\candidate\\pui_showcase_tests.exe",
+      "--bench",
+      "direct3d11",
+      "--tiles",
+      "5000"
+    ]
+  }
+}

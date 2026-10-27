@@ -740,6 +740,7 @@ interaction ui::interact(uiid id, rect area, bool enabled, bool focusable)
 {
     context *c = ctx;
     interaction in;
+    ++c->st->caption_candidates;
     enabled = enabled && c->disabled_depth == 0;
     in.disabled = !enabled;
 

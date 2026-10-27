@@ -15,6 +15,8 @@ u64 device::cache_usage() const
     for (const auto &r : records) bytes += r.canonical.capacity();
     for (const auto *s : surfaces)
     {
+        for (auto *program : s->retained)
+            if (program) bytes += sizeof(retained_program) + program->payload_capacity;
         bytes += s->history.capacity() * sizeof(cache_record);
         for (const auto &r : s->history) bytes += r.canonical.capacity();
     }
@@ -43,6 +45,8 @@ u64 device::new_generation()
         if (cache_active) cache_flush(false);
         for (auto *s : surfaces)
         {
+            for (auto *program : s->retained)
+                if (program) program->valid = false;
             s->history_valid = false;
             s->history.clear();
             s->history_bytes = 0;

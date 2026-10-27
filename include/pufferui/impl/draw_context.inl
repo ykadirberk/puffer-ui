@@ -748,10 +748,21 @@ void begin_frame(context *c, window &w, f64 now, f64 dt)
     c->hot = 0;
     c->redraw_requested = false;
 
+    if (c->st->caption_candidates)
+    {
+        // Animated/clipped widgets may become visible later without adding new
+        // IDs. Count every submitted candidate, even non-focusable widgets
+        // without scopes, rather than only the currently visible hit rects.
+        auto &hits = c->st->caption_hits;
+        const usize observed = c->st->caption_candidates;
+        if (observed > hits.capacity())
+            hits.reserve(observed + std::min(observed / 4 + 16, hits.max_size() - observed));
+    }
     c->st->widget_ids.clear();
     c->st->frame_ids.clear();
     c->st->caption_drags.clear();
     c->st->caption_hits.clear();
+    c->st->caption_candidates = 0;
     c->st->a11y_frame.count = 0;
     c->press_claim = 0;
     c->press_claim_rect = rect{};

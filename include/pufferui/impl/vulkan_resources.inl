@@ -44,6 +44,7 @@ bool device::descriptors(texture *t)
         {
             VkDescriptorImageInfo info{samplers[i], t->view,
                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+            if (t->format == VK_FORMAT_R32_UINT) info.sampler = samplers[0];
             VkWriteDescriptorSet write{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
             write.dstSet = t->descriptors[i];
             write.dstBinding = 0;
@@ -58,10 +59,12 @@ bool device::descriptors(texture *t)
 }
 texture *device::make_texture(const image_allocation_opts &opts)
 {
+    retained_abort();
     const i32 w = opts.width, h = opts.height;
     const bool render_target = opts.render_target;
     const u8 *rgba = opts.rgba;
     if (cache_active) cache_flush(false);
+    flush_program();
     if (w <= 0 || h <= 0 || static_cast<u32>(w) > properties.limits.maxImageDimension2D ||
         static_cast<u32>(h) > properties.limits.maxImageDimension2D || result != VK_SUCCESS)
         return nullptr;
@@ -71,9 +74,10 @@ texture *device::make_texture(const image_allocation_opts &opts)
         VkFormatProperties format{};
         vkGetPhysicalDeviceFormatProperties(native.physical_device, opts.format, &format);
         VkFormatFeatureFlags needed = VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT |
-                                      VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT |
                                       VK_FORMAT_FEATURE_TRANSFER_SRC_BIT |
                                       VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
+        if (opts.format != VK_FORMAT_R32_UINT)
+            needed |= VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
         if (render_target)
             needed |= VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT |
                       VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT;
@@ -100,7 +104,7 @@ texture *device::make_texture(const image_allocation_opts &opts)
                VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     if (render_target) ic.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     ic.usage |= opts.extra_usage;
-    if (render_target && options.painter == vulkan_painter_mode::COMPUTE_SDF &&
+    if (render_target && paint_detail::compute_painter(options.painter) &&
         opts.format == VK_FORMAT_R8G8B8A8_UNORM)
         ic.usage |= VK_IMAGE_USAGE_STORAGE_BIT;
     t->usage = ic.usage;
@@ -190,7 +194,9 @@ void device::free_texture(texture *t)
 }
 void device::destroy_texture(texture_handle handle)
 {
+    retained_abort();
     if (cache_active) cache_flush(false);
+    flush_program();
     auto *t = static_cast<texture *>(handle);
     if (!valid(t)) return;
     if (rendering_target == t) end_rendering();
@@ -208,16 +214,16 @@ void device::destroy_texture(texture_handle handle)
 }
 void device::set_texture_filter(texture_handle handle, bool linear)
 {
-    if (cache_active) cache_flush(false);
     auto *t = static_cast<texture *>(handle);
-    if (valid(t) && t->linear != linear)
-    {
-        t->linear = linear;
-        ++t->revision;
-    }
+    if (!valid(t) || t->linear == linear) return;
+    retained_abort();
+    if (cache_active) cache_flush(false);
+    flush_program();
+    t->linear = linear;
+    ++t->revision;
 }
 static void layout_access(VkImageLayout layout, VkPipelineStageFlags2 &stage,
-                          VkAccessFlags2 &access)
+                          VkAccessFlags2 &access, bool compute)
 {
     switch (layout)
     {
@@ -234,7 +240,8 @@ static void layout_access(VkImageLayout layout, VkPipelineStageFlags2 &stage,
         access = VK_ACCESS_2_TRANSFER_READ_BIT;
         break;
     case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-        stage = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+        stage = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT |
+                (compute ? VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT : 0);
         access = VK_ACCESS_2_SHADER_SAMPLED_READ_BIT;
         break;
     case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
@@ -250,6 +257,7 @@ static void layout_access(VkImageLayout layout, VkPipelineStageFlags2 &stage,
 void device::transition(texture *t, VkImageLayout layout)
 {
     if (!commands()) return;
+    retained_touch(t);
     if (t->ready)
     {
         VkSemaphoreSubmitInfo wi{VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO};
@@ -263,8 +271,8 @@ void device::transition(texture *t, VkImageLayout layout)
     if (t->layout == layout && layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) return;
     end_rendering();
     VkImageMemoryBarrier2 barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2};
-    layout_access(t->layout, barrier.srcStageMask, barrier.srcAccessMask);
-    layout_access(layout, barrier.dstStageMask, barrier.dstAccessMask);
+    layout_access(t->layout, barrier.srcStageMask, barrier.srcAccessMask, can_compute);
+    layout_access(layout, barrier.dstStageMask, barrier.dstAccessMask, can_compute);
     barrier.oldLayout = t->layout;
     barrier.newLayout = layout;
     barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -278,11 +286,14 @@ void device::transition(texture *t, VkImageLayout layout)
 }
 void device::update_texture(texture_handle handle, i32 x, i32 y, i32 w, i32 h, const u8 *rgba)
 {
+    retained_abort();
     if (cache_active) cache_flush(false);
+    flush_program();
     auto *t = static_cast<texture *>(handle);
     if (!valid(t) || !rgba || t->external || w <= 0 || h <= 0 || x < 0 || y < 0 || w > t->width ||
         h > t->height || x > t->width - w || y > t->height - h)
         return;
+    t->producer = nullptr;
     VkDeviceSize offset = 0;
     const VkDeviceSize bytes = static_cast<VkDeviceSize>(w) * h * 4;
     page *p = upload(bytes, offset);
@@ -300,8 +311,10 @@ void device::update_texture(texture_handle handle, i32 x, i32 y, i32 w, i32 h, c
 }
 bool device::read_pixels(texture_handle handle, i32 x, i32 y, i32 w, i32 h, u8 *rgba)
 {
+    retained_abort();
     const f64 start = wall_ms();
     if (cache_active) cache_flush(false);
+    flush_program();
     auto *t = static_cast<texture *>(handle);
     if (!valid(t) || !rgba || w <= 0 || h <= 0 || x < 0 || y < 0 || w > t->width || h > t->height ||
         x > t->width - w || y > t->height - h)
@@ -401,6 +414,8 @@ u64 release_vulkan_image(render_device *base, texture_handle handle, VkImageLayo
     // Cached draws still own pending uses. Replay them before the release
     // transition/submission so the returned completion covers every use.
     if (d->cache_active) d->cache_flush(false);
+    d->retained_abort();
+    d->flush_program();
     if (!d->commands()) return 0;
     d->end_rendering();
     d->transition(t, final_layout);

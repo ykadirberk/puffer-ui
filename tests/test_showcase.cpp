@@ -436,6 +436,9 @@ void operator delete(void *p, size_t) noexcept
 }
 
 #include "test_showcase_paint.inl"
+#include "test_showcase_trace.inl"
+#include "test_showcase_floor.inl"
+#include "test_showcase_startup.inl"
 
 int main(int argc, char **argv)
 {

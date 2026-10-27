@@ -1,0 +1,5987 @@
+{
+  "user_environment_report": {
+    "provenance": "Direct user reply on 2026-10-26 about the original slow PowerShell session",
+    "PUFFERUI_VULKAN_VALIDATION": "not defined",
+    "VK_INSTANCE_LAYERS": "not defined",
+    "observed_in_original_csv": false,
+    "interpretation": "Do not attribute the original slowdown to these two environment variables; validation false-value parsing is a separate corrected bug."
+  },
+  "segments": {
+    "sha256": "e42fd817ae9f5bb05f0b96b4c0722b41c7052f31e5a1071ae13d9a50ba333647",
+    "rows": 24825,
+    "segments": [
+      {
+        "first": 0,
+        "last": 811,
+        "n": 812,
+        "state": {
+          "page": "1",
+          "tile_count": "500",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "1",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 6.988286330049261,
+          "median": 5.5481,
+          "max": 915.8106
+        },
+        "build_ms": {
+          "mean": 0.7549887936970443,
+          "median": 0.646300018,
+          "max": 6.45860004
+        },
+        "slot_wait_ms": {
+          "mean": 0.028916625564926107,
+          "median": 0.0120999999,
+          "max": 0.352399997
+        },
+        "present_ms": {
+          "mean": 1.6019384237019705,
+          "median": 0.8110500015,
+          "max": 55.5328
+        },
+        "submit_ms": {
+          "mean": 0.08522413792142858,
+          "median": 0.0337000005,
+          "max": 0.673999999
+        },
+        "requested_draws": {
+          "mean": 16.295566502463053,
+          "median": 16.0,
+          "max": 17.0
+        },
+        "requested_vertices": {
+          "mean": 13806.823891625616,
+          "median": 13958.0,
+          "max": 14310.0
+        },
+        "draws": {
+          "mean": 52.96551724137931,
+          "median": 52.0,
+          "max": 61.0
+        },
+        "upload_bytes": {
+          "mean": 885096.8965517242,
+          "median": 893448.0,
+          "max": 916547.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 235.30049261083744,
+          "median": 0.0,
+          "max": 131600.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 1.126529458128079
+      },
+      {
+        "first": 812,
+        "last": 5281,
+        "n": 4470,
+        "state": {
+          "page": "1",
+          "tile_count": "500",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.6386376957494406,
+          "median": 1.3813,
+          "max": 31.3124
+        },
+        "build_ms": {
+          "mean": 0.687287069612528,
+          "median": 0.596700013,
+          "max": 3.57529998
+        },
+        "slot_wait_ms": {
+          "mean": 0.034153243842767335,
+          "median": 0.0111999996,
+          "max": 3.4161
+        },
+        "present_ms": {
+          "mean": 0.5334613198823266,
+          "median": 0.2607999985,
+          "max": 4.537
+        },
+        "submit_ms": {
+          "mean": 0.09971299777064876,
+          "median": 0.05289999955,
+          "max": 1.09
+        },
+        "requested_draws": {
+          "mean": 16.410738255033557,
+          "median": 16.0,
+          "max": 17.0
+        },
+        "requested_vertices": {
+          "mean": 13527.313422818792,
+          "median": 12982.0,
+          "max": 15266.0
+        },
+        "draws": {
+          "mean": 52.41073825503356,
+          "median": 52.0,
+          "max": 53.0
+        },
+        "upload_bytes": {
+          "mean": 871923.5883668903,
+          "median": 834616.0,
+          "max": 993179.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.26666666666666666,
+          "median": 0.0,
+          "max": 1192.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.5584641592128802
+      },
+      {
+        "first": 5282,
+        "last": 5491,
+        "n": 210,
+        "state": {
+          "page": "1",
+          "tile_count": "501",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.738997619047619,
+          "median": 1.5011,
+          "max": 5.1317
+        },
+        "build_ms": {
+          "mean": 0.755790951652381,
+          "median": 0.665199995,
+          "max": 3.06850004
+        },
+        "slot_wait_ms": {
+          "mean": 0.040676190398380954,
+          "median": 0.011849999449999999,
+          "max": 0.4745
+        },
+        "present_ms": {
+          "mean": 0.6853814283619047,
+          "median": 0.353699999,
+          "max": 4.3498
+        },
+        "submit_ms": {
+          "mean": 0.1061309524004762,
+          "median": 0.050349999199999995,
+          "max": 0.7927
+        },
+        "requested_draws": {
+          "mean": 17.0,
+          "median": 17.0,
+          "max": 17.0
+        },
+        "requested_vertices": {
+          "mean": 15050.22380952381,
+          "median": 15043.0,
+          "max": 15198.0
+        },
+        "draws": {
+          "mean": 53.0,
+          "median": 53.0,
+          "max": 53.0
+        },
+        "upload_bytes": {
+          "mean": 979085.4761904762,
+          "median": 978635.0,
+          "max": 988775.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.5913651674641148
+      },
+      {
+        "first": 5492,
+        "last": 5596,
+        "n": 105,
+        "state": {
+          "page": "1",
+          "tile_count": "502",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.5143190476190476,
+          "median": 1.3223,
+          "max": 3.5389
+        },
+        "build_ms": {
+          "mean": 0.7227304719619048,
+          "median": 0.665499985,
+          "max": 2.4855001
+        },
+        "slot_wait_ms": {
+          "mean": 0.030772381092857144,
+          "median": 0.0106000006,
+          "max": 0.180100001
+        },
+        "present_ms": {
+          "mean": 0.5169428568285714,
+          "median": 0.2443,
+          "max": 2.2438
+        },
+        "submit_ms": {
+          "mean": 0.09934952400476191,
+          "median": 0.0419000015,
+          "max": 0.548
+        },
+        "requested_draws": {
+          "mean": 17.0,
+          "median": 17.0,
+          "max": 17.0
+        },
+        "requested_vertices": {
+          "mean": 15129.419047619047,
+          "median": 15167.0,
+          "max": 15227.0
+        },
+        "draws": {
+          "mean": 53.0,
+          "median": 53.0,
+          "max": 53.0
+        },
+        "upload_bytes": {
+          "mean": 984273.1714285715,
+          "median": 986711.0,
+          "max": 990671.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.5739432380952381
+      },
+      {
+        "first": 5597,
+        "last": 5733,
+        "n": 137,
+        "state": {
+          "page": "1",
+          "tile_count": "503",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.3032562043795621,
+          "median": 1.0518,
+          "max": 3.7074
+        },
+        "build_ms": {
+          "mean": 0.668010219569343,
+          "median": 0.645399988,
+          "max": 2.87680006
+        },
+        "slot_wait_ms": {
+          "mean": 0.02908905102781022,
+          "median": 0.00930000097,
+          "max": 0.3072
+        },
+        "present_ms": {
+          "mean": 0.3790795621605839,
+          "median": 0.182799999,
+          "max": 2.9572
+        },
+        "submit_ms": {
+          "mean": 0.08588759107810219,
+          "median": 0.0527999997,
+          "max": 0.649099998
+        },
+        "requested_draws": {
+          "mean": 17.0,
+          "median": 17.0,
+          "max": 17.0
+        },
+        "requested_vertices": {
+          "mean": 15280.751824817518,
+          "median": 15236.0,
+          "max": 15429.0
+        },
+        "draws": {
+          "mean": 53.0,
+          "median": 53.0,
+          "max": 53.0
+        },
+        "upload_bytes": {
+          "mean": 994202.0656934306,
+          "median": 991283.0,
+          "max": 1003931.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.5900551824817518
+      },
+      {
+        "first": 5734,
+        "last": 5826,
+        "n": 93,
+        "state": {
+          "page": "1",
+          "tile_count": "504",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.6382279569892473,
+          "median": 1.2269,
+          "max": 4.7898
+        },
+        "build_ms": {
+          "mean": 0.6610365555053763,
+          "median": 0.653800011,
+          "max": 1.73249996
+        },
+        "slot_wait_ms": {
+          "mean": 0.035876344204838706,
+          "median": 0.0170000009,
+          "max": 0.219599999
+        },
+        "present_ms": {
+          "mean": 0.6575193548817204,
+          "median": 0.253800001,
+          "max": 3.4606
+        },
+        "submit_ms": {
+          "mean": 0.1366892472731183,
+          "median": 0.0877000019,
+          "max": 0.9584
+        },
+        "requested_draws": {
+          "mean": 17.0,
+          "median": 17.0,
+          "max": 17.0
+        },
+        "requested_vertices": {
+          "mean": 15401.741935483871,
+          "median": 15448.0,
+          "max": 15486.0
+        },
+        "draws": {
+          "mean": 53.0,
+          "median": 53.0,
+          "max": 53.0
+        },
+        "upload_bytes": {
+          "mean": 1002141.0215053763,
+          "median": 1005167.0,
+          "max": 1007643.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.6485230107526881
+      },
+      {
+        "first": 5827,
+        "last": 5919,
+        "n": 93,
+        "state": {
+          "page": "1",
+          "tile_count": "505",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.6087537634408602,
+          "median": 1.3381,
+          "max": 3.8306
+        },
+        "build_ms": {
+          "mean": 0.6756129012580645,
+          "median": 0.668200016,
+          "max": 1.52219999
+        },
+        "slot_wait_ms": {
+          "mean": 0.04398064511677419,
+          "median": 0.0307999998,
+          "max": 0.237199999
+        },
+        "present_ms": {
+          "mean": 0.6415602148924732,
+          "median": 0.323199999,
+          "max": 3.0014
+        },
+        "submit_ms": {
+          "mean": 0.12472150537419355,
+          "median": 0.045599997,
+          "max": 0.713000003
+        },
+        "requested_draws": {
+          "mean": 17.0,
+          "median": 17.0,
+          "max": 17.0
+        },
+        "requested_vertices": {
+          "mean": 15427.279569892473,
+          "median": 15447.0,
+          "max": 15504.0
+        },
+        "draws": {
+          "mean": 53.0,
+          "median": 53.0,
+          "max": 53.0
+        },
+        "upload_bytes": {
+          "mean": 1003761.1505376344,
+          "median": 1005071.0,
+          "max": 1008815.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.6513974193548387
+      },
+      {
+        "first": 5920,
+        "last": 6007,
+        "n": 88,
+        "state": {
+          "page": "1",
+          "tile_count": "506",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.532859090909091,
+          "median": 1.3332000000000002,
+          "max": 4.4286
+        },
+        "build_ms": {
+          "mean": 0.7151500004204545,
+          "median": 0.6673499940000001,
+          "max": 1.86220002
+        },
+        "slot_wait_ms": {
+          "mean": 0.037755681705795456,
+          "median": 0.02545000055,
+          "max": 0.1884
+        },
+        "present_ms": {
+          "mean": 0.525978409,
+          "median": 0.2804500015,
+          "max": 3.4069
+        },
+        "submit_ms": {
+          "mean": 0.09805681815795454,
+          "median": 0.04960000145,
+          "max": 0.68
+        },
+        "requested_draws": {
+          "mean": 17.0,
+          "median": 17.0,
+          "max": 17.0
+        },
+        "requested_vertices": {
+          "mean": 15468.170454545454,
+          "median": 15475.0,
+          "max": 15532.0
+        },
+        "draws": {
+          "mean": 53.0,
+          "median": 53.0,
+          "max": 53.0
+        },
+        "upload_bytes": {
+          "mean": 1006454.2727272727,
+          "median": 1006919.0,
+          "max": 1010663.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.6056286363636363
+      },
+      {
+        "first": 6008,
+        "last": 6137,
+        "n": 130,
+        "state": {
+          "page": "1",
+          "tile_count": "507",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.1260007692307692,
+          "median": 0.9674,
+          "max": 3.5065
+        },
+        "build_ms": {
+          "mean": 0.6335523083,
+          "median": 0.6414000095,
+          "max": 1.5438
+        },
+        "slot_wait_ms": {
+          "mean": 0.019850000082461537,
+          "median": 0.00730000064,
+          "max": 0.226
+        },
+        "present_ms": {
+          "mean": 0.33016923056153846,
+          "median": 0.174349999,
+          "max": 2.5168
+        },
+        "submit_ms": {
+          "mean": 0.06694846144153846,
+          "median": 0.04784999785,
+          "max": 0.3136
+        },
+        "requested_draws": {
+          "mean": 17.0,
+          "median": 17.0,
+          "max": 17.0
+        },
+        "requested_vertices": {
+          "mean": 15489.961538461539,
+          "median": 15473.0,
+          "max": 15618.0
+        },
+        "draws": {
+          "mean": 53.0,
+          "median": 53.0,
+          "max": 53.0
+        },
+        "upload_bytes": {
+          "mean": 1007902.6615384616,
+          "median": 1006769.0,
+          "max": 1016283.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.5440680916030535
+      },
+      {
+        "first": 6138,
+        "last": 6246,
+        "n": 109,
+        "state": {
+          "page": "1",
+          "tile_count": "508",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.4524495412844036,
+          "median": 1.2697,
+          "max": 2.9795
+        },
+        "build_ms": {
+          "mean": 0.6582660567614679,
+          "median": 0.66049999,
+          "max": 1.76139998
+        },
+        "slot_wait_ms": {
+          "mean": 0.04053761454119266,
+          "median": 0.0170000009,
+          "max": 0.263299998
+        },
+        "present_ms": {
+          "mean": 0.5086055046972477,
+          "median": 0.242400002,
+          "max": 2.1002
+        },
+        "submit_ms": {
+          "mean": 0.09909357818899082,
+          "median": 0.0507000014,
+          "max": 0.618700001
+        },
+        "requested_draws": {
+          "mean": 17.0,
+          "median": 17.0,
+          "max": 17.0
+        },
+        "requested_vertices": {
+          "mean": 15483.266055045871,
+          "median": 15484.0,
+          "max": 15558.0
+        },
+        "draws": {
+          "mean": 53.0,
+          "median": 53.0,
+          "max": 53.0
+        },
+        "upload_bytes": {
+          "mean": 1007452.5779816514,
+          "median": 1007495.0,
+          "max": 1012459.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.6259662962962963
+      },
+      {
+        "first": 6247,
+        "last": 6356,
+        "n": 110,
+        "state": {
+          "page": "1",
+          "tile_count": "509",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.662549090909091,
+          "median": 1.3747500000000001,
+          "max": 3.9483
+        },
+        "build_ms": {
+          "mean": 0.7682336367727273,
+          "median": 0.669499993,
+          "max": 2.84579992
+        },
+        "slot_wait_ms": {
+          "mean": 0.042733636564272724,
+          "median": 0.01370000095,
+          "max": 0.339200001
+        },
+        "present_ms": {
+          "mean": 0.5984909090909091,
+          "median": 0.284499999,
+          "max": 3.0261
+        },
+        "submit_ms": {
+          "mean": 0.09969727268636364,
+          "median": 0.05140000025,
+          "max": 0.475200001
+        },
+        "requested_draws": {
+          "mean": 17.0,
+          "median": 17.0,
+          "max": 17.0
+        },
+        "requested_vertices": {
+          "mean": 15436.418181818182,
+          "median": 15430.0,
+          "max": 15546.0
+        },
+        "draws": {
+          "mean": 53.0,
+          "median": 53.0,
+          "max": 53.0
+        },
+        "upload_bytes": {
+          "mean": 1004291.0,
+          "median": 1003755.0,
+          "max": 1011603.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.613184
+      },
+      {
+        "first": 6357,
+        "last": 6479,
+        "n": 123,
+        "state": {
+          "page": "1",
+          "tile_count": "510",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.6650585365853658,
+          "median": 1.3413,
+          "max": 5.2135
+        },
+        "build_ms": {
+          "mean": 0.7907504045691057,
+          "median": 0.662199974,
+          "max": 3.51699996
+        },
+        "slot_wait_ms": {
+          "mean": 0.03567886149723577,
+          "median": 0.0142999999,
+          "max": 0.318100002
+        },
+        "present_ms": {
+          "mean": 0.5952666665691057,
+          "median": 0.342999998,
+          "max": 3.5344
+        },
+        "submit_ms": {
+          "mean": 0.10015691075447154,
+          "median": 0.0502999984,
+          "max": 1.3476
+        },
+        "requested_draws": {
+          "mean": 17.0,
+          "median": 17.0,
+          "max": 17.0
+        },
+        "requested_vertices": {
+          "mean": 15382.674796747968,
+          "median": 15438.0,
+          "max": 15490.0
+        },
+        "draws": {
+          "mean": 53.0,
+          "median": 53.0,
+          "max": 53.0
+        },
+        "upload_bytes": {
+          "mean": 1000720.268292683,
+          "median": 1004411.0,
+          "max": 1007715.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.6722293548387097
+      },
+      {
+        "first": 6480,
+        "last": 6661,
+        "n": 182,
+        "state": {
+          "page": "1",
+          "tile_count": "511",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.2365225274725276,
+          "median": 1.0197500000000002,
+          "max": 2.8998
+        },
+        "build_ms": {
+          "mean": 0.6713587907142857,
+          "median": 0.658100009,
+          "max": 1.86389995
+        },
+        "slot_wait_ms": {
+          "mean": 0.018060988858076922,
+          "median": 0.007750000805000001,
+          "max": 0.172200002
+        },
+        "present_ms": {
+          "mean": 0.37695329671978023,
+          "median": 0.17485,
+          "max": 2.1157
+        },
+        "submit_ms": {
+          "mean": 0.07570769231318682,
+          "median": 0.0474000014,
+          "max": 0.6721
+        },
+        "requested_draws": {
+          "mean": 17.0,
+          "median": 17.0,
+          "max": 17.0
+        },
+        "requested_vertices": {
+          "mean": 15322.170329670329,
+          "median": 15311.0,
+          "max": 15474.0
+        },
+        "draws": {
+          "mean": 53.0,
+          "median": 53.0,
+          "max": 53.0
+        },
+        "upload_bytes": {
+          "mean": 996827.0,
+          "median": 996119.0,
+          "max": 1006787.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.5666013259668509
+      },
+      {
+        "first": 6662,
+        "last": 10495,
+        "n": 3834,
+        "state": {
+          "page": "1",
+          "tile_count": "512",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.6184016953573293,
+          "median": 1.3606,
+          "max": 7.9983
+        },
+        "build_ms": {
+          "mean": 0.7591163800388628,
+          "median": 0.653599977,
+          "max": 4.4696002
+        },
+        "slot_wait_ms": {
+          "mean": 0.03482592589386541,
+          "median": 0.0111000016,
+          "max": 0.9868
+        },
+        "present_ms": {
+          "mean": 0.5355817423051643,
+          "median": 0.282599999,
+          "max": 4.4888
+        },
+        "submit_ms": {
+          "mean": 0.10641499741340636,
+          "median": 0.0537,
+          "max": 0.9967
+        },
+        "requested_draws": {
+          "mean": 16.06885758998435,
+          "median": 16.0,
+          "max": 17.0
+        },
+        "requested_vertices": {
+          "mean": 14823.425925925925,
+          "median": 14786.0,
+          "max": 15329.0
+        },
+        "draws": {
+          "mean": 52.06885758998435,
+          "median": 52.0,
+          "max": 53.0
+        },
+        "upload_bytes": {
+          "mean": 963994.9222743871,
+          "median": 961560.0,
+          "max": 997307.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.5998742201356285
+      },
+      {
+        "first": 10496,
+        "last": 13855,
+        "n": 3360,
+        "state": {
+          "page": "0",
+          "tile_count": "512",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.5198695535714286,
+          "median": 1.17395,
+          "max": 13.0415
+        },
+        "build_ms": {
+          "mean": 0.42933098172470235,
+          "median": 0.377550006,
+          "max": 3.5316
+        },
+        "slot_wait_ms": {
+          "mean": 0.044619642850372024,
+          "median": 0.0271999985,
+          "max": 0.762699999
+        },
+        "present_ms": {
+          "mean": 0.7044091071779762,
+          "median": 0.3509,
+          "max": 5.492
+        },
+        "submit_ms": {
+          "mean": 0.06786818455714286,
+          "median": 0.02759999965,
+          "max": 1.0533
+        },
+        "requested_draws": {
+          "mean": 33.33422619047619,
+          "median": 33.0,
+          "max": 35.0
+        },
+        "requested_vertices": {
+          "mean": 12786.23005952381,
+          "median": 12845.0,
+          "max": 14878.0
+        },
+        "draws": {
+          "mean": 112.16011904761905,
+          "median": 111.0,
+          "max": 121.0
+        },
+        "upload_bytes": {
+          "mean": 850294.2797619047,
+          "median": 853947.0,
+          "max": 967699.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 13.976190476190476,
+          "median": 0.0,
+          "max": 43968.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.6144799880952381
+      },
+      {
+        "first": 13856,
+        "last": 14135,
+        "n": 280,
+        "state": {
+          "page": "1",
+          "tile_count": "512",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.59315,
+          "median": 1.3274,
+          "max": 4.9343
+        },
+        "build_ms": {
+          "mean": 0.6469896428428571,
+          "median": 0.6431500015,
+          "max": 2.77200007
+        },
+        "slot_wait_ms": {
+          "mean": 0.047148214229964285,
+          "median": 0.01820000075,
+          "max": 0.674200002
+        },
+        "present_ms": {
+          "mean": 0.60625392835,
+          "median": 0.26835,
+          "max": 4.0372
+        },
+        "submit_ms": {
+          "mean": 0.10785499995035715,
+          "median": 0.05975000005,
+          "max": 0.771299999
+        },
+        "requested_draws": {
+          "mean": 18.057142857142857,
+          "median": 18.0,
+          "max": 34.0
+        },
+        "requested_vertices": {
+          "mean": 14190.382142857143,
+          "median": 14774.0,
+          "max": 15162.0
+        },
+        "draws": {
+          "mean": 62.17857142857143,
+          "median": 62.0,
+          "max": 112.0
+        },
+        "upload_bytes": {
+          "mean": 923910.3714285714,
+          "median": 964078.0,
+          "max": 988142.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.5406497142857143
+      },
+      {
+        "first": 14136,
+        "last": 14579,
+        "n": 444,
+        "state": {
+          "page": "2",
+          "tile_count": "512",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.272160135135135,
+          "median": 0.9292,
+          "max": 5.5604
+        },
+        "build_ms": {
+          "mean": 0.2826112613626126,
+          "median": 0.265499994,
+          "max": 2.55489993
+        },
+        "slot_wait_ms": {
+          "mean": 0.050924549505202706,
+          "median": 0.03074999895,
+          "max": 0.409700003
+        },
+        "present_ms": {
+          "mean": 0.690544144259009,
+          "median": 0.3021499995,
+          "max": 4.5816
+        },
+        "submit_ms": {
+          "mean": 0.0690144143240991,
+          "median": 0.02500000035,
+          "max": 1.1971
+        },
+        "requested_draws": {
+          "mean": 35.740990990990994,
+          "median": 36.0,
+          "max": 36.0
+        },
+        "requested_vertices": {
+          "mean": 7620.378378378378,
+          "median": 7702.0,
+          "max": 14854.0
+        },
+        "draws": {
+          "mean": 90.9572072072072,
+          "median": 92.0,
+          "max": 92.0
+        },
+        "upload_bytes": {
+          "mean": 518226.9527027027,
+          "median": 524084.0,
+          "max": 967294.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 20.234234234234233,
+          "median": 0.0,
+          "max": 8984.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.453839009009009
+      },
+      {
+        "first": 14580,
+        "last": 15825,
+        "n": 1246,
+        "state": {
+          "page": "3",
+          "tile_count": "512",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.401385393258427,
+          "median": 1.07925,
+          "max": 5.6114
+        },
+        "build_ms": {
+          "mean": 0.35349020858988767,
+          "median": 0.333900005,
+          "max": 2.9907999
+        },
+        "slot_wait_ms": {
+          "mean": 0.05202094705994382,
+          "median": 0.0353000015,
+          "max": 0.660799999
+        },
+        "present_ms": {
+          "mean": 0.7432088281565008,
+          "median": 0.3615999985,
+          "max": 5.0266
+        },
+        "submit_ms": {
+          "mean": 0.07771364372905297,
+          "median": 0.0271000005,
+          "max": 1.915
+        },
+        "requested_draws": {
+          "mean": 29.79534510433387,
+          "median": 30.0,
+          "max": 35.0
+        },
+        "requested_vertices": {
+          "mean": 10568.876404494382,
+          "median": 10532.0,
+          "max": 10942.0
+        },
+        "draws": {
+          "mean": 102.1661316211878,
+          "median": 100.0,
+          "max": 109.0
+        },
+        "upload_bytes": {
+          "mean": 713724.6990369181,
+          "median": 711007.0,
+          "max": 739757.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 15.813804173354734,
+          "median": 0.0,
+          "max": 19704.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.5280562118780097
+      },
+      {
+        "first": 15826,
+        "last": 17724,
+        "n": 1899,
+        "state": {
+          "page": "4",
+          "tile_count": "512",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.250170194839389,
+          "median": 0.9218,
+          "max": 6.1883
+        },
+        "build_ms": {
+          "mean": 0.3112384411653502,
+          "median": 0.272799999,
+          "max": 2.69099998
+        },
+        "slot_wait_ms": {
+          "mean": 0.04117008954068984,
+          "median": 0.0186999999,
+          "max": 0.541299999
+        },
+        "present_ms": {
+          "mean": 0.6384771458325434,
+          "median": 0.282000002,
+          "max": 5.084
+        },
+        "submit_ms": {
+          "mean": 0.08955708270847815,
+          "median": 0.0382000022,
+          "max": 1.2486
+        },
+        "requested_draws": {
+          "mean": 18.449183780937336,
+          "median": 18.0,
+          "max": 30.0
+        },
+        "requested_vertices": {
+          "mean": 8389.876777251186,
+          "median": 8331.0,
+          "max": 10550.0
+        },
+        "draws": {
+          "mean": 62.258557135334385,
+          "median": 60.0,
+          "max": 100.0
+        },
+        "upload_bytes": {
+          "mean": 559094.3744075829,
+          "median": 554798.0,
+          "max": 712290.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 6.723538704581359,
+          "median": 0.0,
+          "max": 12768.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.3762212954186414
+      },
+      {
+        "first": 17725,
+        "last": 18433,
+        "n": 709,
+        "state": {
+          "page": "1",
+          "tile_count": "512",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.4655892806770099,
+          "median": 1.217,
+          "max": 4.9251
+        },
+        "build_ms": {
+          "mean": 0.6925629053215797,
+          "median": 0.643100023,
+          "max": 4.11019993
+        },
+        "slot_wait_ms": {
+          "mean": 0.03308702400700987,
+          "median": 0.0101999976,
+          "max": 0.922300003
+        },
+        "present_ms": {
+          "mean": 0.5019987305599436,
+          "median": 0.2205,
+          "max": 4.0393
+        },
+        "submit_ms": {
+          "mean": 0.08994372348180536,
+          "median": 0.0474999994,
+          "max": 0.686100002
+        },
+        "requested_draws": {
+          "mean": 16.96755994358251,
+          "median": 17.0,
+          "max": 19.0
+        },
+        "requested_vertices": {
+          "mean": 14898.706629055006,
+          "median": 14794.0,
+          "max": 15162.0
+        },
+        "draws": {
+          "mean": 56.92524682651622,
+          "median": 53.0,
+          "max": 62.0
+        },
+        "upload_bytes": {
+          "mean": 969893.2045133992,
+          "median": 963379.0,
+          "max": 988806.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.5974755994358252
+      },
+      {
+        "first": 18434,
+        "last": 20492,
+        "n": 2059,
+        "state": {
+          "page": "0",
+          "tile_count": "512",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.508501311316173,
+          "median": 1.1621,
+          "max": 5.9839
+        },
+        "build_ms": {
+          "mean": 0.42636483749490045,
+          "median": 0.378100008,
+          "max": 3.2493999
+        },
+        "slot_wait_ms": {
+          "mean": 0.04623827099552696,
+          "median": 0.0279999971,
+          "max": 0.455000002
+        },
+        "present_ms": {
+          "mean": 0.7099574065002429,
+          "median": 0.350700002,
+          "max": 4.411
+        },
+        "submit_ms": {
+          "mean": 0.06979538606619719,
+          "median": 0.0272999965,
+          "max": 0.792799998
+        },
+        "requested_draws": {
+          "mean": 33.32297231665857,
+          "median": 33.0,
+          "max": 35.0
+        },
+        "requested_vertices": {
+          "mean": 12896.586692569208,
+          "median": 12809.0,
+          "max": 14886.0
+        },
+        "draws": {
+          "mean": 112.63574550752793,
+          "median": 111.0,
+          "max": 121.0
+        },
+        "upload_bytes": {
+          "mean": 857543.3623118019,
+          "median": 851555.0,
+          "max": 968211.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.6324847572815534
+      },
+      {
+        "first": 20493,
+        "last": 20620,
+        "n": 128,
+        "state": {
+          "page": "0",
+          "tile_count": "512",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "1",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 5.630428125,
+          "median": 5.54155,
+          "max": 30.3676
+        },
+        "build_ms": {
+          "mean": 0.539798436234375,
+          "median": 0.432700008,
+          "max": 2.29460001
+        },
+        "slot_wait_ms": {
+          "mean": 0.0599351560578125,
+          "median": 0.043199999249999996,
+          "max": 1.202
+        },
+        "present_ms": {
+          "mean": 1.22573984365625,
+          "median": 0.9167999995,
+          "max": 4.0216
+        },
+        "submit_ms": {
+          "mean": 0.12140625011328125,
+          "median": 0.0506000016,
+          "max": 0.597800002
+        },
+        "requested_draws": {
+          "mean": 33.671875,
+          "median": 34.0,
+          "max": 34.0
+        },
+        "requested_vertices": {
+          "mean": 13986.75,
+          "median": 13969.0,
+          "max": 14153.0
+        },
+        "draws": {
+          "mean": 111.671875,
+          "median": 112.0,
+          "max": 112.0
+        },
+        "upload_bytes": {
+          "mean": 925571.140625,
+          "median": 923988.5,
+          "max": 936134.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.8746721875
+      },
+      {
+        "first": 20621,
+        "last": 24824,
+        "n": 4204,
+        "state": {
+          "page": "0",
+          "tile_count": "512",
+          "lab_mode": "2",
+          "lab_size": "64",
+          "vsync": "0",
+          "density": "1",
+          "theme_mode": "0",
+          "render_scale": "1",
+          "width": "1360",
+          "height": "860",
+          "drawer_open": "0",
+          "notes_open": "0",
+          "palette_open": "0",
+          "ambient": "1",
+          "reduced_motion": "0"
+        },
+        "loop_ms": {
+          "mean": 1.5206041389153186,
+          "median": 1.1787,
+          "max": 31.9394
+        },
+        "build_ms": {
+          "mean": 0.40982383434395814,
+          "median": 0.372099996,
+          "max": 4.50519991
+        },
+        "slot_wait_ms": {
+          "mean": 0.049686560415737394,
+          "median": 0.02990000135,
+          "max": 4.27009999
+        },
+        "present_ms": {
+          "mean": 0.7293405090321122,
+          "median": 0.35885000050000004,
+          "max": 5.7569
+        },
+        "submit_ms": {
+          "mean": 0.07124157946862512,
+          "median": 0.0280000009,
+          "max": 1.3772
+        },
+        "requested_draws": {
+          "mean": 33.12226450999049,
+          "median": 33.0,
+          "max": 34.0
+        },
+        "requested_vertices": {
+          "mean": 13035.996669838249,
+          "median": 12897.0,
+          "max": 14293.0
+        },
+        "draws": {
+          "mean": 111.12226450999049,
+          "median": 111.0,
+          "max": 112.0
+        },
+        "upload_bytes": {
+          "mean": 865856.5009514748,
+          "median": 857076.5,
+          "max": 943854.0
+        },
+        "glyph_upload_bytes": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "live_textures": {
+          "mean": 6.0,
+          "median": 6.0,
+          "max": 6.0
+        },
+        "image_bytes": {
+          "mean": 7168256.0,
+          "median": 7168256.0,
+          "max": 7168256.0
+        },
+        "descriptor_sets": {
+          "mean": 460.0,
+          "median": 460.0,
+          "max": 460.0
+        },
+        "upload_allocated_bytes": {
+          "mean": 25559040.0,
+          "median": 25559040.0,
+          "max": 25559040.0
+        },
+        "gpu_metadata_allocated_bytes": {
+          "mean": 4678528.0,
+          "median": 4678528.0,
+          "max": 4678528.0
+        },
+        "draw_memory_allocations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "draw_resource_creations": {
+          "mean": 0.0,
+          "median": 0.0,
+          "max": 0.0
+        },
+        "gpu_ms": 0.6192755576694411
+      }
+    ]
+  },
+  "quarters": [
+    {
+      "lo": 0,
+      "hi": 35,
+      "begin_s": 0.0,
+      "end_s": 0.27075699999999997,
+      "fps": 132.96055134308625,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.9651222261388889,
+      "present_ms": 2.1938583338333335,
+      "acquire_ms": 2.7648194443583334,
+      "slot_wait_ms": 0.012566666431388889,
+      "submit_ms": 0.07111388889722223,
+      "requested_vertices": 13338.138888888889,
+      "draws": 60.361111111111114,
+      "max_loop_ms": 65.019,
+      "gpu_ms": 1.0469005405405405
+    },
+    {
+      "lo": 36,
+      "hi": 73,
+      "begin_s": 0.27075699999999997,
+      "end_s": 0.5246179999999999,
+      "fps": 149.6882152043835,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.7158842070263158,
+      "present_ms": 0.763531579,
+      "acquire_ms": 1.8999631581052632,
+      "slot_wait_ms": 0.010931578517368421,
+      "submit_ms": 0.060644736986842106,
+      "requested_vertices": 13727.684210526315,
+      "draws": 60.05263157894737,
+      "max_loop_ms": 19.0604,
+      "gpu_ms": 1.003238918918919
+    },
+    {
+      "lo": 74,
+      "hi": 105,
+      "begin_s": 0.5246179999999999,
+      "end_s": 0.7746314999999999,
+      "fps": 127.99308837322783,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.6901937538125,
+      "present_ms": 0.69325000025,
+      "acquire_ms": 1.459418750075,
+      "slot_wait_ms": 0.015875000161875,
+      "submit_ms": 0.052640624803125,
+      "requested_vertices": 13776.75,
+      "draws": 52.0,
+      "max_loop_ms": 22.4998,
+      "gpu_ms": 0.90268
+    },
+    {
+      "lo": 106,
+      "hi": 149,
+      "begin_s": 0.7746314999999999,
+      "end_s": 1.0246638000000001,
+      "fps": 175.97726373752505,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.7587977281818182,
+      "present_ms": 0.9975340912045454,
+      "acquire_ms": 1.843784091009091,
+      "slot_wait_ms": 0.011925000272727273,
+      "submit_ms": 0.04168181823863636,
+      "requested_vertices": 13970.636363636364,
+      "draws": 52.0,
+      "max_loop_ms": 10.2229,
+      "gpu_ms": 0.9843672727272726
+    },
+    {
+      "lo": 150,
+      "hi": 193,
+      "begin_s": 1.0246638000000001,
+      "end_s": 1.2800065000000007,
+      "fps": 172.3174384856113,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.6944295432045454,
+      "present_ms": 1.730452273,
+      "acquire_ms": 3.0828113636795456,
+      "slot_wait_ms": 0.028518182134545454,
+      "submit_ms": 0.03834318149318182,
+      "requested_vertices": 13954.181818181818,
+      "draws": 52.0,
+      "max_loop_ms": 14.0647,
+      "gpu_ms": 1.2549663636363635
+    },
+    {
+      "lo": 194,
+      "hi": 238,
+      "begin_s": 1.2800065000000007,
+      "end_s": 1.5300213000000011,
+      "fps": 179.98934463079743,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.6594133364444444,
+      "present_ms": 1.8343733331333334,
+      "acquire_ms": 2.7989422222333333,
+      "slot_wait_ms": 0.03221999994533333,
+      "submit_ms": 0.04709777805555555,
+      "requested_vertices": 13958.0,
+      "draws": 52.0,
+      "max_loop_ms": 11.134,
+      "gpu_ms": 1.038896888888889
+    },
+    {
+      "lo": 239,
+      "hi": 277,
+      "begin_s": 1.5300213000000011,
+      "end_s": 1.787931300000001,
+      "fps": 151.21554030475755,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.6712564153333334,
+      "present_ms": 3.942682051179487,
+      "acquire_ms": 1.8123820511897435,
+      "slot_wait_ms": 0.028035897172564102,
+      "submit_ms": 0.04446410256153846,
+      "requested_vertices": 13934.307692307691,
+      "draws": 52.0,
+      "max_loop_ms": 19.4781,
+      "gpu_ms": 2.34773641025641
+    },
+    {
+      "lo": 278,
+      "hi": 315,
+      "begin_s": 1.787931300000001,
+      "end_s": 2.9071092000000007,
+      "fps": 33.95349389940599,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.6204473730263158,
+      "present_ms": 2.4193815790789475,
+      "acquire_ms": 2.4122842106631577,
+      "slot_wait_ms": 0.028710526658157896,
+      "submit_ms": 0.03691578941578948,
+      "requested_vertices": 13826.0,
+      "draws": 52.0,
+      "max_loop_ms": 915.8106,
+      "gpu_ms": 1.2332902564102564
+    },
+    {
+      "lo": 316,
+      "hi": 358,
+      "begin_s": 2.9071092000000007,
+      "end_s": 3.1580111000000004,
+      "fps": 171.38172329504093,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.6680883722790698,
+      "present_ms": 2.089855813906977,
+      "acquire_ms": 2.562909302432558,
+      "slot_wait_ms": 0.03502325600627907,
+      "submit_ms": 0.09355813914418605,
+      "requested_vertices": 13959.906976744185,
+      "draws": 52.0,
+      "max_loop_ms": 26.7647,
+      "gpu_ms": 1.7281104761904762
+    },
+    {
+      "lo": 359,
+      "hi": 404,
+      "begin_s": 3.1580111000000004,
+      "end_s": 3.4133036000000003,
+      "fps": 180.1854735254662,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.7534847818478261,
+      "present_ms": 1.990186956673913,
+      "acquire_ms": 2.044419565217391,
+      "slot_wait_ms": 0.027597825733913044,
+      "submit_ms": 0.08242391278260869,
+      "requested_vertices": 14101.0,
+      "draws": 52.0,
+      "max_loop_ms": 9.4909,
+      "gpu_ms": 1.2414252173913045
+    },
+    {
+      "lo": 405,
+      "hi": 449,
+      "begin_s": 3.4133036000000003,
+      "end_s": 3.6634006,
+      "fps": 179.93018708741027,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.7436933332888889,
+      "present_ms": 1.2527599998,
+      "acquire_ms": 2.8916422222533336,
+      "slot_wait_ms": 0.03731555540422222,
+      "submit_ms": 0.13708444444444445,
+      "requested_vertices": 14069.822222222223,
+      "draws": 52.0,
+      "max_loop_ms": 8.1701,
+      "gpu_ms": 0.8400195555555555
+    },
+    {
+      "lo": 450,
+      "hi": 495,
+      "begin_s": 3.6634006,
+      "end_s": 3.9188236999999995,
+      "fps": 180.09334316277614,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.8065782591086956,
+      "present_ms": 1.498689130326087,
+      "acquire_ms": 2.8544500000826085,
+      "slot_wait_ms": 0.022147826276304346,
+      "submit_ms": 0.07219565215,
+      "requested_vertices": 14070.608695652174,
+      "draws": 52.0,
+      "max_loop_ms": 9.0608,
+      "gpu_ms": 1.1614765217391305
+    },
+    {
+      "lo": 496,
+      "hi": 540,
+      "begin_s": 3.9188236999999995,
+      "end_s": 4.168846900000001,
+      "fps": 179.983297549986,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.7703066667111111,
+      "present_ms": 1.9634044445333334,
+      "acquire_ms": 2.545662222053333,
+      "slot_wait_ms": 0.04410888892066667,
+      "submit_ms": 0.09780000030888888,
+      "requested_vertices": 14009.466666666667,
+      "draws": 52.0,
+      "max_loop_ms": 9.3126,
+      "gpu_ms": 1.0707902222222223
+    },
+    {
+      "lo": 541,
+      "hi": 585,
+      "begin_s": 4.168846900000001,
+      "end_s": 4.418855400000001,
+      "fps": 179.993880208073,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.8016644476444444,
+      "present_ms": 1.0126866664444445,
+      "acquire_ms": 3.448155555608889,
+      "slot_wait_ms": 0.048282222186222225,
+      "submit_ms": 0.09424222212222222,
+      "requested_vertices": 14117.733333333334,
+      "draws": 52.28888888888889,
+      "max_loop_ms": 9.9169,
+      "gpu_ms": 0.8413262222222222
+    },
+    {
+      "lo": 586,
+      "hi": 630,
+      "begin_s": 4.418855400000001,
+      "end_s": 4.668891000000004,
+      "fps": 179.97437164947505,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 0.0,
+      "build_ms": 0.7737222181555555,
+      "present_ms": 1.6804088888888888,
+      "acquire_ms": 2.6610133332022223,
+      "slot_wait_ms": 0.024026666657555554,
+      "submit_ms": 0.10514000002666667,
+      "requested_vertices": 13292.222222222223,
+      "draws": 53.0,
+      "max_loop_ms": 7.2555,
+      "gpu_ms": 1.2792213333333333
+    },
+    {
+      "lo": 631,
+      "hi": 675,
+      "begin_s": 4.668891000000004,
+      "end_s": 4.919478700000006,
+      "fps": 179.57784839399406,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 0.0,
+      "build_ms": 0.8256133411111111,
+      "present_ms": 1.2393288887333334,
+      "acquire_ms": 2.8828044444933334,
+      "slot_wait_ms": 0.01968222210622222,
+      "submit_ms": 0.10944444424222222,
+      "requested_vertices": 12912.666666666666,
+      "draws": 52.53333333333333,
+      "max_loop_ms": 6.8988,
+      "gpu_ms": 0.9631697777777778
+    },
+    {
+      "lo": 676,
+      "hi": 721,
+      "begin_s": 4.919478700000006,
+      "end_s": 5.174951700000004,
+      "fps": 180.05816661643436,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.7805239132173913,
+      "present_ms": 0.9319804350869565,
+      "acquire_ms": 3.4690347825978263,
+      "slot_wait_ms": 0.026319565036304348,
+      "submit_ms": 0.13041087009130434,
+      "requested_vertices": 12960.521739130434,
+      "draws": 52.71739130434783,
+      "max_loop_ms": 7.7368,
+      "gpu_ms": 0.8298895652173913
+    },
+    {
+      "lo": 722,
+      "hi": 767,
+      "begin_s": 5.174951700000004,
+      "end_s": 5.430263000000006,
+      "fps": 180.17220546054804,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.8476413036956522,
+      "present_ms": 1.248600000173913,
+      "acquire_ms": 3.1031608695304347,
+      "slot_wait_ms": 0.05216739105913044,
+      "submit_ms": 0.13643478302391304,
+      "requested_vertices": 14257.652173913044,
+      "draws": 53.0,
+      "max_loop_ms": 9.3496,
+      "gpu_ms": 1.0359130434782609
+    },
+    {
+      "lo": 768,
+      "hi": 812,
+      "begin_s": 5.430263000000006,
+      "end_s": 5.680347700000003,
+      "fps": 179.93903665438387,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.7722133264888889,
+      "present_ms": 1.1372777778,
+      "acquire_ms": 3.2701755555555554,
+      "slot_wait_ms": 0.03319999956777778,
+      "submit_ms": 0.13408444400444444,
+      "requested_vertices": 14013.288888888888,
+      "draws": 52.37777777777778,
+      "max_loop_ms": 6.1613,
+      "gpu_ms": 0.7078408888888889
+    },
+    {
+      "lo": 813,
+      "hi": 950,
+      "begin_s": 5.680347700000003,
+      "end_s": 5.930763600000003,
+      "fps": 551.0832179586041,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.6863594165652174,
+      "present_ms": 0.5431152174347826,
+      "acquire_ms": 0.06841956524855072,
+      "slot_wait_ms": 0.049187681065289854,
+      "submit_ms": 0.07742536218623189,
+      "requested_vertices": 14104.840579710144,
+      "draws": 53.0,
+      "max_loop_ms": 31.3124,
+      "gpu_ms": 0.6086201438848922
+    },
+    {
+      "lo": 951,
+      "hi": 1087,
+      "begin_s": 5.930763600000003,
+      "end_s": 6.181985800000003,
+      "fps": 545.3339712812001,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.6731043802627737,
+      "present_ms": 0.6792788320510948,
+      "acquire_ms": 0.0989430655890511,
+      "slot_wait_ms": 0.03389635056350365,
+      "submit_ms": 0.1095116789350365,
+      "requested_vertices": 14032.627737226278,
+      "draws": 52.46715328467153,
+      "max_loop_ms": 5.2319,
+      "gpu_ms": 0.6223411594202898
+    },
+    {
+      "lo": 1088,
+      "hi": 1238,
+      "begin_s": 6.181985800000003,
+      "end_s": 6.433383700000006,
+      "fps": 600.641453250001,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.6559708631589404,
+      "present_ms": 0.5778788081192053,
+      "acquire_ms": 0.08472251653377484,
+      "slot_wait_ms": 0.037460927332119205,
+      "submit_ms": 0.11098079470662252,
+      "requested_vertices": 13874.71523178808,
+      "draws": 52.0,
+      "max_loop_ms": 5.0033,
+      "gpu_ms": 0.5336562666666667
+    },
+    {
+      "lo": 1239,
+      "hi": 1430,
+      "begin_s": 6.433383700000006,
+      "end_s": 6.684158800000008,
+      "fps": 765.6262523671558,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 0.0,
+      "selected": 0.0,
+      "build_ms": 0.593469269734375,
+      "present_ms": 0.43733072932291667,
+      "acquire_ms": 0.07376302085104167,
+      "slot_wait_ms": 0.025450000102135415,
+      "submit_ms": 0.09175000020989584,
+      "requested_vertices": 13786.583333333334,
+      "draws": 52.0,
+      "max_loop_ms": 4.7783,
+      "gpu_ms": 0.4917189583333333
+    },
+    {
+      "lo": 1431,
+      "hi": 1588,
+      "begin_s": 6.684158800000008,
+      "end_s": 6.935063700000009,
+      "fps": 629.7206630878836,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 0.0,
+      "build_ms": 0.6493094948607595,
+      "present_ms": 0.6595126581772152,
+      "acquire_ms": 0.08491645565253164,
+      "slot_wait_ms": 0.0376886076271519,
+      "submit_ms": 0.11199620225,
+      "requested_vertices": 13591.67088607595,
+      "draws": 52.84177215189873,
+      "max_loop_ms": 4.7652,
+      "gpu_ms": 0.5489779746835443
+    },
+    {
+      "lo": 1589,
+      "hi": 1748,
+      "begin_s": 6.935063700000009,
+      "end_s": 7.1851266000000065,
+      "fps": 639.8390165034526,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 0.0,
+      "build_ms": 0.6137699977,
+      "present_ms": 0.5918374999875,
+      "acquire_ms": 0.097023749911875,
+      "slot_wait_ms": 0.0325974999675,
+      "submit_ms": 0.110864999865625,
+      "requested_vertices": 12871.725,
+      "draws": 52.95,
+      "max_loop_ms": 4.3685,
+      "gpu_ms": 0.533608
+    },
+    {
+      "lo": 1749,
+      "hi": 1899,
+      "begin_s": 7.1851266000000065,
+      "end_s": 7.435155300000006,
+      "fps": 603.930668759229,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 0.0,
+      "build_ms": 0.6858298024503311,
+      "present_ms": 0.6624920529933774,
+      "acquire_ms": 0.0928682117218543,
+      "slot_wait_ms": 0.04118675491066225,
+      "submit_ms": 0.10058344370662252,
+      "requested_vertices": 12702.0,
+      "draws": 52.0,
+      "max_loop_ms": 4.5165,
+      "gpu_ms": 0.5453618543046357
+    },
+    {
+      "lo": 1900,
+      "hi": 2094,
+      "begin_s": 7.435155300000006,
+      "end_s": 7.686453300000001,
+      "fps": 775.9711577489821,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 0.0,
+      "build_ms": 0.5956517957641025,
+      "present_ms": 0.4396333334051282,
+      "acquire_ms": 0.06165384613128205,
+      "slot_wait_ms": 0.028844102589846154,
+      "submit_ms": 0.08203076939794872,
+      "requested_vertices": 12702.0,
+      "draws": 52.0,
+      "max_loop_ms": 3.6127,
+      "gpu_ms": 0.4943161025641025
+    },
+    {
+      "lo": 2095,
+      "hi": 2250,
+      "begin_s": 7.686453300000001,
+      "end_s": 7.937765399999997,
+      "fps": 620.7420971771841,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 0.0,
+      "build_ms": 0.6414647435064103,
+      "present_ms": 0.6500852564935897,
+      "acquire_ms": 0.1287532050775641,
+      "slot_wait_ms": 0.053627564094935895,
+      "submit_ms": 0.10606089755641025,
+      "requested_vertices": 12702.0,
+      "draws": 52.0,
+      "max_loop_ms": 3.9213,
+      "gpu_ms": 0.5417820512820513
+    },
+    {
+      "lo": 2251,
+      "hi": 2380,
+      "begin_s": 7.937765399999997,
+      "end_s": 8.191824199999997,
+      "fps": 511.6925688069047,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 0.0,
+      "build_ms": 0.7286930770692308,
+      "present_ms": 0.5792138460230769,
+      "acquire_ms": 0.11730846149615384,
+      "slot_wait_ms": 0.04076692317007692,
+      "submit_ms": 0.11180538448153846,
+      "requested_vertices": 12752.092307692308,
+      "draws": 52.0,
+      "max_loop_ms": 6.4204,
+      "gpu_ms": 0.5436268702290076
+    },
+    {
+      "lo": 2381,
+      "hi": 2531,
+      "begin_s": 8.191824199999997,
+      "end_s": 8.441932699999999,
+      "fps": 603.7379777176677,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 0.0,
+      "build_ms": 0.6216278166423841,
+      "present_ms": 0.39446887413245035,
+      "acquire_ms": 0.08002913908940397,
+      "slot_wait_ms": 0.03180860900940397,
+      "submit_ms": 0.07571523177549669,
+      "requested_vertices": 12794.132450331126,
+      "draws": 52.0,
+      "max_loop_ms": 7.1229,
+      "gpu_ms": 0.5260253333333333
+    },
+    {
+      "lo": 2532,
+      "hi": 2661,
+      "begin_s": 8.441932699999999,
+      "end_s": 8.693628900000007,
+      "fps": 516.4956801095768,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 0.0,
+      "build_ms": 0.7250376925846154,
+      "present_ms": 0.5243223075923077,
+      "acquire_ms": 0.09975538468692308,
+      "slot_wait_ms": 0.03274307668353846,
+      "submit_ms": 0.11104615382846154,
+      "requested_vertices": 12826.092307692308,
+      "draws": 52.0,
+      "max_loop_ms": 4.9794,
+      "gpu_ms": 0.608028
+    },
+    {
+      "lo": 2662,
+      "hi": 2822,
+      "begin_s": 8.693628900000007,
+      "end_s": 8.944607900000008,
+      "fps": 641.4879332533767,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 0.0,
+      "build_ms": 0.6285689447577639,
+      "present_ms": 0.4544422359689441,
+      "acquire_ms": 0.0792720497552795,
+      "slot_wait_ms": 0.028992546665403726,
+      "submit_ms": 0.08508695670807453,
+      "requested_vertices": 12823.341614906833,
+      "draws": 52.0,
+      "max_loop_ms": 4.5357,
+      "gpu_ms": 0.5303274534161491
+    },
+    {
+      "lo": 2823,
+      "hi": 2999,
+      "begin_s": 8.944607900000008,
+      "end_s": 9.194826100000009,
+      "fps": 707.3825964697978,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 334.0,
+      "build_ms": 0.6670254213446327,
+      "present_ms": 0.46519830495480224,
+      "acquire_ms": 0.07106101702033898,
+      "slot_wait_ms": 0.026573446346158193,
+      "submit_ms": 0.09839435010903955,
+      "requested_vertices": 12903.35593220339,
+      "draws": 52.67796610169491,
+      "max_loop_ms": 6.0164,
+      "gpu_ms": 0.506664406779661
+    },
+    {
+      "lo": 3000,
+      "hi": 3156,
+      "begin_s": 9.194826100000009,
+      "end_s": 9.444921800000007,
+      "fps": 627.759693589299,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 334.0,
+      "build_ms": 0.6112821658853503,
+      "present_ms": 0.6431923565414013,
+      "acquire_ms": 0.10803248402866242,
+      "slot_wait_ms": 0.04046751590394904,
+      "submit_ms": 0.12226942678726115,
+      "requested_vertices": 13004.675159235669,
+      "draws": 53.0,
+      "max_loop_ms": 4.5116,
+      "gpu_ms": 0.5273681528662421
+    },
+    {
+      "lo": 3157,
+      "hi": 3340,
+      "begin_s": 9.444921800000007,
+      "end_s": 9.696304500000018,
+      "fps": 731.9517214191427,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 334.0,
+      "build_ms": 0.6461902182445652,
+      "present_ms": 0.39301956516847825,
+      "acquire_ms": 0.0704510867402174,
+      "slot_wait_ms": 0.02613967387695652,
+      "submit_ms": 0.07493641313804347,
+      "requested_vertices": 12968.08695652174,
+      "draws": 52.45652173913044,
+      "max_loop_ms": 5.2705,
+      "gpu_ms": 0.4996268108108108
+    },
+    {
+      "lo": 3341,
+      "hi": 3494,
+      "begin_s": 9.696304500000018,
+      "end_s": 9.946937300000018,
+      "fps": 614.4447175309871,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 81.0,
+      "build_ms": 0.6492818171298701,
+      "present_ms": 0.5463974026493507,
+      "acquire_ms": 0.08763961057012987,
+      "slot_wait_ms": 0.037003896065584414,
+      "submit_ms": 0.09686883119480519,
+      "requested_vertices": 13000.207792207791,
+      "draws": 53.0,
+      "max_loop_ms": 5.2491,
+      "gpu_ms": 0.5409396078431373
+    },
+    {
+      "lo": 3495,
+      "hi": 3637,
+      "begin_s": 9.946937300000018,
+      "end_s": 10.197918300000023,
+      "fps": 569.764245102207,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 81.0,
+      "build_ms": 0.6851272733356644,
+      "present_ms": 0.6165818181048951,
+      "acquire_ms": 0.09343076913916083,
+      "slot_wait_ms": 0.03489860140951049,
+      "submit_ms": 0.11482097884755245,
+      "requested_vertices": 12924.293706293707,
+      "draws": 52.49650349650349,
+      "max_loop_ms": 5.6175,
+      "gpu_ms": 0.5480427972027972
+    },
+    {
+      "lo": 3638,
+      "hi": 3792,
+      "begin_s": 10.197918300000023,
+      "end_s": 10.44835760000003,
+      "fps": 618.9124470480292,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 81.0,
+      "build_ms": 0.6772374207870968,
+      "present_ms": 0.4342167742967742,
+      "acquire_ms": 0.0694967741632258,
+      "slot_wait_ms": 0.02781935506154839,
+      "submit_ms": 0.08255096765612903,
+      "requested_vertices": 12869.832258064516,
+      "draws": 52.0,
+      "max_loop_ms": 4.1216,
+      "gpu_ms": 0.5081409032258065
+    },
+    {
+      "lo": 3793,
+      "hi": 3934,
+      "begin_s": 10.44835760000003,
+      "end_s": 10.699256800000027,
+      "fps": 565.9643394638251,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 81.0,
+      "build_ms": 0.6568978885704225,
+      "present_ms": 0.6351218308169014,
+      "acquire_ms": 0.09689929550422535,
+      "slot_wait_ms": 0.04223873248612676,
+      "submit_ms": 0.10795281675492958,
+      "requested_vertices": 12914.0,
+      "draws": 52.0,
+      "max_loop_ms": 5.6517,
+      "gpu_ms": 0.6222490140845071
+    },
+    {
+      "lo": 3935,
+      "hi": 4084,
+      "begin_s": 10.699256800000027,
+      "end_s": 10.949627600000015,
+      "fps": 599.1113979745488,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 12.0,
+      "compact": 1.0,
+      "selected": 81.0,
+      "build_ms": 0.6790086686933333,
+      "present_ms": 0.5493786665733333,
+      "acquire_ms": 0.09006133313133333,
+      "slot_wait_ms": 0.031622666603333335,
+      "submit_ms": 0.118844666596,
+      "requested_vertices": 12902.52,
+      "draws": 52.0,
+      "max_loop_ms": 4.1392,
+      "gpu_ms": 0.5362424
+    },
+    {
+      "lo": 4085,
+      "hi": 4248,
+      "begin_s": 10.949627600000015,
+      "end_s": 11.202937300000025,
+      "fps": 647.4288193464137,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 81.0,
+      "build_ms": 0.6862743919817074,
+      "present_ms": 0.38392865838414636,
+      "acquire_ms": 0.09746951237012196,
+      "slot_wait_ms": 0.024057317201463414,
+      "submit_ms": 0.09161158550670732,
+      "requested_vertices": 13107.780487804877,
+      "draws": 52.71341463414634,
+      "max_loop_ms": 3.9335,
+      "gpu_ms": 0.5504217073170732
+    },
+    {
+      "lo": 4249,
+      "hi": 4378,
+      "begin_s": 11.202937300000025,
+      "end_s": 11.455099100000025,
+      "fps": 515.5420051728695,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 81.0,
+      "build_ms": 0.7255638476076923,
+      "present_ms": 0.6899853847076923,
+      "acquire_ms": 0.10329769240076923,
+      "slot_wait_ms": 0.04821538431461538,
+      "submit_ms": 0.12168461539153846,
+      "requested_vertices": 14927.415384615384,
+      "draws": 53.0,
+      "max_loop_ms": 5.0614,
+      "gpu_ms": 0.6663470769230769
+    },
+    {
+      "lo": 4379,
+      "hi": 4505,
+      "begin_s": 11.455099100000025,
+      "end_s": 11.70527460000003,
+      "fps": 507.6436341688037,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 81.0,
+      "build_ms": 0.8724189003385827,
+      "present_ms": 0.5022566928818898,
+      "acquire_ms": 0.11276456671338583,
+      "slot_wait_ms": 0.029553543164015747,
+      "submit_ms": 0.10695826779370078,
+      "requested_vertices": 14935.307086614173,
+      "draws": 52.08661417322835,
+      "max_loop_ms": 4.2868,
+      "gpu_ms": 0.61606125
+    },
+    {
+      "lo": 4506,
+      "hi": 4669,
+      "begin_s": 11.70527460000003,
+      "end_s": 11.955979900000031,
+      "fps": 654.1544993264963,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 81.0,
+      "build_ms": 0.7830719495914634,
+      "present_ms": 0.39119695119512193,
+      "acquire_ms": 0.07747987804695122,
+      "slot_wait_ms": 0.023251829161829267,
+      "submit_ms": 0.08958414649756098,
+      "requested_vertices": 14880.80487804878,
+      "draws": 52.0,
+      "max_loop_ms": 4.5529,
+      "gpu_ms": 0.5890736196319019
+    },
+    {
+      "lo": 4670,
+      "hi": 4806,
+      "begin_s": 11.955979900000031,
+      "end_s": 12.207605300000033,
+      "fps": 544.4601379669921,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 81.0,
+      "build_ms": 0.8693343082043796,
+      "present_ms": 0.6108248174452555,
+      "acquire_ms": 0.0701058395839416,
+      "slot_wait_ms": 0.03548613146423358,
+      "submit_ms": 0.1042649633569343,
+      "requested_vertices": 15007.664233576643,
+      "draws": 52.372262773722625,
+      "max_loop_ms": 4.3244,
+      "gpu_ms": 0.6301789781021898
+    },
+    {
+      "lo": 4807,
+      "hi": 4940,
+      "begin_s": 12.207605300000033,
+      "end_s": 12.461166700000023,
+      "fps": 528.4716049051809,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 190.0,
+      "build_ms": 0.8178276122014926,
+      "present_ms": 0.6095156715447761,
+      "acquire_ms": 0.08698208953880597,
+      "slot_wait_ms": 0.03834477620298508,
+      "submit_ms": 0.11151641814701492,
+      "requested_vertices": 15021.850746268658,
+      "draws": 53.0,
+      "max_loop_ms": 4.7103,
+      "gpu_ms": 0.6390232835820896
+    },
+    {
+      "lo": 4941,
+      "hi": 5070,
+      "begin_s": 12.461166700000023,
+      "end_s": 12.711992900000025,
+      "fps": 518.2871645784982,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.8620207671307692,
+      "present_ms": 0.6181061536615384,
+      "acquire_ms": 0.10581923060384615,
+      "slot_wait_ms": 0.043521538465307694,
+      "submit_ms": 0.10856076929,
+      "requested_vertices": 15095.353846153846,
+      "draws": 53.0,
+      "max_loop_ms": 4.8347,
+      "gpu_ms": 0.6581123076923077
+    },
+    {
+      "lo": 5071,
+      "hi": 5262,
+      "begin_s": 12.711992900000025,
+      "end_s": 12.962738000000035,
+      "fps": 765.7178545063954,
+      "page": 1,
+      "tiles": 500.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.7097328115885416,
+      "present_ms": 0.374063020796875,
+      "acquire_ms": 0.05455729178802083,
+      "slot_wait_ms": 0.021902604102864584,
+      "submit_ms": 0.08170833326614584,
+      "requested_vertices": 14942.729166666666,
+      "draws": 52.885416666666664,
+      "max_loop_ms": 4.4033,
+      "gpu_ms": 0.55378125
+    },
+    {
+      "lo": 5263,
+      "hi": 5406,
+      "begin_s": 12.962738000000035,
+      "end_s": 13.215122900000026,
+      "fps": 570.5571133614004,
+      "page": 1,
+      "tiles": 501.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.7697840278541667,
+      "present_ms": 0.6827923609027777,
+      "acquire_ms": 0.11349236131041666,
+      "slot_wait_ms": 0.03873958324347222,
+      "submit_ms": 0.10544236124305556,
+      "requested_vertices": 14989.861111111111,
+      "draws": 53.0,
+      "max_loop_ms": 4.7693,
+      "gpu_ms": 0.6049074999999999
+    },
+    {
+      "lo": 5407,
+      "hi": 5554,
+      "begin_s": 13.215122900000026,
+      "end_s": 13.466267600000027,
+      "fps": 589.3017053515347,
+      "page": 1,
+      "tiles": 502.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.7098878343986487,
+      "present_ms": 0.6684398647364865,
+      "acquire_ms": 0.09669797301621622,
+      "slot_wait_ms": 0.04242972963797297,
+      "submit_ms": 0.11691081089121622,
+      "requested_vertices": 15103.52027027027,
+      "draws": 53.0,
+      "max_loop_ms": 5.1317,
+      "gpu_ms": 0.5865091891891892
+    },
+    {
+      "lo": 5555,
+      "hi": 5743,
+      "begin_s": 13.466267600000027,
+      "end_s": 13.71754920000002,
+      "fps": 752.1442079324761,
+      "page": 1,
+      "tiles": 504.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.6846756616243386,
+      "present_ms": 0.396347619010582,
+      "acquire_ms": 0.06350846561904762,
+      "slot_wait_ms": 0.027306878273968254,
+      "submit_ms": 0.08553968244814815,
+      "requested_vertices": 15270.94708994709,
+      "draws": 53.0,
+      "max_loop_ms": 3.7074,
+      "gpu_ms": 0.5760685714285714
+    },
+    {
+      "lo": 5744,
+      "hi": 5896,
+      "begin_s": 13.71754920000002,
+      "end_s": 13.96761120000001,
+      "fps": 611.8482616311425,
+      "page": 1,
+      "tiles": 505.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.6663228731764705,
+      "present_ms": 0.661344444379085,
+      "acquire_ms": 0.09150130738169934,
+      "slot_wait_ms": 0.039835294156862745,
+      "submit_ms": 0.13163202608235294,
+      "requested_vertices": 15406.67320261438,
+      "draws": 53.0,
+      "max_loop_ms": 4.7898,
+      "gpu_ms": 0.6475233986928104
+    },
+    {
+      "lo": 5897,
+      "hi": 6067,
+      "begin_s": 13.96761120000001,
+      "end_s": 14.218189900000006,
+      "fps": 682.4203334122222,
+      "page": 1,
+      "tiles": 507.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.6919526308362574,
+      "present_ms": 0.513152046631579,
+      "acquire_ms": 0.07911461980409357,
+      "slot_wait_ms": 0.03633567257766082,
+      "submit_ms": 0.09292573094269006,
+      "requested_vertices": 15482.27485380117,
+      "draws": 53.0,
+      "max_loop_ms": 4.4286,
+      "gpu_ms": 0.6089564912280703
+    },
+    {
+      "lo": 6068,
+      "hi": 6263,
+      "begin_s": 14.218189900000006,
+      "end_s": 14.469285000000012,
+      "fps": 780.5807441084887,
+      "page": 1,
+      "tiles": 509.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.6413295937653061,
+      "present_ms": 0.41301836736734693,
+      "acquire_ms": 0.06885153050765307,
+      "slot_wait_ms": 0.03051887749015306,
+      "submit_ms": 0.08113163273316326,
+      "requested_vertices": 15478.90306122449,
+      "draws": 53.0,
+      "max_loop_ms": 3.1227,
+      "gpu_ms": 0.5938687755102041
+    },
+    {
+      "lo": 6264,
+      "hi": 6410,
+      "begin_s": 14.469285000000012,
+      "end_s": 14.720418300000004,
+      "fps": 585.3465072135178,
+      "page": 1,
+      "tiles": 510.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.7894891168163265,
+      "present_ms": 0.6173142856870748,
+      "acquire_ms": 0.09392993213877551,
+      "slot_wait_ms": 0.03769455785782313,
+      "submit_ms": 0.10279455795646258,
+      "requested_vertices": 15401.115646258504,
+      "draws": 53.0,
+      "max_loop_ms": 5.2135,
+      "gpu_ms": 0.6378190476190476
+    },
+    {
+      "lo": 6411,
+      "hi": 6593,
+      "begin_s": 14.720418300000004,
+      "end_s": 14.970772600000007,
+      "fps": 730.9640777090628,
+      "page": 1,
+      "tiles": 511.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.7127950791147541,
+      "present_ms": 0.4381950818306011,
+      "acquire_ms": 0.06367486346284153,
+      "slot_wait_ms": 0.026643715597595628,
+      "submit_ms": 0.08925792357868853,
+      "requested_vertices": 15346.267759562841,
+      "draws": 53.0,
+      "max_loop_ms": 3.3153,
+      "gpu_ms": 0.5969713661202186
+    },
+    {
+      "lo": 6594,
+      "hi": 6764,
+      "begin_s": 14.970772600000007,
+      "end_s": 15.221440900000008,
+      "fps": 682.1764060313936,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.7129432761286549,
+      "present_ms": 0.520377777748538,
+      "acquire_ms": 0.07893157900526315,
+      "slot_wait_ms": 0.029730994187076025,
+      "submit_ms": 0.0890807014754386,
+      "requested_vertices": 15296.38596491228,
+      "draws": 53.0,
+      "max_loop_ms": 5.1679,
+      "gpu_ms": 0.5836184795321637
+    },
+    {
+      "lo": 6765,
+      "hi": 6923,
+      "begin_s": 15.221440900000008,
+      "end_s": 15.471543600000011,
+      "fps": 635.7388384851424,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.6925572340880504,
+      "present_ms": 0.6028433962830189,
+      "acquire_ms": 0.09329622635220126,
+      "slot_wait_ms": 0.03685849049628931,
+      "submit_ms": 0.10284088063584906,
+      "requested_vertices": 15026.012578616352,
+      "draws": 52.729559748427675,
+      "max_loop_ms": 3.9777,
+      "gpu_ms": 0.6066337106918238
+    },
+    {
+      "lo": 6924,
+      "hi": 7119,
+      "begin_s": 15.471543600000011,
+      "end_s": 15.722678900000012,
+      "fps": 780.4557941476171,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.6614545921581633,
+      "present_ms": 0.4033678572755102,
+      "acquire_ms": 0.053926530596428573,
+      "slot_wait_ms": 0.02497499997244898,
+      "submit_ms": 0.093581122475,
+      "requested_vertices": 14802.19387755102,
+      "draws": 52.0,
+      "max_loop_ms": 4.6063,
+      "gpu_ms": 0.5438442857142857
+    },
+    {
+      "lo": 7120,
+      "hi": 7261,
+      "begin_s": 15.722678900000012,
+      "end_s": 15.973345200000008,
+      "fps": 566.4901903447039,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.7914556351056338,
+      "present_ms": 0.5828422533521127,
+      "acquire_ms": 0.1033478874915493,
+      "slot_wait_ms": 0.04029577451887324,
+      "submit_ms": 0.11132887326690141,
+      "requested_vertices": 14790.169014084508,
+      "draws": 52.0,
+      "max_loop_ms": 4.4254,
+      "gpu_ms": 0.603009014084507
+    },
+    {
+      "lo": 7262,
+      "hi": 7393,
+      "begin_s": 15.973345200000008,
+      "end_s": 16.223356000000003,
+      "fps": 527.9771913853398,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.8788265165984849,
+      "present_ms": 0.6945128787424243,
+      "acquire_ms": 0.10462575748257576,
+      "slot_wait_ms": 0.03714696978030303,
+      "submit_ms": 0.14160833349621213,
+      "requested_vertices": 14786.0,
+      "draws": 52.0,
+      "max_loop_ms": 4.6737,
+      "gpu_ms": 0.6215863636363637
+    },
+    {
+      "lo": 7394,
+      "hi": 7584,
+      "begin_s": 16.223356000000003,
+      "end_s": 16.474179100000004,
+      "fps": 761.4928609047528,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.716032462,
+      "present_ms": 0.3907910993769633,
+      "acquire_ms": 0.059087957881675396,
+      "slot_wait_ms": 0.0215314136,
+      "submit_ms": 0.0882120418973822,
+      "requested_vertices": 14786.0,
+      "draws": 52.0,
+      "max_loop_ms": 4.0013,
+      "gpu_ms": 0.5670513089005236
+    },
+    {
+      "lo": 7585,
+      "hi": 7743,
+      "begin_s": 16.474179100000004,
+      "end_s": 16.72522949999998,
+      "fps": 633.3389630130686,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.6980320747484277,
+      "present_ms": 0.6060377359056603,
+      "acquire_ms": 0.09428679245786163,
+      "slot_wait_ms": 0.043127672976855345,
+      "submit_ms": 0.09288867937672957,
+      "requested_vertices": 14786.0,
+      "draws": 52.0,
+      "max_loop_ms": 4.2252,
+      "gpu_ms": 0.6560364779874214
+    },
+    {
+      "lo": 7744,
+      "hi": 7887,
+      "begin_s": 16.72522949999998,
+      "end_s": 16.976671299999964,
+      "fps": 572.6971410481791,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.7688458333125,
+      "present_ms": 0.6737826390347222,
+      "acquire_ms": 0.09742708307361111,
+      "slot_wait_ms": 0.04423888899930556,
+      "submit_ms": 0.13151041667013888,
+      "requested_vertices": 14786.0,
+      "draws": 52.0,
+      "max_loop_ms": 5.4041,
+      "gpu_ms": 0.6767852777777779
+    },
+    {
+      "lo": 7888,
+      "hi": 8065,
+      "begin_s": 16.976671299999964,
+      "end_s": 17.228489699999958,
+      "fps": 706.8585933355349,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.721299439005618,
+      "present_ms": 0.4370117978202247,
+      "acquire_ms": 0.08532865170000001,
+      "slot_wait_ms": 0.03171516851106741,
+      "submit_ms": 0.10592247192078652,
+      "requested_vertices": 14786.0,
+      "draws": 52.0,
+      "max_loop_ms": 4.1852,
+      "gpu_ms": 0.5760566292134831
+    },
+    {
+      "lo": 8066,
+      "hi": 8222,
+      "begin_s": 17.228489699999958,
+      "end_s": 17.478697899999947,
+      "fps": 627.4774367906657,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.7212687915605096,
+      "present_ms": 0.5855012738216561,
+      "acquire_ms": 0.09578471334012739,
+      "slot_wait_ms": 0.04300000001579618,
+      "submit_ms": 0.10416496828917197,
+      "requested_vertices": 14786.0,
+      "draws": 52.0,
+      "max_loop_ms": 3.3781,
+      "gpu_ms": 0.6114152866242037
+    },
+    {
+      "lo": 8223,
+      "hi": 8379,
+      "begin_s": 17.478697899999947,
+      "end_s": 17.72949829999996,
+      "fps": 625.9958118088852,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.7130757958089172,
+      "present_ms": 0.6193171974076433,
+      "acquire_ms": 0.08205159240254777,
+      "slot_wait_ms": 0.036866241906369425,
+      "submit_ms": 0.10689108262038216,
+      "requested_vertices": 14786.0,
+      "draws": 52.0,
+      "max_loop_ms": 4.5297,
+      "gpu_ms": 0.6246952866242038
+    },
+    {
+      "lo": 8380,
+      "hi": 8519,
+      "begin_s": 17.72949829999996,
+      "end_s": 17.98002689999998,
+      "fps": 558.8184343024589,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.8403507144571428,
+      "present_ms": 0.6132371427,
+      "acquire_ms": 0.12069285731071429,
+      "slot_wait_ms": 0.04350214299821428,
+      "submit_ms": 0.128744285655,
+      "requested_vertices": 14786.0,
+      "draws": 52.0,
+      "max_loop_ms": 3.8359,
+      "gpu_ms": 0.5808648571428571
+    },
+    {
+      "lo": 8520,
+      "hi": 8693,
+      "begin_s": 17.98002689999998,
+      "end_s": 18.231233599999978,
+      "fps": 692.6566847142346,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.7894201144597701,
+      "present_ms": 0.451149999954023,
+      "acquire_ms": 0.06016436784425287,
+      "slot_wait_ms": 0.02547126424994253,
+      "submit_ms": 0.08477471266551724,
+      "requested_vertices": 14786.0,
+      "draws": 52.0,
+      "max_loop_ms": 3.6502,
+      "gpu_ms": 0.5598712643678161
+    },
+    {
+      "lo": 8694,
+      "hi": 8830,
+      "begin_s": 18.231233599999978,
+      "end_s": 18.48207899999999,
+      "fps": 546.1531285803645,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.800477368810219,
+      "present_ms": 0.7138613138686132,
+      "acquire_ms": 0.09112992695547445,
+      "slot_wait_ms": 0.04511897800635036,
+      "submit_ms": 0.12289343075182482,
+      "requested_vertices": 14786.0,
+      "draws": 52.0,
+      "max_loop_ms": 4.4047,
+      "gpu_ms": 0.6374429197080291
+    },
+    {
+      "lo": 8831,
+      "hi": 8964,
+      "begin_s": 18.48207899999999,
+      "end_s": 18.732154199999975,
+      "fps": 535.838819683072,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.8809514944328358,
+      "present_ms": 0.6293432836641791,
+      "acquire_ms": 0.09412313405447761,
+      "slot_wait_ms": 0.04853507463850746,
+      "submit_ms": 0.12843134355820895,
+      "requested_vertices": 14786.0,
+      "draws": 52.0,
+      "max_loop_ms": 4.8798,
+      "gpu_ms": 0.6583662686567164
+    },
+    {
+      "lo": 8965,
+      "hi": 9157,
+      "begin_s": 18.732154199999975,
+      "end_s": 18.98433829999997,
+      "fps": 765.3139115432094,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.7198595882279792,
+      "present_ms": 0.3934098446528497,
+      "acquire_ms": 0.059359585389119174,
+      "slot_wait_ms": 0.024824870493264248,
+      "submit_ms": 0.08165388609792747,
+      "requested_vertices": 14786.0,
+      "draws": 52.0,
+      "max_loop_ms": 4.5837,
+      "gpu_ms": 0.5536489119170984
+    },
+    {
+      "lo": 9158,
+      "hi": 9314,
+      "begin_s": 18.98433829999997,
+      "end_s": 19.23492079999996,
+      "fps": 626.5401614239086,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.7457242016624204,
+      "present_ms": 0.5728044586178344,
+      "acquire_ms": 0.09255286638152867,
+      "slot_wait_ms": 0.034845223123694265,
+      "submit_ms": 0.11516687893375796,
+      "requested_vertices": 14786.0,
+      "draws": 52.0,
+      "max_loop_ms": 4.4582,
+      "gpu_ms": 0.616951592356688
+    },
+    {
+      "lo": 9315,
+      "hi": 9450,
+      "begin_s": 19.23492079999996,
+      "end_s": 19.485268499999954,
+      "fps": 543.2444556111473,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.8270500004411765,
+      "present_ms": 0.6231389705367647,
+      "acquire_ms": 0.11583014715147058,
+      "slot_wait_ms": 0.05136249984,
+      "submit_ms": 0.13001250009117646,
+      "requested_vertices": 14786.0,
+      "draws": 52.0,
+      "max_loop_ms": 4.6658,
+      "gpu_ms": 0.6364329411764705
+    },
+    {
+      "lo": 9451,
+      "hi": 9643,
+      "begin_s": 19.485268499999954,
+      "end_s": 19.736321099999977,
+      "fps": 768.7631994250764,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.6475974071295337,
+      "present_ms": 0.43192072541450777,
+      "acquire_ms": 0.07304766840155441,
+      "slot_wait_ms": 0.031395854712797926,
+      "submit_ms": 0.07915181346321243,
+      "requested_vertices": 14786.0,
+      "draws": 52.0,
+      "max_loop_ms": 4.2483,
+      "gpu_ms": 0.5586955440414507
+    },
+    {
+      "lo": 9644,
+      "hi": 9787,
+      "begin_s": 19.736321099999977,
+      "end_s": 19.98766399999997,
+      "fps": 572.9224895551149,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.8047506955763889,
+      "present_ms": 0.6240319443263889,
+      "acquire_ms": 0.10275972229583333,
+      "slot_wait_ms": 0.04144513876166667,
+      "submit_ms": 0.13028541660972223,
+      "requested_vertices": 14786.0,
+      "draws": 52.0,
+      "max_loop_ms": 4.3613,
+      "gpu_ms": 0.5996533333333334
+    },
+    {
+      "lo": 9788,
+      "hi": 9914,
+      "begin_s": 19.98766399999997,
+      "end_s": 20.237959999999973,
+      "fps": 507.39923930066374,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.9282535457165354,
+      "present_ms": 0.5271992125669291,
+      "acquire_ms": 0.11003858257716535,
+      "slot_wait_ms": 0.026419685083543306,
+      "submit_ms": 0.1108984250968504,
+      "requested_vertices": 14857.086614173228,
+      "draws": 52.0,
+      "max_loop_ms": 7.9983,
+      "gpu_ms": 0.5954973228346456
+    },
+    {
+      "lo": 9915,
+      "hi": 10060,
+      "begin_s": 20.237959999999973,
+      "end_s": 20.489141699999973,
+      "fps": 581.2525355151332,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.7020397239589041,
+      "present_ms": 0.40327671247945207,
+      "acquire_ms": 0.09573287660068493,
+      "slot_wait_ms": 0.02177945187308219,
+      "submit_ms": 0.09556849317328767,
+      "requested_vertices": 14905.616438356165,
+      "draws": 52.0,
+      "max_loop_ms": 4.7793,
+      "gpu_ms": 0.6209915646258504
+    },
+    {
+      "lo": 10061,
+      "hi": 10182,
+      "begin_s": 20.489141699999973,
+      "end_s": 20.739868199999975,
+      "fps": 486.58598113880225,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.8290368833524591,
+      "present_ms": 0.4859631146885246,
+      "acquire_ms": 0.10806885245819672,
+      "slot_wait_ms": 0.02971147523,
+      "submit_ms": 0.12171967218278688,
+      "requested_vertices": 14835.147540983606,
+      "draws": 52.0,
+      "max_loop_ms": 5.1717,
+      "gpu_ms": 0.5981004958677686
+    },
+    {
+      "lo": 10183,
+      "hi": 10329,
+      "begin_s": 20.739868199999975,
+      "end_s": 20.98997389999997,
+      "fps": 587.7514986663723,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.7903646297142857,
+      "present_ms": 0.3616013604421769,
+      "acquire_ms": 0.08659251706870748,
+      "slot_wait_ms": 0.026143537388095238,
+      "submit_ms": 0.09208163274217687,
+      "requested_vertices": 14864.598639455782,
+      "draws": 52.0,
+      "max_loop_ms": 4.9997,
+      "gpu_ms": 0.5809031292517006
+    },
+    {
+      "lo": 10330,
+      "hi": 10485,
+      "begin_s": 20.98997389999997,
+      "end_s": 21.24421049999999,
+      "fps": 613.6016608151176,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.7598596134423077,
+      "present_ms": 0.5851435898910257,
+      "acquire_ms": 0.08546602572115385,
+      "slot_wait_ms": 0.03809230767192308,
+      "submit_ms": 0.09566346141474359,
+      "requested_vertices": 14831.858974358975,
+      "draws": 52.22435897435897,
+      "max_loop_ms": 4.3659,
+      "gpu_ms": 0.5891666666666666
+    },
+    {
+      "lo": 10486,
+      "hi": 10637,
+      "begin_s": 21.24421049999999,
+      "end_s": 21.49532559999997,
+      "fps": 605.3001193477165,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.43960065699342105,
+      "present_ms": 0.8051684211644737,
+      "acquire_ms": 0.13812828935526317,
+      "slot_wait_ms": 0.04869210530848684,
+      "submit_ms": 0.08448026332105263,
+      "requested_vertices": 12423.546052631578,
+      "draws": 116.07236842105263,
+      "max_loop_ms": 5.07,
+      "gpu_ms": 0.6618828947368421
+    },
+    {
+      "lo": 10638,
+      "hi": 10841,
+      "begin_s": 21.49532559999997,
+      "end_s": 21.745487199999975,
+      "fps": 815.4728783314246,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.4107220589558824,
+      "present_ms": 0.552683333627451,
+      "acquire_ms": 0.08374264723382353,
+      "slot_wait_ms": 0.03984950974004902,
+      "submit_ms": 0.06440490191715686,
+      "requested_vertices": 12168.245098039215,
+      "draws": 119.61274509803921,
+      "max_loop_ms": 5.5309,
+      "gpu_ms": 0.63724
+    },
+    {
+      "lo": 10842,
+      "hi": 10988,
+      "begin_s": 21.745487199999975,
+      "end_s": 21.99722059999996,
+      "fps": 583.951116538401,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.4641149672653061,
+      "present_ms": 0.8130748299931972,
+      "acquire_ms": 0.13925918367482992,
+      "slot_wait_ms": 0.050014966245170066,
+      "submit_ms": 0.0738238094,
+      "requested_vertices": 12348.945578231293,
+      "draws": 111.26530612244898,
+      "max_loop_ms": 9.7155,
+      "gpu_ms": 0.5976873469387755
+    },
+    {
+      "lo": 10989,
+      "hi": 11127,
+      "begin_s": 21.99722059999996,
+      "end_s": 22.24820129999996,
+      "fps": 553.8274456960235,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.48205539417266186,
+      "present_ms": 0.6655532376258992,
+      "acquire_ms": 0.10929064777625899,
+      "slot_wait_ms": 0.03738417289115108,
+      "submit_ms": 0.08620863310215827,
+      "requested_vertices": 12701.877697841726,
+      "draws": 111.0,
+      "max_loop_ms": 13.0415,
+      "gpu_ms": 0.6373496402877697
+    },
+    {
+      "lo": 11128,
+      "hi": 11298,
+      "begin_s": 22.24820129999996,
+      "end_s": 22.50004349999996,
+      "fps": 678.9966097818419,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.457378948122807,
+      "present_ms": 0.4897678363625731,
+      "acquire_ms": 0.07598713447953216,
+      "slot_wait_ms": 0.02629473676888889,
+      "submit_ms": 0.056923976315204676,
+      "requested_vertices": 12854.53216374269,
+      "draws": 111.0,
+      "max_loop_ms": 5.4651,
+      "gpu_ms": 0.5688948837209302
+    },
+    {
+      "lo": 11299,
+      "hi": 11444,
+      "begin_s": 22.50004349999996,
+      "end_s": 22.751730399999964,
+      "fps": 580.0858129684045,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.46860000101369864,
+      "present_ms": 0.8019178080684931,
+      "acquire_ms": 0.11255068497945206,
+      "slot_wait_ms": 0.05148767092849315,
+      "submit_ms": 0.08324246591780822,
+      "requested_vertices": 12872.890410958904,
+      "draws": 111.0,
+      "max_loop_ms": 4.4435,
+      "gpu_ms": 0.6200190344827586
+    },
+    {
+      "lo": 11445,
+      "hi": 11597,
+      "begin_s": 22.751730399999964,
+      "end_s": 23.00419719999997,
+      "fps": 606.0202767254721,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.4157516329281046,
+      "present_ms": 0.809603921627451,
+      "acquire_ms": 0.1146104577248366,
+      "slot_wait_ms": 0.043812418338039213,
+      "submit_ms": 0.09033594789803921,
+      "requested_vertices": 12844.098039215687,
+      "draws": 111.0,
+      "max_loop_ms": 4.449,
+      "gpu_ms": 0.6277555555555555
+    },
+    {
+      "lo": 11598,
+      "hi": 11739,
+      "begin_s": 23.00419719999997,
+      "end_s": 23.25514399999997,
+      "fps": 565.856986421031,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.4925859148450704,
+      "present_ms": 0.916240845028169,
+      "acquire_ms": 0.11070985913732394,
+      "slot_wait_ms": 0.04304577457492958,
+      "submit_ms": 0.07867183117323943,
+      "requested_vertices": 12860.43661971831,
+      "draws": 111.0,
+      "max_loop_ms": 5.0584,
+      "gpu_ms": 0.616414366197183
+    },
+    {
+      "lo": 11740,
+      "hi": 11956,
+      "begin_s": 23.25514399999997,
+      "end_s": 23.505515699999986,
+      "fps": 866.7113735297866,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3851092162718894,
+      "present_ms": 0.5320377880322581,
+      "acquire_ms": 0.08640046072442396,
+      "slot_wait_ms": 0.04423179736004608,
+      "submit_ms": 0.051219815829032254,
+      "requested_vertices": 12925.709677419354,
+      "draws": 111.68202764976958,
+      "max_loop_ms": 6.2654,
+      "gpu_ms": 0.5675891244239631
+    },
+    {
+      "lo": 11957,
+      "hi": 12113,
+      "begin_s": 23.505515699999986,
+      "end_s": 23.755584999999968,
+      "fps": 627.8259666420945,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.4480012718025478,
+      "present_ms": 0.8109738852929936,
+      "acquire_ms": 0.12042866221656051,
+      "slot_wait_ms": 0.05739936301267516,
+      "submit_ms": 0.06516942675923566,
+      "requested_vertices": 12994.108280254777,
+      "draws": 112.0,
+      "max_loop_ms": 5.2558,
+      "gpu_ms": 0.6295289171974522
+    },
+    {
+      "lo": 12114,
+      "hi": 12275,
+      "begin_s": 23.755584999999968,
+      "end_s": 24.00761109999994,
+      "fps": 642.7905681197976,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.39840000053703706,
+      "present_ms": 0.8413179013765432,
+      "acquire_ms": 0.14099506189012345,
+      "slot_wait_ms": 0.05509938268222222,
+      "submit_ms": 0.08024444470308642,
+      "requested_vertices": 13029.197530864198,
+      "draws": 112.0,
+      "max_loop_ms": 4.6119,
+      "gpu_ms": 0.6251807407407407
+    },
+    {
+      "lo": 12276,
+      "hi": 12483,
+      "begin_s": 24.00761109999994,
+      "end_s": 24.26158069999996,
+      "fps": 818.9956593229341,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3730298068076923,
+      "present_ms": 0.6203062499855769,
+      "acquire_ms": 0.10300384595384615,
+      "slot_wait_ms": 0.045361057792211536,
+      "submit_ms": 0.03929615386971154,
+      "requested_vertices": 13121.461538461539,
+      "draws": 112.0,
+      "max_loop_ms": 4.5255,
+      "gpu_ms": 0.5634451923076923
+    },
+    {
+      "lo": 12484,
+      "hi": 12641,
+      "begin_s": 24.26158069999996,
+      "end_s": 24.512346999999952,
+      "fps": 630.0687133797775,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.42706012788607595,
+      "present_ms": 0.8279082277594937,
+      "acquire_ms": 0.13698797467405063,
+      "slot_wait_ms": 0.05260379734525317,
+      "submit_ms": 0.08071455712974683,
+      "requested_vertices": 12844.113924050633,
+      "draws": 111.24050632911393,
+      "max_loop_ms": 5.0192,
+      "gpu_ms": 0.6519005063291139
+    },
+    {
+      "lo": 12642,
+      "hi": 12775,
+      "begin_s": 24.512346999999952,
+      "end_s": 24.763480599999948,
+      "fps": 533.5805324337381,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.49157089329850745,
+      "present_ms": 0.7087291045597015,
+      "acquire_ms": 0.11838358213731344,
+      "slot_wait_ms": 0.03530074650843284,
+      "submit_ms": 0.08236567177313432,
+      "requested_vertices": 12831.044776119403,
+      "draws": 111.0,
+      "max_loop_ms": 9.7266,
+      "gpu_ms": 0.6544388059701493
+    },
+    {
+      "lo": 12776,
+      "hi": 12953,
+      "begin_s": 24.763480599999948,
+      "end_s": 25.013575599999943,
+      "fps": 711.7295427737633,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.458623595247191,
+      "present_ms": 0.5285466292359551,
+      "acquire_ms": 0.0683595503758427,
+      "slot_wait_ms": 0.027019662784101124,
+      "submit_ms": 0.07309887637415731,
+      "requested_vertices": 12849.359550561798,
+      "draws": 111.0,
+      "max_loop_ms": 4.1032,
+      "gpu_ms": 0.6198847191011235
+    },
+    {
+      "lo": 12954,
+      "hi": 13095,
+      "begin_s": 25.013575599999943,
+      "end_s": 25.266120399999952,
+      "fps": 562.2764753025762,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.473213379028169,
+      "present_ms": 0.7919014084014084,
+      "acquire_ms": 0.12280352111619719,
+      "slot_wait_ms": 0.03915140840190141,
+      "submit_ms": 0.08590563360915493,
+      "requested_vertices": 12811.323943661971,
+      "draws": 111.0,
+      "max_loop_ms": 5.4478,
+      "gpu_ms": 0.650216338028169
+    },
+    {
+      "lo": 13096,
+      "hi": 13258,
+      "begin_s": 25.266120399999952,
+      "end_s": 25.516882899999928,
+      "fps": 650.0174467873628,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3648754599877301,
+      "present_ms": 0.8407190185153375,
+      "acquire_ms": 0.14286809814417178,
+      "slot_wait_ms": 0.060826380135398775,
+      "submit_ms": 0.06622331291533742,
+      "requested_vertices": 12822.59509202454,
+      "draws": 111.0,
+      "max_loop_ms": 4.8476,
+      "gpu_ms": 0.6173450306748466
+    },
+    {
+      "lo": 13259,
+      "hi": 13440,
+      "begin_s": 25.516882899999928,
+      "end_s": 25.76713919999993,
+      "fps": 727.2544187698638,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.4388648347637363,
+      "present_ms": 0.48851318675274724,
+      "acquire_ms": 0.07438186808186813,
+      "slot_wait_ms": 0.03270659339274725,
+      "submit_ms": 0.05219450548956044,
+      "requested_vertices": 12827.989010989011,
+      "draws": 111.0,
+      "max_loop_ms": 4.2606,
+      "gpu_ms": 0.574567912087912
+    },
+    {
+      "lo": 13441,
+      "hi": 13590,
+      "begin_s": 25.76713919999993,
+      "end_s": 26.017605899999907,
+      "fps": 598.882007069262,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.4244166657733333,
+      "present_ms": 0.8517120000133334,
+      "acquire_ms": 0.112789333314,
+      "slot_wait_ms": 0.05059333331306667,
+      "submit_ms": 0.05447933334866667,
+      "requested_vertices": 12819.0,
+      "draws": 111.0,
+      "max_loop_ms": 4.9323,
+      "gpu_ms": 0.6448677333333334
+    },
+    {
+      "lo": 13591,
+      "hi": 13775,
+      "begin_s": 26.017605899999907,
+      "end_s": 26.26779459999992,
+      "fps": 739.4418692770303,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.389078918227027,
+      "present_ms": 0.6862367568216217,
+      "acquire_ms": 0.10621783774972973,
+      "slot_wait_ms": 0.053712432380054055,
+      "submit_ms": 0.05286972965405405,
+      "requested_vertices": 12832.805405405405,
+      "draws": 111.0,
+      "max_loop_ms": 5.345,
+      "gpu_ms": 0.5969792432432433
+    },
+    {
+      "lo": 13776,
+      "hi": 13954,
+      "begin_s": 26.26779459999992,
+      "end_s": 26.519048199999894,
+      "fps": 712.427603027462,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.5060385464860335,
+      "present_ms": 0.567285474698324,
+      "acquire_ms": 0.10143631286256984,
+      "slot_wait_ms": 0.04146536311290503,
+      "submit_ms": 0.08855530715865922,
+      "requested_vertices": 12903.759776536313,
+      "draws": 84.39106145251397,
+      "max_loop_ms": 3.8703,
+      "gpu_ms": 0.47735307262569837
+    },
+    {
+      "lo": 13955,
+      "hi": 14109,
+      "begin_s": 26.519048199999894,
+      "end_s": 26.771711699999887,
+      "fps": 613.4641529148571,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.6689161296903225,
+      "present_ms": 0.6477012899935484,
+      "acquire_ms": 0.09516709674129033,
+      "slot_wait_ms": 0.04724580647767742,
+      "submit_ms": 0.10734258070258064,
+      "requested_vertices": 14874.61935483871,
+      "draws": 62.0,
+      "max_loop_ms": 4.9343,
+      "gpu_ms": 0.6232025806451613
+    },
+    {
+      "lo": 14110,
+      "hi": 14348,
+      "begin_s": 26.771711699999887,
+      "end_s": 27.026646099999887,
+      "fps": 937.4960774222766,
+      "page": 2,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.299898744083682,
+      "present_ms": 0.5167602511799163,
+      "acquire_ms": 0.07906192461087866,
+      "slot_wait_ms": 0.04517824261983264,
+      "submit_ms": 0.0517334726790795,
+      "requested_vertices": 8469.748953974895,
+      "draws": 88.61087866108787,
+      "max_loop_ms": 5.5604,
+      "gpu_ms": 0.44457589958159
+    },
+    {
+      "lo": 14349,
+      "hi": 14511,
+      "begin_s": 27.026646099999887,
+      "end_s": 27.276687299999857,
+      "fps": 651.8925681048531,
+      "page": 2,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3128398775582822,
+      "present_ms": 0.8810871166134969,
+      "acquire_ms": 0.12229938656748467,
+      "slot_wait_ms": 0.057406134857607365,
+      "submit_ms": 0.08507177913496933,
+      "requested_vertices": 7615.98773006135,
+      "draws": 91.66257668711657,
+      "max_loop_ms": 5.1745,
+      "gpu_ms": 0.49128147239263803
+    },
+    {
+      "lo": 14512,
+      "hi": 14674,
+      "begin_s": 27.276687299999857,
+      "end_s": 27.526979399999867,
+      "fps": 651.2390922445962,
+      "page": 3,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3450564424417178,
+      "present_ms": 0.8588337423374233,
+      "acquire_ms": 0.1377122697981595,
+      "slot_wait_ms": 0.05554355838521472,
+      "submit_ms": 0.09052638034049079,
+      "requested_vertices": 9305.828220858895,
+      "draws": 99.42944785276073,
+      "max_loop_ms": 5.6114,
+      "gpu_ms": 0.5002071165644172
+    },
+    {
+      "lo": 14675,
+      "hi": 14887,
+      "begin_s": 27.526979399999867,
+      "end_s": 27.777052499999865,
+      "fps": 851.7509480228057,
+      "page": 3,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.35150375599530514,
+      "present_ms": 0.523966196971831,
+      "acquire_ms": 0.07936713586384976,
+      "slot_wait_ms": 0.035410328702206575,
+      "submit_ms": 0.06708732410469484,
+      "requested_vertices": 10881.849765258215,
+      "draws": 108.84037558685446,
+      "max_loop_ms": 5.4455,
+      "gpu_ms": 0.5252811267605634
+    },
+    {
+      "lo": 14888,
+      "hi": 15049,
+      "begin_s": 27.777052499999865,
+      "end_s": 28.02774249999986,
+      "fps": 646.216442618386,
+      "page": 3,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3431407417407407,
+      "present_ms": 0.8939598763641975,
+      "acquire_ms": 0.13078888889382717,
+      "slot_wait_ms": 0.05532901236740741,
+      "submit_ms": 0.0848209876574074,
+      "requested_vertices": 10485.555555555555,
+      "draws": 103.39506172839506,
+      "max_loop_ms": 4.4999,
+      "gpu_ms": 0.5335135802469135
+    },
+    {
+      "lo": 15050,
+      "hi": 15217,
+      "begin_s": 28.02774249999986,
+      "end_s": 28.279356999999898,
+      "fps": 667.688070440986,
+      "page": 3,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.35377976229761904,
+      "present_ms": 0.8232624999702381,
+      "acquire_ms": 0.13497321420773808,
+      "slot_wait_ms": 0.05982738092547619,
+      "submit_ms": 0.08021607137619048,
+      "requested_vertices": 10664.642857142857,
+      "draws": 100.0,
+      "max_loop_ms": 4.3926,
+      "gpu_ms": 0.5063490476190476
+    },
+    {
+      "lo": 15218,
+      "hi": 15380,
+      "begin_s": 28.279356999999898,
+      "end_s": 28.52982469999989,
+      "fps": 650.7825160689638,
+      "page": 3,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.33188650412883436,
+      "present_ms": 0.848305521392638,
+      "acquire_ms": 0.1446239264760736,
+      "slot_wait_ms": 0.05772208580496933,
+      "submit_ms": 0.08704110459693251,
+      "requested_vertices": 10401.361963190184,
+      "draws": 99.03680981595092,
+      "max_loop_ms": 4.9772,
+      "gpu_ms": 0.5539101840490798
+    },
+    {
+      "lo": 15381,
+      "hi": 15602,
+      "begin_s": 28.52982469999989,
+      "end_s": 28.78003229999986,
+      "fps": 887.2632166250124,
+      "page": 3,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3561554044144144,
+      "present_ms": 0.5325914415,
+      "acquire_ms": 0.09709774768738738,
+      "slot_wait_ms": 0.04746621620238739,
+      "submit_ms": 0.060170720682432434,
+      "requested_vertices": 10494.666666666666,
+      "draws": 99.0,
+      "max_loop_ms": 4.289,
+      "gpu_ms": 0.49998144144144147
+    },
+    {
+      "lo": 15603,
+      "hi": 15763,
+      "begin_s": 28.78003229999986,
+      "end_s": 29.03018929999986,
+      "fps": 643.5958218238966,
+      "page": 3,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.35920993645341615,
+      "present_ms": 0.8820279502795031,
+      "acquire_ms": 0.13162422377142857,
+      "slot_wait_ms": 0.06205279518304348,
+      "submit_ms": 0.08604658392111801,
+      "requested_vertices": 10382.695652173914,
+      "draws": 99.0,
+      "max_loop_ms": 4.7931,
+      "gpu_ms": 0.5280812422360248
+    },
+    {
+      "lo": 15764,
+      "hi": 15933,
+      "begin_s": 29.03018929999986,
+      "end_s": 29.28038099999985,
+      "fps": 679.4789755216013,
+      "page": 4,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3507982346529412,
+      "present_ms": 0.801265882182353,
+      "acquire_ms": 0.12035764706411765,
+      "slot_wait_ms": 0.05801588240947059,
+      "submit_ms": 0.09239000000529411,
+      "requested_vertices": 9190.888235294118,
+      "draws": 80.97647058823529,
+      "max_loop_ms": 3.9847,
+      "gpu_ms": 0.5005644705882353
+    },
+    {
+      "lo": 15934,
+      "hi": 16186,
+      "begin_s": 29.28038099999985,
+      "end_s": 29.532465299999878,
+      "fps": 1003.6325149958652,
+      "page": 4,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.31313754919367587,
+      "present_ms": 0.44602411061264824,
+      "acquire_ms": 0.07274071156442688,
+      "slot_wait_ms": 0.03769920948731225,
+      "submit_ms": 0.06794071139960474,
+      "requested_vertices": 8716.249011857708,
+      "draws": 69.95652173913044,
+      "max_loop_ms": 4.6233,
+      "gpu_ms": 0.38102909090909093
+    },
+    {
+      "lo": 16187,
+      "hi": 16367,
+      "begin_s": 29.532465299999878,
+      "end_s": 29.783344199999867,
+      "fps": 721.4636224888002,
+      "page": 4,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3002939229558011,
+      "present_ms": 0.7632408841160221,
+      "acquire_ms": 0.1238342543519337,
+      "slot_wait_ms": 0.04682762431712707,
+      "submit_ms": 0.10979392280220994,
+      "requested_vertices": 8329.563535911602,
+      "draws": 63.28176795580111,
+      "max_loop_ms": 4.5557,
+      "gpu_ms": 0.41814187845303863
+    },
+    {
+      "lo": 16368,
+      "hi": 16538,
+      "begin_s": 29.783344199999867,
+      "end_s": 30.033494499999893,
+      "fps": 683.5890262773393,
+      "page": 4,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.27995146153216377,
+      "present_ms": 0.844159648883041,
+      "acquire_ms": 0.1185187133614035,
+      "slot_wait_ms": 0.054918128470935676,
+      "submit_ms": 0.11278596506549708,
+      "requested_vertices": 8327.0,
+      "draws": 60.0,
+      "max_loop_ms": 6.1883,
+      "gpu_ms": 0.3961749707602339
+    },
+    {
+      "lo": 16539,
+      "hi": 16799,
+      "begin_s": 30.033494499999893,
+      "end_s": 30.284072099999904,
+      "fps": 1041.593502372072,
+      "page": 4,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.29979386942528735,
+      "present_ms": 0.45085785439846743,
+      "acquire_ms": 0.0766080459835249,
+      "slot_wait_ms": 0.0291835248445977,
+      "submit_ms": 0.07606704995210728,
+      "requested_vertices": 8327.0,
+      "draws": 60.0,
+      "max_loop_ms": 4.2982,
+      "gpu_ms": 0.33012521072796935
+    },
+    {
+      "lo": 16800,
+      "hi": 16967,
+      "begin_s": 30.284072099999904,
+      "end_s": 30.53508379999989,
+      "fps": 669.2915111128698,
+      "page": 4,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.317508929172619,
+      "present_ms": 0.7431970237559524,
+      "acquire_ms": 0.10737083336369048,
+      "slot_wait_ms": 0.04295119052857143,
+      "submit_ms": 0.10479464291369048,
+      "requested_vertices": 8331.42857142857,
+      "draws": 60.0,
+      "max_loop_ms": 4.5663,
+      "gpu_ms": 0.40325159763313606
+    },
+    {
+      "lo": 16968,
+      "hi": 17144,
+      "begin_s": 30.53508379999989,
+      "end_s": 30.786549899999887,
+      "fps": 703.8722118011196,
+      "page": 4,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3366282480056497,
+      "present_ms": 0.7503960450790961,
+      "acquire_ms": 0.11616327683898305,
+      "slot_wait_ms": 0.03978079115581921,
+      "submit_ms": 0.1005384179299435,
+      "requested_vertices": 8335.700564971752,
+      "draws": 60.0,
+      "max_loop_ms": 4.2751,
+      "gpu_ms": 0.3981734090909091
+    },
+    {
+      "lo": 17145,
+      "hi": 17406,
+      "begin_s": 30.786549899999887,
+      "end_s": 31.037445699999893,
+      "fps": 1044.2582139676872,
+      "page": 4,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.299679007759542,
+      "present_ms": 0.45212862582824426,
+      "acquire_ms": 0.07242938914351145,
+      "slot_wait_ms": 0.029444656609007632,
+      "submit_ms": 0.07312977108282442,
+      "requested_vertices": 8330.175572519083,
+      "draws": 60.0,
+      "max_loop_ms": 5.2753,
+      "gpu_ms": 0.33562
+    },
+    {
+      "lo": 17407,
+      "hi": 17573,
+      "begin_s": 31.037445699999893,
+      "end_s": 31.28874639999989,
+      "fps": 664.5425181863804,
+      "page": 4,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3345203586766467,
+      "present_ms": 0.7235053892994012,
+      "acquire_ms": 0.10857664695868263,
+      "slot_wait_ms": 0.04604610790203593,
+      "submit_ms": 0.1000682633994012,
+      "requested_vertices": 8329.347305389221,
+      "draws": 60.0,
+      "max_loop_ms": 4.3243,
+      "gpu_ms": 0.3684131736526946
+    },
+    {
+      "lo": 17574,
+      "hi": 17758,
+      "begin_s": 31.28874639999989,
+      "end_s": 31.539543999999918,
+      "fps": 737.6466122482032,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3845356750972973,
+      "present_ms": 0.6882518921135136,
+      "acquire_ms": 0.09747621641513514,
+      "slot_wait_ms": 0.043976756712,
+      "submit_ms": 0.08062432433135135,
+      "requested_vertices": 9569.091891891892,
+      "draws": 60.72432432432432,
+      "max_loop_ms": 5.3644,
+      "gpu_ms": 0.39362594594594597
+    },
+    {
+      "lo": 17759,
+      "hi": 17948,
+      "begin_s": 31.539543999999918,
+      "end_s": 31.791287699999927,
+      "fps": 754.7358682659882,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.6839352618473684,
+      "present_ms": 0.4330268419105263,
+      "acquire_ms": 0.06332368417894736,
+      "slot_wait_ms": 0.030397368499789475,
+      "submit_ms": 0.07472368404052632,
+      "requested_vertices": 15094.968421052632,
+      "draws": 62.0,
+      "max_loop_ms": 3.425,
+      "gpu_ms": 0.621113052631579
+    },
+    {
+      "lo": 17949,
+      "hi": 18100,
+      "begin_s": 31.791287699999927,
+      "end_s": 32.042415299999945,
+      "fps": 605.2699902360048,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.6535960524013158,
+      "present_ms": 0.7148671051447368,
+      "acquire_ms": 0.09462631588486842,
+      "slot_wait_ms": 0.04501907893072368,
+      "submit_ms": 0.11118684204802631,
+      "requested_vertices": 14844.394736842105,
+      "draws": 59.796052631578945,
+      "max_loop_ms": 4.9251,
+      "gpu_ms": 0.612536052631579
+    },
+    {
+      "lo": 18101,
+      "hi": 18270,
+      "begin_s": 32.042415299999945,
+      "end_s": 32.292558699999944,
+      "fps": 679.6101756032618,
+      "page": 1,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.7419005887882353,
+      "present_ms": 0.40757176455882355,
+      "acquire_ms": 0.08383529417117647,
+      "slot_wait_ms": 0.02333882350447059,
+      "submit_ms": 0.08717470585882353,
+      "requested_vertices": 14793.058823529413,
+      "draws": 52.0,
+      "max_loop_ms": 4.7594,
+      "gpu_ms": 0.5768350588235294
+    },
+    {
+      "lo": 18271,
+      "hi": 18436,
+      "begin_s": 32.292558699999944,
+      "end_s": 32.54300489999995,
+      "fps": 662.8170042108787,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.6821879530180723,
+      "present_ms": 0.5258409640301205,
+      "acquire_ms": 0.0933596386626506,
+      "slot_wait_ms": 0.0376542169439759,
+      "submit_ms": 0.09378072283915663,
+      "requested_vertices": 14789.385542168675,
+      "draws": 53.24698795180723,
+      "max_loop_ms": 4.7242,
+      "gpu_ms": 0.582658313253012
+    },
+    {
+      "lo": 18437,
+      "hi": 18584,
+      "begin_s": 32.54300489999995,
+      "end_s": 32.79377259999997,
+      "fps": 590.187651758935,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.41365067798648647,
+      "present_ms": 0.9475033783175676,
+      "acquire_ms": 0.13942635120878377,
+      "slot_wait_ms": 0.06272635144222972,
+      "submit_ms": 0.07126216231351351,
+      "requested_vertices": 12251.918918918918,
+      "draws": 121.0,
+      "max_loop_ms": 4.9517,
+      "gpu_ms": 0.649174054054054
+    },
+    {
+      "lo": 18585,
+      "hi": 18784,
+      "begin_s": 32.79377259999997,
+      "end_s": 33.046271899999965,
+      "fps": 792.0814037900433,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.38965900063,
+      "present_ms": 0.625226999955,
+      "acquire_ms": 0.098431000046,
+      "slot_wait_ms": 0.04664649998895,
+      "submit_ms": 0.052740499923,
+      "requested_vertices": 12150.64,
+      "draws": 119.155,
+      "max_loop_ms": 4.2618,
+      "gpu_ms": 0.6010138
+    },
+    {
+      "lo": 18785,
+      "hi": 18923,
+      "begin_s": 33.046271899999965,
+      "end_s": 33.2984864,
+      "fps": 551.1181950283545,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.5006690629568346,
+      "present_ms": 0.696705036028777,
+      "acquire_ms": 0.1171517986323741,
+      "slot_wait_ms": 0.03668705034064748,
+      "submit_ms": 0.09578057543597122,
+      "requested_vertices": 12441.388489208633,
+      "draws": 110.8273381294964,
+      "max_loop_ms": 5.4823,
+      "gpu_ms": 0.6560293525179856
+    },
+    {
+      "lo": 18924,
+      "hi": 19071,
+      "begin_s": 33.2984864,
+      "end_s": 33.548604600000004,
+      "fps": 591.7202346730361,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.47491013596621623,
+      "present_ms": 0.6986432432432432,
+      "acquire_ms": 0.13410270257094595,
+      "slot_wait_ms": 0.04495743253722973,
+      "submit_ms": 0.0748121621108108,
+      "requested_vertices": 12736.783783783783,
+      "draws": 111.0,
+      "max_loop_ms": 4.5475,
+      "gpu_ms": 0.654582972972973
+    },
+    {
+      "lo": 19072,
+      "hi": 19215,
+      "begin_s": 33.548604600000004,
+      "end_s": 33.799909299999996,
+      "fps": 573.0095776163511,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.43805069389583334,
+      "present_ms": 0.8287138887361111,
+      "acquire_ms": 0.11879097243958334,
+      "slot_wait_ms": 0.053309028026250004,
+      "submit_ms": 0.08481527763611112,
+      "requested_vertices": 12775.638888888889,
+      "draws": 111.0,
+      "max_loop_ms": 4.4054,
+      "gpu_ms": 0.6347927777777778
+    },
+    {
+      "lo": 19216,
+      "hi": 19400,
+      "begin_s": 33.799909299999996,
+      "end_s": 34.050393799999966,
+      "fps": 738.5686539487373,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.4036994596,
+      "present_ms": 0.6156243241297298,
+      "acquire_ms": 0.09795567563783784,
+      "slot_wait_ms": 0.04314864861735135,
+      "submit_ms": 0.06994756744702703,
+      "requested_vertices": 12828.275675675675,
+      "draws": 111.0,
+      "max_loop_ms": 4.5526,
+      "gpu_ms": 0.5856047567567567
+    },
+    {
+      "lo": 19401,
+      "hi": 19570,
+      "begin_s": 34.050393799999966,
+      "end_s": 34.30039679999997,
+      "fps": 679.9918400979072,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.45371529368823527,
+      "present_ms": 0.6714941176705882,
+      "acquire_ms": 0.11015411766117647,
+      "slot_wait_ms": 0.044080588086411764,
+      "submit_ms": 0.06441294112941176,
+      "requested_vertices": 12835.517647058823,
+      "draws": 111.0,
+      "max_loop_ms": 5.3276,
+      "gpu_ms": 0.6478538823529412
+    },
+    {
+      "lo": 19571,
+      "hi": 19714,
+      "begin_s": 34.30039679999997,
+      "end_s": 34.55048119999998,
+      "fps": 575.805608026714,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.4518465270625,
+      "present_ms": 0.7829430554861111,
+      "acquire_ms": 0.10202569444930555,
+      "slot_wait_ms": 0.03581319447131944,
+      "submit_ms": 0.09328125009375,
+      "requested_vertices": 12807.75,
+      "draws": 111.0,
+      "max_loop_ms": 5.9839,
+      "gpu_ms": 0.6912024999999999
+    },
+    {
+      "lo": 19715,
+      "hi": 19916,
+      "begin_s": 34.55048119999998,
+      "end_s": 34.80092710000004,
+      "fps": 806.5614170563543,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.39384158437128713,
+      "present_ms": 0.5363544554603961,
+      "acquire_ms": 0.06591683175,
+      "slot_wait_ms": 0.03317623750643564,
+      "submit_ms": 0.05391287120792079,
+      "requested_vertices": 12817.79207920792,
+      "draws": 111.02970297029702,
+      "max_loop_ms": 4.813,
+      "gpu_ms": 0.5919512871287129
+    },
+    {
+      "lo": 19917,
+      "hi": 20070,
+      "begin_s": 34.80092710000004,
+      "end_s": 35.05099900000007,
+      "fps": 615.8228893369485,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 0.0,
+      "selected": 34.0,
+      "build_ms": 0.44094545515584416,
+      "present_ms": 0.8178766234415584,
+      "acquire_ms": 0.12679610402727273,
+      "slot_wait_ms": 0.05698246736077922,
+      "submit_ms": 0.0657038959525974,
+      "requested_vertices": 13204.116883116883,
+      "draws": 112.0,
+      "max_loop_ms": 4.0425,
+      "gpu_ms": 0.6452425974025975
+    },
+    {
+      "lo": 20071,
+      "hi": 20224,
+      "begin_s": 35.05099900000007,
+      "end_s": 35.304099000000086,
+      "fps": 608.4551560647476,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 0.0,
+      "selected": 34.0,
+      "build_ms": 0.4190915588831169,
+      "present_ms": 0.8507142857662338,
+      "acquire_ms": 0.12707402602857143,
+      "slot_wait_ms": 0.050940259770844154,
+      "submit_ms": 0.0851850649538961,
+      "requested_vertices": 13795.0,
+      "draws": 111.75324675324676,
+      "max_loop_ms": 4.2705,
+      "gpu_ms": 0.6583394805194805
+    },
+    {
+      "lo": 20225,
+      "hi": 20440,
+      "begin_s": 35.304099000000086,
+      "end_s": 35.55719780000012,
+      "fps": 853.4216677438825,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 0.0,
+      "selected": 34.0,
+      "build_ms": 0.3875310189722222,
+      "present_ms": 0.5670296297824075,
+      "acquire_ms": 0.0792967590962963,
+      "slot_wait_ms": 0.04603518525009259,
+      "submit_ms": 0.048387037062037036,
+      "requested_vertices": 13680.907407407407,
+      "draws": 111.0,
+      "max_loop_ms": 5.0464,
+      "gpu_ms": 0.6167846296296297
+    },
+    {
+      "lo": 20441,
+      "hi": 20520,
+      "begin_s": 35.55719780000012,
+      "end_s": 35.80918810000013,
+      "fps": 317.47253763337767,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 0.0,
+      "selected": 34.0,
+      "build_ms": 0.4763699983,
+      "present_ms": 0.9774762500125,
+      "acquire_ms": 1.1163762498925,
+      "slot_wait_ms": 0.06963749966125,
+      "submit_ms": 0.0945499999325,
+      "requested_vertices": 13801.25,
+      "draws": 111.8875,
+      "max_loop_ms": 30.3676,
+      "gpu_ms": 0.655403950617284
+    },
+    {
+      "lo": 20521,
+      "hi": 20565,
+      "begin_s": 35.80918810000013,
+      "end_s": 36.05919730000013,
+      "fps": 179.99337624375391,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 0.0,
+      "selected": 34.0,
+      "build_ms": 0.4941933328222222,
+      "present_ms": 1.112571111088889,
+      "acquire_ms": 3.7105288888888888,
+      "slot_wait_ms": 0.05735999984066667,
+      "submit_ms": 0.13513333357111112,
+      "requested_vertices": 14087.755555555555,
+      "draws": 111.88888888888889,
+      "max_loop_ms": 6.1577,
+      "gpu_ms": 0.7729768888888889
+    },
+    {
+      "lo": 20566,
+      "hi": 20611,
+      "begin_s": 36.05919730000013,
+      "end_s": 36.314908500000115,
+      "fps": 179.89043890139732,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 0.0,
+      "selected": 34.0,
+      "build_ms": 0.5541826083043478,
+      "present_ms": 1.2367586955434782,
+      "acquire_ms": 3.563404347826087,
+      "slot_wait_ms": 0.04782826057173913,
+      "submit_ms": 0.10770434776086957,
+      "requested_vertices": 13949.608695652174,
+      "draws": 111.19565217391305,
+      "max_loop_ms": 6.054,
+      "gpu_ms": 0.9135469565217391
+    },
+    {
+      "lo": 20612,
+      "hi": 20713,
+      "begin_s": 36.314908500000115,
+      "end_s": 36.56501730000015,
+      "fps": 407.82251564113074,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 0.0,
+      "selected": 34.0,
+      "build_ms": 0.4294303907156863,
+      "present_ms": 1.0389862744509804,
+      "acquire_ms": 0.4034068630254902,
+      "slot_wait_ms": 0.09312058795088235,
+      "submit_ms": 0.06911862747941176,
+      "requested_vertices": 14101.43137254902,
+      "draws": 112.0,
+      "max_loop_ms": 31.9394,
+      "gpu_ms": 0.7964520388349514
+    },
+    {
+      "lo": 20714,
+      "hi": 20861,
+      "begin_s": 36.56501730000015,
+      "end_s": 36.81529010000015,
+      "fps": 591.3547137363737,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 0.0,
+      "selected": 34.0,
+      "build_ms": 0.4442060817027027,
+      "present_ms": 0.7008729727837838,
+      "acquire_ms": 0.10904121618513514,
+      "slot_wait_ms": 0.04837364860891892,
+      "submit_ms": 0.07448040554729729,
+      "requested_vertices": 14082.513513513513,
+      "draws": 111.5945945945946,
+      "max_loop_ms": 4.9736,
+      "gpu_ms": 0.6875270270270271
+    },
+    {
+      "lo": 20862,
+      "hi": 21073,
+      "begin_s": 36.81529010000015,
+      "end_s": 37.06594510000016,
+      "fps": 845.7840457999833,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 0.0,
+      "selected": 34.0,
+      "build_ms": 0.365964150754717,
+      "present_ms": 0.5671976412547169,
+      "acquire_ms": 0.08693537734481133,
+      "slot_wait_ms": 0.05078820752669811,
+      "submit_ms": 0.05330471704811321,
+      "requested_vertices": 13940.056603773584,
+      "draws": 111.0,
+      "max_loop_ms": 3.9594,
+      "gpu_ms": 0.5826977358490566
+    },
+    {
+      "lo": 21074,
+      "hi": 21225,
+      "begin_s": 37.06594510000016,
+      "end_s": 37.31734280000017,
+      "fps": 604.6196922246893,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.40888421157236843,
+      "present_ms": 0.8480177632171053,
+      "acquire_ms": 0.13362499997828947,
+      "slot_wait_ms": 0.0559111843044079,
+      "submit_ms": 0.07577631583881579,
+      "requested_vertices": 13609.605263157895,
+      "draws": 111.78289473684211,
+      "max_loop_ms": 4.7627,
+      "gpu_ms": 0.6567312418300654
+    },
+    {
+      "lo": 21226,
+      "hi": 21388,
+      "begin_s": 37.31734280000017,
+      "end_s": 37.56756040000019,
+      "fps": 651.4329927230676,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.40188098244785275,
+      "present_ms": 0.6124723924662576,
+      "acquire_ms": 0.08556993851717791,
+      "slot_wait_ms": 0.03722269956582822,
+      "submit_ms": 0.0702766872582822,
+      "requested_vertices": 12997.883435582822,
+      "draws": 112.0,
+      "max_loop_ms": 4.803,
+      "gpu_ms": 0.6308969325153374
+    },
+    {
+      "lo": 21389,
+      "hi": 21556,
+      "begin_s": 37.56756040000019,
+      "end_s": 37.81807140000019,
+      "fps": 670.6292338460224,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.4309678557916667,
+      "present_ms": 0.49728690479166665,
+      "acquire_ms": 0.08514940488273809,
+      "slot_wait_ms": 0.02814345236982143,
+      "submit_ms": 0.07776071431488095,
+      "requested_vertices": 12934.285714285714,
+      "draws": 111.02380952380952,
+      "max_loop_ms": 6.4388,
+      "gpu_ms": 0.617982994011976
+    },
+    {
+      "lo": 21557,
+      "hi": 21701,
+      "begin_s": 37.81807140000019,
+      "end_s": 38.06943970000024,
+      "fps": 576.8428238563642,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.43627931006206894,
+      "present_ms": 0.6954434481517241,
+      "acquire_ms": 0.10457034469517242,
+      "slot_wait_ms": 0.0444558621522069,
+      "submit_ms": 0.08758413798344827,
+      "requested_vertices": 12954.062068965517,
+      "draws": 111.0,
+      "max_loop_ms": 4.6697,
+      "gpu_ms": 0.6603558620689655
+    },
+    {
+      "lo": 21702,
+      "hi": 21900,
+      "begin_s": 38.06943970000024,
+      "end_s": 38.31980460000025,
+      "fps": 794.8398517523344,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3839999990100503,
+      "present_ms": 0.6320723616683417,
+      "acquire_ms": 0.08312462304070352,
+      "slot_wait_ms": 0.05014623099296482,
+      "submit_ms": 0.054587437222110555,
+      "requested_vertices": 12929.201005025127,
+      "draws": 111.0,
+      "max_loop_ms": 4.3839,
+      "gpu_ms": 0.5726454271356783
+    },
+    {
+      "lo": 21901,
+      "hi": 22067,
+      "begin_s": 38.31980460000025,
+      "end_s": 38.57204130000025,
+      "fps": 662.0765336685706,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.37756706628742515,
+      "present_ms": 0.8043934133413174,
+      "acquire_ms": 0.13004371231377246,
+      "slot_wait_ms": 0.06466946096107784,
+      "submit_ms": 0.08113233540898204,
+      "requested_vertices": 12918.08982035928,
+      "draws": 111.0,
+      "max_loop_ms": 4.5667,
+      "gpu_ms": 0.6065556886227544
+    },
+    {
+      "lo": 22068,
+      "hi": 22225,
+      "begin_s": 38.57204130000025,
+      "end_s": 38.82289110000026,
+      "fps": 629.8589833437904,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.4111050631202532,
+      "present_ms": 0.8521854429683544,
+      "acquire_ms": 0.13538227837468356,
+      "slot_wait_ms": 0.06134999974746835,
+      "submit_ms": 0.08300506314303797,
+      "requested_vertices": 12869.075949367088,
+      "draws": 111.0,
+      "max_loop_ms": 5.5282,
+      "gpu_ms": 0.6169283544303797
+    },
+    {
+      "lo": 22226,
+      "hi": 22381,
+      "begin_s": 38.82289110000026,
+      "end_s": 39.074188700000256,
+      "fps": 620.7779143135698,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.4346923080576923,
+      "present_ms": 0.872635897525641,
+      "acquire_ms": 0.13114294871410256,
+      "slot_wait_ms": 0.05485833349858974,
+      "submit_ms": 0.08436794864807692,
+      "requested_vertices": 12899.820512820514,
+      "draws": 111.0,
+      "max_loop_ms": 4.8291,
+      "gpu_ms": 0.6277176923076923
+    },
+    {
+      "lo": 22382,
+      "hi": 22552,
+      "begin_s": 39.074188700000256,
+      "end_s": 39.324660000000236,
+      "fps": 682.7129495475597,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.39791929762573097,
+      "present_ms": 0.8061064326725146,
+      "acquire_ms": 0.11465438578070175,
+      "slot_wait_ms": 0.04828947364947368,
+      "submit_ms": 0.06879415195146199,
+      "requested_vertices": 12879.30409356725,
+      "draws": 111.0,
+      "max_loop_ms": 5.2193,
+      "gpu_ms": 0.569139649122807
+    },
+    {
+      "lo": 22553,
+      "hi": 22756,
+      "begin_s": 39.324660000000236,
+      "end_s": 39.575080300000195,
+      "fps": 814.6304432988512,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3583754907401961,
+      "present_ms": 0.6221862745588236,
+      "acquire_ms": 0.0941269608612745,
+      "slot_wait_ms": 0.05695833341264706,
+      "submit_ms": 0.056104902017647056,
+      "requested_vertices": 12877.411764705883,
+      "draws": 111.0,
+      "max_loop_ms": 4.5495,
+      "gpu_ms": 0.5842623529411765
+    },
+    {
+      "lo": 22757,
+      "hi": 22908,
+      "begin_s": 39.575080300000195,
+      "end_s": 39.82761320000024,
+      "fps": 601.9017720066365,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3965072372434211,
+      "present_ms": 0.9425736841907895,
+      "acquire_ms": 0.1405447368486842,
+      "slot_wait_ms": 0.05890789505026316,
+      "submit_ms": 0.08037565795657894,
+      "requested_vertices": 12888.394736842105,
+      "draws": 111.0,
+      "max_loop_ms": 6.2452,
+      "gpu_ms": 0.6760563157894737
+    },
+    {
+      "lo": 22909,
+      "hi": 23110,
+      "begin_s": 39.82761320000024,
+      "end_s": 40.07798120000025,
+      "fps": 806.8123721881085,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3614801968217822,
+      "present_ms": 0.6452252474752476,
+      "acquire_ms": 0.10404207912871287,
+      "slot_wait_ms": 0.05113712876574258,
+      "submit_ms": 0.04883069302326733,
+      "requested_vertices": 12893.039603960397,
+      "draws": 111.0,
+      "max_loop_ms": 4.0299,
+      "gpu_ms": 0.5622277227722772
+    },
+    {
+      "lo": 23111,
+      "hi": 23277,
+      "begin_s": 40.07798120000025,
+      "end_s": 40.32817300000022,
+      "fps": 667.4879032806793,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3981784431736527,
+      "present_ms": 0.8237251498023952,
+      "acquire_ms": 0.12055269460898203,
+      "slot_wait_ms": 0.0637245507951497,
+      "submit_ms": 0.058864071820359284,
+      "requested_vertices": 12875.718562874252,
+      "draws": 111.0,
+      "max_loop_ms": 5.4688,
+      "gpu_ms": 0.618505389221557
+    },
+    {
+      "lo": 23278,
+      "hi": 23437,
+      "begin_s": 40.32817300000022,
+      "end_s": 40.57929400000019,
+      "fps": 637.1430505613591,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.362188749225,
+      "present_ms": 0.88250687490625,
+      "acquire_ms": 0.144299999998125,
+      "slot_wait_ms": 0.0615056250094375,
+      "submit_ms": 0.068922499870625,
+      "requested_vertices": 12902.95,
+      "draws": 111.0,
+      "max_loop_ms": 4.8699,
+      "gpu_ms": 0.5979622499999999
+    },
+    {
+      "lo": 23438,
+      "hi": 23623,
+      "begin_s": 40.57929400000019,
+      "end_s": 40.82977650000024,
+      "fps": 742.5668459870988,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.4115419362956989,
+      "present_ms": 0.5103489249301075,
+      "acquire_ms": 0.0753989247172043,
+      "slot_wait_ms": 0.03198548395580645,
+      "submit_ms": 0.05942096768064516,
+      "requested_vertices": 12885.064516129032,
+      "draws": 111.0,
+      "max_loop_ms": 4.4643,
+      "gpu_ms": 0.5828449462365591
+    },
+    {
+      "lo": 23624,
+      "hi": 23766,
+      "begin_s": 40.82977650000024,
+      "end_s": 41.081159200000215,
+      "fps": 568.8537834943115,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.44268321623776224,
+      "present_ms": 0.7669118881538461,
+      "acquire_ms": 0.11058951035664336,
+      "slot_wait_ms": 0.039480419503986015,
+      "submit_ms": 0.08747832151678321,
+      "requested_vertices": 12939.321678321678,
+      "draws": 111.0,
+      "max_loop_ms": 4.7642,
+      "gpu_ms": 0.6708137062937063
+    },
+    {
+      "lo": 23767,
+      "hi": 23915,
+      "begin_s": 41.081159200000215,
+      "end_s": 41.3329485000002,
+      "fps": 591.7646222456881,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.3764174506375839,
+      "present_ms": 0.9230570469395973,
+      "acquire_ms": 0.1430114094362416,
+      "slot_wait_ms": 0.054678523461677855,
+      "submit_ms": 0.06631476526308724,
+      "requested_vertices": 12907.926174496644,
+      "draws": 111.0,
+      "max_loop_ms": 5.656,
+      "gpu_ms": 0.6514496644295302
+    },
+    {
+      "lo": 23916,
+      "hi": 24110,
+      "begin_s": 41.3329485000002,
+      "end_s": 41.5840850000002,
+      "fps": 776.4701666225324,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.4100441030717949,
+      "present_ms": 0.5691789744871795,
+      "acquire_ms": 0.07815179469384616,
+      "slot_wait_ms": 0.03873589745476923,
+      "submit_ms": 0.060288205136410256,
+      "requested_vertices": 12843.0,
+      "draws": 111.0,
+      "max_loop_ms": 6.0027,
+      "gpu_ms": 0.5650658461538461
+    },
+    {
+      "lo": 24111,
+      "hi": 24260,
+      "begin_s": 41.5840850000002,
+      "end_s": 41.834763600000244,
+      "fps": 598.3757688130312,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.43294800008,
+      "present_ms": 0.82610666652,
+      "acquire_ms": 0.11415733328133333,
+      "slot_wait_ms": 0.045139333287133335,
+      "submit_ms": 0.083003333354,
+      "requested_vertices": 12807.906666666666,
+      "draws": 111.0,
+      "max_loop_ms": 5.4822,
+      "gpu_ms": 0.6453370666666667
+    },
+    {
+      "lo": 24261,
+      "hi": 24403,
+      "begin_s": 41.834763600000244,
+      "end_s": 42.085714300000255,
+      "fps": 569.8330389195772,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.5549524471958042,
+      "present_ms": 0.7681664336363636,
+      "acquire_ms": 0.1266916080951049,
+      "slot_wait_ms": 0.04315034969167832,
+      "submit_ms": 0.10480909091678321,
+      "requested_vertices": 12843.405594405594,
+      "draws": 111.0,
+      "max_loop_ms": 5.2802,
+      "gpu_ms": 0.6732100699300699
+    },
+    {
+      "lo": 24404,
+      "hi": 24575,
+      "begin_s": 42.085714300000255,
+      "end_s": 42.33578970000028,
+      "fps": 687.792561763308,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.452358720872093,
+      "present_ms": 0.4901901163081395,
+      "acquire_ms": 0.08567034888197675,
+      "slot_wait_ms": 0.029712790614593025,
+      "submit_ms": 0.07410348861686046,
+      "requested_vertices": 12790.39534883721,
+      "draws": 111.0,
+      "max_loop_ms": 5.592,
+      "gpu_ms": 0.6358155813953489
+    },
+    {
+      "lo": 24576,
+      "hi": 24721,
+      "begin_s": 42.33578970000028,
+      "end_s": 42.58624150000025,
+      "fps": 582.946499086912,
+      "page": 0,
+      "tiles": 512.0,
+      "gap": 0.0,
+      "compact": 1.0,
+      "selected": 34.0,
+      "build_ms": 0.4484616429246575,
+      "present_ms": 0.867948630239726,
+      "acquire_ms": 0.11923356158630137,
+      "slot_wait_ms": 0.044018493076164386,
+      "submit_ms": 0.07983287685821917,
+      "requested_vertices": 12828.232876712329,
+      "draws": 111.0,
+      "max_loop_ms": 5.2811,
+      "gpu_ms": 0.6268838356164383
+    }
+  ]
+}

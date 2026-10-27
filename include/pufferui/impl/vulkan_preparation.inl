@@ -13,24 +13,28 @@ sdf_slot_resources::~sdf_slot_resources()
     gpu_bin_job owner;
     owner.dev = dev;
     for (auto &bank : banks) owner.free_storage(bank);
+    for (auto &bank : inputs) owner.free_storage(bank);
+    for (auto &bank : readable) owner.free_storage(bank);
     owner.free_storage(metadata);
 }
 
 bool device::prepare_sdf_descriptors(frame_slot &slot)
 {
     if (!slot.sdf_descriptors.empty()) return true;
-    constexpr u32 count = 64;
-    const VkDescriptorPoolSize size{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, count * 4};
+    const u32 count = options.painter == vulkan_painter_mode::INTEGRATED ? 128 : 64;
+    const VkDescriptorPoolSize sizes[] = {{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, count * 4},
+                                          {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, count},
+                                          {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, count}};
     VkDescriptorPoolCreateInfo pc{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
     pc.maxSets = count;
-    pc.poolSizeCount = 1;
-    pc.pPoolSizes = &size;
+    pc.poolSizeCount = options.painter == vulkan_painter_mode::INTEGRATED ? 3 : 1;
+    pc.pPoolSizes = sizes;
     VkDescriptorPool pool{};
     if (!check(vkCreateDescriptorPool(native.device, &pc, nullptr, &pool),
                "vkCreateDescriptorPool(SDF prepared)"))
         return false;
     slot.sdf_pools.push_back(pool);
-    VkDescriptorSetLayout layouts[count];
+    VkDescriptorSetLayout layouts[128];
     std::fill(std::begin(layouts), std::end(layouts), sdf_layout);
     slot.sdf_descriptors.resize(count);
     VkDescriptorSetAllocateInfo ai{VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
@@ -50,15 +54,18 @@ bool device::prepare_sdf_descriptors(frame_slot &slot)
 
 bool device::prepare_sdf_surface(surface &s)
 {
+    if (!prepare_alpha(s)) return false;
     if (!prepare_kawase(s)) return false;
     if (!paint_detail::sdf_painter(options.painter) || !s.scene) return true;
     const u32 width = static_cast<u32>(s.scene->width), height = static_cast<u32>(s.scene->height);
     const u64 pixels = static_cast<u64>(width) * height;
     const u64 alignment = std::max<u64>(4, properties.limits.minStorageBufferOffsetAlignment);
     const auto aligned = [alignment](u64 n) { return (n + alignment - 1) & ~(alignment - 1); };
+    const u64 history_words = options.painter == vulkan_painter_mode::INTEGRATED ? 10u : 7u;
     for (auto &slot : s.slots)
     {
         if (!prepare_sdf_descriptors(slot)) return false;
+        if (!prepare_glyph_source(slot)) return false;
         // Reserve geometry before recording UI draws. Explicit tiny budgets
         // retain the existing submission/wait path instead of hiding work.
         if (slot.pages.empty())
@@ -89,10 +96,16 @@ bool device::prepare_sdf_surface(surface &s)
             }
         }
     }
-    if (options.painter != vulkan_painter_mode::COMPUTE_SDF) return true;
+    if (!paint_detail::compute_painter(options.painter)) return true;
     // Adaptive routing may use raster for the entire scene. Do not reserve
     // history images and arenas until an actual eligible program requests them.
-    if (options.adaptive_compute && !s.sdf_compute_requested) return true;
+    const bool observed_compute =
+        options.painter == vulkan_painter_mode::INTEGRATED && options.whole_program_cache;
+    if ((options.adaptive_compute || observed_compute) && !s.sdf_compute_requested) return true;
+    if (!initialize_sdf_compute_kernels()) return false;
+    if (options.painter == vulkan_painter_mode::INTEGRATED &&
+        (!sdf_functions || !sdf_functions->valid))
+        return true;
     if (options.tile_cache && !initialize_sdf_cache_kernels()) return false;
     // Present-mode changes rebuild the swapchain but do not change the prepared
     // painter's extent. Keep its resident buffers and histories in that case.
@@ -109,7 +122,7 @@ bool device::prepare_sdf_surface(surface &s)
             ? options.gpu_command_budget_bytes - stats.gpu_metadata_allocated_bytes
             : 0;
     if (available < s.slots.size() * 8192) return true; // exact raster fallback
-    constexpr u32 jobs = 32;
+    constexpr u32 jobs = sdf_slot_resources::MAX_JOBS;
     for (auto &slot : s.slots)
     {
         auto *resources = new sdf_slot_resources();
@@ -136,6 +149,8 @@ bool device::prepare_sdf_surface(surface &s)
             job->compact = sdf_pipelines[3];
             job->restore = sdf_pipelines[4];
             job->commit = sdf_pipelines[5];
+            job->native_snapshot = native_cache_pipelines[0];
+            job->native_capture = native_cache_pipelines[1];
             resources->jobs.push_back(job);
             ++stats.sdf_job_creations;
         }
@@ -146,7 +161,7 @@ bool device::prepare_sdf_surface(surface &s)
     // A cache entry owns a full-size image even when it restores only a small
     // region. Bound the prepared image working set independently of the maximum
     // budget; uncached epochs retain the same complete painter output.
-    constexpr u32 cache_jobs = 4;
+    constexpr u32 cache_jobs = 2;
     for (u32 i = 0; i < cache_jobs && !image_budget_full; ++i)
         for (auto &slot : s.slots)
         {
@@ -169,7 +184,31 @@ bool device::prepare_sdf_surface(surface &s)
                 break;
             }
             slot.sdf_resources->jobs[i]->saved = saved;
+            saved->intrinsic = true;
+            transition(saved, VK_IMAGE_LAYOUT_GENERAL);
             stats.gpu_sdf_cache_image_bytes += saved->allocation;
+            if (sdf_functions)
+            {
+                const u64 remaining = options.cache_budget_bytes - stats.gpu_sdf_cache_image_bytes;
+                auto *before = make_texture({.width = static_cast<i32>(width),
+                                             .height = static_cast<i32>(height),
+                                             .render_target = true,
+                                             .extra_usage = VK_IMAGE_USAGE_STORAGE_BIT,
+                                             .allocation_budget = remaining});
+                if (!before)
+                {
+                    slot.sdf_resources->jobs[i]->saved = nullptr;
+                    stats.gpu_sdf_cache_image_bytes -= saved->allocation;
+                    destroy_texture(saved);
+                    if (result != VK_SUCCESS) return false;
+                    image_budget_full = true;
+                    break;
+                }
+                slot.sdf_resources->jobs[i]->native_before = before;
+                before->intrinsic = true;
+                transition(before, VK_IMAGE_LAYOUT_GENERAL);
+                stats.gpu_sdf_cache_image_bytes += before->allocation;
+            }
         }
     const u64 tiles = ((static_cast<u64>(width) + 31) / 32) * ((height + 31) / 32);
     u64 meta_total = 0, bank_count = 0;
@@ -179,7 +218,7 @@ bool device::prepare_sdf_surface(surface &s)
         bool history = false;
         for (auto *job : slot.sdf_resources->jobs)
         {
-            bytes += aligned(job->saved ? (tiles * 2 + 7) * 4 : 4);
+            bytes += aligned(options.tile_cache ? (tiles * 2 + history_words) * 4 : 4);
             history = history || job->saved;
         }
         meta_total += bytes;
@@ -187,11 +226,14 @@ bool device::prepare_sdf_surface(surface &s)
     }
     const u64 budget_left = options.gpu_command_budget_bytes - stats.gpu_metadata_allocated_bytes;
     const u64 bank_limit = budget_left > meta_total ? (budget_left - meta_total) / bank_count : 0;
-    // The 5000-item workload peaks below 7 MiB per bank. Reserve an extent-
-    // scaled working set rather than filling the entire metadata budget.
-    const u64 wanted = (std::max<u64>(1024 * 1024, pixels * 6) + 65535) & ~65535ull;
+    // Separate GPU work, CPU staging and the small readable route/telemetry
+    // region. Only staging is duplicated; GPU work is never mapped.
+    const u64 wanted = (std::max<u64>(1024 * 1024, pixels * 19 / 2) + 65535) & ~65535ull;
     // Leave alignment/implementation allocation-requirement slack per allocation.
-    const u64 bank_bytes = std::min(wanted, bank_limit > 4096 ? bank_limit - 4096 : 0) & ~4095ull;
+    const u64 bank_bytes = std::min(wanted, bank_limit > 12288 ? bank_limit - 12288 : 0) & ~4095ull;
+    const u64 input_bytes = (bank_bytes * 9 / 20) & ~4095ull;
+    const u64 read_bytes = (bank_bytes / 10) & ~4095ull;
+    const u64 work_bytes = bank_bytes - input_bytes - read_bytes;
     for (auto &slot : s.slots)
     {
         auto &resources = *slot.sdf_resources;
@@ -201,12 +243,19 @@ bool device::prepare_sdf_surface(surface &s)
         bool history = false;
         for (auto *job : resources.jobs)
         {
-            meta_bytes += aligned(job->saved ? (tiles * 2 + 7) * 4 : 4);
+            meta_bytes += aligned(options.tile_cache ? (tiles * 2 + history_words) * 4 : 4);
             history = history || job->saved;
         }
         bool ready = bank_bytes >= 4096 && allocator.storage(resources.metadata, meta_bytes);
-        if (ready) ready = allocator.storage(resources.banks[0], bank_bytes);
-        if (ready && history) ready = allocator.storage(resources.banks[1], bank_bytes);
+        for (u32 bank = 0; ready && bank < (history ? 2u : 1u); ++bank)
+        {
+            ready = input_bytes >= 4096 && read_bytes >= 4096 &&
+                    allocator.storage(resources.banks[bank], work_bytes, storage_role::DEVICE) &&
+                    allocator.storage(resources.readable[bank], read_bytes, storage_role::READABLE);
+            // Previous commands/shapes are retained in GPU storage. Staging is
+            // overwritten only after this slot completes, so it needs one bank.
+            if (ready && !bank) ready = allocator.storage(resources.inputs[0], input_bytes);
+        }
         if (!ready)
         {
             if (result != VK_SUCCESS) return false;
@@ -223,16 +272,18 @@ bool device::prepare_sdf_surface(surface &s)
             meta = resources.metadata;
             meta.offset = offset;
             meta.mapped += offset;
-            meta.capacity = aligned(job->saved ? (tiles * 2 + 7) * 4 : 4);
+            meta.capacity = aligned(options.tile_cache ? (tiles * 2 + history_words) * 4 : 4);
             meta.allocation = 0;
             meta.borrowed = true;
             offset += meta.capacity;
         }
-        VkDescriptorPoolSize sizes[] = {{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, jobs * 12},
-                                        {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, jobs * 2}};
+        VkDescriptorPoolSize sizes[] = {
+            {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, jobs * 12},
+            {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, jobs * (sdf_functions ? 3u : 2u)},
+            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, jobs * (sdf_functions ? 2u : 1u)}};
         VkDescriptorPoolCreateInfo pc{VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO};
         pc.maxSets = jobs * 2;
-        pc.poolSizeCount = 2;
+        pc.poolSizeCount = options.painter == vulkan_painter_mode::INTEGRATED ? 3 : 2;
         pc.pPoolSizes = sizes;
         if (!check(vkCreateDescriptorPool(native.device, &pc, nullptr, &resources.descriptors),
                    "prepared compute descriptor pool"))
@@ -261,6 +312,38 @@ bool device::prepare_sdf_surface(surface &s)
     return true;
 }
 
+// Called only after this slot completes. Move its bounded image leases rather
+// than creating new images when a later program is more useful than the prefix.
+inline void rebalance_sdf_history(sdf_slot_resources &resources)
+{
+    const usize count = resources.jobs.size();
+    if (count > sdf_slot_resources::MAX_JOBS) return;
+    bool selected[sdf_slot_resources::MAX_JOBS]{};
+    usize images = 0;
+    for (auto *job : resources.jobs) images += job->saved != nullptr;
+    for (usize i = 0; i < images; ++i)
+    {
+        usize best = count;
+        for (usize j = 0; j < count; ++j)
+            if (!selected[j] &&
+                (best == count ||
+                 resources.jobs[j]->eligible_pixels > resources.jobs[best]->eligible_pixels ||
+                 (resources.jobs[j]->eligible_pixels == resources.jobs[best]->eligible_pixels &&
+                  resources.jobs[j]->saved && !resources.jobs[best]->saved)))
+                best = j;
+        if (best < count) selected[best] = true;
+    }
+    for (usize i = 0; i < count; ++i)
+        if (!selected[i] && resources.jobs[i]->saved)
+            for (usize j = 0; j < count; ++j)
+                if (selected[j] && !resources.jobs[j]->saved)
+                {
+                    std::swap(resources.jobs[i]->saved, resources.jobs[j]->saved);
+                    resources.jobs[i]->published_bank = resources.jobs[j]->published_bank = -1;
+                    break;
+                }
+}
+
 bool device::begin_sdf_slot(frame_slot &slot)
 {
     slot.sdf_descriptor_cursor = 0;
@@ -270,6 +353,10 @@ bool device::begin_sdf_slot(frame_slot &slot)
         // Readback/upload-only submissions must not age or overwrite painter
         // history. Advance banks only when another actual painter epoch starts.
         resources->pending = true;
+        for (auto *job : resources->jobs)
+            if (std::find(slot.sdf_jobs.begin(), slot.sdf_jobs.end(), job) == slot.sdf_jobs.end())
+                job->eligible_pixels = 0;
+        rebalance_sdf_history(*resources);
     }
     return true;
 }
@@ -288,6 +375,7 @@ bool device::prepare_geometry(const geometry_capacity &capacity)
 bool device::upload_slug_data()
 {
     if (!slug_storage.device_buffer || slug_storage.used <= slug_committed) return true;
+    retained_abort(); // append-only glyph uploads must actually execute
     end_rendering();
     VkBufferMemoryBarrier2 barrier{VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2};
     barrier.srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;

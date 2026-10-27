@@ -1,0 +1,28 @@
+#version 450
+// Certify exact fixed-point state before skipping a repeated native program.
+// The full RGBA8 bits of every written image must remain unchanged.
+layout(local_size_x = 64) in;
+layout(set = 0, binding = 0, std430) readonly buffer Before { uint before[]; } old;
+layout(set = 0, binding = 1) uniform sampler2D current_image;
+layout(set = 0, binding = 2, std430) buffer Result { uint changed; } result;
+layout(push_constant) uniform Parameters { uint width; uint height; uint columns; } p;
+shared uint differences[64];
+void main()
+{
+    uint lane = gl_LocalInvocationIndex;
+    uint index = (gl_WorkGroupID.y * p.columns + gl_WorkGroupID.x) * 64 + lane;
+    uint changed = 0;
+    if (index < p.width * p.height)
+    {
+        uint packed = packUnorm4x8(texelFetch(current_image, ivec2(index % p.width, index / p.width), 0));
+        changed = uint(packed != old.before[index]);
+    }
+    differences[lane] = changed;
+    barrier();
+    for (uint stride = 32; stride > 0; stride >>= 1)
+    {
+        if (lane < stride) differences[lane] |= differences[lane + stride];
+        barrier();
+    }
+    if (lane == 0 && differences[0] != 0) atomicOr(result.changed, 1);
+}

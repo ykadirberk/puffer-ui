@@ -5,16 +5,21 @@
 #if defined(PUFFERUI_ENABLE_VULKAN)
 namespace vk_detail
 {
+// Native swapchain images are first accessed by the final scene blit. Keep the
+// acquire wait and its layout transition in the same dependency chain.
+constexpr VkPipelineStageFlags2 PRESENT_BLIT_STAGE = VK_PIPELINE_STAGE_2_BLIT_BIT;
 struct device;
 struct sdf_gpu_job;
 struct sdf_slot_resources;
 struct rgba8_blend_lut;
+struct native_function_cache;
 struct primitive_recorder : paint_detail::primitive_sink
 {
     device *owner = nullptr;
     paint_detail::command_tape tape;
     paint_detail::primitive_input stack[8]{};
     u32 depth = 0;
+    bool raster_only = false;
     bool reported_overflow = false;
     u32 pending_shape = 0xffffffffu;
     void invalidate();
@@ -23,6 +28,7 @@ struct primitive_recorder : paint_detail::primitive_sink
     void leave() override;
     void mesh(texture_handle sample, const vertex *v, i32 vc, const i32 *idx, i32 ic) override;
     bool shape(context *c, const paint_detail::primitive_input &input) override;
+    bool shape_room(context *c);
     bool vector_text() const override;
     bool glyph(context *c, font_handle font, u32 index, vec2 baseline, f32 scale,
                color tint) override;
@@ -48,6 +54,8 @@ struct cache_record
 };
 struct texture
 {
+    sdf_gpu_job *producer = nullptr;
+    u64 producer_token = 0;
     device *owner = nullptr;
     VkImage image = VK_NULL_HANDLE;
     VkImageView view = VK_NULL_HANDLE;
@@ -59,7 +67,7 @@ struct texture
     VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
     i32 width = 0, height = 0;
     bool external = false, owns_view = true, linear = false, target = false, dead = false;
-    bool clipped = false;
+    bool clipped = false, intrinsic = false;
     rect clip{};
     VkSemaphore ready = VK_NULL_HANDLE;
     u64 ready_value = 0;
@@ -79,6 +87,7 @@ struct page
     VkDeviceSize device_allocation = 0;
     VkDeviceSize offset = 0; // non-owning metadata arena view; zero for owned pages
     bool borrowed = false;
+    VkMemoryPropertyFlags memory_flags = 0;
 };
 struct image_allocation_opts
 {
@@ -91,19 +100,33 @@ struct image_allocation_opts
 };
 struct sdf_slot_resources
 {
+    static constexpr u32 MAX_JOBS = 32;
     device *dev = nullptr;
-    page banks[2], metadata;
+    page banks[2], inputs[2], readable[2], metadata;
     std::vector<sdf_gpu_job *> jobs;
     VkDescriptorPool descriptors = VK_NULL_HANDLE;
     u32 bank = 0, width = 0, height = 0;
     u64 required_bytes = 0, peak_required_bytes = 0;
+    u64 role_peaks[3]{};
     u64 budget_stamp = 0;
     bool cache_requested = false;
     bool pending = true;
     ~sdf_slot_resources();
 };
+// All backend graphics pipelines share one layout and dynamic viewport/scissor.
+// This is command-buffer state, independent of compute bindings and image data.
+struct graphics_binding
+{
+    VkPipeline pipeline = VK_NULL_HANDLE;
+    VkExtent2D extent{};
+    VkRect2D scissor{};
+    VkDescriptorSet sample = VK_NULL_HANDLE;
+    u32 routed = 0, shape_base = 0, vertex_words = 0;
+};
 struct frame_slot
 {
+    page glyph_requests;
+    u64 recording_token = 0;
     VkDescriptorPool kawase_pool = VK_NULL_HANDLE;
     std::vector<VkDescriptorSet> kawase_sets;
     usize kawase_cursor = 0;
@@ -123,6 +146,7 @@ struct frame_slot
     bool recording = false;
     std::vector<page> pages;
     std::vector<VkSemaphoreSubmitInfo> waits;
+    graphics_binding graphics{};
 };
 struct cache_event
 {
@@ -139,8 +163,68 @@ struct cache_event
     std::vector<vertex> vertices;
     std::vector<i32> indices;
 };
+// Fixed metadata and prepared CPU payload arenas. Comparing cached CPU bytes
+// avoids slow reads from mapped GPU uploads and never allocates in a draw.
+struct retained_draw
+{
+    u64 key[12]{};
+    const u8 *vertices = nullptr, *indices = nullptr, *shapes = nullptr;
+    const u8 *spans = nullptr;
+    u32 vertex_count = 0, index_bytes = 0, shape_bytes = 0, stride = 0;
+    u32 span_bytes = 0;
+};
+struct retained_texture
+{
+    texture *image = nullptr;
+    u64 generation = 0, revision = 0, final_revision = 0;
+    VkImageLayout layout = VK_IMAGE_LAYOUT_UNDEFINED;
+    u32 writer = 0;
+    bool read_before_write = false, reset = false;
+};
+struct retained_program
+{
+    static constexpr usize MAX_DRAWS = 512, MAX_IMAGES = 128;
+    retained_draw draws[MAX_DRAWS]{};
+    retained_texture images[MAX_IMAGES]{};
+    usize draw_count = 0, image_count = 0;
+    u8 *payload = nullptr;
+    usize payload_capacity = 0, payload_used = 0;
+    ~retained_program() { delete[] payload; }
+    u64 serial = 0;
+    u64 draws_before = 0, vertices_before = 0, indices_before = 0, batches_before = 0;
+    u64 kawase_before = 0, kawase_pixels_before = 0;
+    bool valid = false;
+};
+struct program_cache_resources
+{
+    struct probe
+    {
+        page control;
+        u64 serial = 0, epoch = 0;
+    } probes[8];
+    struct image_copy
+    {
+        texture *image = nullptr;
+        u64 offset = 0;
+    } images[retained_program::MAX_IMAGES];
+    device *dev = nullptr;
+    page before;
+    VkDescriptorPool pool = VK_NULL_HANDLE;
+    VkDescriptorSet sets[8][retained_program::MAX_IMAGES]{};
+    u32 slots = 0, width = 0, height = 0, allocated_sets = 0;
+    usize count = 0;
+    u64 epoch = 1, confirmed = 0;
+    u32 changing_frames = 0, retry_in = 0;
+    u32 invalid_observations = 0;
+    bool recording = false, warm = false, partial_reuse = false;
+    ~program_cache_resources();
+};
 struct surface : render_surface, dispatch
 {
+    program_cache_resources *program_cache = nullptr;
+    retained_program *retained[2]{};
+    u32 retained_bank = 0;
+    bool program_compute_preparation_pending = false;
     device *dev = nullptr;
     void *window = nullptr;
     VkSurfaceKHR native = VK_NULL_HANDLE;
@@ -153,6 +237,7 @@ struct surface : render_surface, dispatch
     std::vector<bool> initialized;
     std::vector<frame_slot> slots;
     texture *scene = nullptr;
+    texture *alpha_scratch = nullptr;
     texture *kawase[4]{};
     u32 slot = 0, image_index = 0;
     bool acquired = false, presented = true, dirty = true;
@@ -175,10 +260,89 @@ struct pipeline_pair
 {
     VkFormat format = VK_FORMAT_UNDEFINED;
     VkPipeline blend = VK_NULL_HANDLE, copy = VK_NULL_HANDLE;
-    VkPipeline sdf = VK_NULL_HANDLE;
+    VkPipeline sdf = VK_NULL_HANDLE, packed = VK_NULL_HANDLE;
+};
+struct program_draw
+{
+    texture *sample = nullptr;
+    VkBuffer geometry = VK_NULL_HANDLE;
+    VkDeviceSize offset = 0, vertex_bytes = 0;
+    VkDescriptorSet shapes = VK_NULL_HANDLE;
+    VkRect2D scissor{};
+    u32 vertices = 0, indices = 0;
+    u32 shape_base = 0;
+    u32 vertex_words = 0;
+    bool packed = false;
 };
 struct device : render_device, dispatch
 {
+    retained_program *retaining = nullptr, *retained_previous = nullptr;
+    bool retained_equal = false, retained_deferred = false;
+    bool can_compute = false;
+    void retained_begin(surface &);
+    void retained_abort()
+    {
+        retained_materialize();
+        if (retaining) retaining->valid = false;
+    }
+    void retained_materialize();
+    retained_texture *retained_touch(texture *);
+    void retained_add(retained_draw, texture *output, texture *input, bool replaces = false);
+    bool retained_finish(surface &);
+    bool prepare_program_cache(surface &);
+    void release_program_cache(surface &);
+    void retained_probe_begin(surface &);
+    bool retained_probe_end(surface &);
+    bool retained_confirmed(surface &);
+    VkDescriptorSetLayout program_compare_set = VK_NULL_HANDLE;
+    VkPipelineLayout program_compare_layout = VK_NULL_HANDLE;
+    VkPipeline program_compare_pipeline = VK_NULL_HANDLE;
+    program_draw program_draws[64]{};
+    usize program_count = 0;
+    texture *program_target = nullptr;
+    bool program_flushing = false;
+    usize program_shape_end = 0, program_command_end = 0, program_payload_end = 0;
+    bool command_clip_valid = false;
+    VkRect2D command_clip{};
+    bool flush_program();
+    sdf_gpu_job *program_producers[64]{};
+    bool live_producer(texture *) const;
+    u32 producer_role(texture *) const;
+    bool native_only_program() const
+    {
+        // Observe a program with native operands first. Re-encoding and running
+        // the tile interpreter merely to obtain a whole-image certificate is
+        // duplicate work. Use fine-grained reuse when an actual GPU comparison
+        // proves that unchanged commands still have changing LOAD dependencies.
+        // The certificate path itself uses independent native-output snapshots.
+        return options.painter == vulkan_painter_mode::INTEGRATED && options.whole_program_cache &&
+               current_surface &&
+               (!current_surface->program_cache || !current_surface->program_cache->partial_reuse ||
+                current_surface->program_compute_preparation_pending || !retaining ||
+                retained_deferred);
+    }
+    bool program_batching() const
+    {
+        return !initializing && current_surface && !program_flushing &&
+               paint_detail::compute_painter(options.painter) && !options.adaptive_compute &&
+               !native_only_program();
+    }
+    std::span<const sdf_shape> shape_view() const
+    {
+        return {sdf_shapes.data(), program_flushing ? program_shape_end : sdf_shapes.size()};
+    }
+    std::span<const paint_detail::command> command_view() const
+    {
+        return {sdf_tape.commands.data(),
+                program_flushing ? program_command_end : sdf_tape.commands.size()};
+    }
+    bool native_scissor(VkRect2D &) const;
+    void seal_program_metadata(texture *, const VkRect2D &, u32 indices);
+    std::span<const u8> command_payload_view() const
+    {
+        return {sdf_tape.payload.data(),
+                program_flushing ? program_payload_end : sdf_tape.payload.size()};
+    }
     render_painter *create_painter(context &c) override
     {
         auto *p = new renderer_detail::mesh_painter(c);
@@ -187,6 +351,22 @@ struct device : render_device, dispatch
         p->vectors = options.vector_text;
         p->native_device = this;
         p->native_blur = paint_detail::vulkan_blur;
+        if (options.painter == vulkan_painter_mode::INTEGRATED)
+        {
+            p->native_scene = [](render_device *base, render_surface *s) -> texture_handle
+            {
+                auto *d = static_cast<device *>(base);
+                return d->alpha_context ? d->current_surface->alpha_scratch : s->scene_target();
+            };
+            p->native_end = [](context *c)
+            {
+                auto *d = static_cast<device *>(c->device);
+                if (!d->alpha_context || d->alpha_context != c) return;
+                PUFFERUI_CHECK(VIOL_SCOPE_UNBALANCED, false, "Vulkan alpha barrier outlived frame");
+                d->end_alpha(c);
+                detail::dl_flush(c);
+            };
+        }
         if (paint_detail::sdf_painter(options.painter))
             p->native_gradient = [](context *c, const paint_rounded_gradient &g, color mid)
             {
@@ -217,6 +397,7 @@ struct device : render_device, dispatch
     VkSampler samplers[2]{};
     VkShaderModule vertex_shader = VK_NULL_HANDLE, fragment_shader = VK_NULL_HANDLE;
     VkShaderModule sdf_vertex_shader = VK_NULL_HANDLE, sdf_fragment_shader = VK_NULL_HANDLE;
+    VkShaderModule packed_vertex_shader = VK_NULL_HANDLE;
     std::vector<sdf_shape> sdf_shapes;
     std::vector<sdf_span> sdf_spans;
     std::vector<u8> slug_data;
@@ -224,11 +405,32 @@ struct device : render_device, dispatch
     VkDeviceSize slug_committed = 0;
     paint_detail::command_tape sdf_tape;
     rgba8_blend_lut *sdf_blend = nullptr;
+    native_function_cache *sdf_functions = nullptr;
+    struct glyph_source_entry
+    {
+        sdf_shape shape{};
+        u64 hash = 0, generation = 0, last_use = 0, fill_token = 0;
+        u8 alpha = 0;
+        bool ready = false;
+    } glyph_sources[128];
+    texture *glyph_source_image = nullptr;
+    VkPipelineLayout glyph_source_layout = VK_NULL_HANDLE;
+    VkPipeline glyph_source_fill = VK_NULL_HANDLE, glyph_source_publish = VK_NULL_HANDLE;
+    u32 glyph_source_capacity = 0;
+    u64 glyph_source_generation = 0, recording_generation = 0, known_completed = 0;
+    bool glyph_source_filling = false;
+    u64 glyph_source_hits = 0, glyph_source_misses = 0, glyph_source_fills = 0;
+    u64 integrated_counts[4]{}; // AA pixels, glyph pixels, function misses, float-blended pixels
+    u64 integrated_alpha_pixels = 0;
+    u64 glyph_source_gpu_hits = 0;
     VkDescriptorSetLayout bin_descriptor_layout = VK_NULL_HANDLE;
     VkDescriptorSetLayout sdf_image_layout = VK_NULL_HANDLE;
     VkPipelineLayout bin_pipeline_layout = VK_NULL_HANDLE;
     VkPipelineLayout sdf_compute_layout = VK_NULL_HANDLE;
     VkPipeline bin_pipelines[4]{}, sdf_pipelines[6]{};
+    VkPipeline native_cache_pipelines[2]{};
+    VkPipeline native_replay_pipeline = VK_NULL_HANDLE;
+    u64 native_replay_counts[2]{}; // GPU packets with/without native vertex invocations
     VkDescriptorSetLayout kawase_descriptor_layout = VK_NULL_HANDLE;
     VkPipelineLayout kawase_layout = VK_NULL_HANDLE;
     VkPipeline kawase_pipeline = VK_NULL_HANDLE;
@@ -244,6 +446,15 @@ struct device : render_device, dispatch
     frame_slot *frame = nullptr;
     surface *current_surface = nullptr;
     texture *target = nullptr, *white = nullptr, *rendering_target = nullptr;
+    context *alpha_context = nullptr;
+    texture *alpha_destination = nullptr;
+    texture *alpha_sample = nullptr;
+    rect alpha_clip{};
+    f32 alpha_opacity = 1;
+    bool alpha_clipped = false;
+    bool prepare_alpha(surface &);
+    bool begin_alpha(context *, f32);
+    void end_alpha(context *);
     bool has_clip = false;
     rect clip{};
     u64 next_serial = 1, generation = 1;
@@ -298,8 +509,11 @@ struct device : render_device, dispatch
     bool commands();
     void transition(texture *t, VkImageLayout layout);
     VkPipeline pipeline(VkFormat format, bool blend, bool sdf = false);
+    VkPipeline packed_pipeline(VkFormat format) const;
+    void bind_graphics(const graphics_binding &binding);
     VkDescriptorSet sdf_descriptor(const VkDescriptorBufferInfo (&buffers)[4]);
     bool initialize_sdf_compute();
+    bool initialize_sdf_compute_kernels();
     bool initialize_sdf_cache_kernels();
     bool initialize_bin_kernels();
     bool prepare_sdf_surface(surface &s);
@@ -309,6 +523,12 @@ struct device : render_device, dispatch
     bool begin_sdf_slot(frame_slot &slot);
     bool prepare_sdf_descriptors(frame_slot &slot);
     bool upload_slug_data();
+    bool initialize_glyph_source();
+    bool prepare_glyph_source(frame_slot &);
+    void cache_glyph_source(sdf_shape &, color);
+    bool fill_glyph_sources();
+    void submitted_glyph_sources(u64 token);
+    void release_glyph_source();
     bool prepare_geometry(const geometry_capacity &capacity) override;
     void release_sdf_compute();
     void destroy_sdf_jobs(frame_slot &slot);
@@ -316,10 +536,13 @@ struct device : render_device, dispatch
     VkDescriptorBufferInfo sdf_route(sdf_gpu_job *job);
     VkDescriptorBufferInfo sdf_shape_data(sdf_gpu_job *job);
     VkDescriptorBufferInfo sdf_lut();
+    bool finish_sdf_compute(sdf_gpu_job *, VkDescriptorSet);
+    void replay_sdf_native(sdf_gpu_job *, u32 packet);
     bool execute_sdf_compute(sdf_gpu_job *job, VkDescriptorSet shapes,
                              const VkDescriptorBufferInfo &shape_data);
     void harvest_sdf_stats();
-    void paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32 ic, bool blend);
+    void paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32 ic, bool blend,
+               const retained_draw *snapshot = nullptr);
     backend_caps caps() const override
     {
         return backend_caps::SCISSOR | backend_caps::RENDER_TARGETS |
@@ -347,6 +570,7 @@ struct device : render_device, dispatch
     void clear(color c) override;
     void set_clip(const rect *r) override
     {
+        command_clip_valid = false;
         has_clip = r != nullptr;
         if (r) clip = *r;
         if (target)
@@ -562,6 +786,7 @@ bool device::initialize(const vulkan_device_opts &opts)
     if (native.queue_family >= queue_count ||
         !(queues[native.queue_family].queueFlags & VK_QUEUE_GRAPHICS_BIT))
         return fail("invalid Vulkan graphics queue family");
+    can_compute = (queues[native.queue_family].queueFlags & VK_QUEUE_COMPUTE_BIT) != 0;
     timestamp_bits = queues[native.queue_family].timestampValidBits;
     stats.timestamps_supported = timestamp_bits > 0 && properties.limits.timestampPeriod > 0;
     VkSemaphoreTypeCreateInfo type{VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO};
@@ -591,13 +816,18 @@ bool device::initialize(const vulkan_device_opts &opts)
     pl.pSetLayouts = layouts;
     if (paint_detail::sdf_painter(opts.painter))
     {
-        VkDescriptorSetLayoutBinding sdf_bindings[4] = {
+        VkDescriptorSetLayoutBinding sdf_bindings[6] = {
             {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
             {1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
             {2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
-            {3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}};
+            {3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr},
+            {4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT,
+             nullptr},
+            {5, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr}};
         for (auto &b : sdf_bindings) b.stageFlags |= VK_SHADER_STAGE_COMPUTE_BIT;
-        dl.bindingCount = 4;
+        if (opts.painter == vulkan_painter_mode::INTEGRATED)
+            sdf_bindings[3].stageFlags |= VK_SHADER_STAGE_VERTEX_BIT;
+        dl.bindingCount = opts.painter == vulkan_painter_mode::INTEGRATED ? 6 : 4;
         dl.pBindings = sdf_bindings;
         if (!check(vkCreateDescriptorSetLayout(native.device, &dl, nullptr, &sdf_layout),
                    "vkCreateDescriptorSetLayout(SDF)"))
@@ -610,7 +840,7 @@ bool device::initialize(const vulkan_device_opts &opts)
     if (paint_detail::sdf_painter(opts.painter))
     {
         range.stageFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
-        range.size = 16;
+        range.size = opts.painter == vulkan_painter_mode::INTEGRATED ? 20 : 16;
     }
     if (!check(vkCreatePipelineLayout(native.device, &pl, nullptr, &pipeline_layout),
                "vkCreatePipelineLayout"))
@@ -629,7 +859,14 @@ bool device::initialize(const vulkan_device_opts &opts)
     white = make_texture(1, 1, false, pixel);
     const bool ready = white && pipeline(VK_FORMAT_R8G8B8A8_UNORM, true) &&
                        pipeline(VK_FORMAT_R8G8B8A8_UNORM, false) && initialize_sdf_compute() &&
-                       initialize_kawase();
+                       initialize_kawase() &&
+                       (!paint_detail::sdf_painter(options.painter) ||
+                        pipeline(VK_FORMAT_R8G8B8A8_UNORM, true, true));
+    if (ready && paint_detail::compute_painter(options.painter))
+    {
+        primitive_commands.owner = this;
+        primitive_commands.reset();
+    }
     initializing = false;
     return ready;
 }
@@ -656,6 +893,7 @@ device::~device()
             vkDestroyDescriptorSetLayout(native.device, kawase_descriptor_layout, nullptr);
         for (surface *s : surfaces)
         {
+            release_program_cache(*s);
             s->release_swapchain();
             for (auto &slot : s->slots) destroy_slot(slot);
             if (s->native) vkDestroySurfaceKHR(native.instance, s->native, nullptr);
@@ -669,14 +907,23 @@ device::~device()
             vkDestroyPipeline(native.device, p.blend, nullptr);
             vkDestroyPipeline(native.device, p.copy, nullptr);
             if (p.sdf) vkDestroyPipeline(native.device, p.sdf, nullptr);
+            if (p.packed) vkDestroyPipeline(native.device, p.packed, nullptr);
         }
         for (auto pool : descriptor_pools) vkDestroyDescriptorPool(native.device, pool, nullptr);
         if (vertex_shader) vkDestroyShaderModule(native.device, vertex_shader, nullptr);
         if (fragment_shader) vkDestroyShaderModule(native.device, fragment_shader, nullptr);
         if (sdf_vertex_shader) vkDestroyShaderModule(native.device, sdf_vertex_shader, nullptr);
         if (sdf_fragment_shader) vkDestroyShaderModule(native.device, sdf_fragment_shader, nullptr);
+        if (packed_vertex_shader)
+            vkDestroyShaderModule(native.device, packed_vertex_shader, nullptr);
         for (auto sampler : samplers)
             if (sampler) vkDestroySampler(native.device, sampler, nullptr);
+        if (program_compare_pipeline)
+            vkDestroyPipeline(native.device, program_compare_pipeline, nullptr);
+        if (program_compare_layout)
+            vkDestroyPipelineLayout(native.device, program_compare_layout, nullptr);
+        if (program_compare_set)
+            vkDestroyDescriptorSetLayout(native.device, program_compare_set, nullptr);
         if (pipeline_layout) vkDestroyPipelineLayout(native.device, pipeline_layout, nullptr);
         if (descriptor_layout)
             vkDestroyDescriptorSetLayout(native.device, descriptor_layout, nullptr);
@@ -766,7 +1013,7 @@ void vulkan_set_cache(render_device *d, bool enabled)
     {
         if (v->options.tile_cache == enabled) return;
         v->options.tile_cache = enabled;
-        if (v->options.painter == vulkan_painter_mode::COMPUTE_SDF)
+        if (paint_detail::compute_painter(v->options.painter))
             for (auto *s : v->surfaces) s->sdf_preparation_pending = true;
     }
 }

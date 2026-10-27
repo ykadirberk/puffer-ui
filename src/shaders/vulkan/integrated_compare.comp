@@ -1,0 +1,59 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#define PUI_SDF_PROGRAM
+#define PUI_NATIVE_PAYLOAD
+#include "bin_common.glsl"
+#include "shape_common.glsl"
+#include "sdf_history.glsl"
+layout(rgba8,set=2,binding=0) uniform readonly image2D scene;
+layout(rgba8,set=2,binding=10) uniform readonly image2D previous_input;
+layout(local_size_x=64) in;
+shared uint valid_program,differences;
+void main() {
+    uint tile=gl_WorkGroupID.x+gl_WorkGroupID.y*gl_NumWorkGroups.x;
+    if(tile>=p.limits.w) return;
+    uint lane=gl_LocalInvocationIndex;
+    if(control.words[3]!=0u) {
+        if(lane==0u) {
+            tile_state.words[tile]=1u;
+            tile_state.words[p.limits.w+tile*2u]=0u;
+            tile_state.words[p.limits.w+tile*2u+1u]=0u;
+        }
+        return;
+    }
+    uint first=work.words[p.limits.w+tile],end=work.words[p.limits.w+tile+1u];
+    uint previous=old_work.words[p.limits.w+tile],previous_end=old_work.words[p.limits.w+tile+1u];
+    if(lane==0u) {
+        uint base=1u+p.limits.w*2u;
+        bool same=old_meta.words[0]!=0u && end-first==previous_end-previous;
+        for(uint i=0u;i<4u;++i) same=same && old_meta.words[base+i]==floatBitsToUint(p.clip[i]);
+        same=same && old_meta.words[base+4u]==p.cache.y && old_meta.words[base+5u]==p.cache.z;
+        valid_program=uint(same);differences=0u;
+    }
+    barrier();
+    if(valid_program!=0u)
+        for(uint index=lane;index<end-first;index+=64u)
+            if(!same_command(PUI_COMMAND(output_list.values[first+index]),
+                old_program_command(old_list.values[previous+index]))) atomicOr(differences,1u);
+    barrier();
+    if(lane==0u) valid_program=uint(valid_program!=0u && differences==0u);
+    barrier();
+    if(valid_program!=0u) {
+        uvec2 origin=uvec2(tile%p.grid.x,tile/p.grid.x)*p.extent.z;
+        for(uint index=lane;index<p.extent.z*p.extent.z;index+=64u) {
+            uvec2 pixel=origin+uvec2(index%p.extent.z,index/p.extent.z);
+            if(any(greaterThanEqual(pixel,p.extent.xy))) continue;
+            if(any(notEqual(imageLoad(scene,ivec2(pixel)),imageLoad(previous_input,ivec2(pixel)))))
+                atomicOr(differences,1u);
+        }
+    }
+    barrier();
+    if(lane==0u) {
+        bool same=valid_program!=0u && differences==0u;
+        tile_state.words[tile]=same?0u:1u;
+        // No hash equality certifies a hit: exact payload and input pixels do.
+        tile_state.words[p.limits.w+tile*2u]=0u;
+        tile_state.words[p.limits.w+tile*2u+1u]=0u;
+        atomicAdd(control.words[same?7:5],1u);
+    }
+}

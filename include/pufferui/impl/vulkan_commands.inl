@@ -16,14 +16,30 @@ void primitive_recorder::invalidate()
 }
 void primitive_recorder::reset()
 {
+    raster_only =
+        owner->options.painter == vulkan_painter_mode::SDF_RASTER || owner->native_only_program();
     depth = 0;
     reported_overflow = false;
     pending_shape = 0xffffffffu;
-    if (owner->options.painter == vulkan_painter_mode::COMPUTE_SDF)
+    std::fill(std::begin(owner->program_producers), std::end(owner->program_producers), nullptr);
+    if (paint_detail::compute_painter(owner->options.painter))
     {
+        if (owner->native_only_program())
+        {
+            owner->sdf_tape.commands.clear();
+            owner->sdf_tape.payload.clear();
+            owner->sdf_tape.valid = false;
+            return;
+        }
         const u64 budget = owner->options.gpu_command_budget_bytes;
         const u64 limit = budget / sizeof(paint_detail::command);
-        owner->sdf_tape.prepare(static_cast<usize>(limit < 65536 ? limit : 65536), 0, budget);
+        const usize count = static_cast<usize>(limit < 65536 ? limit : 65536);
+        const usize payload =
+            owner->options.painter == vulkan_painter_mode::INTEGRATED
+                ? static_cast<usize>(std::min<u64>(8 * 1024 * 1024,
+                                                   budget - count * sizeof(paint_detail::command)))
+                : 0;
+        if (!owner->sdf_tape.prepare(count, payload, budget)) owner->sdf_tape.valid = false;
     }
     if (owner->options.painter != vulkan_painter_mode::COMMAND_SHADOW) return;
     const u64 budget = owner->options.command_budget_bytes;
@@ -35,6 +51,7 @@ void primitive_recorder::reset()
 }
 void primitive_recorder::enter(const paint_detail::primitive_input &input)
 {
+    if (raster_only) return;
     if (depth < 8)
         stack[depth] = input;
     else
@@ -43,6 +60,7 @@ void primitive_recorder::enter(const paint_detail::primitive_input &input)
 }
 void primitive_recorder::leave()
 {
+    if (raster_only) return;
     if (depth)
         --depth;
     else
@@ -51,16 +69,17 @@ void primitive_recorder::leave()
 void primitive_recorder::mesh(texture_handle handle, const vertex *v, i32 vc, const i32 *idx,
                               i32 ic)
 {
-    if (owner && owner->options.painter == vulkan_painter_mode::SDF_RASTER)
+    if (raster_only)
     {
         pending_shape = 0xffffffffu;
         return; // independent raster oracle needs shapes/spans, never a command tape
     }
-    if (owner && owner->options.painter == vulkan_painter_mode::COMPUTE_SDF)
+    if (owner && paint_detail::compute_painter(owner->options.painter))
     {
         const u32 shape = pending_shape;
         pending_shape = 0xffffffffu; // consume even when the bounded tape is already invalid
         if (!owner->sdf_tape.valid || !v || vc <= 0) return;
+        if (owner->native_only_program()) return;
         paint_detail::command command;
         command.x0 = command.x1 = v[0].x;
         command.y0 = command.y1 = v[0].y;
@@ -99,7 +118,44 @@ void primitive_recorder::mesh(texture_handle handle, const vertex *v, i32 vc, co
         command.y0 -= 1;
         command.x1 += 1;
         command.y1 += 1;
-        owner->sdf_tape.append(command, {});
+        if (owner->program_batching())
+        {
+            if (!owner->command_clip_valid)
+            {
+                owner->command_clip = {};
+                owner->native_scissor(owner->command_clip);
+                owner->command_clip_valid = true;
+            }
+            const auto &clip = owner->command_clip;
+            command.x0 = max2(command.x0, static_cast<f32>(clip.offset.x));
+            command.y0 = max2(command.y0, static_cast<f32>(clip.offset.y));
+            command.x1 = min2(command.x1, static_cast<f32>(clip.offset.x + clip.extent.width));
+            command.y1 = min2(command.y1, static_cast<f32>(clip.offset.y + clip.extent.height));
+            if (command.x1 <= command.x0 || command.y1 <= command.y0) return;
+        }
+        if (owner->options.painter == vulkan_painter_mode::INTEGRATED)
+        {
+            if (!idx || ic <= 0)
+            {
+                owner->sdf_tape.valid = false;
+                return;
+            }
+            // Exact native input, not an AABB/hash proxy. Resource revisions and
+            // the final device scissor are sealed when this batch is submitted.
+            u32 metadata[24]{};
+            metadata[0] = static_cast<u32>(vc);
+            metadata[1] = static_cast<u32>(ic);
+            metadata[15] = paint_detail::SCHEMA_VERSION;
+            owner->sdf_tape.append_parts(
+                command,
+                {std::span<const u8>(reinterpret_cast<const u8 *>(metadata), sizeof(metadata)),
+                 std::span<const u8>(reinterpret_cast<const u8 *>(v),
+                                     static_cast<usize>(vc) * sizeof(vertex)),
+                 std::span<const u8>(reinterpret_cast<const u8 *>(idx),
+                                     static_cast<usize>(ic) * sizeof(i32))});
+        }
+        else
+            owner->sdf_tape.append(command, {});
         return;
     }
     if (!tape.valid || !owner) return;
@@ -184,6 +240,51 @@ void primitive_recorder::mesh(texture_handle handle, const vertex *v, i32 vc, co
     else
         invalidate();
 }
+void device::seal_program_metadata(texture *sample, const VkRect2D &scissor, u32 indices)
+{
+    for (usize i = program_command_end; i < sdf_tape.commands.size(); ++i)
+    {
+        const auto &command = sdf_tape.commands[i];
+        if (!sdf_tape.payload_valid(command) || command.payload_size < 64 ||
+            command.payload_size % 4)
+        {
+            sdf_tape.valid = false;
+            return;
+        }
+        u32 metadata[22]{};
+        std::memcpy(metadata, &sample->generation, 8);
+        std::memcpy(metadata + 2, &sample->revision, 8);
+        metadata[4] = sample->linear;
+        std::memcpy(metadata + 6, &scissor, sizeof(scissor));
+        metadata[10] = static_cast<u32>(program_count);
+        metadata[11] = indices;
+        metadata[12] = static_cast<u32>(sample->format);
+        metadata[13] = paint_detail::SCHEMA_VERSION;
+        // Producer identity and live GPU dirty state replace a merely changed
+        // resource revision only when both consumer histories share this role.
+        const u32 packet = static_cast<u32>(program_count);
+        program_producers[packet] = live_producer(sample) ? sample->producer : nullptr;
+        if (program_producers[packet])
+        {
+            metadata[14] = producer_role(sample);
+            metadata[15] = packet + 1; // resolved into a GPU word offset at preparation
+        }
+        std::memcpy(sdf_tape.payload.data() + command.payload_offset + 8, metadata,
+                    sizeof(metadata));
+    }
+}
+bool primitive_recorder::shape_room(context *c)
+{
+    if (owner->sdf_shapes.size() < owner->sdf_shapes.capacity() &&
+        owner->sdf_spans.size() < owner->sdf_spans.capacity())
+        return true;
+    // Flush before appending either vertices or indices. A mesh callback runs
+    // between those appends and cannot safely split its own in-progress batch.
+    detail::dl_flush(c);
+    if (!owner->flush_program()) return false;
+    return owner->sdf_shapes.size() < owner->sdf_shapes.capacity() &&
+           owner->sdf_spans.size() < owner->sdf_spans.capacity();
+}
 bool primitive_recorder::shape(context *c, const paint_detail::primitive_input &input)
 {
     if (!owner || !paint_detail::sdf_painter(owner->options.painter) ||
@@ -201,6 +302,7 @@ bool primitive_recorder::shape(context *c, const paint_detail::primitive_input &
         c->ts && !c->ts->atlases.empty() ? c->ts->atlases.front().tex : nullptr;
     const rect *clip = c->clip_depth ? &c->clip_stack[c->clip_depth - 1] : nullptr;
     detail::dl_prepare(c, texture, clip);
+    if (!shape_room(c)) return false;
     if (owner->sdf_shapes.size() >=
         owner->properties.limits.maxStorageBufferRange / sizeof(sdf_shape))
         return false;
@@ -254,6 +356,7 @@ bool primitive_recorder::glyph(context *c, font_handle font, u32 index, vec2 bas
     if (detail::outside_paint(c, box)) return true;
     const rect *clip = c->clip_depth ? &c->clip_stack[c->clip_depth - 1] : nullptr;
     detail::dl_prepare(c, nullptr, clip);
+    if (!shape_room(c)) return false;
     if (!outline->uploaded)
     {
         constexpr usize limit = 16 * 1024 * 1024;
@@ -280,6 +383,10 @@ bool primitive_recorder::glyph(context *c, font_handle font, u32 index, vec2 bas
     std::memcpy(&shape.radii.bl, &outline->location, sizeof(outline->location));
     shape.reserved[0] = 1; // GPU Slug glyph, distinct from rounded SDF shapes
     shape.reserved[1] = c->active_theme.text_gamma;
+    color effective_tint = tint;
+    if (c->disabled_depth > 0)
+        effective_tint.a = static_cast<u8>(tint.a * clampf(c->disabled_alpha, 0.0f, 1.0f));
+    owner->cache_glyph_source(shape, effective_tint);
     const vertex v[] = {{box.x, box.y, 0, 0, tint},
                         {box.right(), box.y, 0, 0, tint},
                         {box.right(), box.bottom(), 0, 0, tint},

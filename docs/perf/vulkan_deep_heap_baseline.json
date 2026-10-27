@@ -1,0 +1,1188 @@
+{
+  "sdf": {
+    "allocations": 15417,
+    "categories": {
+      "frontend": 15189,
+      "vulkan": 13,
+      "renderer": 215
+    },
+    "after_first_two_frames": {
+      "renderer": 39,
+      "frontend": 16
+    },
+    "per_frame": {
+      "0": 15336,
+      "1": 26,
+      "2": 2,
+      "3": 2,
+      "5": 17,
+      "6": 2,
+      "7": 5,
+      "10": 3,
+      "90": 5,
+      "91": 3,
+      "95": 1,
+      "97": 1,
+      "120": 4,
+      "121": 3,
+      "124": 1,
+      "125": 1,
+      "126": 1,
+      "150": 3,
+      "151": 1
+    },
+    "stages_ms": {
+      "graphics": 48.43959999999995
+    },
+    "top_sites": [
+      {
+        "symbol": "pui::ui::smooth",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "478",
+        "bytes": 72,
+        "count": 5035
+      },
+      {
+        "symbol": "pui::ui::animate",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "446",
+        "bytes": 72,
+        "count": 5034
+      },
+      {
+        "symbol": "pui::ui::animate_rect",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "525",
+        "bytes": 104,
+        "count": 5014
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "54",
+        "bytes": 72,
+        "count": 75
+      },
+      {
+        "symbol": "pui::ui::animate",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "454",
+        "bytes": 72,
+        "count": 24
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 2640,
+        "count": 8
+      },
+      {
+        "symbol": "pui::vk_detail::device::make_texture",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\vulkan_resources.inl",
+        "line": "84",
+        "bytes": 152,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 376,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1320,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1584,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 1928,
+        "count": 4
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1056,
+        "count": 3
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 2112,
+        "count": 3
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 80,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 72,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 128,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2712,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2232,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "54",
+        "bytes": 1024,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2856,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2656,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2400,
+        "count": 2
+      },
+      {
+        "symbol": "pui::ui::interact",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "877",
+        "bytes": 8,
+        "count": 2
+      },
+      {
+        "symbol": "pui::ui::interact",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "877",
+        "bytes": 16,
+        "count": 2
+      },
+      {
+        "symbol": "pui::ui::interact",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "877",
+        "bytes": 24,
+        "count": 2
+      }
+    ],
+    "renderer_sites": [
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "54",
+        "bytes": 72,
+        "count": 75
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 2640,
+        "count": 8
+      },
+      {
+        "symbol": "pui::vk_detail::device::make_texture",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\vulkan_resources.inl",
+        "line": "84",
+        "bytes": 152,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 376,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1320,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1584,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 1928,
+        "count": 4
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1056,
+        "count": 3
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 2112,
+        "count": 3
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 80,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 72,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 128,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2712,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2232,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "54",
+        "bytes": 1024,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2856,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2656,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2400,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 992,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 584,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 3136,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 2376,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 792,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 1264,
+        "count": 2
+      },
+      {
+        "symbol": "pui::vk_detail::device::submit",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\vulkan_memory.inl",
+        "line": "133",
+        "bytes": 48,
+        "count": 2
+      }
+    ]
+  },
+  "compute": {
+    "allocations": 15415,
+    "categories": {
+      "frontend": 15189,
+      "vulkan": 11,
+      "renderer": 215
+    },
+    "after_first_two_frames": {
+      "renderer": 39,
+      "frontend": 16
+    },
+    "per_frame": {
+      "0": 15334,
+      "1": 26,
+      "2": 2,
+      "3": 2,
+      "5": 17,
+      "6": 2,
+      "7": 5,
+      "10": 3,
+      "90": 5,
+      "91": 3,
+      "95": 1,
+      "97": 1,
+      "120": 4,
+      "121": 3,
+      "124": 1,
+      "125": 1,
+      "126": 1,
+      "150": 3,
+      "151": 1
+    },
+    "stages_ms": {
+      "coarse": 0.9663200000000031,
+      "count": 47.92756000000013,
+      "scan": 302.93715999999984,
+      "emit": 72.13099999999994,
+      "args": 2.3359599999999805,
+      "paint": 69.28931999999979,
+      "graphics": 62.53536000000003
+    },
+    "top_sites": [
+      {
+        "symbol": "pui::ui::smooth",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "478",
+        "bytes": 72,
+        "count": 5035
+      },
+      {
+        "symbol": "pui::ui::animate",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "446",
+        "bytes": 72,
+        "count": 5034
+      },
+      {
+        "symbol": "pui::ui::animate_rect",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "525",
+        "bytes": 104,
+        "count": 5014
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "54",
+        "bytes": 72,
+        "count": 75
+      },
+      {
+        "symbol": "pui::ui::animate",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "454",
+        "bytes": 72,
+        "count": 24
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 2640,
+        "count": 8
+      },
+      {
+        "symbol": "pui::vk_detail::device::make_texture",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\vulkan_resources.inl",
+        "line": "84",
+        "bytes": 152,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 376,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1320,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1584,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 1928,
+        "count": 4
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1056,
+        "count": 3
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 2112,
+        "count": 3
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 80,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 72,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 128,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2712,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2232,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "54",
+        "bytes": 1024,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2856,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2656,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2400,
+        "count": 2
+      },
+      {
+        "symbol": "pui::ui::interact",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "877",
+        "bytes": 8,
+        "count": 2
+      },
+      {
+        "symbol": "pui::ui::interact",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "877",
+        "bytes": 16,
+        "count": 2
+      },
+      {
+        "symbol": "pui::ui::interact",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "877",
+        "bytes": 24,
+        "count": 2
+      }
+    ],
+    "renderer_sites": [
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "54",
+        "bytes": 72,
+        "count": 75
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 2640,
+        "count": 8
+      },
+      {
+        "symbol": "pui::vk_detail::device::make_texture",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\vulkan_resources.inl",
+        "line": "84",
+        "bytes": 152,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 376,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1320,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1584,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 1928,
+        "count": 4
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1056,
+        "count": 3
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 2112,
+        "count": 3
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 80,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 72,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 128,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2712,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2232,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "54",
+        "bytes": 1024,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2856,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2656,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2400,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 992,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 584,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 3136,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 2376,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 792,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 1264,
+        "count": 2
+      },
+      {
+        "symbol": "pui::vk_detail::device::submit",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\vulkan_memory.inl",
+        "line": "133",
+        "bytes": 48,
+        "count": 2
+      }
+    ]
+  },
+  "cache": {
+    "allocations": 15415,
+    "categories": {
+      "frontend": 15189,
+      "vulkan": 11,
+      "renderer": 215
+    },
+    "after_first_two_frames": {
+      "renderer": 39,
+      "frontend": 16
+    },
+    "per_frame": {
+      "0": 15334,
+      "1": 26,
+      "2": 2,
+      "3": 2,
+      "5": 17,
+      "6": 2,
+      "7": 5,
+      "10": 3,
+      "90": 5,
+      "91": 3,
+      "95": 1,
+      "97": 1,
+      "120": 4,
+      "121": 3,
+      "124": 1,
+      "125": 1,
+      "126": 1,
+      "150": 3,
+      "151": 1
+    },
+    "stages_ms": {
+      "coarse": 1.0010800000000024,
+      "count": 46.671240000000004,
+      "scan": 301.49404000000084,
+      "emit": 70.31227999999989,
+      "compare": 8.31992,
+      "compact": 56.38168000000007,
+      "restore": 4.400760000000001,
+      "paint": 66.26799999999993,
+      "commit": 0.6702000000000001,
+      "graphics": 61.79055999999962,
+      "args": 1.5092399999999797
+    },
+    "top_sites": [
+      {
+        "symbol": "pui::ui::smooth",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "478",
+        "bytes": 72,
+        "count": 5035
+      },
+      {
+        "symbol": "pui::ui::animate",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "446",
+        "bytes": 72,
+        "count": 5034
+      },
+      {
+        "symbol": "pui::ui::animate_rect",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "525",
+        "bytes": 104,
+        "count": 5014
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "54",
+        "bytes": 72,
+        "count": 75
+      },
+      {
+        "symbol": "pui::ui::animate",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "454",
+        "bytes": 72,
+        "count": 24
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 2640,
+        "count": 8
+      },
+      {
+        "symbol": "pui::vk_detail::device::make_texture",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\vulkan_resources.inl",
+        "line": "84",
+        "bytes": 152,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 376,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1320,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1584,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 1928,
+        "count": 4
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1056,
+        "count": 3
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 2112,
+        "count": 3
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 80,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 72,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 128,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2712,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2232,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "54",
+        "bytes": 1024,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2856,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2656,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2400,
+        "count": 2
+      },
+      {
+        "symbol": "pui::ui::interact",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "877",
+        "bytes": 8,
+        "count": 2
+      },
+      {
+        "symbol": "pui::ui::interact",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "877",
+        "bytes": 16,
+        "count": 2
+      },
+      {
+        "symbol": "pui::ui::interact",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\input_interact.inl",
+        "line": "877",
+        "bytes": 24,
+        "count": 2
+      }
+    ],
+    "renderer_sites": [
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "54",
+        "bytes": 72,
+        "count": 75
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 2640,
+        "count": 8
+      },
+      {
+        "symbol": "pui::vk_detail::device::make_texture",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\vulkan_resources.inl",
+        "line": "84",
+        "bytes": 152,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 376,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1320,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1584,
+        "count": 5
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 1928,
+        "count": 4
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 1056,
+        "count": 3
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 2112,
+        "count": 3
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 80,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 72,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_font",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "13",
+        "bytes": 128,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2712,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2232,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "54",
+        "bytes": 1024,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2856,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2656,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 2400,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 992,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 584,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 3136,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 2376,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_layout",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "80",
+        "bytes": 792,
+        "count": 2
+      },
+      {
+        "symbol": "pui::detail::harfbuzz_outline",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\harfbuzz_text.inl",
+        "line": "51",
+        "bytes": 1264,
+        "count": 2
+      },
+      {
+        "symbol": "pui::vk_detail::device::submit",
+        "file": "D:\\myimgui\\include\\pufferui\\impl\\vulkan_memory.inl",
+        "line": "133",
+        "bytes": 48,
+        "count": 2
+      }
+    ]
+  }
+}

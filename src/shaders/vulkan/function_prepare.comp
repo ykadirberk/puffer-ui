@@ -1,0 +1,54 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#include "function_common.glsl"
+#include "workgroup_scan.glsl"
+layout(local_size_x=64) in;
+void main() {
+    uint lane=gl_LocalInvocationIndex, count=min(functions.words[0],function_requests());
+    uint sets=function_rows()/PUI_FUNCTION_WAYS,epoch=functions.words[4],created=0u;
+    // Exactly one lane owns each set. No locks, scene-sized serial list, or
+    // workgroup-dependent forward-progress assumption is required.
+    for(uint index=0u;index<count;++index) {
+        uint request=function_request_base()+index*8u;
+        uvec4 key=uvec4(functions.words[request],functions.words[request+1u],
+            functions.words[request+2u],functions.words[request+3u]);
+        uint set=function_hash(key)&(sets-1u);
+        if((set&63u)!=lane) continue;
+        uint chosen=0xffffffffu,age=0u;
+        bool present=false;
+        for(uint way=0u;way<PUI_FUNCTION_WAYS;++way) {
+            uint row=set*PUI_FUNCTION_WAYS+way,at=function_row(row);
+            uint ready=functions.words[at+5u],stamp=functions.words[at+4u];
+            if(ready!=0u && function_key(at,key)) { present=true; break; }
+            if(ready==0u) { chosen=row; age=0xffffffffu; }
+            else if(stamp!=epoch && (chosen==0xffffffffu || epoch-stamp>age)) {
+                chosen=row;age=epoch-stamp;
+            }
+        }
+        functions.words[request+5u]=0u;
+        if(present || chosen==0xffffffffu) continue;
+        uint at=function_row(chosen);
+        for(uint c=0u;c<4u;++c) functions.words[at+c]=key[c];
+        functions.words[at+4u]=epoch;
+        functions.words[at+5u]=2u; // reserved until the calibration write completes
+        functions.words[request+4u]=chosen;
+        functions.words[request+5u]=1u;
+        ++created;
+    }
+    memoryBarrierBuffer();
+    uint out_index=scan_partitions(uvec2(created,0u),function_requests()).x;
+    for(uint index=0u;index<count;++index) {
+        uint request=function_request_base()+index*8u;
+        if(functions.words[request+5u]==0u) continue;
+        uvec4 key=uvec4(functions.words[request],functions.words[request+1u],
+            functions.words[request+2u],functions.words[request+3u]);
+        if(((function_hash(key)&(sets-1u))&63u)==lane)
+            functions.words[function_list_base()+out_index++]=functions.words[request+4u];
+    }
+    if(lane==0u) {
+        uint total=partition_prefix[63].x;
+        functions.words[5]=total;
+        functions.words[17]=total;
+        functions.words[21]=total;
+    }
+}

@@ -1,0 +1,119 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#define PUI_SDF_PROGRAM
+#define PUI_NATIVE_PAYLOAD
+#include "bin_common.glsl"
+#include "shape_common.glsl"
+#include "sdf_history.glsl"
+#include "source_alpha.glsl"
+#include "shape_groups.glsl"
+#include "alpha_source.glsl"
+#define PUI_FUNCTION_SET 1
+#define PUI_FUNCTION_BINDING 3
+#define PUI_FUNCTION_TEXTURE_SET 2
+#define PUI_FUNCTION_TEXTURE_BINDING 9
+#include "function_lookup.glsl"
+layout(std430,set=1,binding=2) buffer Route { uint words[]; } route;
+layout(rgba8,set=2,binding=0) uniform image2D scene;
+layout(set=2,binding=11) uniform sampler2D alpha_picture;
+layout(local_size_x=8,local_size_y=8) in;
+shared uint group_pixels,group_aa,group_glyph,group_misses,group_float,group_alpha,group_source_hits;
+void main() {
+    uint group=gl_WorkGroupID.x+gl_WorkGroupID.y*gl_NumWorkGroups.x;
+    if(p.cache.x!=0u && group>=control.words[5]) return;
+    uint tile=p.cache.x!=0u?tile_state.words[p.limits.w*3u+group]:group;
+    if(tile>=p.limits.w || control.words[3]!=0u) return;
+    if(gl_LocalInvocationIndex==0u) {
+        group_pixels=group_aa=group_glyph=group_misses=group_float=group_alpha=0u;
+        group_source_hits=0u;
+    }
+    barrier();
+    uint pixels_written=0u,aa_pixels=0u,glyph_pixels=0u,misses=0u,float_pixels=0u,alpha_pixels=0u;
+    uint source_hits=0u;
+    uvec2 origin=uvec2(tile%p.grid.x,tile/p.grid.x)*p.extent.z;
+    uint first=work.words[p.limits.w+tile],end=work.words[p.limits.w+tile+1];
+    for(uint y=gl_LocalInvocationID.y;y<p.extent.z;y+=8u)
+        for(uint x=gl_LocalInvocationID.x;x<p.extent.z;x+=8u) {
+            uvec2 pixel=origin+uvec2(x,y);
+            if(any(greaterThanEqual(pixel,p.extent.xy))) continue;
+            vec2 point=vec2(pixel)+vec2(0.5);
+            if(point.x<p.clip.x || point.y<p.clip.y || point.x>=p.clip.z || point.y>=p.clip.w) continue;
+            // LOAD is already quantized RGBA8. The native function atlas applies
+            // each ordered source to exactly those bytes; no FP accumulation
+            // replaces intermediate attachment quantization.
+            bool qualified=true,aa=false,glyph=false,used_float=false,alpha=false;
+            uvec4 initial=uvec4(roundEven(imageLoad(scene,ivec2(pixel))*255.0));
+            uint color=initial.x|(initial.y<<8)|(initial.z<<16)|(initial.w<<24);
+            for(uint at=first;at<end;++at) {
+                PaintCommand c=PUI_COMMAND(output_list.values[at]);
+                if(point.x<c.bounds.x || point.y<c.bounds.y || point.x>=c.bounds.z || point.y>=c.bounds.w) continue;
+                if(c.header.x==0u) { qualified=false; continue; }
+                bool is_shape=c.header.x==2u,is_glyph=false;
+                bool full_coverage=true;
+                uint bytes=c.header.y;
+                vec4 source=pui_cpu_tint(bytes);
+                vec4 quad=rect_geometry(c);
+                if(is_shape) {
+                    Shape s=shapes.values[c.payload.z];
+                    is_glyph=s.params.y==1.0;
+                    quad=vec4(s.bounds.xy,s.bounds.xy+s.bounds.zw);
+                    if(!is_glyph) quad+=vec4(-s.params.x,-s.params.x,s.params.x,s.params.x);
+                    if(s.params.y==2.0) {
+                        bytes=pui_gradient(s,point);
+                        source=pui_unpack_bytes(bytes)/255.0;
+                    }
+                    if(s.params.y==4.0) {
+                        source=pui_alpha_source(texelFetch(alpha_picture,ivec2(pixel),0),s.params.z);
+                        full_coverage=false;
+                        alpha=true;
+                    } else if(s.params.y==3.0) {
+                        source=pui_group_source(c.payload.z,point);
+                        full_coverage=false;
+                    } else {
+                        float original_alpha=source.a;
+                        bool source_cached;
+                        source.a=pui_source_alpha(s,point,original_alpha,source_cached);
+                        source_hits+=uint(source_cached);
+                        full_coverage=source.a==original_alpha;
+                    }
+                }
+                // Quad edge snapping is native fixed-function rasterization.
+                // An interior-only interpreter never invents an edge fragment.
+                if(min(min(point.x-quad.x,quad.z-point.x),min(point.y-quad.y,quad.w-point.y))<1.0) {
+                    qualified=false;continue;
+                }
+                if(source.a==0.0) continue;
+                if(full_coverage && (bytes>>24)==255u) {
+                    qualified=true;color=bytes;aa=false;glyph=is_glyph;used_float=false;
+                } else if(qualified) {
+                    uint blended;
+                    if(function_blend(source,color,blended)) {
+                        color=blended;aa=aa || !full_coverage;glyph=glyph || is_glyph;used_float=true;
+                    } else { qualified=false;++misses; }
+                }
+            }
+            if(!qualified) continue;
+            uint offset=pixel.y*p.extent.x+pixel.x;
+            atomicOr(route.words[offset>>5],1u<<(offset&31u));
+            ++pixels_written;aa_pixels+=uint(aa);glyph_pixels+=uint(glyph);float_pixels+=uint(used_float);
+            alpha_pixels+=uint(alpha);
+            vec4 value=pui_unpack_bytes(color)/255.0;
+            imageStore(scene,ivec2(pixel),value);
+            if(p.cache.x!=0u) imageStore(saved_pixels,ivec2(pixel),value);
+        }
+    if(pixels_written!=0u) atomicAdd(group_pixels,pixels_written);
+    if(aa_pixels!=0u) atomicAdd(group_aa,aa_pixels);
+    if(glyph_pixels!=0u) atomicAdd(group_glyph,glyph_pixels);
+    if(misses!=0u) atomicAdd(group_misses,misses);
+    if(float_pixels!=0u) atomicAdd(group_float,float_pixels);
+    if(alpha_pixels!=0u) atomicAdd(group_alpha,alpha_pixels);
+    if(source_hits!=0u) atomicAdd(group_source_hits,source_hits);
+    barrier();
+    if(gl_LocalInvocationIndex==0u) {
+        atomicAdd(control.words[6],group_pixels);
+        atomicAdd(control.words[9],group_aa);atomicAdd(control.words[10],group_glyph);
+        atomicAdd(control.words[11],group_misses);atomicAdd(control.words[12],group_float);
+        atomicAdd(control.words[15],group_alpha);
+        atomicAdd(control.words[16],group_source_hits);
+    }
+}

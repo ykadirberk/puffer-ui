@@ -1,0 +1,15 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#include "function_lookup.glsl"
+layout(std430,set=1,binding=0) readonly buffer Inputs { uvec4 values[]; } inputs;
+layout(std430,set=1,binding=1) writeonly buffer Outputs { uint values[]; } outputs;
+layout(local_size_x=64) in;
+void main() {
+    uint x=gl_GlobalInvocationID.x,row=gl_GlobalInvocationID.y;
+    if(x>=256u) return;
+    uint destination=x|((255u-x)<<8)|(((x*37u+13u)&255u)<<16)|((x^128u)<<24);
+    uint value;
+    bool found=function_blend(uintBitsToFloat(inputs.values[row]),destination,value);
+    outputs.values[row*256u+x]=found?value:0xdeadc0deu;
+    outputs.values[inputs.values.length()*256u+row*256u+x]=uint(found);
+}

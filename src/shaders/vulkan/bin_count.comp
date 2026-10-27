@@ -1,12 +1,13 @@
 #version 450
 #extension GL_GOOGLE_include_directive : require
 #include "bin_common.glsl"
+#include "workgroup_scan.glsl"
 layout(local_size_x=64) in;
 void main() {
-    uint tile = gl_GlobalInvocationID.x;
+    uint tile = gl_WorkGroupID.x+gl_WorkGroupID.y*gl_NumWorkGroups.x;
     if (tile >= p.limits.w) return;
     uint first = coarse_base(tile), count = 0;
-    for (uint word=0; word<p.limits.y; ++word) {
+    for (uint word=gl_LocalInvocationIndex; word<p.limits.y; word+=64u) {
         uint bits = coarse_bits.words[first+word];
         while (bits != 0) {
             uint id = word*32+uint(findLSB(bits));
@@ -14,5 +15,6 @@ void main() {
             if (id < p.limits.x && intersects_tile(id,tile)) ++count;
         }
     }
-    work.words[tile] = count;
+    uint total=sum_partitions(count);
+    if(gl_LocalInvocationIndex==0u) work.words[tile] = total;
 }

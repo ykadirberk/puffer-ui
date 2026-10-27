@@ -65,6 +65,8 @@ $shots = @(
     @('vulkan', 'pui_ex_vulkan', '--selftest --frames 6 --no-script', 'optional'),
     @('vulkan-painter', 'pui_ex_vulkan_painter', '--selftest --frames 6 --no-script', 'optional'),
     @('vulkan-blur', 'pui_ex_vulkan_blur', '--selftest --frames 6 --no-script', 'optional'),
+    @('vulkan-groups', 'pui_ex_vulkan_groups', '--selftest --frames 6 --no-script', 'optional'),
+    @('vulkan-alpha', 'pui_ex_vulkan_alpha', '--selftest --frames 6 --no-script', 'optional'),
     @('vulkan-showcase', 'pui_showcase_vulkan', '--selftest --frames 100 --page 0 --no-script', 'optional'),
     @('counter', 'pui_counter', ''),  # its own --screenshot mode (frame 4)
     @('showcase', 'pui_showcase', '--selftest --frames 100 --page 0 --no-script --no-hud'),

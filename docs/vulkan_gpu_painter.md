@@ -1,4 +1,22 @@
-# Optional analytic Vulkan painter
+# Analytic and integrated Vulkan painters
+
+`INTEGRATED` combines native command operands, ordered GPU lists, exact RGBA8
+output reuse, a native blend-function cache, Slug source-alpha residency, producer
+dependencies, shape unions and a common-opacity scope. The Vulkan showcase
+selects it without command-line switches. HarfBuzz/Slug is included when built;
+the library's device default remains `REFERENCE`. Explicit diagnostic modes
+retain independent configurations. See [the integrated design](vulkan_integrated_painter.md)
+and [the measurement and visual validation report](perf_vulkan_integrated.md).
+
+With whole-program caching enabled, unchanged native operands are observed
+without also encoding/running the tile painter. A GPU fixed-point certificate
+covers every LOAD-dependent output before replay may skip the complete program.
+Failed certificates select fine-grained reuse; its kernels, function atlas,
+arenas and histories are prepared at the next completed frame boundary. Forced
+tile mode remains available for numerical and coverage regressions. Group,
+alpha and producer handling belongs to the same renderer in both paths.
+
+The sections below describe the independent `SDF_RASTER`/`COMPUTE_SDF` paths.
 
 The default `REFERENCE` painter retains the established triangle and bitmap
 renderer. `COMMAND_SHADOW` captures a private command tape while retaining that
@@ -29,7 +47,7 @@ starts a 512-batch cooldown. This is a conservative heuristic with asynchronous
 coverage feedback, not a learned GPU timing model or a guarantee of speedup.
 Forced mode remains available so measurements cannot conceal compute costs.
 
-The showcase accepts `--vulkan-painter reference|sdf|compute|adaptive` and
+The showcase accepts `--vulkan-painter reference|sdf|compute|adaptive|integrated` and
 `--vector-text`. `pui_ex_vulkan_painter` is the standalone analytic example.
 Interactive VSync startup policy is unchanged. Benchmark executables alone
 disable VSync and use a hidden native WSI window.
@@ -44,9 +62,12 @@ Rounded gradients retain the underlay and top layer, including their alpha.
 Unsupported primitives retain their original triangle stream and submission
 order. The shader uses the same SDF function for raster and compute.
 
-Each actual device draw is an epoch. Target, clip, texture update, copy, blur
-and overlay transitions retain their established device-call boundaries. No
-final-frame cache is substituted for a blur's prefix. Texture/image glyphs and
+Forced compute groups consecutive native draws into ordered programs. Texture
+and scissor changes retain their native packets inside the same program; command
+bounds use the exact integer native scissors. Target changes, copies, effects,
+resource mutation, readback and submissions close the program. No final-frame
+cache is substituted for a blur's prefix. Adaptive routing keeps its inexpensive
+native-batch eligibility path. Texture/image glyphs and
 arbitrary triangles are conservative unknown commands. The shader conservatively
 invalidates compute ownership under their expanded bounds. One physical pixel
 of expansion covers raster subpixel snapping at tile boundaries.
@@ -92,6 +113,10 @@ indirect dispatch. Clean qualified pixels are restored from immutable history.
 Dirty tiles run the interpreter. History is committed only after a valid list;
 all prefix-dependent pixels still receive the full native draw. This is a
 specialized suffix cache, not a general arbitrary-triangle retained renderer.
+The separate opt-in whole-program cache additionally requires exact canonical
+CPU identity and a certified fixed point for stateful output images; see
+[whole native program reuse](vulkan.md#whole-native-program-reuse). It does not
+infer pixel equality from a hash or freeze an accumulating translucent pass.
 
 Actual Vulkan allocation requirements count against the 64 MiB GPU metadata
 budget, including the blend table. Saved image allocations have the separate
@@ -103,11 +128,57 @@ Shape metadata, Slug blobs and vertex/index data use one upload reservation.
 A budget-induced submission can occur before that reservation but cannot free
 metadata between descriptor setup and its consuming draw. Descriptor pools reset
 only after the owning slot completes. Compute/transfer/graphics dependencies and
-image layouts are explicit. There is no scene/dirty-list CPU readback; delayed
-completed control counters are harvested solely for telemetry and the optional
-adaptive coverage heuristic.
+image layouts are explicit. There is no scene/dirty-list CPU readback. Delayed
+completed control counters provide telemetry and the optional adaptive coverage
+heuristic. The separate whole-program cache also consumes an exact, four-byte
+GPU fixed-point certificate after its submission completes; it never infers
+unchanged pixels from geometry or a hash alone.
 
 ## Validation and measurement
+
+Fine list construction uses a portable 64-lane workgroup per tile. Lanes count
+candidate bitset words together and emit ordered chunks with exclusive prefixes;
+the list remains in submission order. Prefix scanning and dirty compaction use
+bounded workgroup scans, with separate overflow propagation. Two-dimensional
+dispatches respect both advertised workgroup count limits. None of these paths
+adds a GPU allocation or relies on an optional subgroup size/feature.
+
+The suffix painter retains forward ordered blending with calibrated finite
+RGBA8 rounding. A reverse opaque-source search followed by forward suffix
+replay was tested separately and rejected: this scene's translucent layers
+increased compute GPU time by 3.4%. Fewer evaluated hidden sources alone did not
+establish a speedup. The suffix cache remains conservative for unknown/AA pixels;
+it is not a general full-scene painter and still needs native raster replay.
+
+`tools/profile_vulkan_painter.py` builds an optional Windows diagnostic against
+the current implementation or `--implementation-root` of a frozen compatible
+tree. It records bounded per-dispatch/draw GPU timestamps and ordinary/aligned
+C++ allocation stacks plus this executable's C malloc/calloc/realloc imports,
+resolving symbols after rendering. An interposition selftest checks all five
+paths without double-counting C++ new. Other DLL/driver heap, aligned C heap and
+free/liveness tracing remain outside its scope. Its extra queries and stack
+capture affect timing; use the separate ordinary benchmark for acceptance.
+Use `--heap-only --program` for whole-program cache workloads. These can discard
+an unsubmitted command buffer, so per-command timestamp queries would never
+execute; the heap-only mode deliberately installs no such queries.
+
+`pui_vulkan_program_bench` adds settled and local-change variants of that actual
+showcase. `--idle` freezes time and disables Adds; `--local-change` changes the
+first tile's hue at 90/120/150. `tools/compare_vulkan_program.py` alternates frozen
+executables, checks every semantic geometry tuple and retains all frame timings,
+process elapsed time, Windows process CPU/cycles and the CPU/cycles of the whole
+frame window. Startup and shutdown remain in the process metrics. GPU readback
+is an independent `--reference` validation mode and is excluded from timings.
+Both executables must use the same compiler, optimization, linker and heap
+manifest settings; a default `/DEBUG` link changes optimization defaults.
+
+`tools/measure_vulkan_gpu.py` samples Windows per-process GPU engine and memory
+counters with native VSync requested and an explicit, identical 60 Hz harness
+cap. It preserves every raw sample/status, adapter LUID, physical engine, focus
+and visibility flag. It never averages distinct adapters or engines into one
+utilization number. Requested VSync or a visible window alone does not establish
+foreground pacing. Compare usage percentages only at matched frame rates;
+uncapped throughput can increase utilization even when each frame costs less.
 
 Existing core, SDL, Vulkan, interaction, package and bitmap golden tests remain
 unchanged. New command/binning/cache tests include hash collisions, removed

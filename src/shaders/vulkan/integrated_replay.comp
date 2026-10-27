@@ -1,0 +1,24 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#define PUI_SDF_PROGRAM
+#define PUI_NATIVE_PAYLOAD
+#include "bin_common.glsl"
+#include "shape_common.glsl"
+#include "sdf_history.glsl"
+layout(local_size_x=64) in;
+void main() {
+    uint index=gl_GlobalInvocationID.x;
+    if(index>=p.limits.x) return;
+    PaintCommand command=PUI_COMMAND(index);
+    uint payload=p.limits.x*16u+command.payload.x/4u;
+    uint packet=program_tape.words[payload+12u],indices=program_tape.words[payload+13u];
+    if(packet>=64u) return;
+    uint at=p.limits.w*4u+packet*5u;
+    bool fully_owned=control.words[6]+control.words[8]==p.extent.x*p.extent.y;
+    bool replay=control.words[3]!=0u || !fully_owned;
+    // A packet can contain culled primitives not present in the tile list;
+    // the sealed native index count always describes the complete native draw.
+    uint previous=atomicMax(tile_state.words[at],indices);
+    if(replay) atomicOr(tile_state.words[at+1u],1u);
+    if(previous==0u) atomicAdd(control.words[replay?13u:14u],1u);
+}

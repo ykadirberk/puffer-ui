@@ -18,6 +18,7 @@ struct draw_list
     // after warm-up.
     std::vector<vertex> scratch_v;
     std::vector<i32> scratch_i;
+    u8 sector_preparation = 0; // 0 unused, 1 first use, 2 bounded domain prepared
     // Cold setup metadata must not displace the hot texture/clip batch fields.
     usize prepared_vertices = 0, prepared_indices = 0;
 
@@ -35,6 +36,8 @@ struct mesh_painter : render_painter
 #if defined(PUFFERUI_ENABLE_VULKAN)
     paint_detail::primitive_sink *native = nullptr;
     render_device *native_device = nullptr;
+    void (*native_end)(context *) = nullptr;
+    texture_handle (*native_scene)(render_device *, render_surface *) = nullptr;
     bool (*native_gradient)(context *, const paint_rounded_gradient &, color) = nullptr;
     bool (*native_blur)(render_device *, texture_handle, rect, f32,
                         paint_detail::blur_result &) = nullptr;
@@ -92,6 +95,7 @@ struct mesh_painter : render_painter
     void gradient(const paint_gradient &) override;
     void rounded_gradient(const paint_rounded_gradient &) override;
     void draw_triangles(texture_handle, const vertex *, i32, const i32 *, i32);
+    void append_triangles(texture_handle, const vertex *, i32, const i32 *, i32);
     void draw_rect(rect, color);
     void draw_line(f32, f32, f32, f32, color, f32);
     void draw_rounded_rect(rect, color, f32);
@@ -330,7 +334,7 @@ inline void dl_add(context *c, const vertex *verts, i32 vcount, const i32 *idx, 
     {
         const usize limit = dl.idx.max_size();
         const usize grown = dl.idx.capacity() <= limit / 2 ? dl.idx.capacity() * 2 : limit;
-        dl.idx.reserve(max2(required, max2(static_cast<usize>(64), grown)));
+        dl.idx.reserve(std::max(required, std::max(static_cast<usize>(64), grown)));
         dl.prepared_indices = dl.idx.size();
     }
     dl.idx.resize(required);
@@ -355,6 +359,16 @@ bool renderer_detail::mesh_painter::prepare(const geometry_capacity &capacity)
 
 void renderer_detail::mesh_painter::begin()
 {
+    if (storage.sector_preparation == 1)
+    {
+        // The bounded arc domain is known after its first use. Prepare the
+        // whole domain once at a frame boundary, including colliding topology
+        // slots, so changing angle/radius does not grow storage while drawing.
+        storage.scratch_v.reserve(4 * 129);
+        storage.scratch_i.reserve(128 * 3 * 6);
+        for (auto &slot : ctx->st->sectors) slot.indices.reserve(128 * 3 * 6);
+        storage.sector_preparation = 2;
+    }
     if (ctx->overlay_depth == 0 && !ctx->blur) ctx->blur = new blur_store();
     if (ctx->device && ctx->overlay_depth == 0) ctx->device->clear(ctx->active_theme.bg);
     storage.verts.clear();
@@ -369,6 +383,9 @@ void renderer_detail::mesh_painter::begin()
 }
 void renderer_detail::mesh_painter::end()
 {
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    if (native_end) native_end(ctx);
+#endif
     if (ctx->device) ctx->device->set_clip(nullptr);
     invalidate();
 }

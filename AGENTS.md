@@ -95,6 +95,16 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   outline rendering to the Vulkan variant only. `vector_text` requires an SDF
   painter. Core/SDL and existing bitmap goldens remain independent. See
   `docs/harfbuzz.md`; paragraph bidi and cluster-aware editing are not implied.
+- `INTEGRATED` combines packed native operands, exact output/function/glyph caches,
+  producer dependencies, shape groups and a guarded common-opacity scope. The
+  Vulkan showcase selects it by default; library and other example defaults stay
+  independent. Explicit `--vulkan-painter` overrides select independent diagnostic
+  configurations. Native observation and GPU whole-image certificates avoid
+  duplicate tile work; failed LOAD certificates prepare fine reuse at the next
+  frame boundary. `pui_vulkan_identity_tests` covers cold admission, glyph-tag
+  churn and that automatic transition in direct/staged configurations.
+  `pui_vulkan_unified_showcase_tests` covers the actual default and six overrides.
+  Group/alpha/producer/LOAD/glyph-source tests retain independent native oracles.
 - `pui_vulkan_command_tests`, `pui_vulkan_binning_tests`,
   `pui_vulkan_compute_tests`, `pui_vulkan_sdf_tests` and
   `pui_vulkan_sdf_cache_tests` cover command ABI/order, actual GPU lists,

@@ -21,11 +21,13 @@
 //   pui_showcase --page N     start on page N (0..4)
 //   pui_showcase --light      start in the light theme;  --no-hud  hide the perf card
 //   pui_showcase --perf       print the average UI build / frame times at exit
+//   pui_showcase --perf-trace FILE  save bounded frame diagnostics at normal exit
 //   pui_showcase --a11y       accessibility recording on (what a screen reader enables)
 #include "example_common.h"
 #include "tutorial/glass.h"
 
 #include <algorithm>
+#include <charconv>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -309,6 +311,8 @@ struct showcase
     i32 swatch = 0;
 };
 
+#include "showcase_trace.h"
+static showcase_frame_trace g_frame_trace;
 static showcase g_app;
 static i32 g_start_page = -1;
 
@@ -888,6 +892,7 @@ static void add_card(showcase &s, const char *title, i32 col)
 
 static void seed(showcase &s)
 {
+    s.ripples.reserve(16);
     for (i32 i = 0; i < 14; ++i)
     {
         lab_tile t;
@@ -912,6 +917,43 @@ static void seed(showcase &s)
     bars_retarget(s, 0.0);
     for (i32 i = 0; i < 12; ++i) s.bars_from[i] = s.bars_to[i];
 }
+
+// Reproducible large layouts can be opened directly in the normal application.
+struct showcase_layout_opts
+{
+    i32 tiles = 14, mode = 0;
+    f32 size = 112;
+    bool parse(i32 argc, const char *const *argv)
+    {
+        showcase_layout_opts pending = *this;
+        for (i32 i = 1; i < argc; ++i)
+        {
+            const std::string_view arg = argv[i];
+            if (arg != "--tiles" && arg != "--lab-mode" && arg != "--lab-size") continue;
+            if (++i >= argc) return false;
+            const char *value = argv[i], *end = value + std::strlen(value);
+            const auto read = [&](auto &destination)
+            {
+                const auto result = std::from_chars(value, end, destination);
+                return result.ec == std::errc{} && result.ptr == end;
+            };
+            if (arg == "--tiles" && !read(pending.tiles)) return false;
+            if (arg == "--lab-mode" && !read(pending.mode)) return false;
+            if (arg == "--lab-size" && !read(pending.size)) return false;
+        }
+        if (pending.tiles < 14 || pending.tiles > 5000 || pending.mode < 0 || pending.mode > 4 ||
+            !(pending.size >= 64 && pending.size <= 180))
+            return false;
+        *this = pending;
+        return true;
+    }
+    void apply(showcase &state) const
+    {
+        state.lab_mode = mode;
+        state.lab_size = size;
+        while (state.tiles.size() < static_cast<usize>(tiles)) add_tile(state);
+    }
+};
 
 // ============================================================ shared widgets
 static bool kb_hit(ui &u, const interaction &in)
@@ -2235,6 +2277,18 @@ static void lab_tile_draw(ui &u, showcase &s, const lab_tile &tl, rect d, bool h
     (void)th;
 }
 
+static void lab_floor(ui &u, rect inner, color tint)
+{
+    // Retain the original repeated float addition so scrolling/fractional
+    // coordinates stay bit-identical. Reject whole invisible rows before dots.
+    for (f32 y = inner.y + 12.0f; y < inner.bottom(); y += 24.0f)
+    {
+        if (!u.is_visible({inner.x, y, inner.w + 1.5f, 1.5f})) continue;
+        for (f32 x = inner.x + 12.0f; x < inner.right(); x += 24.0f)
+            u.draw_rect(rect::make(x, y, 1.5f, 1.5f), tint);
+    }
+}
+
 // Conservative Spiral geometry, including every shadow, both gradient underlays,
 // an outline on every hovered tile and the longest u32 label. Spare tile buckets
 // absorb nearby Adds. A 128 MiB CPU preparation budget is split between core
@@ -2356,9 +2410,7 @@ static f32 page_layout(ui &u, showcase &s, rect area, vec2 origin)
             card(u, s, "lab_stage"_id, col.next(max2(440.0f, need + 40.0f)), origin, enter_k(s, 1));
         const rect inner = r.pad(20.0f);
         const vec2 io{inner.x, inner.y};
-        for (f32 y = inner.y + 12.0f; y < inner.bottom(); y += 24.0f) // a dotted floor
-            for (f32 x = inner.x + 12.0f; x < inner.right(); x += 24.0f)
-                u.draw_rect(rect::make(x, y, 1.5f, 1.5f), fade(th.text, 0.12f));
+        lab_floor(u, inner, fade(th.text, 0.12f));
 
         static const char *const menu[4] = {"Feature / unfeature", "Duplicate", "Recolor",
                                             "Remove"};
@@ -3942,6 +3994,8 @@ static void showcase_frame(ui &u, example_app &app)
 {
     const u64 build_t0 = SDL_GetPerformanceCounter(); // the HUD's cpu figure
     showcase &s = g_app;
+    app.diagnostics.enabled = g_frame_trace.file != nullptr;
+    g_frame_trace.observe(s, app, build_t0);
     if (g_a11y) set_accessibility(u.ctx, true);
     const f64 now = u.now();
     if (s.font == FONT_INVALID)
@@ -3951,7 +4005,8 @@ static void showcase_frame(ui &u, example_app &app)
 #if defined(PUFFERUI_ENABLE_VULKAN)
         const auto painter = vulkan_painter(app.device);
         s.analytic_shapes = painter == vulkan_painter_mode::SDF_RASTER ||
-                            painter == vulkan_painter_mode::COMPUTE_SDF;
+                            painter == vulkan_painter_mode::COMPUTE_SDF ||
+                            painter == vulkan_painter_mode::INTEGRATED;
         if (is_vulkan_device(app.device))
         {
             // The selftest bootstrap is uncapped. Establish the interactive
@@ -4192,6 +4247,15 @@ static void showcase_frame(ui &u, example_app &app)
 
 int main(int argc, char **argv)
 {
+    const char *trace_path = nullptr;
+    showcase_layout_opts layout;
+    if (!layout.parse(argc, argv))
+    {
+        std::fputs("Invalid showcase layout: --tiles 14..5000, --lab-mode 0..4, "
+                   "--lab-size 64..180\n",
+                   stderr);
+        return 1;
+    }
     for (int i = 1; i < argc; ++i)
     {
 #if defined(PUFFERUI_ENABLE_VULKAN)
@@ -4216,12 +4280,26 @@ int main(int argc, char **argv)
             g_fuzz = static_cast<u32>(std::atoi(argv[i + 1]));
         if (std::strcmp(argv[i], "--no-hud") == 0) g_no_hud = true;
         if (std::strcmp(argv[i], "--perf") == 0) g_perf = true;
+        if (std::strcmp(argv[i], "--help") == 0)
+            std::puts("  --perf-trace FILE     save bounded frame diagnostics at normal exit; "
+                      "FILE must be new\n"
+                      "  --tiles N             initial tile count (14..5000)\n"
+                      "  --lab-mode N          0 Grid, 1 List, 2 Masonry, 3 Orbit, 4 Spiral\n"
+                      "  --lab-size N          initial tile size (64..180)");
+        if (i + 1 < argc && std::strcmp(argv[i], "--perf-trace") == 0) trace_path = argv[i + 1];
         if (std::strcmp(argv[i], "--a11y") == 0) g_a11y = true;
         if (std::strcmp(argv[i], "--light") == 0) g_app.theme_mode = 1; // start in the light theme
     }
     if (g_fuzz) g_app.rng = g_fuzz * 2654435761u + 1u;
     seed(g_app);
+    layout.apply(g_app);
+    if (trace_path && !g_frame_trace.start({.path = trace_path}))
+    {
+        std::fprintf(stderr, "Cannot create new showcase trace: %s\n", trace_path);
+        return 1;
+    }
     const int rc = example_run("showcase", 1360, 860, argc, argv, showcase_frame);
+    if (trace_path && !g_frame_trace.finish()) return 1;
     if (g_perf && g_perf_totals.frames > 0)
     {
         const perf_totals &p = g_perf_totals;

@@ -1,0 +1,250 @@
+{
+  "protocol": "Full pre-change RGBA references; every180frame and all peak indices; no capture/update of goldens; direct/staged and native/offscreen domains.",
+  "checked_frames": 3240,
+  "runs": [
+    {
+      "label": "sdf",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_program_bench.exe",
+        "--sdf",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "a92471638cc055101cc3cb88470f920871349ff066ef7c29d10481ee96cc5b26"
+    },
+    {
+      "label": "offscreen-sdf",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_retained_spiral_tests.exe",
+        "--sdf",
+        "--vector-text",
+        "--golden",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "293be7f0ae8128f4a672785056357f1fbf86492b098201a4f34188b697cd8c95"
+    },
+    {
+      "label": "compute",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_program_bench.exe",
+        "--compute",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "a92471638cc055101cc3cb88470f920871349ff066ef7c29d10481ee96cc5b26"
+    },
+    {
+      "label": "offscreen-compute",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_retained_spiral_tests.exe",
+        "--compute",
+        "--vector-text",
+        "--golden",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "293be7f0ae8128f4a672785056357f1fbf86492b098201a4f34188b697cd8c95"
+    },
+    {
+      "label": "cache",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_program_bench.exe",
+        "--compute",
+        "--cache",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "a92471638cc055101cc3cb88470f920871349ff066ef7c29d10481ee96cc5b26"
+    },
+    {
+      "label": "offscreen-cache",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_retained_spiral_tests.exe",
+        "--compute",
+        "--cache",
+        "--vector-text",
+        "--golden",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "293be7f0ae8128f4a672785056357f1fbf86492b098201a4f34188b697cd8c95"
+    },
+    {
+      "label": "staged",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_program_bench.exe",
+        "--compute",
+        "--cache",
+        "--staged",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "a92471638cc055101cc3cb88470f920871349ff066ef7c29d10481ee96cc5b26"
+    },
+    {
+      "label": "offscreen-staged",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_retained_spiral_tests.exe",
+        "--compute",
+        "--cache",
+        "--staged",
+        "--vector-text",
+        "--golden",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "293be7f0ae8128f4a672785056357f1fbf86492b098201a4f34188b697cd8c95"
+    },
+    {
+      "label": "adaptive",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_program_bench.exe",
+        "--adaptive",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "a92471638cc055101cc3cb88470f920871349ff066ef7c29d10481ee96cc5b26"
+    },
+    {
+      "label": "offscreen-adaptive",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_retained_spiral_tests.exe",
+        "--adaptive",
+        "--vector-text",
+        "--golden",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "293be7f0ae8128f4a672785056357f1fbf86492b098201a4f34188b697cd8c95"
+    },
+    {
+      "label": "idle-sdf",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_program_bench.exe",
+        "--idle",
+        "--sdf",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\idle-reference"
+      ],
+      "binary_sha256": "a92471638cc055101cc3cb88470f920871349ff066ef7c29d10481ee96cc5b26"
+    },
+    {
+      "label": "idle-cache",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_program_bench.exe",
+        "--idle",
+        "--compute",
+        "--cache",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\idle-reference"
+      ],
+      "binary_sha256": "a92471638cc055101cc3cb88470f920871349ff066ef7c29d10481ee96cc5b26"
+    },
+    {
+      "label": "idle-staged",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_program_bench.exe",
+        "--idle",
+        "--compute",
+        "--cache",
+        "--staged",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\idle-reference"
+      ],
+      "binary_sha256": "a92471638cc055101cc3cb88470f920871349ff066ef7c29d10481ee96cc5b26"
+    },
+    {
+      "label": "local-sdf",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_program_bench.exe",
+        "--local-change",
+        "--sdf",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\local-reference"
+      ],
+      "binary_sha256": "a92471638cc055101cc3cb88470f920871349ff066ef7c29d10481ee96cc5b26"
+    },
+    {
+      "label": "local-cache",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_program_bench.exe",
+        "--local-change",
+        "--compute",
+        "--cache",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\local-reference"
+      ],
+      "binary_sha256": "a92471638cc055101cc3cb88470f920871349ff066ef7c29d10481ee96cc5b26"
+    },
+    {
+      "label": "local-staged",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_program_bench.exe",
+        "--local-change",
+        "--compute",
+        "--cache",
+        "--staged",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\local-reference"
+      ],
+      "binary_sha256": "a92471638cc055101cc3cb88470f920871349ff066ef7c29d10481ee96cc5b26"
+    },
+    {
+      "label": "1150-sdf",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_program_bench.exe",
+        "--sdf",
+        "--vector-text",
+        "--tiles",
+        "1150",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-1150"
+      ],
+      "binary_sha256": "a92471638cc055101cc3cb88470f920871349ff066ef7c29d10481ee96cc5b26"
+    },
+    {
+      "label": "1150-cache",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_program_bench.exe",
+        "--compute",
+        "--cache",
+        "--vector-text",
+        "--tiles",
+        "1150",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-1150"
+      ],
+      "binary_sha256": "a92471638cc055101cc3cb88470f920871349ff066ef7c29d10481ee96cc5b26"
+    }
+  ]
+}

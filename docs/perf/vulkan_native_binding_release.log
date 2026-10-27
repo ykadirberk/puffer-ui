@@ -1,0 +1,2247 @@
+MSVC environment: C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat
+
+==== configure Vulkan registry
+-- Could NOT find PkgConfig (missing: PKG_CONFIG_EXECUTABLE) 
+-- Could NOT find LibUSB (missing: LibUSB_LIBRARY LibUSB_INCLUDE_PATH) (found version "LibUSB_VERSION-NOTFOUND")
+-- 
+-- SDL3 was configured with the following options:
+-- 
+-- Platform: Windows-10.0.26200
+-- 64-bit:   TRUE
+-- Compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe
+-- Revision: SDL-3.5.0-release-3.4.0-951-g64998d2bc
+-- Vendor:   
+-- 
+-- Subsystems:
+--   Audio:    ON
+--   Video:    ON
+--   GPU:      ON
+--   Render:   ON
+--   Camera:   ON
+--   Joystick: ON
+--   Haptic:   ON
+--   Hidapi:   ON
+--   Power:    ON
+--   Sensor:   ON
+--   Dialog:   ON
+--   Tray:     ON
+-- 
+-- Options:
+--   SDL_ALSA                    (Wanted: OFF): OFF
+--   SDL_ALSA_SHARED             (Wanted: OFF): OFF
+--   SDL_ALTIVEC                 (Wanted: OFF): OFF
+--   SDL_ARMNEON                 (Wanted: OFF): OFF
+--   SDL_ARMSVE2                 (Wanted: OFF): OFF
+--   SDL_ASAN                    (Wanted: OFF): OFF
+--   SDL_ASSEMBLY                (Wanted: ON): ON
+--   SDL_ASSERTIONS              (Wanted: auto): auto
+--   SDL_AVX                     (Wanted: ON): ON
+--   SDL_AVX2                    (Wanted: ON): ON
+--   SDL_AVX512F                 (Wanted: ON): ON
+--   SDL_BACKGROUNDING_SIGNAL    (Wanted: OFF): OFF
+--   SDL_CCACHE                  (Wanted: OFF): OFF
+--   SDL_CLANG_TIDY              (Wanted: OFF): OFF
+--   SDL_CLOCK_GETTIME           (Wanted: OFF): OFF
+--   SDL_COCOA                   (Wanted: OFF): OFF
+--   SDL_DBUS                    (Wanted: OFF): OFF
+--   SDL_DEPS_SHARED             (Wanted: ON): OFF
+--   SDL_DIRECTX                 (Wanted: ON): ON
+--   SDL_DISKAUDIO               (Wanted: ON): ON
+--   SDL_DLOPEN_NOTES            (Wanted: OFF): OFF
+--   SDL_DUMMYAUDIO              (Wanted: ON): ON
+--   SDL_DUMMYCAMERA             (Wanted: ON): ON
+--   SDL_DUMMYVIDEO              (Wanted: ON): ON
+--   SDL_EXAMPLES                (Wanted: OFF): OFF
+--   SDL_EXAMPLES_LINK_SHARED    (Wanted: OFF): OFF
+--   SDL_FOREGROUNDING_SIGNAL    (Wanted: OFF): OFF
+--   SDL_FRIBIDI                 (Wanted: OFF): OFF
+--   SDL_FRIBIDI_SHARED          (Wanted: OFF): OFF
+--   SDL_GCC_ATOMICS             (Wanted: OFF): OFF
+--   SDL_GPU_OPENXR              (Wanted: ON): ON
+--   SDL_HIDAPI                  (Wanted: ON): ON
+--   SDL_HIDAPI_JOYSTICK         (Wanted: ON): ON
+--   SDL_HIDAPI_LIBUSB           (Wanted: ON): OFF
+--   SDL_HIDAPI_LIBUSB_SHARED    (Wanted: ON): OFF
+--   SDL_IBUS                    (Wanted: OFF): OFF
+--   SDL_INSTALL                 (Wanted: ON): OFF
+--   SDL_INSTALL_TESTS           (Wanted: OFF): OFF
+--   SDL_JACK                    (Wanted: OFF): OFF
+--   SDL_JACK_SHARED             (Wanted: OFF): OFF
+--   SDL_KMSDRM                  (Wanted: OFF): OFF
+--   SDL_KMSDRM_SHARED           (Wanted: OFF): OFF
+--   SDL_LASX                    (Wanted: OFF): OFF
+--   SDL_LIBC                    (Wanted: ON): ON
+--   SDL_LIBICONV                (Wanted: OFF): OFF
+--   SDL_LIBTHAI                 (Wanted: OFF): OFF
+--   SDL_LIBTHAI_SHARED          (Wanted: OFF): OFF
+--   SDL_LIBUDEV                 (Wanted: ON): OFF
+--   SDL_LIBURING                (Wanted: OFF): OFF
+--   SDL_LSX                     (Wanted: OFF): OFF
+--   SDL_METAL                   (Wanted: OFF): OFF
+--   SDL_MMX                     (Wanted: ON): OFF
+--   SDL_OFFSCREEN               (Wanted: ON): ON
+--   SDL_OPENGL                  (Wanted: ON): ON
+--   SDL_OPENGLES                (Wanted: ON): ON
+--   SDL_OPENVR                  (Wanted: OFF): OFF
+--   SDL_OSS                     (Wanted: OFF): OFF
+--   SDL_PIPEWIRE                (Wanted: OFF): OFF
+--   SDL_PIPEWIRE_SHARED         (Wanted: OFF): OFF
+--   SDL_PTHREADS                (Wanted: OFF): OFF
+--   SDL_PTHREADS_SEM            (Wanted: OFF): OFF
+--   SDL_PULSEAUDIO              (Wanted: OFF): OFF
+--   SDL_PULSEAUDIO_SHARED       (Wanted: OFF): OFF
+--   SDL_RENDER_D3D              (Wanted: ON): ON
+--   SDL_RENDER_D3D11            (Wanted: ON): ON
+--   SDL_RENDER_D3D12            (Wanted: ON): ON
+--   SDL_RENDER_GPU              (Wanted: ON): ON
+--   SDL_RENDER_METAL            (Wanted: OFF): OFF
+--   SDL_RENDER_VULKAN           (Wanted: ON): ON
+--   SDL_ROCKCHIP                (Wanted: OFF): OFF
+--   SDL_RPATH                   (Wanted: OFF): OFF
+--   SDL_RPI                     (Wanted: OFF): OFF
+--   SDL_SNDIO                   (Wanted: OFF): OFF
+--   SDL_SNDIO_SHARED            (Wanted: OFF): OFF
+--   SDL_SSE                     (Wanted: ON): ON
+--   SDL_SSE2                    (Wanted: ON): ON
+--   SDL_SSE3                    (Wanted: ON): ON
+--   SDL_SSE4_1                  (Wanted: ON): ON
+--   SDL_SSE4_2                  (Wanted: ON): ON
+--   SDL_SYSTEM_ICONV            (Wanted: OFF): OFF
+--   SDL_TESTS                   (Wanted: OFF): OFF
+--   SDL_TESTS_LINK_SHARED       (Wanted: OFF): OFF
+--   SDL_UNINSTALL               (Wanted: OFF): OFF
+--   SDL_VIRTUAL_JOYSTICK        (Wanted: ON): ON
+--   SDL_VIVANTE                 (Wanted: OFF): OFF
+--   SDL_VULKAN                  (Wanted: ON): ON
+--   SDL_WASAPI                  (Wanted: ON): ON
+--   SDL_WAYLAND                 (Wanted: OFF): OFF
+--   SDL_WAYLAND_LIBDECOR        (Wanted: OFF): OFF
+--   SDL_WAYLAND_LIBDECOR_SHARED (Wanted: OFF): OFF
+--   SDL_WAYLAND_SHARED          (Wanted: OFF): OFF
+--   SDL_X11                     (Wanted: OFF): OFF
+--   SDL_X11_SHARED              (Wanted: OFF): OFF
+--   SDL_X11_XCURSOR             (Wanted: OFF): OFF
+--   SDL_X11_XDBE                (Wanted: OFF): OFF
+--   SDL_X11_XFIXES              (Wanted: OFF): OFF
+--   SDL_X11_XINPUT              (Wanted: OFF): OFF
+--   SDL_X11_XRANDR              (Wanted: OFF): OFF
+--   SDL_X11_XSCRNSAVER          (Wanted: OFF): OFF
+--   SDL_X11_XSHAPE              (Wanted: OFF): OFF
+--   SDL_X11_XSYNC               (Wanted: OFF): OFF
+--   SDL_X11_XTEST               (Wanted: OFF): OFF
+--   SDL_XINPUT                  (Wanted: ON): ON
+-- 
+--  Build Shared Library: OFF
+--  Build Static Library: ON
+-- 
+-- Enabled backends:
+--   Video drivers: dummy offscreen windows
+--   Render drivers: d3d d3d11 d3d12 gpu ogl ogl_es2 vulkan
+--   GPU drivers: d3d12 openxr vulkan
+--   Audio drivers: disk dsound dummy wasapi
+--   Joystick drivers: dinput gameinput hidapi rawinput virtual wgi xinput
+--   Camera drivers: dummy mediafoundation
+-- 
+CMake Warning at build-vulkan-compute/harfbuzz-src/CMakeLists.txt:4 (message):
+  The main build system for HarfBuzz is Meson.  CMake build support is
+  community-maintained and is not actively supported by HarfBuzz developers.
+
+
+Building introspection files on Windows requires BUILD_SHARED_LIBS to be enabled.
+-- Enabling segment heap for target: pui_vulkan_tests
+-- Enabling segment heap for target: pui_vulkan_external_tests
+-- Enabling segment heap for target: pui_vulkan_cache_tests
+-- Enabling segment heap for target: pui_vulkan_interaction_tests
+-- Enabling segment heap for target: pui_vulkan_fault_tests
+-- Enabling segment heap for target: pui_vulkan_internal_tests
+-- Enabling segment heap for target: pui_vulkan_command_tests
+-- Enabling segment heap for target: pui_vulkan_binning_tests
+-- Enabling segment heap for target: pui_vulkan_workgroup_tests
+-- Enabling segment heap for target: pui_vulkan_program_tests
+-- Enabling segment heap for target: pui_vulkan_numeric_probe
+-- Enabling segment heap for target: pui_vulkan_compute_tests
+-- Enabling segment heap for target: pui_vulkan_sdf_tests
+-- Enabling segment heap for target: pui_vulkan_sdf_cache_tests
+-- Enabling segment heap for target: pui_vulkan_sdf_interaction_tests
+-- Enabling segment heap for target: pui_harfbuzz_tests
+-- Enabling segment heap for target: pui_harfbuzz_interaction_tests
+-- Enabling segment heap for target: pui_vulkan_kawase_interaction_tests
+-- Enabling segment heap for target: pui_vulkan_preparation_tests
+-- Enabling segment heap for target: pui_vulkan_memory_role_tests
+-- Enabling segment heap for target: pui_vulkan_kawase_spiral_tests
+-- Enabling segment heap for target: pui_vulkan_spiral_binning_tests
+-- Enabling segment heap for target: pui_vulkan_wsi_tests
+-- Enabling segment heap for target: pui_vulkan_present_stage_tests
+-- Enabling segment heap for target: pui_vulkan_showcase_tests
+-- Enabling segment heap for target: pui_vulkan_example_validation_tests
+-- Enabling segment heap for target: pui_vulkan_spiral_tests
+-- Enabling segment heap for target: pui_vulkan_compute_spiral_tests
+-- Enabling segment heap for target: pui_vulkan_retained_spiral_tests
+-- Enabling segment heap for target: pui_vulkan_painter_bench
+-- Enabling segment heap for target: pui_vulkan_program_bench
+-- Enabling segment heap for target: pui_vulkan_kawase_bench
+-- Enabling segment heap for target: pui_core_tests
+-- Enabling segment heap for target: pui_bench
+-- Enabling segment heap for target: pui_core_bench
+-- Enabling segment heap for target: pui_perf_tests
+-- Enabling segment heap for target: pui_memory_tests
+-- Enabling segment heap for target: pui_preparation_tests
+-- Enabling segment heap for target: pui_pump_tests
+-- Enabling segment heap for target: pui_perf_pixels
+-- Enabling segment heap for target: pui_core_perf_pixels
+-- Enabling segment heap for target: pui_showcase_tests
+-- Enabling segment heap for target: pui_golden_tests
+-- Enabling segment heap for target: pui_counter
+-- Enabling segment heap for target: pui_demo
+-- Enabling segment heap for target: pui_ex_hello
+-- Enabling segment heap for target: pui_ex_bootstrap
+-- Enabling segment heap for target: pui_ex_rect
+-- Enabling segment heap for target: pui_ex_cursors
+-- Enabling segment heap for target: pui_ex_tracks
+-- Enabling segment heap for target: pui_ex_grid
+-- Enabling segment heap for target: pui_ex_ids
+-- Enabling segment heap for target: pui_ex_text
+-- Enabling segment heap for target: pui_ex_buttons
+-- Enabling segment heap for target: pui_ex_inputs
+-- Enabling segment heap for target: pui_ex_widgets
+-- Enabling segment heap for target: pui_ex_panels
+-- Enabling segment heap for target: pui_ex_scroll
+-- Enabling segment heap for target: pui_ex_popups
+-- Enabling segment heap for target: pui_ex_dock
+-- Enabling segment heap for target: pui_ex_windows
+-- Enabling segment heap for target: pui_ex_drawing
+-- Enabling segment heap for target: pui_ex_blur
+-- Enabling segment heap for target: pui_ex_animation
+-- Enabling segment heap for target: pui_ex_theme
+-- Enabling segment heap for target: pui_ex_custom
+-- Enabling segment heap for target: pui_ex_patterns
+-- Enabling segment heap for target: pui_ex_expander
+-- Enabling segment heap for target: pui_ex_combo
+-- Enabling segment heap for target: pui_ex_keyboard
+-- Enabling segment heap for target: pui_ex_components
+-- Enabling segment heap for target: pui_ex_vlist
+-- Enabling segment heap for target: pui_ex_overflow
+-- Enabling segment heap for target: pui_ex_relayout
+-- Enabling segment heap for target: pui_ex_controls
+-- Enabling segment heap for target: pui_ex_tables
+-- Enabling segment heap for target: pui_ex_tree
+-- Enabling segment heap for target: pui_ex_numeric
+-- Enabling segment heap for target: pui_ex_colors
+-- Enabling segment heap for target: pui_ex_dpi
+-- Enabling segment heap for target: pui_ex_files
+-- Enabling segment heap for target: pui_ex_textarea
+-- Enabling segment heap for target: pui_ex_a11y
+-- Enabling segment heap for target: pui_ex_pickers
+-- Enabling segment heap for target: pui_ex_headless
+-- Enabling segment heap for target: pui_ex_renderer
+-- Enabling segment heap for target: pui_tour
+-- Enabling segment heap for target: pui_showcase
+-- Enabling segment heap for target: pui_showcase_vulkan
+-- Enabling segment heap for target: pui_ex_vulkan
+-- Enabling segment heap for target: pui_ex_vulkan_painter
+-- Enabling segment heap for target: pui_ex_vulkan_blur
+-- Enabling segment heap for target: pui_tut_step01_window
+-- Enabling segment heap for target: pui_tut_step01_shot
+-- Enabling segment heap for target: pui_tut_button_states
+-- Enabling segment heap for target: pui_tut_step02_layout
+-- Enabling segment heap for target: pui_tut_step03_tasks
+-- Enabling segment heap for target: pui_tut_step04_filters
+-- Enabling segment heap for target: pui_tut_step05_glass
+-- Enabling segment heap for target: pui_tut_step06_motion
+-- Enabling segment heap for target: pui_tut_todo
+-- Enabling segment heap for target: pui_tut_todo_test
+-- Configuring done (0.9s)
+-- Generating done (0.5s)
+-- Build files have been written to: D:/myimgui/out/build/x64-release
+
+==== build (pui_core_tests, pui_pump_tests, pui_perf_tests, pui_memory_tests, pui_preparation_tests, pui_showcase_tests, pui_vulkan_tests, pui_vulkan_external_tests, pui_vulkan_cache_tests, pui_vulkan_interaction_tests, pui_vulkan_fault_tests, pui_vulkan_internal_tests, pui_vulkan_command_tests, pui_vulkan_binning_tests, pui_vulkan_workgroup_tests, pui_vulkan_program_tests, pui_vulkan_compute_tests, pui_vulkan_sdf_tests, pui_vulkan_sdf_cache_tests, pui_vulkan_sdf_interaction_tests, pui_harfbuzz_tests, pui_harfbuzz_interaction_tests, pui_vulkan_kawase_interaction_tests, pui_vulkan_preparation_tests, pui_vulkan_memory_role_tests, pui_vulkan_kawase_spiral_tests, pui_vulkan_spiral_binning_tests, pui_vulkan_wsi_tests, pui_vulkan_present_stage_tests, pui_vulkan_showcase_tests, pui_vulkan_example_validation_tests, pui_vulkan_spiral_tests, pui_vulkan_compute_spiral_tests, pui_vulkan_retained_spiral_tests, pui_vulkan_program_bench, pui_golden_tests, pui_perf_pixels, pui_core_perf_pixels)
+[0/2] Re-checking globbed directories...
+[1/334] Building CXX object vendored\SDL\CMakeFiles\SDL3-static.dir\cmake_pch.cxx.obj
+[2/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\cmake_pch.c.obj
+[3/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL.c.obj
+[4/334] Building CXX object vendored\SDL\CMakeFiles\SDL3-static.dir\src\core\windows\SDL_gameinput.cpp.obj
+[5/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_assert.c.obj
+[6/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_error.c.obj
+[7/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_guid.c.obj
+[8/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_hashtable.c.obj
+[9/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_hints.c.obj
+[10/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_list.c.obj
+[11/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_properties.c.obj
+[12/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_utils.c.obj
+[13/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_log.c.obj
+[14/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\atomic\SDL_atomic.c.obj
+[15/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\atomic\SDL_spinlock.c.obj
+[16/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\SDL_audio.c.obj
+[17/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\SDL_audiocvt.c.obj
+[18/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\SDL_audiodev.c.obj
+[19/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\SDL_audioqueue.c.obj
+[20/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\SDL_audioresample.c.obj
+[21/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\SDL_audiotypecvt.c.obj
+[22/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\SDL_mixer.c.obj
+[23/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\SDL_wave.c.obj
+[24/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\core\SDL_core_unsupported.c.obj
+[25/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\camera\SDL_camera.c.obj
+[26/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_categories.c.obj
+[27/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\cpuinfo\SDL_cpuinfo.c.obj
+[28/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_clipboardevents.c.obj
+[29/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_displayevents.c.obj
+[30/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_dropevents.c.obj
+[31/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_eventwatch.c.obj
+[32/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_keyboard.c.obj
+[33/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_events.c.obj
+[34/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_keymap.c.obj
+[35/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_keysym_to_keycode.c.obj
+[36/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_keysym_to_scancode.c.obj
+[37/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_pen.c.obj
+[38/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_quit.c.obj
+[39/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_mouse.c.obj
+[40/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_scancode_tables.c.obj
+[41/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_touch.c.obj
+[42/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_windowevents.c.obj
+[43/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\imKStoUCS.c.obj
+[44/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\filesystem\SDL_filesystem.c.obj
+[45/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\gpu\xr\SDL_gpu_openxr.c.obj
+[46/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\gpu\SDL_gpu.c.obj
+[47/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\haptic\SDL_haptic.c.obj
+[48/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\gpu\xr\SDL_openxrdyn.c.obj
+[49/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\io\SDL_asyncio.c.obj
+[50/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\hidapi\SDL_hidapi.c.obj
+[51/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\io\SDL_iostream.c.obj
+[52/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\io\generic\SDL_asyncio_generic.c.obj
+[53/334] Building CXX object CMakeFiles\pufferui.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'argument': conversion from 'std::basic_string_view<char,std::char_traits<char>>::size_type' to 'pui::f32', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'pui::usize', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'const pui::usize', possible loss of data
+[54/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\SDL_gamepad.c.obj
+[55/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\SDL_joystick.c.obj
+[56/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\SDL_steam_virtual_gamepad.c.obj
+[57/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\locale\SDL_locale.c.obj
+[58/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\controller_type.c.obj
+[59/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\main\SDL_main_callbacks.c.obj
+[60/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\main\SDL_runapp.c.obj
+[61/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\misc\SDL_libusb.c.obj
+[62/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\misc\SDL_url.c.obj
+[63/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\power\SDL_power.c.obj
+[64/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\SDL_render_unsupported.c.obj
+[65/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\SDL_render.c.obj
+[66/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\SDL_yuv_sw.c.obj
+[67/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\direct3d\SDL_shaders_d3d.c.obj
+[68/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\direct3d\SDL_render_d3d.c.obj
+[69/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\__\__\pufferui-sdl\SDL_render_d3d11.c.obj
+[70/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\direct3d11\SDL_shaders_d3d11.c.obj
+[71/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\gpu\SDL_pipeline_gpu.c.obj
+[72/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\direct3d12\SDL_render_d3d12.c.obj
+[73/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\direct3d12\SDL_shaders_d3d12.c.obj
+[74/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\gpu\SDL_render_gpu.c.obj
+[75/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\ngage\SDL_render_ngage.c.obj
+[76/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\gpu\SDL_shaders_gpu.c.obj
+[77/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\opengles\SDL_render_gles.c.obj
+[78/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\opengles2\SDL_render_gles2.c.obj
+[79/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\opengl\SDL_render_gl.c.obj
+[80/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\opengl\SDL_shaders_gl.c.obj
+[81/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\opengles2\SDL_shaders_gles2.c.obj
+[82/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\ps2\SDL_render_ps2.c.obj
+[83/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\psp\SDL_render_psp.c.obj
+[84/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\software\SDL_blendfillrect.c.obj
+[85/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\software\SDL_blendline.c.obj
+[86/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\software\SDL_blendpoint.c.obj
+[87/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\software\SDL_drawline.c.obj
+[88/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\software\SDL_drawpoint.c.obj
+[89/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\software\SDL_render_sw.c.obj
+[90/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\vitagxm\SDL_render_vita_gxm.c.obj
+[91/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\software\SDL_triangle.c.obj
+[92/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\vitagxm\SDL_render_vita_gxm_memory.c.obj
+[93/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\vitagxm\SDL_render_vita_gxm_tools.c.obj
+[94/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\vulkan\SDL_shaders_vulkan.c.obj
+[95/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\sensor\SDL_sensor.c.obj
+[96/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_crc16.c.obj
+[97/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_crc32.c.obj
+[98/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_iconv.c.obj
+[99/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\vulkan\SDL_render_vulkan.c.obj
+[100/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_malloc.c.obj
+[101/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_getenv.c.obj
+[102/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_memcpy.c.obj
+[103/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_memmove.c.obj
+[104/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_memset.c.obj
+[105/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_mslibc.c.obj
+cl : Command line warning D9025 : overriding '/GL' with '/GL-'
+D:\myimgui\vendored\SDL\src\stdlib\SDL_mslibc.c: warning C4652: compiler option 'link-time code generation (/GL)' inconsistent with precompiled header; current command-line option will override that defined in the precompiled header
+[106/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_murmur3.c.obj
+[107/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_qsort.c.obj
+[108/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_random.c.obj
+[109/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_stdlib.c.obj
+[110/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_strtokr.c.obj
+[111/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_string.c.obj
+[112/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\storage\SDL_storage.c.obj
+[113/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\time\SDL_time.c.obj
+[114/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_RLEaccel.c.obj
+[115/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\SDL_thread.c.obj
+[116/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_blit.c.obj
+[117/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\timer\SDL_timer.c.obj
+[118/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_blit_0.c.obj
+[119/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_blit_1.c.obj
+[120/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_blit_A.c.obj
+[121/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_blit_N.c.obj
+[122/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_blit_auto.c.obj
+[123/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_blit_copy.c.obj
+[124/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_blit_slow.c.obj
+[125/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_bmp.c.obj
+[126/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_clipboard.c.obj
+[127/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_fillrect.c.obj
+[128/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_pixels.c.obj
+[129/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_rect.c.obj
+[130/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_rotate.c.obj
+[131/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_egl.c.obj
+[132/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_stretch.c.obj
+[133/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_stb.c.obj
+[134/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_surface.c.obj
+[135/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_video_unsupported.c.obj
+[136/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_yuv.c.obj
+[137/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\yuv2rgb\yuv_rgb_lsx.c.obj
+[138/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_video.c.obj
+[139/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\yuv2rgb\yuv_rgb_sse.c.obj
+[140/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_vulkan_utils.c.obj
+[141/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\yuv2rgb\yuv_rgb_std.c.obj
+[142/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\e_atan2.c.obj
+[143/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\e_exp.c.obj
+[144/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\e_fmod.c.obj
+[145/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\e_log.c.obj
+[146/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\e_log10.c.obj
+[147/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\e_pow.c.obj
+[148/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\e_rem_pio2.c.obj
+[149/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\e_sqrt.c.obj
+[150/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\k_cos.c.obj
+[151/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\k_rem_pio2.c.obj
+[152/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\k_sin.c.obj
+[153/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\k_tan.c.obj
+[154/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_atan.c.obj
+[155/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_copysign.c.obj
+[156/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_cos.c.obj
+[157/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_fabs.c.obj
+[158/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_floor.c.obj
+[159/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_isinf.c.obj
+[160/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_isinff.c.obj
+[161/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_isnan.c.obj
+[162/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_isnanf.c.obj
+[163/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_modf.c.obj
+[164/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_scalbn.c.obj
+[165/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_sin.c.obj
+[166/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_tan.c.obj
+[167/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\dummy\SDL_dummyaudio.c.obj
+[168/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\disk\SDL_diskaudio.c.obj
+[169/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\camera\dummy\SDL_camera_dummy.c.obj
+[170/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\virtual\SDL_virtualjoystick.c.obj
+[171/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\dummy\SDL_nullevents.c.obj
+[172/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\dummy\SDL_nullframebuffer.c.obj
+[173/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\dummy\SDL_nullvideo.c.obj
+[174/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\core\windows\SDL_hid.c.obj
+[175/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\core\windows\SDL_immdevice.c.obj
+[176/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\core\windows\SDL_windows.c.obj
+[177/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\core\windows\pch.c.obj
+[178/334] Building CXX object vendored\SDL\CMakeFiles\SDL3-static.dir\src\core\windows\pch_cpp.cpp.obj
+[179/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\io\windows\SDL_asyncio_windows_ioring.c.obj
+[180/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\core\windows\SDL_xinput.c.obj
+[181/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\main\windows\SDL_sysmain_runapp.c.obj
+[182/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\misc\windows\SDL_sysurl.c.obj
+[183/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\directsound\SDL_directsound.c.obj
+[184/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\wasapi\SDL_wasapi.c.obj
+[185/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsclipboard.c.obj
+[186/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsevents.c.obj
+[187/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsframebuffer.c.obj
+[188/334] Building CXX object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsgameinput.cpp.obj
+[189/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowskeyboard.c.obj
+[190/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsmessagebox.c.obj
+[191/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsmodes.c.obj
+[192/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsmouse.c.obj
+[193/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsopengl.c.obj
+[194/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsopengles.c.obj
+[195/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsrawinput.c.obj
+[196/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsshape.c.obj
+[197/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsvulkan.c.obj
+[198/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsvideo.c.obj
+[199/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowswindow.c.obj
+[200/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\generic\SDL_syscond.c.obj
+[201/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\generic\SDL_sysrwlock.c.obj
+[202/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\windows\SDL_syscond_cv.c.obj
+[203/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\windows\SDL_sysmutex.c.obj
+[204/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\windows\SDL_sysrwlock_srw.c.obj
+[205/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\windows\SDL_syssem.c.obj
+[206/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\windows\SDL_systhread.c.obj
+[207/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\windows\SDL_systls.c.obj
+[208/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\power\windows\SDL_syspower.c.obj
+[209/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\locale\windows\SDL_syslocale.c.obj
+[210/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\sensor\windows\SDL_windowssensor.c.obj
+[211/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\storage\generic\SDL_genericstorage.c.obj
+[212/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\storage\steam\SDL_steamstorage.c.obj
+[213/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\filesystem\windows\SDL_sysfsops.c.obj
+[214/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\filesystem\windows\SDL_sysfilesystem.c.obj
+[215/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\time\windows\SDL_systime.c.obj
+[216/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\timer\windows\SDL_systimer.c.obj
+[217/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_8bitdo.c.obj
+[218/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\loadso\windows\SDL_sysloadso.c.obj
+[219/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_combined.c.obj
+[220/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\tray\windows\SDL_tray.c.obj
+[221/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_flydigi.c.obj
+[222/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_gamecube.c.obj
+[223/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_gip.c.obj
+[224/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_lg4ff.c.obj
+[225/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_luna.c.obj
+[226/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_ps3.c.obj
+[227/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_ps4.c.obj
+[228/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_ps5.c.obj
+[229/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_shield.c.obj
+[230/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_gamesir.c.obj
+[231/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_sinput.c.obj
+[232/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_stadia.c.obj
+[233/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_rumble.c.obj
+[234/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_steam.c.obj
+[235/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_steam_hori.c.obj
+[236/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_steam_triton.c.obj
+[237/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_steamdeck.c.obj
+[238/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_switch.c.obj
+[239/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_switch2.c.obj
+[240/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_wii.c.obj
+[241/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_xbox360.c.obj
+[242/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_xbox360w.c.obj
+[243/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_xboxone.c.obj
+[244/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_zuiki.c.obj
+[245/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_report_descriptor.c.obj
+[246/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\haptic\hidapi\SDL_hidapihaptic.c.obj
+[247/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\haptic\hidapi\SDL_hidapihaptic_lg4ff.c.obj
+[248/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapijoystick.c.obj
+[249/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\windows\SDL_dinputjoystick.c.obj
+[250/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\windows\SDL_windowsjoystick.c.obj
+[251/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\windows\SDL_xinputjoystick.c.obj
+[252/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\windows\SDL_rawinputjoystick.c.obj
+[253/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\windows\SDL_windows_gaming_input.c.obj
+[254/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\haptic\windows\SDL_dinputhaptic.c.obj
+[255/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\haptic\windows\SDL_windowshaptic.c.obj
+[256/334] Building CXX object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\gdk\SDL_gameinputjoystick.cpp.obj
+[257/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\dialog\SDL_dialog.c.obj
+[258/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\dialog\SDL_dialog_utils.c.obj
+[259/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\process\SDL_process.c.obj
+[260/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\camera\mediafoundation\SDL_camera_mediafoundation.c.obj
+[261/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\process\windows\SDL_windowsprocess.c.obj
+[262/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\offscreen\SDL_offscreenevents.c.obj
+[263/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\offscreen\SDL_offscreenframebuffer.c.obj
+[264/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\dialog\windows\SDL_windowsdialog.c.obj
+[265/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\offscreen\SDL_offscreenopengles.c.obj
+[266/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\offscreen\SDL_offscreenvideo.c.obj
+[267/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\offscreen\SDL_offscreenvulkan.c.obj
+[268/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\tray\SDL_tray_utils.c.obj
+[269/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\offscreen\SDL_offscreenwindow.c.obj
+[270/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\gpu\vulkan\SDL_gpu_vulkan.c.obj
+[271/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\main\generic\SDL_sysmain_callbacks.c.obj
+[272/334] Linking CXX static library pufferui.lib
+[273/334] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\gpu\d3d12\SDL_gpu_d3d12.c.obj
+[274/334] Linking CXX static library vendored\SDL\SDL3-static.lib
+[275/334] Building CXX object CMakeFiles\pufferui_sdl3.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'argument': conversion from 'std::basic_string_view<char,std::char_traits<char>>::size_type' to 'pui::f32', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'pui::usize', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'const pui::usize', possible loss of data
+[276/334] Linking CXX static library pufferui_sdl3.lib
+[277/334] Building CXX object CMakeFiles\pui_vulkan_internal_tests.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'argument': conversion from 'std::basic_string_view<char,std::char_traits<char>>::size_type' to 'pui::f32', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'pui::usize', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'const pui::usize', possible loss of data
+[278/334] Building CXX object CMakeFiles\pui_vulkan_command_tests.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'argument': conversion from 'std::basic_string_view<char,std::char_traits<char>>::size_type' to 'pui::f32', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'pui::usize', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'const pui::usize', possible loss of data
+[279/334] Building CXX object CMakeFiles\pui_vulkan_binning_tests.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'argument': conversion from 'std::basic_string_view<char,std::char_traits<char>>::size_type' to 'pui::f32', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'pui::usize', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'const pui::usize', possible loss of data
+[280/334] Building CXX object CMakeFiles\pui_vulkan_workgroup_tests.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'argument': conversion from 'std::basic_string_view<char,std::char_traits<char>>::size_type' to 'pui::f32', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'pui::usize', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'const pui::usize', possible loss of data
+[281/334] Building CXX object CMakeFiles\pui_vulkan_compute_tests.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'argument': conversion from 'std::basic_string_view<char,std::char_traits<char>>::size_type' to 'pui::f32', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'pui::usize', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'const pui::usize', possible loss of data
+[282/334] Building CXX object CMakeFiles\pui_vulkan_sdf_cache_tests.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'argument': conversion from 'std::basic_string_view<char,std::char_traits<char>>::size_type' to 'pui::f32', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'pui::usize', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'const pui::usize', possible loss of data
+[283/334] Building CXX object CMakeFiles\pui_vulkan_preparation_tests.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'argument': conversion from 'std::basic_string_view<char,std::char_traits<char>>::size_type' to 'pui::f32', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'pui::usize', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'const pui::usize', possible loss of data
+D:\myimgui\examples\example_common.h(399): warning C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\myimgui\examples\showcase_trace.h(129): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[284/334] Building CXX object CMakeFiles\pui_vulkan_memory_role_tests.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'argument': conversion from 'std::basic_string_view<char,std::char_traits<char>>::size_type' to 'pui::f32', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'pui::usize', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'const pui::usize', possible loss of data
+D:\myimgui\examples\example_common.h(399): warning C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\myimgui\examples\showcase_trace.h(129): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[285/334] Building CXX object CMakeFiles\pui_vulkan_kawase_spiral_tests.dir\tests\test_vulkan_kawase_spiral.cpp.obj
+D:\myimgui\examples\example_common.h(399): warning C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\myimgui\examples\showcase_trace.h(129): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[286/334] Building CXX object CMakeFiles\pui_vulkan_showcase_tests.dir\tests\test_vulkan_showcase.cpp.obj
+D:\myimgui\examples\example_common.h(399): warning C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\myimgui\examples\showcase_trace.h(129): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[287/334] Building CXX object CMakeFiles\pui_vulkan_spiral_tests.dir\tests\test_vulkan_spiral.cpp.obj
+D:\myimgui\examples\example_common.h(399): warning C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\myimgui\examples\showcase_trace.h(129): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[288/334] Building CXX object CMakeFiles\pui_vulkan_spiral_binning_tests.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'argument': conversion from 'std::basic_string_view<char,std::char_traits<char>>::size_type' to 'pui::f32', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'pui::usize', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'const pui::usize', possible loss of data
+D:\myimgui\examples\example_common.h(399): warning C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\myimgui\examples\showcase_trace.h(129): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[289/334] Building CXX object CMakeFiles\pui_vulkan_compute_spiral_tests.dir\tests\test_vulkan_compute_spiral.cpp.obj
+D:\myimgui\examples\example_common.h(399): warning C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\myimgui\examples\showcase_trace.h(129): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[290/334] Building CXX object CMakeFiles\pui_vulkan_retained_spiral_tests.dir\tests\test_vulkan_retained_spiral.cpp.obj
+D:\myimgui\examples\example_common.h(399): warning C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\myimgui\examples\showcase_trace.h(129): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[291/334] Building CXX object CMakeFiles\pui_vulkan_program_bench.dir\tests\bench_vulkan_program.cpp.obj
+D:\myimgui\examples\example_common.h(399): warning C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\myimgui\examples\showcase_trace.h(129): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[292/334] Building CXX object CMakeFiles\pui_perf_tests.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'argument': conversion from 'std::basic_string_view<char,std::char_traits<char>>::size_type' to 'pui::f32', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'pui::usize', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'const pui::usize', possible loss of data
+[293/334] Building CXX object CMakeFiles\pui_memory_tests.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'argument': conversion from 'std::basic_string_view<char,std::char_traits<char>>::size_type' to 'pui::f32', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'pui::usize', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'const pui::usize', possible loss of data
+[294/334] Building CXX object CMakeFiles\pui_preparation_tests.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'argument': conversion from 'std::basic_string_view<char,std::char_traits<char>>::size_type' to 'pui::f32', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'pui::usize', possible loss of data
+D:\myimgui\include\pufferui\impl/chrome_scroll.inl(441): warning C4244: 'initializing': conversion from 'pui::f32' to 'const pui::usize', possible loss of data
+D:\myimgui\examples\showcase_trace.h(129): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[295/334] Building CXX object CMakeFiles\pui_showcase_tests.dir\tests\test_showcase.cpp.obj
+D:\myimgui\examples\showcase_trace.h(129): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[296/334] Linking CXX executable Release\pui_vulkan_tests.exe
+[297/334] Linking CXX executable Release\pui_vulkan_interaction_tests.exe
+[298/334] Linking CXX executable Release\pui_vulkan_fault_tests.exe
+[299/334] Linking CXX executable Release\pui_vulkan_external_tests.exe
+[300/334] Linking CXX executable Release\pui_vulkan_cache_tests.exe
+[301/334] Linking CXX executable Release\pui_vulkan_internal_tests.exe
+[302/334] Linking CXX executable Release\pui_vulkan_workgroup_tests.exe
+[303/334] Linking CXX executable Release\pui_vulkan_program_tests.exe
+[304/334] Linking CXX executable Release\pui_vulkan_command_tests.exe
+[305/334] Linking CXX executable Release\pui_vulkan_binning_tests.exe
+[306/334] Linking CXX executable Release\pui_vulkan_compute_tests.exe
+[307/334] Linking CXX executable Release\pui_vulkan_sdf_interaction_tests.exe
+[308/334] Linking CXX executable Release\pui_harfbuzz_tests.exe
+[309/334] Linking CXX executable Release\pui_vulkan_sdf_tests.exe
+[310/334] Linking CXX executable Release\pui_vulkan_sdf_cache_tests.exe
+[311/334] Linking CXX executable Release\pui_harfbuzz_interaction_tests.exe
+[312/334] Linking CXX executable Release\pui_vulkan_memory_role_tests.exe
+[313/334] Linking CXX executable Release\pui_vulkan_kawase_spiral_tests.exe
+[314/334] Linking CXX executable Release\pui_vulkan_kawase_interaction_tests.exe
+[315/334] Linking CXX executable Release\pui_vulkan_preparation_tests.exe
+[316/334] Linking CXX executable Release\pui_vulkan_spiral_binning_tests.exe
+[317/334] Linking CXX executable Release\pui_vulkan_showcase_tests.exe
+[318/334] Linking CXX executable Release\pui_vulkan_wsi_tests.exe
+[319/334] Linking CXX executable Release\pui_vulkan_example_validation_tests.exe
+[320/334] Linking CXX executable Release\pui_vulkan_present_stage_tests.exe
+[321/334] Linking CXX executable Release\pui_vulkan_spiral_tests.exe
+[322/334] Linking CXX executable Release\pui_vulkan_program_bench.exe
+[323/334] Linking CXX executable Release\pui_core_tests.exe
+[324/334] Linking CXX executable Release\pui_perf_tests.exe
+[325/334] Linking CXX executable Release\pui_memory_tests.exe
+[326/334] Linking CXX executable Release\pui_preparation_tests.exe
+[327/334] Linking CXX executable Release\pui_vulkan_compute_spiral_tests.exe
+[328/334] Linking CXX executable Release\pui_pump_tests.exe
+[329/334] Linking CXX executable Release\pui_vulkan_retained_spiral_tests.exe
+[330/334] Linking CXX executable Release\pui_core_perf_pixels.exe
+[331/334] Linking CXX executable Release\pui_golden_tests.exe
+[332/334] Linking CXX executable Release\pui_perf_pixels.exe
+[333/334] Linking CXX executable Release\pui_showcase_tests.exe
+
+==== core tests
+all core tests passed
+
+==== performance regressions
+all performance regression tests passed (23 tests)
+
+==== memory performance regressions
+all memory performance regressions passed (12 tests)
+
+==== geometry preparation regressions
+all geometry preparation regressions passed (7 tests)
+
+==== showcase regressions
+showcase trace rows=8 dropped=12 final_frame_unobserved=1
+showcase trace rows=8 dropped=9991 final_frame_unobserved=1
+showcase trace rows=0 dropped=0 final_frame_unobserved=0
+showcase trace rows=0 dropped=0 final_frame_unobserved=0
+showcase trace rows=2 dropped=0 final_frame_unobserved=1
+all showcase regressions passed (22 tests)
+
+==== pump tests (SDL event routing)
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+all pump tests passed
+
+==== Python tool regressions
+..................Vulkan device: test discrete
+.....
+----------------------------------------------------------------------
+Ran 23 tests in 0.148s
+
+OK
+
+==== Vulkan pui_vulkan_tests
+Vulkan device initialized, queue family 0
+all Vulkan conformance tests passed
+Vulkan device initialized, queue family 0
+all Vulkan conformance tests passed
+
+==== Vulkan pui_vulkan_external_tests
+all Vulkan external image tests passed
+all Vulkan external image tests passed
+all Vulkan external image tests passed
+all Vulkan external image tests passed
+
+==== Vulkan pui_vulkan_cache_tests
+all 43 Vulkan cache/reference frames matched exactly
+
+==== Vulkan pui_vulkan_interaction_tests
+all 180 native interaction cache/reference frames matched
+
+==== Vulkan pui_vulkan_interaction_tests --staged
+all 180 native interaction cache/reference frames matched
+
+==== Vulkan pui_vulkan_fault_tests
+all Vulkan fault injection tests passed
+
+==== Vulkan pui_vulkan_internal_tests
+all Vulkan internal regressions passed (5 tests)
+
+==== Vulkan pui_vulkan_command_tests
+all GPU command regressions passed (11 tests)
+
+==== Vulkan pui_vulkan_binning_tests
+all GPU binning regressions passed (3 tests)
+
+==== Vulkan pui_vulkan_workgroup_tests
+all GPU binning regressions passed (10 tests)
+
+==== Vulkan pui_vulkan_program_tests
+all GPU binning regressions passed (23 tests)
+
+==== Vulkan pui_vulkan_compute_tests
+all actual compute painter regressions passed (2 tests)
+
+==== Vulkan pui_vulkan_sdf_tests
+all SDF batching, legacy isolation and slot regressions passed
+
+==== Vulkan pui_vulkan_sdf_cache_tests
+all GPU SDF cache regressions passed
+
+==== Vulkan pui_vulkan_sdf_interaction_tests
+all 180 native interaction cache/reference frames matched
+
+==== Vulkan pui_vulkan_sdf_interaction_tests --staged
+all 180 native interaction cache/reference frames matched
+
+==== Vulkan pui_harfbuzz_tests
+all HarfBuzz shaping, ligature, Arabic, Slug GPU and reuse regressions passed
+
+==== Vulkan pui_harfbuzz_interaction_tests
+all 180 HarfBuzz/Slug field, scroll, DPI, gamma, popup and recreation frames matched
+
+==== Vulkan pui_harfbuzz_interaction_tests --staged
+all 180 HarfBuzz/Slug field, scroll, DPI, gamma, popup and recreation frames matched
+
+==== Vulkan pui_vulkan_kawase_interaction_tests
+all 180 HarfBuzz/Slug field, scroll, DPI, gamma, popup and recreation frames matched
+
+==== Vulkan pui_vulkan_kawase_interaction_tests --staged
+all 180 HarfBuzz/Slug field, scroll, DPI, gamma, popup and recreation frames matched
+
+==== Vulkan pui_vulkan_preparation_tests
+prepared arena capacity=5013504 peak=9758408 current=2475808
+prepared arena capacity=5013504 peak=9612036 current=2474244
+resident upload=25559040 metadata=52239144 images=27353344 glyph_bytes=149152 glyph_batches=2366
+prepared arena capacity=5013504 peak=9758408 current=2475808
+prepared arena capacity=5013504 peak=9612036 current=2474244
+resident upload=51118080 metadata=52239144 images=27353344 glyph_bytes=149152 glyph_batches=2366
+resident upload=25559040 metadata=33948200 images=7168256 glyph_bytes=149152 glyph_batches=2366
+all native resource preparation regressions passed
+
+==== Vulkan pui_vulkan_memory_role_tests
+prepared arena capacity=5013504 peak=9758408 current=2475808
+prepared arena capacity=5013504 peak=9612036 current=2474244
+resident upload=25559040 metadata=52239144 images=27353344 glyph_bytes=149152 glyph_batches=2366
+prepared arena capacity=5013504 peak=9758408 current=2475808
+prepared arena capacity=5013504 peak=9612036 current=2474244
+resident upload=51118080 metadata=52239144 images=27353344 glyph_bytes=149152 glyph_batches=2366
+resident upload=25559040 metadata=33948200 images=7168256 glyph_bytes=149152 glyph_batches=2366
+role work=4789824/5013504 input=4144384/5013504 readable=989040/1114112
+role work=4711548/5013504 input=4076288/5013504 readable=989040/1114112
+all native resource preparation regressions passed
+
+==== Vulkan pui_vulkan_kawase_spiral_tests
+all 180 Kawase 5000-item raster/cache frames matched (direct)
+frame,fnv1a64
+0,a98c9ee7a53e2e6d
+1,cb224852dfbd53bc
+2,74ca2e3e5668fa36
+3,93102609243ef541
+4,e8906708f20faea2
+5,ead76f567e48c52f
+6,06717c8152115f9c
+7,576786f54f2fdcda
+8,f6268bbd82d68514
+9,6f478eb9dd007058
+10,9a9479c50eacef9b
+11,ec27871be5110abf
+12,611660e05315dd72
+13,9357b66ea080f79d
+14,15792ac982f878b0
+15,fe6ee4c3c29fdf09
+16,c770222cf82ac06d
+17,70b4894d00634187
+18,2b4aa0f22ba67e38
+19,a9313c8bcc20d91d
+20,020db7783d1be745
+21,20c14861e29d29c0
+22,5c8f09e946be8285
+23,0572fe2fba653cca
+24,4aa751ad0d5ba34a
+25,4f28d73056e5220d
+26,7aff9787469fdf6c
+27,1c1aef5772a4b7f3
+28,e6d0f4ef676b8742
+29,f964b33eff0f626e
+30,88712c9b8b355a3e
+31,f710cd222c036a69
+32,b532926bf9fd4de9
+33,b24984147ab91770
+34,14a1a2e2e28604e8
+35,17cda299f6460e95
+36,47eeee2ae74c9df4
+37,fb871b49ab40a420
+38,de84a57c2c3bf7d6
+39,af5f37f132815ed3
+40,268fcbaab6829c2d
+41,af50e5228329c352
+42,566faa99d9e03f1a
+43,978ba5880df45597
+44,a5234d2b11258f12
+45,6d89db091d06c45c
+46,bba1517917378acc
+47,8d3dbbb6a7d4ead2
+48,386212360f509793
+49,8050e3ebcd34051a
+50,e2dcbdd33e7cfa86
+51,bdd96d3931a78c81
+52,a5815893d8b0600e
+53,e825c3006bffed52
+54,cd488eb2075c9bb6
+55,06aa2d926b7a5f8d
+56,afb29450bff73d4a
+57,0134eb15a5128c16
+58,f23fe7cd734af694
+59,348fb1544c88faef
+60,d61e53db72bcc77b
+61,6956804d30f092bf
+62,28d5c6ee24a09c0d
+63,55d1990c22faa3cd
+64,1388124d06ebd778
+65,e0ebeaa39eef6c2d
+66,2c8184d5c2245da0
+67,826509a3ee0b9762
+68,18774abe0f1afa26
+69,7f87b014275abdc3
+70,0eb805ca67d353b6
+71,8ba8d9965735e6e4
+72,e0794c2be3655e23
+73,1453149042d8d9fa
+74,564c5336b769c076
+75,b9293843fee483f7
+76,90aac63f011d30fa
+77,b0afd379de9b919b
+78,7529bd29f1dba125
+79,52f7ec37a3a88296
+80,cce800d1373e4fad
+81,000f62a4f5124b38
+82,7378059173f3e530
+83,d66518cb2fbd9092
+84,fa57abd9a671fc44
+85,5c938147adfbeac8
+86,54718df5079ca55c
+87,f1bc5488d716bb2d
+88,42723325b02ccc27
+89,602361ac00f1856f
+90,322ba47a4c51a820
+91,e1abff90776a3c1e
+92,04ba32b6ac2c4473
+93,f3b00a00c2be4e7c
+94,8e3414c6cbf1cd4b
+95,4f8f6a7cdc37f42b
+96,503cfc2c7bbbe43e
+97,f905854496ae1f54
+98,f4d6f806affa84a9
+99,8987d73879673e59
+100,067b3a66fe933097
+101,86139b897ef5e788
+102,fcd34822be06d1ab
+103,c9d72615d3988a94
+104,ef86243c34caed43
+105,c444f241d1cefbf2
+106,89c18d93ad12d3b2
+107,cccee2d0a6c2ead3
+108,881f013d48873a90
+109,282b9e3ca08bd112
+110,9b29f0addb1b6bf3
+111,37600e0f2996919d
+112,c930f0313f390fa2
+113,cdcd967fa5af0c91
+114,4bfa4c60be4635ad
+115,e2db589b0870e9f9
+116,8f52176d24f4df84
+117,c39542ebf5095f15
+118,0ab71c8c0700ed7d
+119,38e57580ade23ad7
+120,5aff3e8c4a1f23fe
+121,cb3e322da7d4e969
+122,dd97201e32b495ee
+123,7a70260d2f951090
+124,4fdd1f109b01b486
+125,580190ffd9491aa4
+126,1fb55cf252f5d8e3
+127,ff6120422b2095b9
+128,6d13c69895ebb33f
+129,12fecbe47f7aa1bd
+130,d9ce27701fef4874
+131,a246fc0b090a1c3e
+132,778cf8182cf5debf
+133,418ba2b58ad0e767
+134,6c6b7ae1013c822d
+135,ec75cd0232c384aa
+136,f267828fa197ab82
+137,64947690c49d9e09
+138,626c2df576cd0f62
+139,e427df120af3ae14
+140,e4cffdda15b089b5
+141,cfdab15f5c4ef5be
+142,0a099ce31121f4d0
+143,237556690ba575fc
+144,f2dffb84a7a0ac8f
+145,3afc1e1f68c92f9d
+146,ef31b1c8ebe6df03
+147,4a7be564ba52e4c0
+148,9bb9a405930817ca
+149,b9e3a4ea0944dd53
+150,37a6a9ad3999090f
+151,34ae7b885d24d0a6
+152,b8637d52f1893bc9
+153,2e4927e26e130566
+154,a04e37a3c28072ed
+155,838d06fe3c8592df
+156,59c64dc21bef4c78
+157,5ef1e6ff2a78a0a1
+158,09d0d2d3a3f9380c
+159,eba144ba159be45c
+160,145cff888e0421e3
+161,b0881b479af9bf8b
+162,6140ce9b9269a77e
+163,3408a974080c11b6
+164,e55012760f290552
+165,3b7ea574d0a6eb6c
+166,7e29ce99a1853514
+167,e904a013b3f590a9
+168,5e35e6df0091fad4
+169,7210b4bc07d45c72
+170,e58c0d5a4251eadb
+171,ddf2e3c2321c83c2
+172,600a80af2923f9ce
+173,051ecd27a66aa9a9
+174,533818eb5875da20
+175,d49665ac9910adda
+176,61988241081f7c0b
+177,150223ba74e7a3a3
+178,0a4b98289e8d785c
+179,367f831ef73e138e
+
+==== Vulkan pui_vulkan_kawase_spiral_tests --staged
+all 180 Kawase 5000-item raster/cache frames matched (staged)
+frame,fnv1a64
+0,a98c9ee7a53e2e6d
+1,cb224852dfbd53bc
+2,74ca2e3e5668fa36
+3,93102609243ef541
+4,e8906708f20faea2
+5,ead76f567e48c52f
+6,06717c8152115f9c
+7,576786f54f2fdcda
+8,f6268bbd82d68514
+9,6f478eb9dd007058
+10,9a9479c50eacef9b
+11,ec27871be5110abf
+12,611660e05315dd72
+13,9357b66ea080f79d
+14,15792ac982f878b0
+15,fe6ee4c3c29fdf09
+16,c770222cf82ac06d
+17,70b4894d00634187
+18,2b4aa0f22ba67e38
+19,a9313c8bcc20d91d
+20,020db7783d1be745
+21,20c14861e29d29c0
+22,5c8f09e946be8285
+23,0572fe2fba653cca
+24,4aa751ad0d5ba34a
+25,4f28d73056e5220d
+26,7aff9787469fdf6c
+27,1c1aef5772a4b7f3
+28,e6d0f4ef676b8742
+29,f964b33eff0f626e
+30,88712c9b8b355a3e
+31,f710cd222c036a69
+32,b532926bf9fd4de9
+33,b24984147ab91770
+34,14a1a2e2e28604e8
+35,17cda299f6460e95
+36,47eeee2ae74c9df4
+37,fb871b49ab40a420
+38,de84a57c2c3bf7d6
+39,af5f37f132815ed3
+40,268fcbaab6829c2d
+41,af50e5228329c352
+42,566faa99d9e03f1a
+43,978ba5880df45597
+44,a5234d2b11258f12
+45,6d89db091d06c45c
+46,bba1517917378acc
+47,8d3dbbb6a7d4ead2
+48,386212360f509793
+49,8050e3ebcd34051a
+50,e2dcbdd33e7cfa86
+51,bdd96d3931a78c81
+52,a5815893d8b0600e
+53,e825c3006bffed52
+54,cd488eb2075c9bb6
+55,06aa2d926b7a5f8d
+56,afb29450bff73d4a
+57,0134eb15a5128c16
+58,f23fe7cd734af694
+59,348fb1544c88faef
+60,d61e53db72bcc77b
+61,6956804d30f092bf
+62,28d5c6ee24a09c0d
+63,55d1990c22faa3cd
+64,1388124d06ebd778
+65,e0ebeaa39eef6c2d
+66,2c8184d5c2245da0
+67,826509a3ee0b9762
+68,18774abe0f1afa26
+69,7f87b014275abdc3
+70,0eb805ca67d353b6
+71,8ba8d9965735e6e4
+72,e0794c2be3655e23
+73,1453149042d8d9fa
+74,564c5336b769c076
+75,b9293843fee483f7
+76,90aac63f011d30fa
+77,b0afd379de9b919b
+78,7529bd29f1dba125
+79,52f7ec37a3a88296
+80,cce800d1373e4fad
+81,000f62a4f5124b38
+82,7378059173f3e530
+83,d66518cb2fbd9092
+84,fa57abd9a671fc44
+85,5c938147adfbeac8
+86,54718df5079ca55c
+87,f1bc5488d716bb2d
+88,42723325b02ccc27
+89,602361ac00f1856f
+90,322ba47a4c51a820
+91,e1abff90776a3c1e
+92,04ba32b6ac2c4473
+93,f3b00a00c2be4e7c
+94,8e3414c6cbf1cd4b
+95,4f8f6a7cdc37f42b
+96,503cfc2c7bbbe43e
+97,f905854496ae1f54
+98,f4d6f806affa84a9
+99,8987d73879673e59
+100,067b3a66fe933097
+101,86139b897ef5e788
+102,fcd34822be06d1ab
+103,c9d72615d3988a94
+104,ef86243c34caed43
+105,c444f241d1cefbf2
+106,89c18d93ad12d3b2
+107,cccee2d0a6c2ead3
+108,881f013d48873a90
+109,282b9e3ca08bd112
+110,9b29f0addb1b6bf3
+111,37600e0f2996919d
+112,c930f0313f390fa2
+113,cdcd967fa5af0c91
+114,4bfa4c60be4635ad
+115,e2db589b0870e9f9
+116,8f52176d24f4df84
+117,c39542ebf5095f15
+118,0ab71c8c0700ed7d
+119,38e57580ade23ad7
+120,5aff3e8c4a1f23fe
+121,cb3e322da7d4e969
+122,dd97201e32b495ee
+123,7a70260d2f951090
+124,4fdd1f109b01b486
+125,580190ffd9491aa4
+126,1fb55cf252f5d8e3
+127,ff6120422b2095b9
+128,6d13c69895ebb33f
+129,12fecbe47f7aa1bd
+130,d9ce27701fef4874
+131,a246fc0b090a1c3e
+132,778cf8182cf5debf
+133,418ba2b58ad0e767
+134,6c6b7ae1013c822d
+135,ec75cd0232c384aa
+136,f267828fa197ab82
+137,64947690c49d9e09
+138,626c2df576cd0f62
+139,e427df120af3ae14
+140,e4cffdda15b089b5
+141,cfdab15f5c4ef5be
+142,0a099ce31121f4d0
+143,237556690ba575fc
+144,f2dffb84a7a0ac8f
+145,3afc1e1f68c92f9d
+146,ef31b1c8ebe6df03
+147,4a7be564ba52e4c0
+148,9bb9a405930817ca
+149,b9e3a4ea0944dd53
+150,37a6a9ad3999090f
+151,34ae7b885d24d0a6
+152,b8637d52f1893bc9
+153,2e4927e26e130566
+154,a04e37a3c28072ed
+155,838d06fe3c8592df
+156,59c64dc21bef4c78
+157,5ef1e6ff2a78a0a1
+158,09d0d2d3a3f9380c
+159,eba144ba159be45c
+160,145cff888e0421e3
+161,b0881b479af9bf8b
+162,6140ce9b9269a77e
+163,3408a974080c11b6
+164,e55012760f290552
+165,3b7ea574d0a6eb6c
+166,7e29ce99a1853514
+167,e904a013b3f590a9
+168,5e35e6df0091fad4
+169,7210b4bc07d45c72
+170,e58c0d5a4251eadb
+171,ddf2e3c2321c83c2
+172,600a80af2923f9ce
+173,051ecd27a66aa9a9
+174,533818eb5875da20
+175,d49665ac9910adda
+176,61988241081f7c0b
+177,150223ba74e7a3a3
+178,0a4b98289e8d785c
+179,367f831ef73e138e
+
+==== Vulkan pui_vulkan_spiral_binning_tests
+frame=0 legacy=284/3141 rect=1042/4168 rounded=129/9417 (commands/vertices)
+frame=0 commands=1455 tile_indices=11120 exact ordered match
+frame=90 legacy=1541/37895 rect=981/3924 rounded=3691/269443 (commands/vertices)
+frame=90 commands=6213 tile_indices=28002 exact ordered match
+frame=120 legacy=1648/41157 rect=981/3924 rounded=4033/294409 (commands/vertices)
+frame=120 commands=6662 tile_indices=29970 exact ordered match
+frame=127 legacy=8186/230929 rect=981/3924 rounded=23686/1729078 (commands/vertices)
+frame=127 commands=32853 tile_indices=113664 exact ordered match
+frame=150 legacy=1584/39182 rect=981/3924 rounded=3807/277911 (commands/vertices)
+frame=150 commands=6372 tile_indices=28494 exact ordered match
+frame=179 legacy=1548/38205 rect=981/3924 rounded=3711/270903 (commands/vertices)
+frame=179 commands=6240 tile_indices=28048 exact ordered match
+all actual 5000-item Spiral GPU binning/peak regressions passed
+
+==== Vulkan pui_vulkan_wsi_tests
+all Vulkan SDL WSI tests passed
+
+==== Vulkan pui_vulkan_present_stage_tests
+acquire waits=16 barriers=16 broad_wait=0 broad_barrier=0
+all native presentation stage and exact pixel regressions passed
+
+==== Vulkan pui_vulkan_showcase_tests
+ok   Vulkan showcase startup
+all Vulkan showcase startup/vsync tests passed
+
+==== Vulkan pui_vulkan_example_validation_tests
+ok   Vulkan validation configuration
+ok   Vulkan validation configuration
+ok   Vulkan validation configuration
+ok   Vulkan validation configuration
+ok   Vulkan validation configuration
+all Vulkan example validation configuration tests passed
+
+==== Vulkan pui_vulkan_spiral_tests
+device=AMD Radeon RX 9070 XT vendor=4098 device=30032 driver=8389024 windowed=0 cache=0 validation=1 staged=0
+all 180 Vulkan Spiral cache/reference frames matched (1150 tiles + three Adds)
+
+==== Vulkan pui_vulkan_spiral_tests --tiles 5000
+device=AMD Radeon RX 9070 XT vendor=4098 device=30032 driver=8389024 windowed=0 cache=0 validation=1 staged=0
+all 180 Vulkan Spiral cache/reference frames matched (5000 tiles + three Adds)
+
+==== Vulkan pui_vulkan_spiral_tests --tiles 1150 --upload-reference
+device=AMD Radeon RX 9070 XT vendor=4098 device=30032 driver=8389024 windowed=0 cache=0 validation=1 staged=0
+all 180 Vulkan Spiral upload/reference frames matched (1150 tiles + three Adds)
+
+==== Vulkan pui_vulkan_spiral_tests --tiles 5000 --upload-reference
+device=AMD Radeon RX 9070 XT vendor=4098 device=30032 driver=8389024 windowed=0 cache=0 validation=1 staged=0
+all 180 Vulkan Spiral upload/reference frames matched (5000 tiles + three Adds)
+
+==== Vulkan pui_vulkan_spiral_tests --tiles 1150 --staged
+device=AMD Radeon RX 9070 XT vendor=4098 device=30032 driver=8389024 windowed=0 cache=0 validation=1 staged=1
+all 180 Vulkan Spiral cache/reference frames matched (1150 tiles + three Adds)
+
+==== Vulkan pui_vulkan_spiral_tests --tiles 5000 --staged
+device=AMD Radeon RX 9070 XT vendor=4098 device=30032 driver=8389024 windowed=0 cache=0 validation=1 staged=1
+all 180 Vulkan Spiral cache/reference frames matched (5000 tiles + three Adds)
+
+==== Vulkan pui_vulkan_compute_spiral_tests
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=0 gpu_pixels=0 vertex_requests=71000754 metadata_peak=0
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=0 cached_pixels=0 avoided_vertices=0
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=71000754 metadata_peak=0
+variant=1 shadow_commands=1362324 shadow_bytes=2795051448 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=0
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_compute_spiral_tests --tiles 1150
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=1150
+variant=0 gpu_batches=0 gpu_pixels=0 vertex_requests=64131760 metadata_peak=0
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=0 cached_pixels=0 avoided_vertices=0
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=64131760 metadata_peak=0
+variant=1 shadow_commands=1252982 shadow_bytes=2526340152 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=0
+all 180 1150-item Spiral frames matched
+
+==== Vulkan pui_vulkan_compute_spiral_tests --compute --cache
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=933 gpu_pixels=46107662 vertex_requests=5943645 metadata_peak=52239144
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=206123 cached_pixels=305736 avoided_vertices=65345884
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5942621 metadata_peak=0
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_retained_spiral_tests
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=0 gpu_pixels=0 vertex_requests=71000754 metadata_peak=0
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=0 cached_pixels=0 avoided_vertices=0
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=71000754 metadata_peak=0
+variant=1 shadow_commands=1362324 shadow_bytes=2795051448 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=0
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_retained_spiral_tests --compute --cache
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=933 gpu_pixels=46107662 vertex_requests=5943645 metadata_peak=56917672
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=206123 cached_pixels=305736 avoided_vertices=65345884
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5942621 metadata_peak=4678528
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_retained_spiral_tests --compute --cache --staged
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=933 gpu_pixels=46107662 vertex_requests=5943645 metadata_peak=56917672
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=206123 cached_pixels=305736 avoided_vertices=65345884
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5942621 metadata_peak=4678528
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_program_bench
+device=AMD Radeon RX 9070 XT driver=8389024 mode=0 cache=0 vector=0 hidden_wsi=1
+idle=0 local=0 vsync=0 calibration_ms=0.000000
+actual_present_mode=0 model_vsync=0 applied_vsync=0
+frame,count,total_ms,draws,vertices,indices,upload_bytes,slot_wait_ms,present_ms,completed_gpu_ms,gpu_samples,compute_pixels,cached_pixels,metadata_bytes,readbacks,begin_ms,build_ms,end_ms,sdf_prepare_ms,sdf_record_ms,sdf_new_jobs,sdf_batches,sdf_bypasses,actual_draws,program_hits,focused,visible,image_bytes,live_textures,descriptor_sets,upload_resident_bytes,draw_memory_allocations,draw_resource_creations,glyph_upload_bytes,program_probes,program_probe_pixels
+0,5000,37.554300,11,16726,58290,822456,1.464500,7.010600,0.004000,1,0,0,0,0,18.582100,11.878000,7.094200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,2097152,0,0,0,0,0
+1,5000,8.313400,14,285019,1219008,14016648,0.000000,0.226700,0.546000,2,0,0,0,0,0.243300,7.767000,0.303100,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,16471520,2,0,0,0,0
+2,5000,4.981200,14,302784,1261404,14754216,0.011700,0.089000,0.000000,0,0,0,0,0,0.056500,4.764500,0.160200,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,30515104,1,0,0,0,0
+3,5000,4.973600,14,298874,1245306,14554908,0.005300,0.085400,0.601000,1,0,0,0,0,0.043500,4.765300,0.164800,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,44371624,1,0,0,0,0
+4,5000,3.472900,14,293846,1224006,14306932,0.005800,0.064300,0.601600,1,0,0,0,0,0.036300,3.305400,0.131200,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,44371624,0,0,0,0,0
+5,5000,3.687300,14,290925,1210896,14180288,0.004500,0.064100,0.576600,1,0,0,0,0,0.031000,3.522300,0.134000,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,44371624,0,0,0,0,0
+6,5000,4.925200,14,328878,1387398,16088380,0.004600,0.121300,0.542120,1,0,0,0,0,0.030000,4.706100,0.189100,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,59747096,1,0,0,0,0
+7,5000,4.905300,14,326710,1378548,15977360,0.005800,0.117500,0.638000,1,0,0,0,0,0.043100,4.674600,0.187600,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,1,0,0,0,0
+8,5000,3.707500,14,324004,1367220,15845836,0.005700,0.119100,0.603360,1,0,0,0,0,0.041500,3.424000,0.242000,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+9,5000,3.545000,14,320891,1354164,15691452,0.005700,0.094100,0.590600,1,0,0,0,0,0.041800,3.329000,0.174200,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+10,5000,3.526100,14,318832,1345830,15591560,0.005400,0.100800,0.574520,1,0,0,0,0,0.039600,3.331300,0.155200,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+11,5000,3.609400,14,317847,1341036,15540416,0.005100,0.119000,0.551960,1,0,0,0,0,0.045500,3.314500,0.249400,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+12,5000,3.581600,14,317271,1338456,15511920,0.007600,0.114500,0.551360,1,0,0,0,0,0.046400,3.340000,0.195200,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+13,5000,3.678600,14,317240,1338456,15510780,0.005600,0.269900,0.595320,1,0,0,0,0,0.041600,3.304700,0.332300,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+14,5000,3.906500,14,317195,1338378,15509368,0.007100,0.476800,0.550960,1,0,0,0,0,0.045800,3.318300,0.542400,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+15,5000,3.956700,14,316434,1335282,15472184,0.009700,0.417700,0.554840,1,0,0,0,0,0.067800,3.402900,0.486000,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+16,5000,3.717800,14,315394,1330440,15419536,0.008700,0.111600,0.547720,1,0,0,0,0,0.066000,3.471400,0.180400,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+17,5000,3.421000,14,314411,1326270,15371400,0.005700,0.085000,0.538200,1,0,0,0,0,0.045700,3.236000,0.139300,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+18,5000,3.453200,14,314119,1325322,15358264,0.004400,0.083000,0.544040,1,0,0,0,0,0.040000,3.283200,0.130000,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+19,5000,3.511500,14,313524,1322580,15330196,0.004600,0.093200,0.537440,1,0,0,0,0,0.037200,3.329400,0.144900,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+20,5000,3.622300,14,313251,1321446,15314984,0.004200,0.111200,0.532800,1,0,0,0,0,0.036000,3.405400,0.180900,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+21,5000,3.493500,14,312552,1318050,15279032,0.006100,0.114200,0.562520,1,0,0,0,0,0.040600,3.267400,0.185500,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+22,5000,3.510100,14,311764,1314642,15240184,0.005800,0.111900,0.666400,1,0,0,0,0,0.045600,3.284400,0.180100,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+23,5000,3.433200,14,311501,1313778,15228312,0.006000,0.088100,0.547160,1,0,0,0,0,0.047500,3.244400,0.141300,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+24,5000,3.537600,14,311516,1313934,15229416,0.004800,0.112300,0.537360,1,0,0,0,0,0.039900,3.319300,0.178400,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+25,5000,3.677900,14,311227,1313208,15217264,0.005600,0.120400,0.525360,1,0,0,0,0,0.047200,3.404800,0.225900,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+26,5000,3.654400,14,311694,1315236,15240320,0.005200,0.214500,0.533240,1,0,0,0,0,0.045000,3.291700,0.317700,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+27,5000,3.457200,14,311928,1316364,15252320,0.007200,0.091700,0.707000,1,0,0,0,0,0.051700,3.254200,0.151300,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+28,5000,3.502600,14,312103,1317096,15260848,0.004600,0.121300,0.531960,1,0,0,0,0,0.040200,3.310700,0.151700,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+29,5000,3.409800,14,312190,1317348,15264640,0.004500,0.089300,0.529400,1,0,0,0,0,0.040300,3.227500,0.142000,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+30,5000,3.407700,13,312361,1318074,15271800,0.004400,0.085000,0.530080,1,0,0,0,0,0.036800,3.233300,0.137600,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+31,5000,3.390900,13,312477,1318410,15276856,0.004100,0.077900,0.530560,1,0,0,0,0,0.036700,3.224400,0.129800,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+32,5000,3.529400,13,312638,1319214,15285224,0.144900,0.085100,0.493920,1,0,0,0,0,0.176900,3.215800,0.136700,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+33,5000,3.535600,13,312492,1318566,15277960,0.004400,0.123900,0.486400,1,0,0,0,0,0.035400,3.313200,0.187000,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+34,5000,3.420800,13,312755,1319778,15291224,0.005600,0.089500,0.485760,1,0,0,0,0,0.043500,3.234500,0.142800,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+35,5000,3.397600,13,312653,1319370,15286328,0.004200,0.084800,0.488880,1,0,0,0,0,0.041200,3.219700,0.136700,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+36,5000,3.409700,13,312638,1319214,15285224,0.004700,0.092800,0.484200,1,0,0,0,0,0.042000,3.223700,0.144000,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+37,5000,3.493500,13,312857,1320186,15296120,0.004200,0.110500,0.483760,1,0,0,0,0,0.035900,3.268500,0.189100,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+38,5000,3.618800,13,312813,1319946,15293752,0.005700,0.115700,0.488280,1,0,0,0,0,0.041500,3.390100,0.187200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+39,5000,3.444700,13,312565,1318890,15281592,0.006200,0.091400,0.487200,1,0,0,0,0,0.042200,3.234400,0.168100,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+40,5000,3.466300,13,312784,1319862,15292488,0.004300,0.093400,0.494120,1,0,0,0,0,0.039700,3.278500,0.148100,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+41,5000,3.420400,13,313076,1321158,15307016,0.004700,0.083300,0.576400,1,0,0,0,0,0.042100,3.239500,0.138800,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+42,5000,3.702300,13,313164,1321638,15311752,0.004500,0.117600,0.488760,1,0,0,0,0,0.037800,3.475300,0.189200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+43,5000,3.508700,13,313441,1322778,15325176,0.006600,0.118500,0.492320,1,0,0,0,0,0.041700,3.285800,0.181200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+44,5000,3.452700,13,313558,1323342,15331176,0.005400,0.105900,0.486640,1,0,0,0,0,0.043100,3.243100,0.166500,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+45,5000,3.456800,13,313646,1323822,15335912,0.006400,0.106600,0.487600,1,0,0,0,0,0.043500,3.243400,0.169900,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+46,5000,3.584200,13,313733,1324074,15339704,0.091400,0.114900,0.674000,1,0,0,0,0,0.133300,3.264600,0.186300,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+47,5000,3.432800,13,313806,1324398,15343336,0.006300,0.089700,0.485640,1,0,0,0,0,0.042200,3.247800,0.142800,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+48,5000,3.399900,13,313412,1322694,15323912,0.004400,0.086200,0.493560,1,0,0,0,0,0.037200,3.234400,0.128300,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+49,5000,3.557200,13,313120,1321398,15309384,0.004100,0.121000,0.483200,1,0,0,0,0,0.036100,3.230400,0.290700,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+50,5000,3.428200,13,313237,1321962,15315384,0.005000,0.089800,0.489680,1,0,0,0,0,0.043400,3.242800,0.142000,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+51,5000,3.742500,13,313223,1322034,15315224,0.004300,0.118100,0.489400,1,0,0,0,0,0.034000,3.520400,0.188100,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+52,5000,3.406500,13,313150,1321710,15311592,0.005900,0.081400,0.500800,1,0,0,0,0,0.042300,3.230000,0.134200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+53,5000,3.572300,13,313004,1321062,15304328,0.004200,0.089100,0.487680,1,0,0,0,0,0.028100,3.229600,0.314600,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+54,5000,3.410900,13,312741,1319850,15291064,0.004300,0.089600,0.489400,1,0,0,0,0,0.037400,3.231000,0.142500,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+55,5000,3.495700,13,312391,1318386,15274008,0.004300,0.098600,0.494120,1,0,0,0,0,0.036100,3.304900,0.154700,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+56,5000,3.392200,13,312362,1318302,15272744,0.004700,0.088000,0.486160,1,0,0,0,0,0.038000,3.213000,0.141200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+57,5000,3.412000,13,312260,1317894,15267848,0.004400,0.097200,0.490720,1,0,0,0,0,0.034700,3.226400,0.150900,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+58,5000,3.419600,13,312639,1319442,15286168,0.004300,0.085900,0.483480,1,0,0,0,0,0.042700,3.238700,0.138200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+59,5000,3.403400,13,312420,1318470,15275272,0.004200,0.086300,0.481520,1,0,0,0,0,0.040000,3.224400,0.139000,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+60,5000,3.665000,13,312055,1316850,15257112,0.004700,0.113000,0.573080,1,0,0,0,0,0.039000,3.446700,0.179300,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+61,5000,3.412300,13,311719,1315314,15240216,0.005600,0.089300,0.491240,1,0,0,0,0,0.045800,3.222800,0.143700,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+62,5000,3.361100,13,311923,1316130,15250008,0.004400,0.091600,0.486400,1,0,0,0,0,0.040000,3.187600,0.133500,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+63,5000,3.389400,13,311865,1315962,15247480,0.004500,0.087100,0.482960,1,0,0,0,0,0.036700,3.218600,0.134100,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+64,5000,3.559000,13,311748,1315398,15241480,0.004700,0.114900,0.488600,1,0,0,0,0,0.036100,3.341400,0.181500,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+65,5000,3.496600,13,311456,1314102,15226952,0.005800,0.115900,0.698480,1,0,0,0,0,0.044200,3.268800,0.183600,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+66,5000,3.442200,13,311383,1313778,15223320,0.005800,0.090600,0.495440,1,0,0,0,0,0.041100,3.258100,0.143000,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+67,5000,3.410000,13,311383,1313778,15223320,0.004600,0.085900,0.482080,1,0,0,0,0,0.036700,3.246200,0.127100,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+68,5000,3.526400,13,311485,1314186,15228216,0.004300,0.083500,0.485600,1,0,0,0,0,0.040700,3.260800,0.224900,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+69,5000,3.768300,13,311368,1313622,15222216,0.005100,0.117000,0.481200,1,0,0,0,0,0.032300,3.381500,0.354500,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+70,5000,3.493400,13,311295,1313298,15218584,0.006400,0.091600,0.758280,1,0,0,0,0,0.042000,3.306800,0.144600,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+71,5000,3.492400,13,311543,1314354,15230744,0.004100,0.082700,0.485560,1,0,0,0,0,0.035500,3.293200,0.163700,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+72,5000,3.520600,13,311645,1314762,15235640,0.004300,0.079600,0.485480,1,0,0,0,0,0.028600,3.360100,0.131900,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+73,5000,3.691500,13,311864,1315734,15246536,0.112200,0.115500,0.508400,1,0,0,0,0,0.144100,3.359500,0.187900,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+74,5000,3.533500,13,312010,1316382,15253800,0.005700,0.086200,0.492560,1,0,0,0,0,0.049800,3.305300,0.178400,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+75,5000,3.483400,13,312302,1317678,15268328,0.004400,0.086500,0.486360,1,0,0,0,0,0.036800,3.307200,0.139400,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+76,5000,3.483900,13,312273,1317594,15267064,0.005300,0.087200,0.487320,1,0,0,0,0,0.043700,3.308700,0.131500,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+77,5000,3.560600,13,312273,1317594,15267064,0.004300,0.108800,0.479960,1,0,0,0,0,0.037500,3.346500,0.176600,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+78,5000,3.493100,13,312404,1318086,15273224,0.005700,0.086400,0.505720,1,0,0,0,0,0.044200,3.309400,0.139500,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+79,5000,3.487200,13,312448,1318326,15275592,0.004200,0.080500,0.614520,1,0,0,0,0,0.039700,3.315600,0.131900,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+80,5000,3.485000,13,312200,1317270,15263432,0.004100,0.085500,0.495080,1,0,0,0,0,0.040000,3.307800,0.137200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+81,5000,3.481000,13,312521,1318650,15279224,0.004200,0.089400,0.486840,1,0,0,0,0,0.037300,3.311300,0.132400,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+82,5000,3.643500,13,312419,1318242,15274328,0.004500,0.107800,0.483360,1,0,0,0,0,0.041500,3.383000,0.219000,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+83,5000,3.501000,13,311894,1316046,15248744,0.005800,0.081500,0.481720,1,0,0,0,0,0.052600,3.313100,0.135300,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+84,5000,3.602100,13,311923,1316130,15250008,0.138500,0.082500,0.669280,1,0,0,0,0,0.168900,3.299500,0.133700,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+85,5000,3.524500,13,311763,1315554,15242584,0.004100,0.110000,0.483480,1,0,0,0,0,0.035300,3.313400,0.175800,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+86,5000,3.599700,13,311588,1314822,15234056,0.005700,0.118900,0.486520,1,0,0,0,0,0.043800,3.375300,0.180600,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+87,5000,3.641500,13,311778,1315710,15243688,0.004800,0.116700,0.486240,1,0,0,0,0,0.041500,3.343200,0.256800,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+88,5000,3.640500,13,311529,1314426,15230584,0.004700,0.084300,0.494800,1,0,0,0,0,0.039900,3.295000,0.305600,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+89,5000,3.464100,13,311237,1313130,15216056,0.004000,0.083000,0.486320,1,0,0,0,0,0.037000,3.290200,0.136900,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+90,5001,3.607200,13,311262,1313322,15217624,0.004200,0.119600,0.581400,1,0,0,0,0,0.036800,3.381200,0.189200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+91,5001,3.582200,13,311247,1313166,15217024,0.006300,0.096400,0.488480,1,0,0,0,0,0.039200,3.390500,0.152500,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+92,5001,3.497200,13,311115,1312446,15209416,0.005300,0.086300,0.488400,1,0,0,0,0,0.039400,3.317700,0.140100,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+93,5001,3.486100,13,311175,1312800,15212752,0.004500,0.088100,0.489320,1,0,0,0,0,0.044400,3.300800,0.140900,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+94,5001,3.466300,13,311605,1314708,15234144,0.004200,0.080600,0.490240,1,0,0,0,0,0.035800,3.298300,0.132200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,75028832,0,0,0,0,0
+95,5001,5.471200,13,369501,1561968,18075856,0.004000,0.116700,0.484000,1,0,0,0,0,0.036900,5.251400,0.182900,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,92382104,1,0,0,0,0
+96,5001,7.506300,13,530521,2249760,25979664,0.005800,0.115300,0.482680,1,0,0,0,0,0.043000,7.284200,0.179100,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,117639184,1,0,0,0,0
+97,5001,8.759300,13,647452,2745492,31704384,0.005700,0.126300,0.551360,1,0,0,0,0,0.041300,8.524700,0.193300,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,148620184,1,0,0,0,0
+98,5001,7.925100,13,627443,2661336,30727472,0.005600,0.116000,0.699000,1,0,0,0,0,0.042200,7.695200,0.187700,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,1,0,0,0,0
+99,5001,4.641400,13,464553,1968240,22742608,0.005700,0.111700,0.811920,1,0,0,0,0,0.041900,4.414300,0.185200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+100,5001,3.905400,13,369461,1562016,18074768,0.005500,0.097100,0.784760,1,0,0,0,0,0.042200,3.711000,0.152200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+101,5001,3.632100,13,321405,1356864,15716368,0.004500,0.118100,0.643640,1,0,0,0,0,0.036300,3.422400,0.173400,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+102,5001,3.713600,13,311352,1313676,15221920,0.004700,0.126100,0.552840,1,0,0,0,0,0.043000,3.305200,0.365400,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+103,5001,3.611500,13,311498,1314324,15229184,0.005000,0.142000,0.498720,1,0,0,0,0,0.039300,3.359100,0.213100,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+104,5001,3.554400,13,311848,1315788,15246240,0.005900,0.123300,0.485080,1,0,0,0,0,0.043700,3.331900,0.178800,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+105,5001,3.507000,13,312111,1317000,15259504,0.004400,0.107900,0.487160,1,0,0,0,0,0.037100,3.308400,0.161500,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+106,5001,3.446500,13,312551,1318944,15281360,0.004100,0.110100,0.486920,1,0,0,0,0,0.033200,3.250700,0.162600,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+107,5001,3.526200,13,312697,1319592,15288624,0.004600,0.134800,0.567800,1,0,0,0,0,0.040300,3.278200,0.207700,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+108,5001,3.480200,13,312872,1320324,15297152,0.005600,0.114200,0.493160,1,0,0,0,0,0.048800,3.263100,0.168300,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+109,5001,3.441500,13,313281,1322184,15317680,0.004300,0.107900,0.483680,1,0,0,0,0,0.040600,3.251400,0.149500,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+110,5001,3.615100,13,313412,1322676,15323840,0.004300,0.107600,0.484480,1,0,0,0,0,0.039300,3.256800,0.319000,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+111,5001,3.948300,13,313441,1322760,15325104,0.013200,0.552000,0.487320,1,0,0,0,0,0.049000,3.278100,0.621200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+112,5001,3.617900,13,313470,1322844,15326368,0.019000,0.141000,1.169800,2,0,0,0,0,0.062900,3.345400,0.209600,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+113,5001,3.490300,13,313456,1322916,15326208,0.005900,0.112600,0.000000,0,0,0,0,0,0.034700,3.289800,0.165800,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+114,5001,3.476100,13,313558,1323324,15331104,0.004400,0.114700,0.496800,1,0,0,0,0,0.038200,3.281500,0.156400,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+115,5001,3.509300,13,313660,1323732,15336000,0.004800,0.115100,0.483240,1,0,0,0,0,0.037400,3.302400,0.169500,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+116,5001,3.725200,13,313412,1322676,15323840,0.004900,0.140800,0.490360,1,0,0,0,0,0.041200,3.392900,0.291100,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+117,5001,3.940800,13,313499,1322928,15327632,0.005700,0.143800,0.490200,1,0,0,0,0,0.038700,3.686700,0.215400,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+118,5001,3.486900,13,313455,1322688,15325264,0.006100,0.113800,0.603760,1,0,0,0,0,0.036500,3.283900,0.166500,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+119,5001,3.478600,13,313397,1322520,15322736,0.004200,0.112000,0.488440,1,0,0,0,0,0.036400,3.278600,0.163600,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+120,5002,3.947800,13,339490,1433904,16603248,0.004700,0.144700,0.487360,1,0,0,0,0,0.179200,3.559900,0.208700,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+121,5002,4.276900,13,401520,1698216,19645960,0.005400,0.220500,0.888280,1,0,0,0,0,0.041100,3.960300,0.275500,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+122,5002,5.029700,13,507783,2150754,24856024,0.008900,0.189900,0.516360,1,0,0,0,0,0.065300,4.714900,0.249500,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,178623472,0,0,0,0,0
+123,5002,9.452000,13,685901,2910300,33593984,0.010100,0.284200,0.577080,1,0,0,0,0,0.070000,8.986700,0.395300,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,211490640,1,0,0,0,0
+124,5002,12.416500,13,972933,4132920,47669488,0.007500,0.307600,0.680040,1,0,0,0,0,0.049900,11.999200,0.367400,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,258433712,1,0,0,0,0
+125,5002,19.366200,13,1400343,5953614,68629384,0.030300,0.376200,0.848600,1,0,0,0,0,0.068300,18.826300,0.471600,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,192617432,1,0,0,0,0
+126,5002,25.767100,13,1807739,7688088,88603952,0.016600,0.194800,1.134800,1,0,0,0,0,0.066700,25.413200,0.287200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,88929944,2,0,0,0,0
+127,5002,24.203400,13,1963931,8351448,96255536,0.005700,0.409800,1.620520,1,0,0,0,0,0.055600,23.639600,0.508200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,185510672,2,0,0,0,0
+128,5002,23.430000,13,1930602,8210364,94624672,0.020700,0.193200,2.174520,1,0,0,0,0,0.068800,23.072600,0.288600,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,182830432,1,0,0,0,0
+129,5002,20.280500,13,1705670,7253940,83601152,0.006300,0.200900,2.050360,1,0,0,0,0,0.061800,19.923500,0.295200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,2,0,0,0,0
+130,5002,11.927300,13,1392590,5920860,68250272,0.007200,0.181700,2.035080,1,0,0,0,0,0.059800,11.594200,0.273300,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+131,5002,9.298300,13,1106996,4704756,54246848,0.007900,0.135700,2.061280,1,0,0,0,0,0.065900,9.021500,0.210900,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+132,5002,7.796100,13,893816,3796092,43790432,0.005100,0.155600,1.509960,1,0,0,0,0,0.047800,7.510600,0.237700,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+133,5002,6.714100,13,747260,3171468,36602144,0.006500,0.230100,1.254240,1,0,0,0,0,0.054700,6.319000,0.340400,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+134,5002,5.840800,13,642527,2725056,31465040,0.005100,0.147700,1.150080,1,0,0,0,0,0.038900,5.582000,0.219900,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+135,5002,5.237600,13,567002,2403084,27760352,0.006100,0.119900,1.081200,1,0,0,0,0,0.046000,5.014400,0.177200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+136,5002,4.825600,13,512633,2171880,25095728,0.004400,0.115900,0.804120,1,0,0,0,0,0.037800,4.614900,0.172900,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+137,5002,4.700000,13,470834,1993524,23044736,0.004700,0.162400,0.726200,1,0,0,0,0,0.034100,4.389100,0.276800,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+138,5002,4.330600,13,438549,1855776,21460624,0.006000,0.109900,0.888520,1,0,0,0,0,0.046400,4.119400,0.164800,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+139,5002,4.125000,13,411560,1740684,20136608,0.004500,0.111100,0.642560,1,0,0,0,0,0.035800,3.924300,0.164900,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+140,5002,4.011100,13,390365,1650816,19098896,0.004000,0.114900,0.611800,1,0,0,0,0,0.040800,3.802600,0.167700,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+141,5002,3.864000,13,376285,1590336,18406416,0.004000,0.110900,0.575600,1,0,0,0,0,0.038200,3.664800,0.161000,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+142,5002,3.775000,13,364703,1541256,17839472,0.004000,0.104300,0.561880,1,0,0,0,0,0.036800,3.591000,0.147200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+143,5002,3.720800,13,353513,1493424,17290064,0.004100,0.101800,0.542120,1,0,0,0,0,0.038100,3.510700,0.172000,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+144,5002,3.761300,13,345534,1459620,16899520,0.003900,0.234300,0.535320,1,0,0,0,0,0.038800,3.448300,0.274200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+145,5002,3.728800,13,339160,1432260,16586112,0.008800,0.131100,0.529800,1,0,0,0,0,0.073700,3.460300,0.194800,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+146,5002,3.671700,13,332857,1405680,16278096,0.005000,0.113200,0.731520,1,0,0,0,0,0.042000,3.379900,0.249800,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+147,5002,3.539000,13,327648,1383276,16021792,0.004300,0.117100,0.511960,1,0,0,0,0,0.035500,3.333400,0.170100,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+148,5002,3.505900,13,324744,1370700,15878560,0.004300,0.106900,0.505720,1,0,0,0,0,0.036900,3.312500,0.156500,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+149,5002,4.761300,13,322818,1362420,15783808,0.004300,0.152400,0.500720,1,0,0,0,0,0.043500,4.491600,0.226200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+150,5003,3.808100,13,321017,1354740,15695456,0.006500,0.114200,0.500160,1,0,0,0,0,0.045100,3.572800,0.190200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+151,5003,3.633400,13,319735,1349676,15634776,0.004400,0.157500,0.494440,1,0,0,0,0,0.037500,3.383700,0.212200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+152,5003,3.862300,13,318422,1344072,15569744,0.009500,0.422100,0.582080,1,0,0,0,0,0.066700,3.307700,0.487900,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+153,5003,3.615300,13,317052,1338258,15502648,0.008700,0.149500,0.506160,1,0,0,0,0,0.064600,3.335300,0.215400,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+154,5003,3.489100,13,316329,1335138,15467032,0.005600,0.109400,0.489520,1,0,0,0,0,0.043700,3.282400,0.163000,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+155,5003,3.844200,13,359680,1520346,17595096,0.004000,0.150900,0.490920,1,0,0,0,0,0.039300,3.599500,0.205400,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+156,5003,4.750800,13,474619,2011752,23238768,0.004700,0.142100,0.491560,1,0,0,0,0,0.038000,4.496200,0.216600,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+157,5003,5.566100,13,580215,2459232,28407760,0.005800,0.145800,0.562000,1,0,0,0,0,0.042100,5.212900,0.311100,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+158,5003,5.208200,13,560411,2376120,27441584,0.006100,0.112000,0.641720,1,0,0,0,0,0.052200,4.988300,0.167700,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+159,5003,4.317900,13,419939,1777560,20552240,0.004500,0.146900,0.941680,1,0,0,0,0,0.040300,4.057400,0.220200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+160,5003,3.816500,13,354391,1497768,17335536,0.006100,0.137500,0.722680,1,0,0,0,0,0.041600,3.571300,0.203600,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+161,5003,3.635200,13,317393,1339728,15519440,0.005600,0.211300,0.593640,1,0,0,0,0,0.049500,3.280700,0.305000,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+162,5003,3.500400,13,312257,1317648,15266768,0.004800,0.104200,0.654240,1,0,0,0,0,0.033100,3.247100,0.220200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+163,5003,3.450900,13,312286,1317732,15268032,0.004300,0.107100,0.665360,1,0,0,0,0,0.037400,3.254800,0.158700,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+164,5003,3.691100,13,312432,1318380,15275296,0.004000,0.132600,0.487560,1,0,0,0,0,0.041000,3.460400,0.189700,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+165,5003,3.668500,13,312315,1317816,15269296,0.005700,0.137900,0.481040,1,0,0,0,0,0.039000,3.258300,0.371200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+166,5003,3.447700,13,312432,1318380,15275296,0.004200,0.111400,0.484120,1,0,0,0,0,0.038100,3.247100,0.162500,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+167,5003,3.418700,13,312432,1318380,15275296,0.004000,0.101100,0.650320,1,0,0,0,0,0.038500,3.237200,0.143000,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+168,5003,3.477200,13,312695,1319592,15288560,0.004500,0.113400,0.493680,1,0,0,0,0,0.037900,3.272500,0.166800,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+169,5003,3.435700,13,312943,1320648,15300720,0.004500,0.104200,0.588600,1,0,0,0,0,0.040700,3.248600,0.146400,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+170,5003,3.419900,13,312709,1319520,15288720,0.004200,0.105200,0.488320,1,0,0,0,0,0.040000,3.235600,0.144300,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+171,5003,3.466800,13,312549,1318944,15281296,0.003900,0.115400,0.484360,1,0,0,0,0,0.038400,3.259600,0.168800,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+172,5003,3.486600,13,313164,1321620,15311680,0.004600,0.124000,0.486200,1,0,0,0,0,0.039700,3.266700,0.180200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+173,5003,3.792100,13,313105,1321224,15308208,0.004900,0.150300,0.491440,1,0,0,0,0,0.042300,3.374200,0.375600,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+174,5003,3.453600,13,313324,1322196,15319104,0.005900,0.115000,0.493000,1,0,0,0,0,0.043000,3.251200,0.159400,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+175,5003,3.440200,13,313485,1323000,15327472,0.004600,0.106100,0.486920,1,0,0,0,0,0.034800,3.247300,0.158100,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+176,5003,3.433000,13,313324,1322196,15319104,0.003800,0.107500,0.486360,1,0,0,0,0,0.036800,3.247000,0.149200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+177,5003,3.533900,13,313382,1322364,15321632,0.004200,0.135200,0.483240,1,0,0,0,0,0.033600,3.296100,0.204200,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+178,5003,3.646700,13,313309,1322040,15318000,0.005700,0.118000,0.487000,1,0,0,0,0,0.041200,3.254800,0.350700,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+179,5003,3.494600,13,313032,1320900,15304576,0.004800,0.122200,0.488680,1,0,0,0,0,0.037700,3.266800,0.190100,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,14,266755976,0,0,0,0,0
+frame_window_cpu_ms=1421.875000 frame_window_cycles=6617987280
+frame_window_main_cpu_ms=796.875000 frame_window_main_cycles=3627369290
+resident_images=11362560 resident_metadata=0 resident_upload=266755976
+
+==== Vulkan pui_vulkan_program_bench --sdf --vsync --tiles 14 --frames 4
+device=AMD Radeon RX 9070 XT driver=8389024 mode=2 cache=0 vector=0 hidden_wsi=1
+idle=0 local=0 vsync=1 calibration_ms=0.000000
+actual_present_mode=2 model_vsync=1 applied_vsync=1
+frame,count,total_ms,draws,vertices,indices,upload_bytes,slot_wait_ms,present_ms,completed_gpu_ms,gpu_samples,compute_pixels,cached_pixels,metadata_bytes,readbacks,begin_ms,build_ms,end_ms,sdf_prepare_ms,sdf_record_ms,sdf_new_jobs,sdf_batches,sdf_bypasses,actual_draws,program_hits,focused,visible,image_bytes,live_textures,descriptor_sets,upload_resident_bytes,draw_memory_allocations,draw_resource_creations,glyph_upload_bytes,program_probes,program_probe_pixels
+0,14,13.966000,11,7742,17022,502485,0.000000,7.228500,0.000000,0,0,0,4678528,0,0.258400,6.403100,7.304500,0.000000,0.000000,0,0,0,39,0,0,0,11362560,7,462,24510464,0,0,0,0,0
+1,14,0.975600,14,8613,19476,527458,0.000000,0.250600,0.560040,2,0,0,4678528,0,0.161200,0.445100,0.369300,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,462,24510464,0,0,0,0,0
+2,14,0.695000,14,8877,20304,543106,0.016600,0.168100,0.000000,0,0,0,4678528,0,0.069400,0.391700,0.233900,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,462,24510464,0,0,0,0,0
+3,14,3.513300,14,8785,20010,528222,2.698400,0.417700,0.371600,1,0,0,4678528,0,2.769000,0.295800,0.448500,0.000000,0.000000,0,0,0,48,0,0,0,11362560,7,462,24510464,0,0,0,0,0
+frame_window_cpu_ms=0.000000 frame_window_cycles=44800400
+frame_window_main_cpu_ms=0.000000 frame_window_main_cycles=43637150
+resident_images=11362560 resident_metadata=4678528 resident_upload=24510464
+
+==== Vulkan pui_vulkan_compute_spiral_tests --compute --vector-text
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=929 gpu_pixels=46414457 vertex_requests=5940073 metadata_peak=39387944
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5939049 metadata_peak=0
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_compute_spiral_tests --compute --vector-text --cache
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=929 gpu_pixels=46096452 vertex_requests=5940073 metadata_peak=52239144
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=234890 cached_pixels=318005 avoided_vertices=65345884
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5939049 metadata_peak=0
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_compute_spiral_tests --compute --vector-text --cache --staged --tiles 1150
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=1150
+variant=0 gpu_batches=929 gpu_pixels=34890222 vertex_requests=5496513 metadata_peak=52239144
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=242391 cached_pixels=318005 avoided_vertices=58838210
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5495489 metadata_peak=0
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=58838210
+all 180 1150-item Spiral frames matched
+
+==== Vulkan pui_vulkan_compute_spiral_tests --adaptive --vector-text
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=0 gpu_pixels=0 vertex_requests=5940073 metadata_peak=33948200
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5939049 metadata_peak=0
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_compute_spiral_tests --compute --vector-text --cache --growth
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=929 gpu_pixels=37283400 vertex_requests=8675609 metadata_peak=52239144
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=235515 cached_pixels=318005 avoided_vertices=104128921
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=8674585 metadata_peak=0
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=104128921
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_retained_spiral_tests --compute --vector-text --cache
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=929 gpu_pixels=46096452 vertex_requests=5940073 metadata_peak=56917672
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=234890 cached_pixels=318005 avoided_vertices=65345884
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5939049 metadata_peak=4678528
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_retained_spiral_tests --compute --vector-text --cache --staged
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=929 gpu_pixels=46096452 vertex_requests=5940073 metadata_peak=56917672
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=234890 cached_pixels=318005 avoided_vertices=65345884
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5939049 metadata_peak=4678528
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_retained_spiral_tests --compute --vector-text --cache --tiles 1150
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=1150
+variant=0 gpu_batches=929 gpu_pixels=34890222 vertex_requests=5496513 metadata_peak=56917672
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=242391 cached_pixels=318005 avoided_vertices=58838210
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5495489 metadata_peak=4678528
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=58838210
+all 180 1150-item Spiral frames matched
+
+==== golden-image tests
+ok   dpi_1x       0x6291ff0d9b30efeb
+ok   dpi_2x       0x984abc5d421e7c60
+ok   shapes       0x9756b6aa8380680f
+ok   text         0xce6e257364264446
+ok   widgets_f3   0x8268659dae2edcf6
+ok   widgets_f4   0x3f477f0337c33372
+ok   layers_f1    0x019d29b647ec0a09
+ok   menus_f2     0xbcded6704961c70e
+ok   menus_f3     0x8be4c69c182214fa
+ok   menus_f4     0x9e3ea22f8381dd83
+ok   menus_f5     0x0eee8f079a1c69bd
+ok   anim_f0      0xd128371028038ce8
+ok   anim_f1      0x174bdb0e85e8ebaf
+ok   anim_f2      0x00623bd5930a84b5
+ok   windows_a    0x553abb7efffa8c4c
+ok   windows_b    0x2c090fd8344b2359
+ok   layout_f2    0x26d0cc39013c26e1
+ok   blur_f1      0x0aed3ae5043a9800
+ok   blur_edge_f1 0x4d44a96492272b57
+ok   inputs_f3    0x1be8ebd09b02e7bf
+ok   relayout_f7  0xf8c193d451ae38b5
+ok   relayout_f8  0x1950bb70b6be519e
+ok   blur_stable  (drift 0 over 30 frames)
+golden: 22 scene(s), 0 failure(s)
+
+==== performance pixel baselines
+all 16 performance pixel baselines matched
+
+==== core performance pixel baselines
+all 24 core performance pixel baselines matched
+
+==== 1150-tile Spiral golden frames
+all 4 Spiral golden frames matched (1150 tiles + Add)
+
+==== 5000-tile Spiral golden frames
+all 4 Spiral golden frames matched (5000 tiles + Add)
+
+==== 5000-tile Spiral peak golden frames
+all 10 Spiral peak golden frames matched (5000 tiles + three Adds)
+
+==== external consumer builds
+-- The C compiler identification is MSVC 19.51.36260.0
+-- The CXX compiler identification is MSVC 19.51.36260.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done (1.3s)
+-- Generating done (0.0s)
+-- Build files have been written to: D:/myimgui/out/consumer-checks/run-35nkz9uy/library
+[1/2] Building CXX object CMakeFiles\pufferui.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+[2/2] Linking CXX static library pufferui.lib
+-- Install configuration: "Debug"
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/lib/pufferui.lib
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/pufferui.h
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/vulkan.h
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/pufferui_impl.cpp
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/stb_truetype.h
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/chrome_scroll.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/components.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/core_pool.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/core_state.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/dock_style.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/draw_context.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/draw_primitives.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/harfbuzz_text.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/input_interact.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/layout_text.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/paint_commands.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/renderer_gradient.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/renderer_mesh_state.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/renderer_overlay_state.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/renderer_primitives.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/renderer_text.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/renderer_text_state.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/renderer_widgets.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/sdl3.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/sdl3_vulkan_host.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/typed_inputs.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/uia_windows.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_binning.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_blend_lut.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_cache.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_commands.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_compute.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_device.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_dispatch.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_draw.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_kawase.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_memory.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_native.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_preparation.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_program_cache.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_program_probe.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_resources.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_sdf.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_shaders.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/vulkan_surface.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/include/pufferui/impl/widgets.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/lib/cmake/pufferui/pufferuiTargets.cmake
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/lib/cmake/pufferui/pufferuiTargets-debug.cmake
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/lib/cmake/pufferui/pufferuiConfig.cmake
+-- Installing: D:/myimgui/out/consumer-checks/run-35nkz9uy/install/lib/cmake/pufferui/pufferuiConfigVersion.cmake
+-- The CXX compiler identification is MSVC 19.51.36260.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- The C compiler identification is MSVC 19.51.36260.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Configuring done (1.3s)
+-- Generating done (0.0s)
+-- Build files have been written to: D:/myimgui/out/consumer-checks/run-35nkz9uy/in-tree
+[1/4] Building CXX object CMakeFiles\consumer.dir\main.cpp.obj
+[2/4] Building CXX object pufferui\CMakeFiles\pufferui.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+[3/4] Linking CXX static library pufferui\pufferui.lib
+[4/4] Linking CXX executable consumer.exe
+-- The CXX compiler identification is MSVC 19.51.36260.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done (0.7s)
+-- Generating done (0.0s)
+-- Build files have been written to: D:/myimgui/out/consumer-checks/run-35nkz9uy/installed
+[1/2] Building CXX object CMakeFiles\consumer.dir\main.cpp.obj
+[2/2] Linking CXX executable consumer.exe
+all consumer checks passed
+
+==== installed Vulkan/core/SDL consumers
+-- Install configuration: "Release"
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/lib/pkgconfig/sdl3.pc
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/lib/SDL3-static.lib
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/cmake/SDL3headersTargets.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/cmake/SDL3staticTargets.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/cmake/SDL3staticTargets-release.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/cmake/SDL3Config.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/cmake/SDL3ConfigVersion.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_assert.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_asyncio.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_atomic.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_audio.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_begin_code.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_bits.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_blendmode.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_camera.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_clipboard.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_close_code.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_copying.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_cpuinfo.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_dialog.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_dlopennote.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_egl.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_endian.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_error.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_events.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_filesystem.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_gamepad.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_gpu.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_guid.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_haptic.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_hidapi.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_hints.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_init.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_intrin.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_iostream.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_joystick.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_keyboard.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_keycode.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_loadso.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_locale.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_log.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_main.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_main_impl.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_messagebox.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_metal.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_misc.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_mouse.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_mutex.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_oldnames.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_opengl.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_opengl_glext.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_opengles.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_opengles2.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_opengles2_gl2.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_opengles2_gl2ext.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_opengles2_gl2platform.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_opengles2_khrplatform.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_openxr.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_pen.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_pixels.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_platform.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_platform_defines.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_power.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_process.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_properties.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_rect.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_render.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_scancode.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_sensor.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_stdinc.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_storage.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_surface.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_system.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_thread.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_time.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_timer.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_touch.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_tray.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_version.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_video.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_vulkan.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/SDL3/SDL_revision.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/licenses/SDL3/LICENSE.txt
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-aat-layout.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-aat.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-blob.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-buffer.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-common.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-cplusplus.hh
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-deprecated.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-draw.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-face.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-font.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-map.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-ot-color.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-ot-deprecated.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-ot-fetch.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-ot-font.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-ot-layout.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-ot-math.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-ot-meta.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-ot-metrics.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-ot-name.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-ot-shape.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-ot-var.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-ot.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-paint.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-set.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-script-list.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-shape-plan.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-shape.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-style.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-unicode.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-version.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-gpu.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/lib/pkgconfig/harfbuzz.pc
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/lib/pkgconfig/harfbuzz-gpu.pc
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/harfbuzz/hb-features.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/lib/harfbuzz.lib
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/lib/harfbuzz-gpu.lib
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/lib/cmake/harfbuzz/harfbuzzConfig.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/lib/cmake/harfbuzz/harfbuzzConfig-release.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/lib/pufferui_vulkan.lib
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/share/pufferui/licenses/harfbuzz-slug.txt
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/lib/cmake/pufferui/pufferuiVulkanTargets.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/lib/cmake/pufferui/pufferuiVulkanTargets-release.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/lib/pufferui.lib
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/lib/pufferui_sdl3.lib
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/pufferui.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/vulkan.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/pufferui_impl.cpp
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/stb_truetype.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/chrome_scroll.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/components.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/core_pool.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/core_state.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/dock_style.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/draw_context.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/draw_primitives.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/harfbuzz_text.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/input_interact.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/layout_text.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/paint_commands.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/renderer_gradient.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/renderer_mesh_state.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/renderer_overlay_state.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/renderer_primitives.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/renderer_text.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/renderer_text_state.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/renderer_widgets.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/sdl3.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/sdl3_vulkan_host.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/typed_inputs.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/uia_windows.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_binning.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_blend_lut.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_cache.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_commands.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_compute.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_device.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_dispatch.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_draw.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_kawase.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_memory.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_native.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_preparation.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_program_cache.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_program_probe.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_resources.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_sdf.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_shaders.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/vulkan_surface.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/include/pufferui/impl/widgets.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/lib/cmake/pufferui/pufferuiTargets.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/lib/cmake/pufferui/pufferuiTargets-release.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/lib/cmake/pufferui/pufferuiConfig.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-udgv0jcv\install/lib/cmake/pufferui/pufferuiConfigVersion.cmake
+-- The CXX compiler identification is MSVC 19.51.36260.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done (0.8s)
+-- Generating done (0.0s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_DISABLE_FIND_PACKAGE_Vulkan
+
+
+-- Build files have been written to: D:/myimgui/out/vulkan-consumer-checks/run-udgv0jcv/core
+[1/2] Building CXX object CMakeFiles\consumer.dir\main.cpp.obj
+[2/2] Linking CXX executable consumer.exe
+-- The CXX compiler identification is MSVC 19.51.36260.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done (0.7s)
+-- Generating done (0.0s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_DISABLE_FIND_PACKAGE_Vulkan
+
+
+-- Build files have been written to: D:/myimgui/out/vulkan-consumer-checks/run-udgv0jcv/sdl
+[1/2] Building CXX object CMakeFiles\consumer.dir\main.cpp.obj
+[2/2] Linking CXX executable consumer.exe
+-- The CXX compiler identification is MSVC 19.51.36260.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found Vulkan: E:/VulkanSDK/1.4.335.0/Lib/vulkan-1.lib (found suitable version "1.4.335", minimum required is "1.3") found components: glslc glslangValidator
+-- Configuring done (0.8s)
+-- Generating done (0.0s)
+-- Build files have been written to: D:/myimgui/out/vulkan-consumer-checks/run-udgv0jcv/vulkan
+[1/2] Building CXX object CMakeFiles\consumer.dir\main.cpp.obj
+[2/2] Linking CXX executable consumer.exe
+installed Vulkan consumer: borrowed and owned devices passed
+all installed Vulkan/core/SDL consumer checks passed
+
+==== examples_selftest (every example, offscreen)
+[0/2] Re-checking globbed directories...
+[1/102] Building CXX object CMakeFiles\pui_ex_rect.dir\examples\atomic\rect.cpp.obj
+[2/102] Building CXX object CMakeFiles\pui_ex_hello.dir\examples\atomic\hello.cpp.obj
+[3/102] Building CXX object CMakeFiles\pui_ex_cursors.dir\examples\atomic\cursors.cpp.obj
+[4/102] Building CXX object CMakeFiles\pui_ex_tracks.dir\examples\atomic\tracks.cpp.obj
+[5/102] Building CXX object CMakeFiles\pui_ex_grid.dir\examples\atomic\grid.cpp.obj
+[6/102] Building CXX object CMakeFiles\pui_ex_ids.dir\examples\atomic\ids.cpp.obj
+[7/102] Building CXX object CMakeFiles\pui_ex_text.dir\examples\atomic\text.cpp.obj
+[8/102] Building CXX object CMakeFiles\pui_ex_inputs.dir\examples\atomic\inputs.cpp.obj
+[9/102] Building CXX object CMakeFiles\pui_ex_buttons.dir\examples\atomic\buttons.cpp.obj
+[10/102] Building CXX object CMakeFiles\pui_ex_panels.dir\examples\atomic\panels.cpp.obj
+[11/102] Building CXX object CMakeFiles\pui_ex_widgets.dir\examples\atomic\widgets.cpp.obj
+[12/102] Building CXX object CMakeFiles\pui_ex_scroll.dir\examples\atomic\scroll.cpp.obj
+[13/102] Building CXX object CMakeFiles\pui_ex_popups.dir\examples\atomic\popups.cpp.obj
+[14/102] Building CXX object CMakeFiles\pui_ex_dock.dir\examples\atomic\dock.cpp.obj
+[15/102] Building CXX object CMakeFiles\pui_ex_windows.dir\examples\atomic\windows.cpp.obj
+[16/102] Building CXX object CMakeFiles\pui_ex_blur.dir\examples\atomic\blur.cpp.obj
+[17/102] Building CXX object CMakeFiles\pui_ex_animation.dir\examples\atomic\animation.cpp.obj
+[18/102] Building CXX object CMakeFiles\pui_ex_drawing.dir\examples\atomic\drawing.cpp.obj
+[19/102] Building CXX object CMakeFiles\pui_ex_theme.dir\examples\atomic\theme.cpp.obj
+[20/102] Building CXX object CMakeFiles\pui_ex_custom.dir\examples\atomic\custom.cpp.obj
+[21/102] Building CXX object CMakeFiles\pui_ex_patterns.dir\examples\atomic\patterns.cpp.obj
+[22/102] Building CXX object CMakeFiles\pui_ex_combo.dir\examples\atomic\combo.cpp.obj
+[23/102] Building CXX object CMakeFiles\pui_ex_expander.dir\examples\atomic\expander.cpp.obj
+[24/102] Building CXX object CMakeFiles\pui_ex_keyboard.dir\examples\atomic\keyboard.cpp.obj
+[25/102] Building CXX object CMakeFiles\pui_ex_components.dir\examples\atomic\components.cpp.obj
+[26/102] Building CXX object CMakeFiles\pui_ex_vlist.dir\examples\atomic\vlist.cpp.obj
+[27/102] Building CXX object CMakeFiles\pui_ex_overflow.dir\examples\atomic\overflow.cpp.obj
+[28/102] Building CXX object CMakeFiles\pui_ex_controls.dir\examples\atomic\controls.cpp.obj
+[29/102] Building CXX object CMakeFiles\pui_ex_relayout.dir\examples\atomic\relayout.cpp.obj
+[30/102] Building CXX object CMakeFiles\pui_ex_tables.dir\examples\atomic\tables.cpp.obj
+[31/102] Building CXX object CMakeFiles\pui_ex_tree.dir\examples\atomic\tree.cpp.obj
+[32/102] Building CXX object CMakeFiles\pui_ex_numeric.dir\examples\atomic\numeric.cpp.obj
+[33/102] Building CXX object CMakeFiles\pui_ex_colors.dir\examples\atomic\colors.cpp.obj
+[34/102] Building CXX object CMakeFiles\pui_ex_dpi.dir\examples\atomic\dpi.cpp.obj
+[35/102] Building CXX object CMakeFiles\pui_ex_files.dir\examples\atomic\files.cpp.obj
+[36/102] Building CXX object CMakeFiles\pui_ex_textarea.dir\examples\atomic\textarea.cpp.obj
+[37/102] Building CXX object CMakeFiles\pui_ex_a11y.dir\examples\atomic\a11y.cpp.obj
+[38/102] Building CXX object CMakeFiles\pui_ex_pickers.dir\examples\atomic\pickers.cpp.obj
+[39/102] Building CXX object CMakeFiles\pui_tour.dir\examples\pui_tour.cpp.obj
+[40/102] Building CXX object CMakeFiles\pui_ex_vulkan.dir\examples\atomic\vulkan.cpp.obj
+D:\myimgui\examples\atomic\../example_common.h(399): warning C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[41/102] Building CXX object CMakeFiles\pui_showcase.dir\examples\pui_showcase.cpp.obj
+D:\myimgui\examples\showcase_trace.h(129): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[42/102] Building CXX object CMakeFiles\pui_showcase_vulkan.dir\examples\pui_showcase.cpp.obj
+D:\myimgui\examples\example_common.h(399): warning C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\myimgui\examples\showcase_trace.h(129): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[43/102] Building CXX object CMakeFiles\pui_ex_vulkan_painter.dir\examples\atomic\vulkan_painter.cpp.obj
+D:\myimgui\examples\atomic\../example_common.h(399): warning C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[44/102] Building CXX object CMakeFiles\pui_ex_vulkan_blur.dir\examples\atomic\vulkan_blur.cpp.obj
+D:\myimgui\examples\atomic\../example_common.h(399): warning C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+[45/102] Linking CXX executable Release\pui_ex_hello.exe
+[46/102] Linking CXX executable Release\pui_ex_cursors.exe
+[47/102] Linking CXX executable Release\pui_ex_tracks.exe
+[48/102] Linking CXX executable Release\pui_ex_bootstrap.exe
+[49/102] Linking CXX executable Release\pui_ex_rect.exe
+[50/102] Linking CXX executable Release\pui_ex_grid.exe
+[51/102] Linking CXX executable Release\pui_ex_buttons.exe
+[52/102] Linking CXX executable Release\pui_ex_inputs.exe
+[53/102] Linking CXX executable Release\pui_ex_text.exe
+[54/102] Linking CXX executable Release\pui_ex_ids.exe
+[55/102] Linking CXX executable Release\pui_ex_widgets.exe
+[56/102] Linking CXX executable Release\pui_ex_panels.exe
+[57/102] Linking CXX executable Release\pui_ex_dock.exe
+[58/102] Linking CXX executable Release\pui_ex_windows.exe
+[59/102] Linking CXX executable Release\pui_ex_scroll.exe
+[60/102] Linking CXX executable Release\pui_ex_popups.exe
+[61/102] Linking CXX executable Release\pui_ex_drawing.exe
+[62/102] Linking CXX executable Release\pui_ex_theme.exe
+[63/102] Linking CXX executable Release\pui_ex_custom.exe
+[64/102] Linking CXX executable Release\pui_ex_blur.exe
+[65/102] Linking CXX executable Release\pui_ex_animation.exe
+[66/102] Linking CXX executable Release\pui_ex_patterns.exe
+[67/102] Linking CXX executable Release\pui_ex_combo.exe
+[68/102] Linking CXX executable Release\pui_ex_components.exe
+[69/102] Linking CXX executable Release\pui_ex_expander.exe
+[70/102] Linking CXX executable Release\pui_ex_vlist.exe
+[71/102] Linking CXX executable Release\pui_ex_keyboard.exe
+[72/102] Linking CXX executable Release\pui_ex_overflow.exe
+[73/102] Linking CXX executable Release\pui_ex_tables.exe
+[74/102] Linking CXX executable Release\pui_ex_tree.exe
+[75/102] Linking CXX executable Release\pui_ex_relayout.exe
+[76/102] Linking CXX executable Release\pui_ex_controls.exe
+[77/102] Linking CXX executable Release\pui_ex_numeric.exe
+[78/102] Linking CXX executable Release\pui_ex_dpi.exe
+[79/102] Linking CXX executable Release\pui_ex_textarea.exe
+[80/102] Linking CXX executable Release\pui_ex_colors.exe
+[81/102] Linking CXX executable Release\pui_ex_a11y.exe
+[82/102] Linking CXX executable Release\pui_ex_headless.exe
+[83/102] Linking CXX executable Release\pui_ex_files.exe
+[84/102] Linking CXX executable Release\pui_ex_pickers.exe
+[85/102] Linking CXX executable Release\pui_ex_renderer.exe
+[86/102] Linking CXX executable Release\pui_tour.exe
+[87/102] Linking CXX executable Release\pui_showcase_vulkan.exe
+[88/102] Linking CXX executable Release\pui_showcase.exe
+[89/102] Linking CXX executable Release\pui_ex_vulkan_painter.exe
+[90/102] Linking CXX executable Release\pui_tut_step01_shot.exe
+[91/102] Linking CXX executable Release\pui_tut_button_states.exe
+[92/102] Linking CXX executable Release\pui_tut_step02_layout.exe
+[93/102] Linking CXX executable Release\pui_ex_vulkan.exe
+[94/102] Linking CXX executable Release\pui_tut_step03_tasks.exe
+[95/102] Linking CXX executable Release\pui_tut_step05_glass.exe
+[96/102] Linking CXX executable Release\pui_tut_step06_motion.exe
+[97/102] Linking CXX executable Release\pui_ex_vulkan_blur.exe
+[98/102] Linking CXX executable Release\pui_tut_step04_filters.exe
+[99/102] Linking CXX executable Release\pui_tut_todo_test.exe
+[100/102] Linking CXX executable Release\pui_tut_todo.exe
+[101/102] CMakeFiles\examples_selftest-bf79ca6.bat 77c3c4e704c40dbc
+ok   hello
+ok   bootstrap (clicks: 1)
+ok   rect
+ok   cursors
+ok   tracks
+ok   grid
+ok   ids
+ok   text
+ok   buttons
+ok   inputs
+ok   widgets
+ok   panels
+ok   scroll
+ok   popups
+ok   dock
+ok   windows
+ok   drawing
+ok   blur
+ok   animation
+ok   theme
+ok   custom
+ok   patterns
+ok   expander
+ok   combo
+ok   keyboard
+ok   components
+ok   vlist
+ok   overflow
+ok   relayout
+ok   controls
+ok   tables
+ok   tree
+ok   numeric
+ok   colors
+ok   dpi
+ok   files
+ok   textarea
+ok   a11y
+ok   pickers
+draw calls: 1   vertices: 387   cursor sets: 5
+flag: on   value: 0.44
+RENDER_TARGETS: yes   SHARED_DEVICE: yes
+duplicate region captured: 1 (duplicate region id among siblings)
+violation_count(): 1
+ok   headless
+wrote pui_renderer_example.ppm (480 x 320) via a custom render_device
+draw calls: 3   textures alive: 1
+ok   renderer
+ok   tour
+ok   showcase
+ok   showcase
+ok   Vulkan
+ok   GPU painter
+ok   Vulkan blur
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+ok   Glass Todo
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+ok   Button states
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+ok   Glass Todo
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+ok   Glass Todo
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+ok   Glass Todo
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+ok   Glass Todo
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+ok   Glass Todo
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+ok   Glass Todo
+all todo tests passed
+
+==== API reference drift
+docs/api.md is up to date
+
+==== tutorial snippets
+tutorial check ok: 57 code blocks match their sources
+
+==== clang-format
+
+================ summary (x64-release)
+ok     configure Vulkan registry  (2.1s)
+ok     build (pui_core_tests, pui_pump_tests, pui_perf_tests, pui_memory_tests, pui_preparation_tests, pui_showcase_tests, pui_vulkan_tests, pui_vulkan_external_tests, pui_vulkan_cache_tests, pui_vulkan_interaction_tests, pui_vulkan_fault_tests, pui_vulkan_internal_tests, pui_vulkan_command_tests, pui_vulkan_binning_tests, pui_vulkan_workgroup_tests, pui_vulkan_program_tests, pui_vulkan_compute_tests, pui_vulkan_sdf_tests, pui_vulkan_sdf_cache_tests, pui_vulkan_sdf_interaction_tests, pui_harfbuzz_tests, pui_harfbuzz_interaction_tests, pui_vulkan_kawase_interaction_tests, pui_vulkan_preparation_tests, pui_vulkan_memory_role_tests, pui_vulkan_kawase_spiral_tests, pui_vulkan_spiral_binning_tests, pui_vulkan_wsi_tests, pui_vulkan_present_stage_tests, pui_vulkan_showcase_tests, pui_vulkan_example_validation_tests, pui_vulkan_spiral_tests, pui_vulkan_compute_spiral_tests, pui_vulkan_retained_spiral_tests, pui_vulkan_program_bench, pui_golden_tests, pui_perf_pixels, pui_core_perf_pixels)  (351.3s)
+ok     core tests  (0.3s)
+ok     performance regressions  (0.2s)
+ok     memory performance regressions  (0.8s)
+ok     geometry preparation regressions  (1.6s)
+ok     showcase regressions  (0.6s)
+ok     pump tests (SDL event routing)  (3.3s)
+ok     Python tool regressions  (0.4s)
+ok     Vulkan pui_vulkan_tests  (0.9s)
+ok     Vulkan pui_vulkan_external_tests  (0.9s)
+ok     Vulkan pui_vulkan_cache_tests  (0.5s)
+ok     Vulkan pui_vulkan_interaction_tests  (1.0s)
+ok     Vulkan pui_vulkan_interaction_tests --staged  (0.9s)
+ok     Vulkan pui_vulkan_fault_tests  (0.8s)
+ok     Vulkan pui_vulkan_internal_tests  (0.0s)
+ok     Vulkan pui_vulkan_command_tests  (0.0s)
+ok     Vulkan pui_vulkan_binning_tests  (0.4s)
+ok     Vulkan pui_vulkan_workgroup_tests  (1.6s)
+ok     Vulkan pui_vulkan_program_tests  (12.5s)
+ok     Vulkan pui_vulkan_compute_tests  (0.4s)
+ok     Vulkan pui_vulkan_sdf_tests  (2.0s)
+ok     Vulkan pui_vulkan_sdf_cache_tests  (3.2s)
+ok     Vulkan pui_vulkan_sdf_interaction_tests  (1.5s)
+ok     Vulkan pui_vulkan_sdf_interaction_tests --staged  (1.1s)
+ok     Vulkan pui_harfbuzz_tests  (0.4s)
+ok     Vulkan pui_harfbuzz_interaction_tests  (1.3s)
+ok     Vulkan pui_harfbuzz_interaction_tests --staged  (0.9s)
+ok     Vulkan pui_vulkan_kawase_interaction_tests  (1.3s)
+ok     Vulkan pui_vulkan_kawase_interaction_tests --staged  (0.9s)
+ok     Vulkan pui_vulkan_preparation_tests  (7.1s)
+ok     Vulkan pui_vulkan_memory_role_tests  (7.1s)
+ok     Vulkan pui_vulkan_kawase_spiral_tests  (3.3s)
+ok     Vulkan pui_vulkan_kawase_spiral_tests --staged  (3.0s)
+ok     Vulkan pui_vulkan_spiral_binning_tests  (2.1s)
+ok     Vulkan pui_vulkan_wsi_tests  (1.1s)
+ok     Vulkan pui_vulkan_present_stage_tests  (0.8s)
+ok     Vulkan pui_vulkan_showcase_tests  (1.1s)
+ok     Vulkan pui_vulkan_example_validation_tests  (1.7s)
+ok     Vulkan pui_vulkan_spiral_tests  (2.7s)
+ok     Vulkan pui_vulkan_spiral_tests --tiles 5000  (3.0s)
+ok     Vulkan pui_vulkan_spiral_tests --tiles 1150 --upload-reference  (2.7s)
+ok     Vulkan pui_vulkan_spiral_tests --tiles 5000 --upload-reference  (3.3s)
+ok     Vulkan pui_vulkan_spiral_tests --tiles 1150 --staged  (3.3s)
+ok     Vulkan pui_vulkan_spiral_tests --tiles 5000 --staged  (4.0s)
+ok     Vulkan pui_vulkan_compute_spiral_tests  (3.5s)
+ok     Vulkan pui_vulkan_compute_spiral_tests --tiles 1150  (2.8s)
+ok     Vulkan pui_vulkan_compute_spiral_tests --compute --cache  (2.8s)
+ok     Vulkan pui_vulkan_retained_spiral_tests  (3.4s)
+ok     Vulkan pui_vulkan_retained_spiral_tests --compute --cache  (2.7s)
+ok     Vulkan pui_vulkan_retained_spiral_tests --compute --cache --staged  (2.6s)
+ok     Vulkan pui_vulkan_program_bench  (1.3s)
+ok     Vulkan pui_vulkan_program_bench --sdf --vsync --tiles 14 --frames 4  (0.5s)
+ok     Vulkan pui_vulkan_compute_spiral_tests --compute --vector-text  (2.2s)
+ok     Vulkan pui_vulkan_compute_spiral_tests --compute --vector-text --cache  (2.2s)
+ok     Vulkan pui_vulkan_compute_spiral_tests --compute --vector-text --cache --staged --tiles 1150  (2.2s)
+ok     Vulkan pui_vulkan_compute_spiral_tests --adaptive --vector-text  (1.8s)
+ok     Vulkan pui_vulkan_compute_spiral_tests --compute --vector-text --cache --growth  (3.0s)
+ok     Vulkan pui_vulkan_retained_spiral_tests --compute --vector-text --cache  (2.3s)
+ok     Vulkan pui_vulkan_retained_spiral_tests --compute --vector-text --cache --staged  (2.5s)
+ok     Vulkan pui_vulkan_retained_spiral_tests --compute --vector-text --cache --tiles 1150  (1.9s)
+ok     golden-image tests  (11.4s)
+ok     performance pixel baselines  (1.3s)
+ok     core performance pixel baselines  (1.5s)
+ok     1150-tile Spiral golden frames  (29.1s)
+ok     5000-tile Spiral golden frames  (30.2s)
+ok     5000-tile Spiral peak golden frames  (58.5s)
+ok     external consumer builds  (8.7s)
+ok     installed Vulkan/core/SDL consumers  (23.5s)
+ok     examples_selftest (every example, offscreen)  (420.6s)
+ok     API reference drift  (0.6s)
+ok     tutorial snippets  (0.5s)
+ok     clang-format  (1.6s)
+all steps passed

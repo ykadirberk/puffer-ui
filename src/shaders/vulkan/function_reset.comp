@@ -1,0 +1,11 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#include "function_common.glsl"
+layout(local_size_x=64) in;
+layout(rgba8,set=0,binding=1) uniform writeonly image2D function_pixels;
+void main() {
+    uint x=gl_GlobalInvocationID.x,index=gl_GlobalInvocationID.y;
+    if(x>=256u || index>=functions.words[5]) return;
+    uint row=functions.words[function_list_base()+index];
+    imageStore(function_pixels,ivec2(x,row),vec4(float(x)/255.0));
+}

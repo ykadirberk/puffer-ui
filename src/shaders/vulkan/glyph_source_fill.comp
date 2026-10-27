@@ -1,0 +1,15 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#include "glyph_source_requests.glsl"
+#include "byte_colors.glsl"
+layout(local_size_x=8,local_size_y=8) in;
+void main() {
+    if(gl_WorkGroupID.z>=source_parameters.value.x) return;
+    GlyphRequest r=requests.values[gl_WorkGroupID.z];
+    ivec2 pixel=ivec2(gl_GlobalInvocationID.xy);
+    vec2 point=floor(r.shape.bounds.xy)-vec2(1.0)+vec2(pixel)+vec2(0.5);
+    bool outside=any(lessThan(point,r.shape.bounds.xy-vec2(1.0))) ||
+                 any(greaterThan(point,r.shape.bounds.xy+r.shape.bounds.zw+vec2(1.0)));
+    float alpha=outside?0.0:uintBitsToFloat(pui_byte_float_bits[r.key.w])*pui_coverage(r.shape,point);
+    imageStore(glyph_output,ivec2(pixel.x,int(r.key.x)*65+1+pixel.y),uvec4(floatBitsToUint(alpha)));
+}

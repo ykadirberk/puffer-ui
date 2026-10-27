@@ -43,14 +43,21 @@ inline font_data::outline *harfbuzz_outline(context *c, font_handle font, u32 in
     if (!f.encoder) return nullptr;
     hb_gpu_draw_clear(f.encoder);
     if (!hb_gpu_draw_glyph_or_fail(f.encoder, native, index)) return nullptr;
-    font_data::outline value;
+    font_data::outline value(&f.outline_pool);
     auto *blob = hb_gpu_draw_encode(f.encoder, &value.extents);
+    struct recycle_encoding
+    {
+        hb_gpu_draw_t *encoder;
+        hb_blob_t *blob;
+        ~recycle_encoding() { hb_gpu_draw_recycle_blob(encoder, blob); }
+    } recycle{f.encoder, blob};
     unsigned bytes = 0;
     const char *data = hb_blob_get_data(blob, &bytes);
     if (bytes)
         value.data.assign(reinterpret_cast<const u8 *>(data),
                           reinterpret_cast<const u8 *>(data) + bytes);
-    hb_blob_destroy(blob);
+    // The cache owns its copy. The scope returns the temporary encoding buffer
+    // after copying, including when a pool/map allocation throws.
     return &f.outlines.emplace(index, std::move(value)).first->second;
 }
 inline bool harfbuzz_layout(context *c, font_handle font, f32 size, std::string_view text,
@@ -76,7 +83,7 @@ inline bool harfbuzz_layout(context *c, font_handle font, f32 size, std::string_
         if (!info[i].codepoint) return false;
     const auto &f = ts.fonts[static_cast<usize>(font)];
     const f32 scale = stbtt_ScaleForPixelHeight(&f.info, size);
-    text_store::text_layout built;
+    text_store::text_layout built(&ts.run_pool);
     built.gs.reserve(count);
     for (unsigned i = 0; i < count; ++i)
     {

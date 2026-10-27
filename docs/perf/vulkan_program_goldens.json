@@ -1,0 +1,719 @@
+{
+  "status": "validated checkpoint, not the integrated painter delivery",
+  "frames": 6480,
+  "cases": [
+    {
+      "label": "offscreen-reference",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_retained_spiral_tests.exe",
+        "--golden",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r0\\pixels-5000"
+      ],
+      "binary_sha256": "181de13a201ebd7e2a32b844c8e3ea94d9a75778d2233006a275bfe971e47193"
+    },
+    {
+      "label": "offscreen-sdf",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_retained_spiral_tests.exe",
+        "--sdf",
+        "--vector-text",
+        "--golden",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "181de13a201ebd7e2a32b844c8e3ea94d9a75778d2233006a275bfe971e47193"
+    },
+    {
+      "label": "offscreen-compute",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_retained_spiral_tests.exe",
+        "--compute",
+        "--vector-text",
+        "--golden",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "181de13a201ebd7e2a32b844c8e3ea94d9a75778d2233006a275bfe971e47193"
+    },
+    {
+      "label": "offscreen-cache",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_retained_spiral_tests.exe",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--golden",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "181de13a201ebd7e2a32b844c8e3ea94d9a75778d2233006a275bfe971e47193"
+    },
+    {
+      "label": "offscreen-adaptive",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_retained_spiral_tests.exe",
+        "--adaptive",
+        "--vector-text",
+        "--golden",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "181de13a201ebd7e2a32b844c8e3ea94d9a75778d2233006a275bfe971e47193"
+    },
+    {
+      "label": "offscreen-staged",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_retained_spiral_tests.exe",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--staged",
+        "--golden",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "181de13a201ebd7e2a32b844c8e3ea94d9a75778d2233006a275bfe971e47193"
+    },
+    {
+      "label": "offscreen-staged-reference",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_retained_spiral_tests.exe",
+        "--staged",
+        "--golden",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r0\\pixels-5000"
+      ],
+      "binary_sha256": "181de13a201ebd7e2a32b844c8e3ea94d9a75778d2233006a275bfe971e47193"
+    },
+    {
+      "label": "offscreen-1150",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_retained_spiral_tests.exe",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--tiles",
+        "1150",
+        "--golden",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-1150"
+      ],
+      "binary_sha256": "181de13a201ebd7e2a32b844c8e3ea94d9a75778d2233006a275bfe971e47193"
+    },
+    {
+      "label": "before-reference",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r0\\pixels-5000"
+      ],
+      "binary_sha256": "df68725fa459c7f4430d88ce42d05407cca4834110788ffd1f201c2ced2c94d3"
+    },
+    {
+      "label": "before-sdf",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--sdf",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "df68725fa459c7f4430d88ce42d05407cca4834110788ffd1f201c2ced2c94d3"
+    },
+    {
+      "label": "before-compute",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--compute",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "df68725fa459c7f4430d88ce42d05407cca4834110788ffd1f201c2ced2c94d3"
+    },
+    {
+      "label": "before-cache",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "df68725fa459c7f4430d88ce42d05407cca4834110788ffd1f201c2ced2c94d3"
+    },
+    {
+      "label": "before-adaptive",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--adaptive",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "df68725fa459c7f4430d88ce42d05407cca4834110788ffd1f201c2ced2c94d3"
+    },
+    {
+      "label": "before-staged",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--staged",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "df68725fa459c7f4430d88ce42d05407cca4834110788ffd1f201c2ced2c94d3"
+    },
+    {
+      "label": "before-idle",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--idle",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\idle-reference"
+      ],
+      "binary_sha256": "df68725fa459c7f4430d88ce42d05407cca4834110788ffd1f201c2ced2c94d3"
+    },
+    {
+      "label": "before-idle-staged",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--idle",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--staged",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\idle-reference"
+      ],
+      "binary_sha256": "df68725fa459c7f4430d88ce42d05407cca4834110788ffd1f201c2ced2c94d3"
+    },
+    {
+      "label": "before-local",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--local-change",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\local-reference"
+      ],
+      "binary_sha256": "df68725fa459c7f4430d88ce42d05407cca4834110788ffd1f201c2ced2c94d3"
+    },
+    {
+      "label": "before-local-staged",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--local-change",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--staged",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\local-reference"
+      ],
+      "binary_sha256": "df68725fa459c7f4430d88ce42d05407cca4834110788ffd1f201c2ced2c94d3"
+    },
+    {
+      "label": "after-reference",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r0\\pixels-5000"
+      ],
+      "binary_sha256": "3474693fb01e9cf5b9a42d6ccdf2aae159939e1f169e3b3e47d1b9f93b3a9502"
+    },
+    {
+      "label": "after-sdf",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--sdf",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "3474693fb01e9cf5b9a42d6ccdf2aae159939e1f169e3b3e47d1b9f93b3a9502"
+    },
+    {
+      "label": "after-compute",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--compute",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "3474693fb01e9cf5b9a42d6ccdf2aae159939e1f169e3b3e47d1b9f93b3a9502"
+    },
+    {
+      "label": "after-cache",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "3474693fb01e9cf5b9a42d6ccdf2aae159939e1f169e3b3e47d1b9f93b3a9502"
+    },
+    {
+      "label": "after-adaptive",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--adaptive",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "3474693fb01e9cf5b9a42d6ccdf2aae159939e1f169e3b3e47d1b9f93b3a9502"
+    },
+    {
+      "label": "after-staged",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--staged",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-compute\\r1\\pixels-5000"
+      ],
+      "binary_sha256": "3474693fb01e9cf5b9a42d6ccdf2aae159939e1f169e3b3e47d1b9f93b3a9502"
+    },
+    {
+      "label": "after-idle",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--idle",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\idle-reference"
+      ],
+      "binary_sha256": "3474693fb01e9cf5b9a42d6ccdf2aae159939e1f169e3b3e47d1b9f93b3a9502"
+    },
+    {
+      "label": "after-idle-staged",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--idle",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--staged",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\idle-reference"
+      ],
+      "binary_sha256": "3474693fb01e9cf5b9a42d6ccdf2aae159939e1f169e3b3e47d1b9f93b3a9502"
+    },
+    {
+      "label": "after-local",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--local-change",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\local-reference"
+      ],
+      "binary_sha256": "3474693fb01e9cf5b9a42d6ccdf2aae159939e1f169e3b3e47d1b9f93b3a9502"
+    },
+    {
+      "label": "after-local-staged",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--local-change",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--staged",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\local-reference"
+      ],
+      "binary_sha256": "3474693fb01e9cf5b9a42d6ccdf2aae159939e1f169e3b3e47d1b9f93b3a9502"
+    },
+    {
+      "label": "before-idle-sdf",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--idle",
+        "--sdf",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\idle-reference"
+      ],
+      "binary_sha256": "df68725fa459c7f4430d88ce42d05407cca4834110788ffd1f201c2ced2c94d3"
+    },
+    {
+      "label": "before-idle-compute",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--idle",
+        "--compute",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\idle-reference"
+      ],
+      "binary_sha256": "df68725fa459c7f4430d88ce42d05407cca4834110788ffd1f201c2ced2c94d3"
+    },
+    {
+      "label": "before-local-sdf",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--local-change",
+        "--sdf",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\local-reference"
+      ],
+      "binary_sha256": "df68725fa459c7f4430d88ce42d05407cca4834110788ffd1f201c2ced2c94d3"
+    },
+    {
+      "label": "before-local-compute",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--local-change",
+        "--compute",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\local-reference"
+      ],
+      "binary_sha256": "df68725fa459c7f4430d88ce42d05407cca4834110788ffd1f201c2ced2c94d3"
+    },
+    {
+      "label": "after-idle-sdf",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--idle",
+        "--sdf",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\idle-reference"
+      ],
+      "binary_sha256": "3474693fb01e9cf5b9a42d6ccdf2aae159939e1f169e3b3e47d1b9f93b3a9502"
+    },
+    {
+      "label": "after-idle-compute",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--idle",
+        "--compute",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\idle-reference"
+      ],
+      "binary_sha256": "3474693fb01e9cf5b9a42d6ccdf2aae159939e1f169e3b3e47d1b9f93b3a9502"
+    },
+    {
+      "label": "after-local-sdf",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--local-change",
+        "--sdf",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\local-reference"
+      ],
+      "binary_sha256": "3474693fb01e9cf5b9a42d6ccdf2aae159939e1f169e3b3e47d1b9f93b3a9502"
+    },
+    {
+      "label": "after-local-compute",
+      "frames": 180,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--local-change",
+        "--compute",
+        "--vector-text",
+        "--reference",
+        "D:\\myimgui\\build-vulkan-deep\\retained-workloads\\local-reference"
+      ],
+      "binary_sha256": "3474693fb01e9cf5b9a42d6ccdf2aae159939e1f169e3b3e47d1b9f93b3a9502"
+    }
+  ],
+  "source_archive": "build-vulkan-program/phase3-validated-source.zip",
+  "archive_sha256": "e6d132e1efbbf5a2730b587203b0f0179893706c6c509c790e5b1c45221f0e3c",
+  "validation": {
+    "status": "validated checkpoint; integrated article painter remains incomplete; process CPU increases retained",
+    "source_archive_sha256": "e6d132e1efbbf5a2730b587203b0f0179893706c6c509c790e5b1c45221f0e3c",
+    "sources": {
+      "include\\pufferui\\pufferui.h": "b0029923451f9620e29baba7b329205898583c4330e2f8f7ff19315610ba79a7",
+      "include\\pufferui\\vulkan.h": "4e2e5a3a42d32f7a4f26b8dbf4d294ac96817a607447770eb6a74b9b74f0c1d6",
+      "include\\pufferui\\impl\\chrome_scroll.inl": "d8b4cc31ca403fedfd48add4927c42ce0aaef59c1d9bd9e77834fc773882da50",
+      "include\\pufferui\\impl\\components.inl": "21aad5d9c1c3ef8da97b814a54f7414dcb2b4ef1bb47b5d89f7fceebc4e7b3ee",
+      "include\\pufferui\\impl\\core_pool.inl": "121be14ec368e5c0c0773038efff25d01b641a5dec9bc9b223ac6e094ca08fa1",
+      "include\\pufferui\\impl\\core_state.inl": "b2069ccbcfe5744c5cada39db8f816af4ad6559310922f2d18e55aea94feb51d",
+      "include\\pufferui\\impl\\dock_style.inl": "400a11bc84f737312af3049d71779e8b606c54ee04273dfa38be85c5c05c2e19",
+      "include\\pufferui\\impl\\draw_context.inl": "a43f1e7df590d1cccae44daaf2efc607211638149e1e829b073d0f411efee5db",
+      "include\\pufferui\\impl\\draw_primitives.inl": "89260f8e42841cc3279e76941be1c94d11dd2116218a408673ad8f9cd6803b44",
+      "include\\pufferui\\impl\\harfbuzz_text.inl": "6f12456a28a9fabd71ed3cc69cd58ba47c77583e5868149891da52750011b0a0",
+      "include\\pufferui\\impl\\input_interact.inl": "e151e2467bf43b549f45f6e24bf6c41c42a525c294bb72ff0637451d5d1df66e",
+      "include\\pufferui\\impl\\layout_text.inl": "42810dfa6f4c61d1f28f2c81a1a40a9f573fe9aba223232e71e8569d71fa8d85",
+      "include\\pufferui\\impl\\paint_commands.inl": "f6085cf7532566b6f9283e2bc4d179df35d515e446aa8af8e74aa7d270467efd",
+      "include\\pufferui\\impl\\renderer_gradient.inl": "0c2aaea38a6332c4822c95e74c4b55fc162b3e8cf19da83d10e9aed33644d5a4",
+      "include\\pufferui\\impl\\renderer_mesh_state.inl": "d386fff7926a9da19bf0d3c769e493fc8d694ca5bfeb34ceeae6b01913a169aa",
+      "include\\pufferui\\impl\\renderer_overlay_state.inl": "b34c3996b46fe2bbbb15f4b93f438fdf15f97bc8aec54d49ec3b78125e807d1f",
+      "include\\pufferui\\impl\\renderer_primitives.inl": "12fda3201eded04d8c8a0f9c99918715aee79da3a19490675665201d458ba27b",
+      "include\\pufferui\\impl\\renderer_text.inl": "a271caa12caf0c660c4750275ec2c147309eac1a5e199370171c0885cbc71978",
+      "include\\pufferui\\impl\\renderer_text_state.inl": "34aa0fe722be32eb8f75968a8e5c4219b65556cb62424956fa5625f7c7e4485c",
+      "include\\pufferui\\impl\\renderer_widgets.inl": "1f8f242f6357aa7d3e601135f4b4b9d936489003c60f8c47c6cf2defd649adf1",
+      "include\\pufferui\\impl\\sdl3.inl": "3d2efaf8ad9f6e5974d586842bc2a791e95bf6c89fcdeb538fe93b9d9c1fa7c7",
+      "include\\pufferui\\impl\\sdl3_vulkan_host.inl": "9b51c683ab4192478f1ce0542ef7d1563071aa8afc1079d333873eea684f2acb",
+      "include\\pufferui\\impl\\typed_inputs.inl": "b7000448abae71477f297bed6c11d8b0e804d129ff3796a27fd91698ae714480",
+      "include\\pufferui\\impl\\uia_windows.inl": "81190fcf0169f493fb552472e03d25f78f9fa39346b6e3aef117dd5fe45d1758",
+      "include\\pufferui\\impl\\vulkan_binning.inl": "c6b12907907cc9a622e9f825b684b5645cfbdc11a345501d3e85242bafb15a07",
+      "include\\pufferui\\impl\\vulkan_blend_lut.inl": "c4f15a86e9f96757d97f3732568b674e77e6d0dd240bdfe39bbfa5f70153e866",
+      "include\\pufferui\\impl\\vulkan_cache.inl": "d6a6b4f6637e149eac2f5d3d7d2dfc50933f295e504156af5cc5587bec628d82",
+      "include\\pufferui\\impl\\vulkan_commands.inl": "270daa8a09e89fbaf1f1acd53708f47f32bf141b7a2fbf052420503f4fdedd91",
+      "include\\pufferui\\impl\\vulkan_compute.inl": "872a03b08a61e2cdd8058252ae527cb3bd8467cc73fcf4401a4dffc76c7c6bb5",
+      "include\\pufferui\\impl\\vulkan_device.inl": "7fab74630aaecc8c3d33fe5d7c02a8a118744a096498c7924a15ea6a74edede0",
+      "include\\pufferui\\impl\\vulkan_dispatch.inl": "a17d39dc78f4965ba4db10d943b41276ff781ad60bc78796522fe50dc0ba3f65",
+      "include\\pufferui\\impl\\vulkan_draw.inl": "3517359741d66b44153efa66837b0a68868992139154f811eb486e90dc04feb4",
+      "include\\pufferui\\impl\\vulkan_kawase.inl": "daaabad10d1bdfb77869bcf9e34cf38c9bcd56210edeef21bf18800488ece492",
+      "include\\pufferui\\impl\\vulkan_memory.inl": "2927544339816b9305d25c68327c369aa6f5549369a7147e4ea03fc682d21960",
+      "include\\pufferui\\impl\\vulkan_native.inl": "bc9db22840a735cbb55d2c287d998eb6bc052d199376068c6b82ab271b45279a",
+      "include\\pufferui\\impl\\vulkan_preparation.inl": "274cc2461116922507a6156ec08bc565d8301d78e85a9f05899b5242d89a967f",
+      "include\\pufferui\\impl\\vulkan_program_cache.inl": "2c2ef37b19764dd8b35cb7d8988925a5b0fe8a3cefc39b00b0889cbc5dfcf14a",
+      "include\\pufferui\\impl\\vulkan_program_probe.inl": "62c5937e4568cac4a483097dcc2e2286bcb027ace6203215765dfb0df678ce80",
+      "include\\pufferui\\impl\\vulkan_resources.inl": "067b205e2c9aa00268c52e1c6fac8f39a2384df4d088c60aa3ea9408f31b387b",
+      "include\\pufferui\\impl\\vulkan_sdf.inl": "ac4f88089b9027a6ed0e5b96725ee94798e92dd43b43b49e17d404aed98ce714",
+      "include\\pufferui\\impl\\vulkan_shaders.inl": "bd70f574a40bc4da686ae2e497505f7dda1fa084400743da129e750dba68f0f7",
+      "include\\pufferui\\impl\\vulkan_surface.inl": "d589e920edb9708ee35171d221df2877e41bb63fbb57502298d59022f6451cd5",
+      "include\\pufferui\\impl\\widgets.inl": "5c7c078aa6bb95aa7e93ea9047efba018c452d4c16fb953942274661cdfe8f18",
+      "src\\pufferui_impl.cpp": "48e1b4ff7c66a75100cf1c9756ba147dfdff8781eac38facacd8f5ebdd602c92",
+      "src\\sdl_d3d11_arena.inl": "1c0e9105c3b4e2d0913069eeb34ac4caaf68183356f4e605e8644f9c6cbe28df",
+      "src\\sdl_d3d11_buffer.h": "b980858d3eb64a4e4b44698880603bf0efc0fde254643f32d2a3e698dcb7d3cd",
+      "src\\sdl_d3d11_buffer.inl": "726328615af1944095ba741a4dc737e785ace73c145bc74e87114f78088c157a",
+      "src\\sdl_d3d11_draw.inl": "a1b484fcc47e5525d88732a593e9d6fdc523b6746959ac96b55d32d40ca3912f",
+      "src\\sdl_d3d11_geometry.inl": "81ccb578b4bba15444bb2a146eb710f524dece7ab471df4e95a60e50b7a54247",
+      "src\\shaders\\vulkan\\bin_coarse.comp": "304b69b47b13b869a6983056d123dd4be608d0b2dde46cd131dcd8a5ccefe746",
+      "src\\shaders\\vulkan\\bin_common.glsl": "b5f9821845b417700c0cecf9c8de641719293b15eb6b7684331b700f11de1b6c",
+      "src\\shaders\\vulkan\\bin_count.comp": "5074439c27e90b62be7e2f0003e6d7e2e4fba2d05d1d5a260feff2375ef46139",
+      "src\\shaders\\vulkan\\bin_emit.comp": "a8fb862b012b85561618fecd99dc95a56599d66cc610352775a3ec88c870f933",
+      "src\\shaders\\vulkan\\bin_scan.comp": "2ac643a2ebb6c50d1ca8590dd3780abab8e7acd5ff0781bb83d7f6c4d7eef9a5",
+      "src\\shaders\\vulkan\\blend_calibrate.comp": "68efbe57ab46ea913d7eb37b489be3deee0c93eb1030929d439687170e839dac",
+      "src\\shaders\\vulkan\\blend_probe.comp": "7b1c46807711250cec674dee779c7eadbe95552a64cd7d1815d7f81041aa22b5",
+      "src\\shaders\\vulkan\\harfbuzz_slug.glsl": "a83b9587e42b1e3db726be5b6237589007ce33a1bf607c8aea8e8c7bdffa12df",
+      "src\\shaders\\vulkan\\kawase.comp": "85e82e0b00760dac6ff8b703da32e5b9862d7f4f81fd1a61ab63434ceab0efa9",
+      "src\\shaders\\vulkan\\paint_args.comp": "9629ddfa3e10141aed3f81ccc3b1197623ec7dee0e2622734c5bd97de89e9536",
+      "src\\shaders\\vulkan\\paint_compat.comp": "d587fb7f661023f719da9cff681e2bed5ff3d15ed0f83dfe4d2e810af17fa0f7",
+      "src\\shaders\\vulkan\\program.frag": "6c244f816e4b8440d88b9b795b19ff95727c31dedef3a84a1f923c1b9d2473a0",
+      "src\\shaders\\vulkan\\program_compare.comp": "53fada09e2ce5cf10cedf348c27afc4fc99a0ac3e3230fdf58b145f6e6e4dadc",
+      "src\\shaders\\vulkan\\rgba8_blend.glsl": "c9347153254b4fd1730c1bb92c08bfa52d7f29c88e0cd7c6cbf84663a5153a26",
+      "src\\shaders\\vulkan\\sdf.frag": "1d72129c5ae088915b737ada07bca3775a615494d143836d679d74f85966bdde",
+      "src\\shaders\\vulkan\\sdf.vert": "3ff8443224eb24b3ebcd0f37c06298b95a0442500c0951c4c8f99998b44b85c6",
+      "src\\shaders\\vulkan\\sdf_commit.comp": "8b896c37b45c454a9c739a2f88d414ca7011e29e0910d1a73f4f6ab5c8a591fe",
+      "src\\shaders\\vulkan\\sdf_compact.comp": "cd5b0231e8cdc32c0def2f8444eb794ecd059c5e79f45d85c499a659dcc00f48",
+      "src\\shaders\\vulkan\\sdf_compare.comp": "8e6edd9a4fea8cb33090086f3fb30d3ba681646fbb2982d56f023c450bf24306",
+      "src\\shaders\\vulkan\\sdf_fragment.glsl": "7b1648336763906aad612a2ce812743e19c0b5ebeb2bf87fafd8851f3c617a0b",
+      "src\\shaders\\vulkan\\sdf_history.glsl": "4e415e33aafd90bb564c77f013943fa242b7b8430a6c8e04647f171dffafcbde",
+      "src\\shaders\\vulkan\\sdf_paint.comp": "b492c3f4dd28818b0644b6ac6273378cf5f8aa7cc46a0c2c63cbcad618a95909",
+      "src\\shaders\\vulkan\\sdf_restore.comp": "068306c0f03259403f382d4fada05f189b4878649ba804a489514586632f8cbc",
+      "src\\shaders\\vulkan\\shape_common.glsl": "f41d59d2bdc0420c2c6fb4f62a95ec6c97665c9dd1027cbaf9185a58e56c747a",
+      "src\\shaders\\vulkan\\ui.frag": "fcd4245a4d741301ced56f1df47a4f571a8935167d194904d27147250e525361",
+      "src\\shaders\\vulkan\\ui.vert": "bcf9c2f2bffb823fe84e9d27b86110ec67375aa669dbe589429f4db333239eb1",
+      "src\\shaders\\vulkan\\workgroup_scan.glsl": "bbdebdbcfde353ca030a060f686f9d3a960b78f04de6853fa44dbbc5a6b3740b",
+      "tests\\bench.cpp": "ecbfd2a0215adf47abb6398960def43c2ea3dd1838ea0d3557a660572104ed7a",
+      "tests\\bench_core_performance.inl": "761ef98e7d753a32beff581eb9f7eaa2d994f991eaf9c88896ff151ce2bd25c3",
+      "tests\\bench_vulkan_kawase.cpp": "4575f54837b3d84dcc39f37b5a86ab3899922f600c44726112bc006e7c0bd565",
+      "tests\\bench_vulkan_painter.cpp": "86606eab33df2a6948fce625e69e3fab6fa55cee4984f5794f380e47ae435e4a",
+      "tests\\bench_vulkan_program.cpp": "98794e5b108e1e7315f6638adad4294056c74feee456c9fb1b1ed18f8ab086c0",
+      "tests\\test_components.cpp": "83375b64524607e5c5381525287ca1c5a6473a5c76aaa543af068bae97bc5bbd",
+      "tests\\test_core.cpp": "79067c12d17205eea213c87824d270553918cca42d941149ef0a7f3fa70aa45b",
+      "tests\\test_core_performance.inl": "3dfbaddd55f760aecae73ea49ca3b929d05ece27dadc250af5c2b9d51a0b8e32",
+      "tests\\test_core_perf_pixels.cpp": "3f3cc582418fcf0fd6bbbf7e6b3f3eb94c5a1c9f8f1e7e30fd55fa9eeef46eee",
+      "tests\\test_dock.cpp": "4181b165f4b6634a3638eacc35a60e1af6e98e47a52a3bfd9a8f433eb5204811",
+      "tests\\test_ergonomics.cpp": "94da126e932c4d3a4ba6dd0d7a652c5fce40d5490f457982f16cbb898e5644fd",
+      "tests\\test_geometry_performance.inl": "fcbef413e14d63226d5ccfc4d59089edc91c074b6aec79f18f5b7614fd51b81e",
+      "tests\\test_geometry_preparation.inl": "a9121fac2068d55cd0bc877dd2d04afb2071d40a960e2c261d2fc3f6e7de808b",
+      "tests\\test_harfbuzz.cpp": "11be1425cd278bb3734edbc5bf35abd432143c02c82e2e7f1245ef0f50e396a1",
+      "tests\\test_harfbuzz_interaction.cpp": "f3e8f1e799522def972a943b6cff3e241c98d6d4005b8b0421679ac7ec377233",
+      "tests\\test_input.cpp": "58bb610900e95d49a5ff52bba7c6495fd097b8eab5b4b3f83fc26b062fa50e5c",
+      "tests\\test_layout.cpp": "7ae5dcd1b5a6ecfae3f1549622d308239e00a0b442e322b10d1cc8d3e6d0067f",
+      "tests\\test_memory_performance.inl": "e1b0e64f890f0bb7c13afe6e0574c995a52852bfb44f41d68ce3a112f726d364",
+      "tests\\test_memory_upload.cpp": "38606400b442095704eb86e8f2863b201053f5177ccbe4df9a3d27743b1e6294",
+      "tests\\test_motion.cpp": "60dddffd37c3afcd215acf46c70b3750cb493f629b369a48efdf30ef417bdc6a",
+      "tests\\test_performance.inl": "bc97cc9b748f5fceeb8fef7576d06109a2ddcf3a39bd4b3ac661e6c1c9f7c92a",
+      "tests\\test_perf_pixels.cpp": "973afcdf39317dbcb39ba795bc78c410c87bcb2f9dae0b3f93fbec1aacadef97",
+      "tests\\test_platform.cpp": "b89c748a35e7d0d480e78ba7fcb4f1b13d0cd75dfa93bea7b801e4f1d9c7a1de",
+      "tests\\test_pump.cpp": "1d5509bdcb7ad7cc6015c0e5f1a88dda09be43799bfc4b13d616e9bdee0e7dcc",
+      "tests\\test_render.cpp": "80de5d1469d17f4b5d2e0657eb2f16f6ec7c649eba7ed315d6a9fdabef729dfb",
+      "tests\\test_renderer_boundary.cpp": "978a023e6801c82fa1be1473bedc21387e9ed1a9745775eb555db611d9cc1e24",
+      "tests\\test_sdl_capacity.cpp": "47f6087c476107b36fbc7ef1f662191e69b21c5d2e5c99cb21e6104bd3d30a93",
+      "tests\\test_sdl_geometry.cpp": "d221ee0443b862d5e3488fce6e3bcf5d3a9fd617dee42c97a2eec79a0bd1935a",
+      "tests\\test_sdl_upload.cpp": "e32f95aca5a017aa1e33f63434af58e444a4e43593d54211b206f3c14dde89ae",
+      "tests\\test_showcase.cpp": "77a03d920fde456e40bead07d34f6728dead30bd7fc717ea57a6694b5a9f16ed",
+      "tests\\test_showcase_paint.inl": "f655a80789477de0704df92ae745731626985b85bd31aedebf227d1513cd264a",
+      "tests\\test_state_pool.inl": "43f3e6177c196df7f7a9603cb1e031e0efc1cd3d06428ba1b79010f59b59dc6f",
+      "tests\\test_text.cpp": "95b5d2d673e9cb895dbb23a75d1bba08ab7802d2413e0b240ec12ee5ca8439f1",
+      "tests\\test_textarea.cpp": "1d6f40f13521857565941aed679af0ddbfe2e15fb016c9c40153000b7a294a25",
+      "tests\\test_util.h": "98d309de8744cdde6a1e4dfaec64d6e0ad3bd8f8cd1fab2273290ba4b8f78619",
+      "tests\\test_vulkan.cpp": "f5072b20863befd4268dcf51484c02a2e2a01916ee2f3544a0d1584e8e64368d",
+      "tests\\test_vulkan_binning.inl": "1fa8e0f9668843044fb15544df248e97bc1463c1a22876eaad26843a666802e2",
+      "tests\\test_vulkan_cache.cpp": "040bd302f02f805e0545dd569c359823600371f349a0b64b6f39234d4b89d022",
+      "tests\\test_vulkan_commands.inl": "49dc58bbe6ad4ad82835b6cacc4929281bf5e8b12faa59ee9052f50ab2caba2d",
+      "tests\\test_vulkan_compute.inl": "8300dfeefd60b5a1afa03daff637c228e63a889e08342a851e7cd66cf5db02a7",
+      "tests\\test_vulkan_compute_spiral.cpp": "743f65ab2d5460f6f9be94f5da6a035b2c2fa011469cf5111ba8c743f9ee19ac",
+      "tests\\test_vulkan_compute_tools.py": "e2d6b563e4a335ae1972284ec047e1ec77b37234f0b66f7bdadb38f5cb863cf4",
+      "tests\\test_vulkan_external.cpp": "d0dd3b321b5e5b58770f90643c2177caa88defc62490e07c572369981cc2703f",
+      "tests\\test_vulkan_faults.cpp": "e79187edee901c2e2d53398920a3e464ae817206ac9868d7b68b615cc3550b66",
+      "tests\\test_vulkan_interaction.cpp": "ef964d1cbbaefed368419a4c40edc64b94da485dcff8ac950cfb8d8ea1f0a1f2",
+      "tests\\test_vulkan_internal.inl": "11c4539abb1f3430c91067218f8ccedec9bc8093e9355c3d9db4e850c0ac9d7e",
+      "tests\\test_vulkan_kawase_interaction.cpp": "2c90cd73c7a0fb58535d9927dd2657a58a4194f3a25894f7442b5ba267c4cbf0",
+      "tests\\test_vulkan_kawase_spiral.cpp": "569494efedc0e8c3d942117000f0316d79c988c0a2660e42fd3b675915a76780",
+      "tests\\test_vulkan_memory_roles.inl": "855bffd953b67b87876ec864a5b0376a4308b76615cf6ad181e42c8be72853fd",
+      "tests\\test_vulkan_numeric_probe.inl": "28e618f5d620a97664bd800260172703b9df7c263f2d5d2da7208097b35330b4",
+      "tests\\test_vulkan_preparation.inl": "d0b1b2ec177afe092355c988e447222d2810eb042eae934904c8cbabe6f4db4f",
+      "tests\\test_vulkan_preparation_tools.py": "23411815dfca88a24d0062f347edbcd655949671c5dfc06d9d72edac829534b7",
+      "tests\\test_vulkan_program.inl": "af054777f7b3ebea307fe9f97c233ef69f429a2fcdc6621cc8867a06ab0b3b41",
+      "tests\\test_vulkan_program_tools.py": "d0913801a6e9c80a31c7ced80cd296651a416a8db1ae3510c45a927db9c7e141",
+      "tests\\test_vulkan_retained_spiral.cpp": "a28b1a12e9fd774906fd6449f0dd8a366919765f7a83981d7f3a2ac0e55478b2",
+      "tests\\test_vulkan_sdf.cpp": "bbba7e1ba18cab672dd10bd76794801d30a8e036e76b0ca78502da5e12ba5ca6",
+      "tests\\test_vulkan_sdf_cache.inl": "639e09c30b791d4a1e3f839b700027234845310ed69a25b3544fcdb88867419e",
+      "tests\\test_vulkan_sdf_interaction.cpp": "faeddfc15dc522bdbc310b94b32448313fcf3d74a78eac7e661a9b861e13f9ef",
+      "tests\\test_vulkan_showcase.cpp": "b1d50d1fa2d4e3994693e88cdf9477d23eddf63383190eced31a974e7231f1c7",
+      "tests\\test_vulkan_spiral.cpp": "aa51f7f8edd042fa7263fdd89829dde44a336b2eeac516bb906fc3be2d52b7a6",
+      "tests\\test_vulkan_spiral_binning.inl": "0d365404a093b43dc436daaae54b21c58bdbd8b2fad339c91c2d4f3494a9f0c1",
+      "tests\\test_vulkan_tools.py": "d43a9f01c369dfb8a15190eeeb9da708ae8309eaa3a427ed6af4a80c48a39cd3",
+      "tests\\test_vulkan_workgroup.inl": "c298a25d8ccc1b2dac03c1f08b273285018f1059113a79509abe4eddc76e6457",
+      "tests\\test_vulkan_wsi.cpp": "747809e3b3544c6a8ade5bb6d8bae8b56a672d06e11e4c59475f8f2ed47411c8",
+      "tests\\test_widgets.cpp": "88498ac9a68e976b8469b8e8ff9da9511b2a0e2d96f69ea0a20794a734d9a000",
+      "tests\\consumer\\main.cpp": "3c94e847a0b0a6fd4db623766cd15e6ec93af7f2af0f93205f56d428ebf8388f",
+      "tests\\consumer_vulkan\\main.cpp": "e2cbcd6a526012429b794a513c4845c9f2db1eba8c647eb2891fb510768d3c34",
+      "tests\\golden\\test_golden.cpp": "6d64ca62ae43957bf8fd82720433f74e5a7792772b6dd174366fe5fde3aea337",
+      "tests\\golden\\vulkan_kawase_rx9070xt.inl": "fe6b30e51144c1595f1a4b15b0386632a66f2b34fe5a3a57a6c10b9f77301a72",
+      "tests\\golden\\vulkan_painter_rx9070xt.inl": "fa35a0dd15563aae43e32ca973b32b0fd0c994ece009f3ac8ea76efd893e7e6d",
+      "tools\\check_consumers.py": "a48e1816fd03296247e632f6fbac012e174be7659ddfa3b0ee7a60bf68527b6f",
+      "tools\\check_vulkan_consumers.py": "8c0a68d923a89cf44bf03e438d733512b58f08b7b0387aa416b155e855b93fa7",
+      "tools\\compare_showcase_controls.py": "de1454a4d296bb6df90012e528beb2213961c54b20abecde870d48c061f2eabb",
+      "tools\\compare_vulkan.py": "f6338fc50416d9a0fb67647ab28538a9471bfa49d78976601e12d3cfea3408aa",
+      "tools\\compare_vulkan_compute.py": "ee7786071a7228db5bef37a1c9259b2c31063a466faaf26824846c88e2371273",
+      "tools\\compare_vulkan_preparation.py": "030a2f928b0a5cc8cc0bae05b0da84198258adba015b641e59a8f6500ef49d88",
+      "tools\\compare_vulkan_program.py": "5c41713a4526ea545b02dfb34582675c5c4b394945196d334e8e93d2568aaab4",
+      "tools\\compile_vulkan_shaders.py": "5c6bd64ad29232a07275b7790e5096213e29cf7d1fb5c7861a49a3c86c773b0c",
+      "tools\\measure_vulkan_gpu.py": "226abf95ced361a76573314836dacb0de014fbb357db5a67de90488c1b15827d",
+      "tools\\profile_vulkan_painter.cpp": "6cabef3a6d6d1d3e6d8212dec6925d19b8aec7a057c05700a039e5629426582b",
+      "tools\\profile_vulkan_painter.py": "7c329a627f9fe3e3de473075264825188a62b756616ea64404ead3fe692d87bf",
+      "tools\\run_tests.py": "a7ec53306b41616e4c977fc0495f03e9cb974d9609ad3cbab71d8dda95328705",
+      "tools\\run_vulkan_showcase.py": "c9a451da5cd0df47b709a3c8753a89552cb9f7e7fb97b5401238f88a333fbc35",
+      "cmake\\PufferUIHarfBuzz.cmake": "d001b23e69c1fae59c2c119ba8ab1e762a4e17da0433e1464bc39cd06a529826",
+      "cmake\\PufferUISdlD3d11.cmake": "301653a7d3c77d5c981d1112dfa8adba929a5c4ffc8690edb00f937c0ac29586",
+      "cmake\\PufferUIVulkan.cmake": "db9888b32834a55b59181cf9268db64c95ab0689f6d446d01dd37455f3d0940e",
+      "examples\\dock_helpers.h": "f2f6f3522c19ec4dfef905029d2cec5e987584bb2254316c7a454278320e0083",
+      "examples\\example_common.h": "7dcea9fe378aade4fbdeb1b3861e7e8e6b6868b091e3ca5fe18880f0c79642fb",
+      "examples\\pui_counter.cpp": "925378b12ed5cf89f4ccc8810797b2b57cf1229d58b62950ea402b8418e23c77",
+      "examples\\pui_demo.cpp": "ab885689d0a75c9c371ecb88629ce943019848cb3703d2dd01cdbf9049094ce2",
+      "examples\\pui_showcase.cpp": "fff09312e936d1a3ea93f29ef4e02102e916b56cd112f32402d39706216df152",
+      "examples\\pui_tour.cpp": "45943e40eb1ce8b078a57d7e6911e3cdc86aaa859ebf7b1dace9b3ca7ed0f8ce",
+      "examples\\atomic\\a11y.cpp": "40a182362964131e1030221e7a3e5d7acdbf491d7a4daa08e8f2e5fae68d3c34",
+      "examples\\atomic\\animation.cpp": "b1af8acef468e5d32fb9b39687539aca8f2ec9dd3b4e2462e4c345075272da4d",
+      "examples\\atomic\\blur.cpp": "9fb14e1d34fba0281c5527f48f23211326fc7ac4914904bc02fadb522d1af8dc",
+      "examples\\atomic\\bootstrap.cpp": "2b4dd94a570477fa70239aabbceec1dfacdb2c99a45d3e15057d7d9577daaa55",
+      "examples\\atomic\\buttons.cpp": "9969193ba86907bfcbda2747f4322f82ef90755ae47a38266871d963776085c8",
+      "examples\\atomic\\colors.cpp": "c70b0f68c3a0a6d755490225a8452b3e1337a5ef789261dd70491d337cda47cc",
+      "examples\\atomic\\combo.cpp": "043526548d7f9f8f57591ac1e85db738a0c1bd013c9553958193fd426b0d39f4",
+      "examples\\atomic\\components.cpp": "d383e445998d4b3f069e9466c904422454feb962d01d6600e080ab7477b2ed54",
+      "examples\\atomic\\controls.cpp": "784b46feb31ed49358f28e3eef6f11fdc16b15b6d3c41a1754df197e9e67e817",
+      "examples\\atomic\\cursors.cpp": "a3422285cf778e6a4a117afccc7ad6d507a17f3012bd7db7403c418fb840a395",
+      "examples\\atomic\\custom.cpp": "4956327cef9677c3668ea175d1cab77c3dd6ae1517543c015d7b4abb956f746d",
+      "examples\\atomic\\dock.cpp": "6fb731b8faf9d27be92ef156a6615815cbbcfb64d54e81b7fa3d024612a12679",
+      "examples\\atomic\\dpi.cpp": "26331be5d8675eb48706e2420fcf7c4543a9c7a149fa93a7e4376ad9f502d4f2",
+      "examples\\atomic\\drawing.cpp": "5405b626e94965bcabbb58110deb5a68986d6238768247eeb0950aff97b66e46",
+      "examples\\atomic\\expander.cpp": "1dd09e9058b4f045cf8ce5bf63e445f55d58de05f1ddd0ef8c906268f02f6d33",
+      "examples\\atomic\\files.cpp": "f8c036f299677b226c15ffd68b73e72b5e30161bb8ef8bc60d3a913d06ebf567",
+      "examples\\atomic\\grid.cpp": "b09ef5c27cd8d810daf5b6299a36f92d319b393276d412768ec7c094d9a788e9",
+      "examples\\atomic\\headless.cpp": "a940b7276eb579dd246a33e44144370a1588408bf8b66e35f54d48e223b34697",
+      "examples\\atomic\\hello.cpp": "03291636b2bd41c9375fac99a9aad4f44468f26521135b2ee96903c83e715085",
+      "examples\\atomic\\ids.cpp": "4012dd82fbb864f790cc7974ba75caeba2fe68db8deebd784e61d63c603312ed",
+      "examples\\atomic\\inputs.cpp": "ad452914689f2332294de4e851f17d0690676c6392a0bee1ec809607ebc03afa",
+      "examples\\atomic\\keyboard.cpp": "8e34aea699c7ce372b52f5df78ab12621cdfe3bdfe23ee5b2cbf8d5d8405526d",
+      "examples\\atomic\\numeric.cpp": "2fceb603e05e0f60ad7af6581a15fbf01f50be19cf5859dc4dc37c20857056f7",
+      "examples\\atomic\\overflow.cpp": "d17d812f398207f3a43c0fa043a2492042b575fc1113450f9cd391cc922503d0",
+      "examples\\atomic\\panels.cpp": "09daff315db249877ee1eadb5d96166dd6e8e2d1e846a4d9017ba673ac63d123",
+      "examples\\atomic\\patterns.cpp": "1023af2178a5302416881e8d0563b101ab2cb118447689f6e384857bde2ee860",
+      "examples\\atomic\\pickers.cpp": "65f1740fb093dcf86b890ad52b907b8efd8fb694483ebd40b2e34753d6d752f9",
+      "examples\\atomic\\popups.cpp": "df1e6d6f098bf4c6450c9f50c8b028669a4dcfcedbd2c0ce57b4c671b1080115",
+      "examples\\atomic\\rect.cpp": "de42b9b53b59cb779f66ddfd580353708a09d5d038e48fcca74fb1eabf9476de",
+      "examples\\atomic\\relayout.cpp": "cb94595c0538d440a91311282fea0d5ae5e4936d79070893e90ac5161c0cfc62",
+      "examples\\atomic\\renderer.cpp": "53a360b08666f9b2746e7d5dc3d47c6c7048cb06d8c4c0b545762b92a5814ec0",
+      "examples\\atomic\\scroll.cpp": "ae67fcb05b9dc21dde92a700e4321968286bf34eefa0e8b1361bb2086f90007d",
+      "examples\\atomic\\tables.cpp": "8eadd7853b829d01f31d124c74a35a4841952b367d6ac67b263754feb5c96a67",
+      "examples\\atomic\\text.cpp": "f6439dc37656ec2f6644f32cc680b9d4f4ba31bb3b0b8ef6da143967b7c37b79",
+      "examples\\atomic\\textarea.cpp": "74819b7a0780707e29deec3199299b9c468285b1adddfbe54a7cf84525ba19e4",
+      "examples\\atomic\\theme.cpp": "ecb9fe09f5af3cd3a195f9aae055a4d2558cd8b7eea47dc9786fc81598ea3ae7",
+      "examples\\atomic\\tracks.cpp": "f1032181a4a25a071faefbac7f1550ddab7a3f84bde82a53d7205c466d49f0f8",
+      "examples\\atomic\\tree.cpp": "4a4105eb9d4bed4f827de9a96906da3b7280cf76bb38f7c48b94cc99cc1a41c4",
+      "examples\\atomic\\vlist.cpp": "942bc4bce20db1606577ec38797239668d46ce917d131729d8a3db3410021269",
+      "examples\\atomic\\vulkan.cpp": "1978741409af45dc5d129c1329f3b3e172409eb52185b85a96c2fe7bb027cbee",
+      "examples\\atomic\\vulkan_blur.cpp": "597c09d93f88706000897bfe94cc9decc4693cb49afc330a38eb8a44518cc91d",
+      "examples\\atomic\\vulkan_painter.cpp": "766d77e2ad9c83a97a5f0bc7f951bfb541ace77ac1873b14b0b67cd60af037a2",
+      "examples\\atomic\\widgets.cpp": "17a90bc52dbb6b620ac236bfd4e45e791b6e0bc915a5d94eb362b614a3ecde61",
+      "examples\\atomic\\windows.cpp": "120a4d75fe40acdfe4a5c7af5f64f916c4d149765f79ad46011166c5f9a782b6",
+      "examples\\tutorial\\button_states.cpp": "56ff9f7439efbbb090ebd646d76f8a3b42937e5341752984affc163b28136c10",
+      "examples\\tutorial\\glass.h": "2132cf4031e6eca3d783b72ce79fb9344e31a83986551170b96f4750137e0ab5",
+      "examples\\tutorial\\glass_widgets.h": "0bd519557244c1dd3085668fe076c576bfd826efa553c2625e0f56574dd1e7d8",
+      "examples\\tutorial\\step01_shot.cpp": "75b36f0022dad46065afc25bc649a8a75a53c9e5e4bf449e03e5379c3c71a644",
+      "examples\\tutorial\\step01_window.cpp": "b5304feb561ddb22f18029a7df07eccae88946abe3c1b6711224d303cfe278e1",
+      "examples\\tutorial\\step02_layout.cpp": "abc48138b2c7d3e4a53da92f5f1acc50d8adeb35357bd38663f8926a706b9911",
+      "examples\\tutorial\\step03_tasks.cpp": "67970386218a146bbb5debb0700236e75f5c2125d5899c33d6786004657ebcf6",
+      "examples\\tutorial\\step04_filters.cpp": "198525a638d35be295cbc54599c2a806888721b0cb075d4d9db4d8ff936b98db",
+      "examples\\tutorial\\step05_glass.cpp": "199c478e0ea3e1645e5401997978c09b6af8a7fa3a36b29e32385694fd526e1d",
+      "examples\\tutorial\\step06_motion.cpp": "491f31dc9bf7337f15cfd3214fcff808c1666d54b565420997de7c2987d67f48",
+      "examples\\tutorial\\todo.cpp": "24c4b288b8893a070f39f4f79fd5fec9014e3d8179bc2afe55da247150dfb0d8",
+      "examples\\tutorial\\todo_model.h": "1ecaf1800c9164fde450a4529003e44470524d84eca09ae5b0b0343907550c78",
+      "examples\\tutorial\\todo_test.cpp": "5ce5aa12eed1db23df8fab216563455a8262bcbd91ff4a9e914bca9223e25d2e",
+      "examples\\tutorial\\todo_ui.h": "52a925810f7bcb66204da117fdddebf68c6328a3b47cd02a21ce5b8150e8044d",
+      "examples\\tutorial\\tut.h": "44c91f47010fe1cafbe30e4b82f44e5f1a991ed3d92dc5908eca57446b8c32b9",
+      "CMakeLists.txt": "d6ea32cd0bf3110c0653be8ab576d2978daca5beb842018c10d1ccd5bc54e6d9"
+    },
+    "full_suites": {
+      "release": "ef5835d7fcc7dbcc10269174cf3aec90f3cf13dba42b908eeb47dac2135fce8b",
+      "debug": "a4c5f941546c546cf261c1293f6f988ce691a9a48dc9f0c681540b001ad0458c"
+    }
+  }
+}

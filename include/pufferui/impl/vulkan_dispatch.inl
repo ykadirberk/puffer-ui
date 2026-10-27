@@ -86,6 +86,8 @@ namespace vk_detail
     X(CmdSetViewport)                                                                              \
     X(CmdSetScissor)                                                                               \
     X(CmdDrawIndexed)                                                                              \
+    X(CmdDrawIndirect)                                                                             \
+    X(CmdDrawIndexedIndirect)                                                                      \
     X(CmdDispatch)                                                                                 \
     X(CmdDispatchIndirect)                                                                         \
     X(CmdFillBuffer)                                                                               \

@@ -1,0 +1,112 @@
+{
+  "schema": 1,
+  "status": "SOURCE_FLOAT_ORACLE_PASSED_NOT_GENERAL_COMPUTE_COMPLETION",
+  "protocol": "Offscreen actual native SDF fragment module to F32 target with blending disabled only by a test dispatch wrapper; separate compute pipeline reads the same shape/outline bytes. Compare every raw32-bit component; no tolerance. Production shader/binary outputs not updated.",
+  "coverage": "With HarfBuzz:562fixtures (256channel permutations,36gradient fixtures,270realGlyph fixtures over5glyphs/3scales/3gammas/6phases),9207808components/run. Direct and staged both exact. Negative control deliberately flips one alpha bit and must reject all2301952alpha components. Without HarfBuzz:292fixtures; same native/compute and negative checks.",
+  "limitation": "This isolates pre-blend float sources on this adapter. It does not establish general RGBA8 fixed-function blend equivalence, texture parity, general output caching, foreground CPU nonregression or a completed renderer. Those gates remain open.",
+  "sources": {
+    "tests/test_vulkan_source.inl": "6a6da57ca01a1ebf52101d694fcc75421f842fe5f534919c91b2dbb380164a4b",
+    "src/shaders/vulkan/source_probe.comp": "081c318b42727f52382a0a1122697fa94ef612625ae5f6b050cdb075e617a5f3",
+    "src/shaders/vulkan/shape_common.glsl": "f41d59d2bdc0420c2c6fb4f62a95ec6c97665c9dd1027cbaf9185a58e56c747a",
+    "src/shaders/vulkan/sdf_fragment.glsl": "7b1648336763906aad612a2ce812743e19c0b5ebeb2bf87fafd8851f3c617a0b",
+    "src/shaders/vulkan/manifest.json": "cd8de50981437ae28c14b664218ec11374a06fda84c085cca7e47c0f2f5ecde4",
+    "src/pufferui_impl.cpp": "265803cd70711314120299404de72cfe9925b299a0da7c7516fcc7bae4e6a273",
+    "CMakeLists.txt": "5ffb92398ee6f4d54f125496892a9f9a2ea019cfb4f0dd168a66bb56ae12a7d9"
+  },
+  "previous_production_shaders": {
+    "existing_shaders": 20,
+    "changed": [],
+    "new_shaders": [
+      "source_probe"
+    ]
+  },
+  "registered": {
+    "exe_sha256": "bd4831276f0d7aa53eea18dae09703b54cf5de4ca549235e8f39ced286d0df40",
+    "source_sha256": "6a6da57ca01a1ebf52101d694fcc75421f842fe5f534919c91b2dbb380164a4b",
+    "runs": [
+      {
+        "name": "direct",
+        "flags": [],
+        "exit": 0,
+        "output": "all native/compute source-float components matched exactly\ncases=562 compared_float_components=9207808 differences=0 channels=0/0/0/0 validation_errors=0\n"
+      },
+      {
+        "name": "staged",
+        "flags": [
+          "--staged"
+        ],
+        "exit": 0,
+        "output": "all native/compute source-float components matched exactly\ncases=562 compared_float_components=9207808 differences=0 channels=0/0/0/0 validation_errors=0\n"
+      },
+      {
+        "name": "negative",
+        "flags": [
+          "--negative-control"
+        ],
+        "exit": 0,
+        "output": "native source oracle rejected every deliberate alpha bit flip\ncases=562 compared_float_components=9207808 differences=2301952 channels=0/0/0/2301952 validation_errors=0\n"
+      }
+    ]
+  },
+  "debug": {
+    "exe_sha256": "aca8a02e3fd338ce45b48d725bb90f4a6b8e85840560c03924b3eebbb64c4c50",
+    "source_sha256": "6a6da57ca01a1ebf52101d694fcc75421f842fe5f534919c91b2dbb380164a4b",
+    "runs": [
+      {
+        "name": "direct",
+        "flags": [],
+        "exit": 0,
+        "output": "all native/compute source-float components matched exactly\ncases=562 compared_float_components=9207808 differences=0 channels=0/0/0/0 validation_errors=0\n"
+      },
+      {
+        "name": "staged",
+        "flags": [
+          "--staged"
+        ],
+        "exit": 0,
+        "output": "all native/compute source-float components matched exactly\ncases=562 compared_float_components=9207808 differences=0 channels=0/0/0/0 validation_errors=0\n"
+      },
+      {
+        "name": "negative",
+        "flags": [
+          "--negative-control"
+        ],
+        "exit": 0,
+        "output": "native source oracle rejected every deliberate alpha bit flip\ncases=562 compared_float_components=9207808 differences=2301952 channels=0/0/0/2301952 validation_errors=0\n"
+      }
+    ]
+  },
+  "no_harfbuzz": {
+    "exe_sha256": "d725728f20bcc9761af9050c4c75427b7264bc0ae2caceacd372373b8ca8a688",
+    "source_sha256": "6a6da57ca01a1ebf52101d694fcc75421f842fe5f534919c91b2dbb380164a4b",
+    "runs": [
+      {
+        "name": "direct",
+        "flags": [],
+        "exit": 0,
+        "output": "all native/compute source-float components matched exactly\ncases=292 compared_float_components=4784128 differences=0 channels=0/0/0/0 validation_errors=0\n"
+      },
+      {
+        "name": "staged",
+        "flags": [
+          "--staged"
+        ],
+        "exit": 0,
+        "output": "all native/compute source-float components matched exactly\ncases=292 compared_float_components=4784128 differences=0 channels=0/0/0/0 validation_errors=0\n"
+      },
+      {
+        "name": "negative",
+        "flags": [
+          "--negative-control"
+        ],
+        "exit": 0,
+        "output": "native source oracle rejected every deliberate alpha bit flip\ncases=292 compared_float_components=4784128 differences=1196032 channels=0/0/0/1196032 validation_errors=0\n"
+      }
+    ]
+  },
+  "prototype": {
+    "exit": 0,
+    "protocol": "offscreen numerical source-float diagnostic; native SDF module unchanged, F32 target with blending disabled; not a performance acceptance run"
+  },
+  "prototype_log": "cases=562 compared_float_bits=9207808 differences=0 channels=0/0/0/0 validation_errors=0\n"
+}

@@ -1,0 +1,5 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#define PUI_SDF_PROGRAM
+#define PUI_NATIVE_SNAPSHOT
+#include "native_copy_tiles.glsl"

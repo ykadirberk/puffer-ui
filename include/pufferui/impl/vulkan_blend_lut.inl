@@ -101,6 +101,50 @@ struct rgba8_blend_lut
         if (src) d.destroy_texture(src);
         if (dst) d.destroy_texture(dst);
         if (target) d.destroy_target(target);
+        // Calibrate in host-visible storage, then retain the immutable table
+        // GPU-local. Avoid mapping 17 MiB of VRAM and calibrating through it.
+        if (success)
+        {
+            page local;
+            if (storage.storage(local, BYTES, storage_role::DEVICE))
+            {
+                success = d.commands();
+                if (success)
+                {
+                    storage.barrier(VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
+                                    VK_ACCESS_2_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+                                    VK_ACCESS_2_TRANSFER_READ_BIT);
+                    const VkBufferCopy copy{0, 0, BYTES};
+                    d.vkCmdCopyBuffer(d.frame->command, storage.buffers[1].buffer, local.buffer, 1,
+                                      &copy);
+                    storage.barrier(
+                        VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
+                        VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, VK_ACCESS_2_SHADER_READ_BIT);
+                    storage.serial = d.submit();
+                    success = storage.serial && d.wait(storage.serial);
+                }
+                if (success)
+                {
+                    storage.free_storage(storage.buffers[1]);
+                    storage.buffers[1] = local;
+                    local = {};
+                    const VkDescriptorBufferInfo info{storage.buffers[1].buffer, 0, BYTES};
+                    VkWriteDescriptorSet write{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+                    write.dstSet = storage.descriptor;
+                    write.dstBinding = 1;
+                    write.descriptorCount = 1;
+                    write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    write.pBufferInfo = &info;
+                    d.vkUpdateDescriptorSets(d.native.device, 1, &write, 0, nullptr);
+                }
+                storage.free_storage(local);
+            }
+            else
+            {
+                storage.free_storage(local); // budget rejection retains the calibrated host table
+                if (d.result != VK_SUCCESS) success = false;
+            }
+        }
         preparation_ms = wall_ms() - start;
         valid = success;
         return success;

@@ -17,6 +17,41 @@ struct vulkan_rounded_gradient_opts
     color underlay{}, top_left{}, top_right{}, bottom_right{}, bottom_left{};
 };
 bool vulkan_try_rounded_gradient(ui &u, const vulkan_rounded_gradient_opts &opts);
+// A bounded union of rounded distances, painted once with common styling.
+// Available on INTEGRATED; false means nothing was appended. Child ordering
+// does not create overlapping fill/outline layers. Coordinates are logical.
+struct vulkan_group_shape
+{
+    rect area{};
+    corner_radii radii{};
+};
+struct vulkan_shape_group_opts
+{
+    std::span<const vulkan_group_shape> shapes;
+    color fill{255, 255, 255, 255}, outline{}, glow{};
+    f32 outline_width = 0, glow_radius = 0;
+};
+bool vulkan_shape_group(ui &u, const vulkan_shape_group_opts &opts);
+struct vulkan_alpha_opts
+{
+    f32 opacity = 1;
+};
+// One active barrier per device. Destroy before end_frame, like clip scopes.
+// active()==false leaves the original target and its contents untouched.
+struct vulkan_alpha_scope
+{
+    context *ctx = nullptr;
+    bool opened = false;
+    vulkan_alpha_scope(ui &, const vulkan_alpha_opts &);
+    ~vulkan_alpha_scope();
+    vulkan_alpha_scope(const vulkan_alpha_scope &) = delete;
+    vulkan_alpha_scope &operator=(const vulkan_alpha_scope &) = delete;
+    bool active() const { return opened; }
+};
+inline vulkan_alpha_scope vulkan_alpha(ui &u, const vulkan_alpha_opts &opts = {})
+{
+    return vulkan_alpha_scope(u, opts);
+}
 // Borrowed handles. The caller enabled these three Vulkan 1.3 features and
 // externally serializes its queue submissions with PufferUI calls.
 struct vulkan_native_device
@@ -86,6 +121,8 @@ struct vulkan_stats
     u64 gpu_sdf_cache_hits = 0, gpu_sdf_cache_misses = 0, gpu_sdf_cache_image_bytes = 0;
     u64 gpu_sdf_cached_pixels = 0;
     u64 gpu_sdf_bypasses = 0;
+    u64 whole_program_hits = 0, whole_program_misses = 0;
+    u64 whole_program_probes = 0, whole_program_probe_pixels = 0;
     f64 gpu_sdf_calibration_ms = 0;
     f64 sdf_prepare_ms = 0, sdf_record_ms = 0; // CPU intervals, not GPU timestamps
     u64 gpu_metadata_allocations = 0, gpu_compute_pipeline_creations = 0;

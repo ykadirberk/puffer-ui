@@ -1,0 +1,1304 @@
+{
+  "status": "FOCUSED_NATIVE_OUTPUT_AND_GPU_INDIRECT_PASSED_NOT_RENDERER_COMPLETION",
+  "method": "Exact transformed vertices/indices and sealed source generation/revision/filter/format/scissor are retained in GPU canonical program storage. Each tile compares full words plus actual LOAD input RGBA pixels. GPU snapshots only dirty input tiles before painting; captures full native output only after raster replay. Clean tiles restore all native AA/text/image/mesh/base pixels and generate native VkDrawIndexedIndirectCommand with instanceCount0. Tests read actual GPU argument words.",
+  "coverage": {
+    "spiral_frames_compared": 3240,
+    "immutable_spiral_frames": 1800,
+    "no_harfbuzz_spiral_frames_with_native_oracle_only": 1080,
+    "small_native_output_frames": 480,
+    "small_native_output_compared_bytes": 23592960,
+    "variants": "Release, Debug, explicit no-HarfBuzz; direct/staged; cache/off;1150/5000; bitmap and Slug; tiny image budget; raw vertex/index changes with stable AABBs, LOAD changes, texture revision at native submission, removal/clip/target-generation, overflow, CPU payload exhaustion, deliberate hash collisions and flattened dispatch"
+  },
+  "negative_control": "The exact output-cache oracle compiled with frozen verified-I3 code fails at frame5:12 tile hits but0cached pixels instead of12288. Candidate source also checks native GPU indirect words under its current private-test define; old-ABI wrapper omits only that new private counter/argument inspection. Asset path is the same explicit bundled path.",
+  "limits": "This is focused functional validation. Both complete project suites are running separately. General output reuse is correct but sampled resource revisions are currently conservative; value-based effect DAG/clear/copy admission remain incomplete. Analytic CPU vertex preparation, glyph source-alpha residency, groups/alpha barrier and normal production selection remain open. Function cache misses are high. Cached vector Spiral image allocations51732736B vs11362560B uncached, metadata peak35307648B vs22455680B; retain this cost, do not claim reduced VRAM or speedup. Native draw allocation/resource counters are0; global C/C++/driver CPU/allocation and actual readback-free performance/foreground gates remain open. No commit yet.",
+  "release": {
+    "cases": [
+      {
+        "name": "shaders",
+        "command": [
+          "C:\\Users\\Kadir Berk\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+          "D:\\myimgui\\tools\\compile_vulkan_shaders.py"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "D:\\myimgui\\out\\build\\x64-release",
+          "--target",
+          "pui_vulkan_source_tests",
+          "pui_vulkan_function_tests",
+          "pui_vulkan_integrated_tests",
+          "-j",
+          "3"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "source-0",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_source_tests.exe"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "source-1",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_source_tests.exe",
+          "--staged"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "source-2",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_source_tests.exe",
+          "--negative-control"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "source-3",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_source_tests.exe",
+          "--byte-tints"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "source-4",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_source_tests.exe",
+          "--byte-tints",
+          "--staged"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "function-0",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_function_tests.exe"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "function-1",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_function_tests.exe",
+          "--staged"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "function-2",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_function_tests.exe",
+          "--negative-control"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "integrated-0",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_integrated_tests.exe"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "integrated-1",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_integrated_tests.exe",
+          "--cache"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "integrated-2",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_integrated_tests.exe",
+          "--staged"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "integrated-3",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_integrated_tests.exe",
+          "--cache",
+          "--staged",
+          "--tiles",
+          "1150"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "integrated-4",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_integrated_tests.exe",
+          "--bitmap"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "integrated-5",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_integrated_tests.exe",
+          "--low-budget"
+        ],
+        "exit": 0
+      }
+    ],
+    "changed_old_production_spirv": [],
+    "exe_sha256": {
+      "pui_vulkan_function_tests.exe": "ad8a0dc52d5f6bad2f00890043725e4f94db40c299793a8d6e8942589db22940",
+      "pui_vulkan_integrated_tests.exe": "246e05a2d20cdbbc09f02c1e968d90dedc8055ae3f58e0b6888e91d3d0d5605b",
+      "pui_vulkan_source_tests.exe": "4697b80aeb8a4880ccaa05aa7e746dee42fcd93f555b14f65db817a7e46419e5"
+    },
+    "source_sha256": {
+      "include\\pufferui\\impl\\chrome_scroll.inl": "d8b4cc31ca403fedfd48add4927c42ce0aaef59c1d9bd9e77834fc773882da50",
+      "include\\pufferui\\impl\\components.inl": "21aad5d9c1c3ef8da97b814a54f7414dcb2b4ef1bb47b5d89f7fceebc4e7b3ee",
+      "include\\pufferui\\impl\\core_pool.inl": "121be14ec368e5c0c0773038efff25d01b641a5dec9bc9b223ac6e094ca08fa1",
+      "include\\pufferui\\impl\\core_state.inl": "b2069ccbcfe5744c5cada39db8f816af4ad6559310922f2d18e55aea94feb51d",
+      "include\\pufferui\\impl\\dock_style.inl": "400a11bc84f737312af3049d71779e8b606c54ee04273dfa38be85c5c05c2e19",
+      "include\\pufferui\\impl\\draw_context.inl": "a43f1e7df590d1cccae44daaf2efc607211638149e1e829b073d0f411efee5db",
+      "include\\pufferui\\impl\\draw_primitives.inl": "89260f8e42841cc3279e76941be1c94d11dd2116218a408673ad8f9cd6803b44",
+      "include\\pufferui\\impl\\harfbuzz_text.inl": "6f12456a28a9fabd71ed3cc69cd58ba47c77583e5868149891da52750011b0a0",
+      "include\\pufferui\\impl\\input_interact.inl": "e151e2467bf43b549f45f6e24bf6c41c42a525c294bb72ff0637451d5d1df66e",
+      "include\\pufferui\\impl\\layout_text.inl": "42810dfa6f4c61d1f28f2c81a1a40a9f573fe9aba223232e71e8569d71fa8d85",
+      "include\\pufferui\\impl\\paint_commands.inl": "bd82eb62de019ab34fa8d5ba166a196046582c7ad0de98c36424b1bd8bef0513",
+      "include\\pufferui\\impl\\renderer_gradient.inl": "0c2aaea38a6332c4822c95e74c4b55fc162b3e8cf19da83d10e9aed33644d5a4",
+      "include\\pufferui\\impl\\renderer_mesh_state.inl": "21ea2995fb21fce57826463da171af05634126005b177a4a5a17da7ef36ae290",
+      "include\\pufferui\\impl\\renderer_overlay_state.inl": "b34c3996b46fe2bbbb15f4b93f438fdf15f97bc8aec54d49ec3b78125e807d1f",
+      "include\\pufferui\\impl\\renderer_primitives.inl": "1d9b0bbd4f41273dff48e9bbe5a25cad8fdc0f777cba58487112361396bacc09",
+      "include\\pufferui\\impl\\renderer_text.inl": "35119f09fffaade1992fa6db7e8c3fd3381065d804f8c04c69d5ad27837a11ed",
+      "include\\pufferui\\impl\\renderer_text_state.inl": "34aa0fe722be32eb8f75968a8e5c4219b65556cb62424956fa5625f7c7e4485c",
+      "include\\pufferui\\impl\\renderer_widgets.inl": "1f8f242f6357aa7d3e601135f4b4b9d936489003c60f8c47c6cf2defd649adf1",
+      "include\\pufferui\\impl\\sdl3.inl": "3d2efaf8ad9f6e5974d586842bc2a791e95bf6c89fcdeb538fe93b9d9c1fa7c7",
+      "include\\pufferui\\impl\\sdl3_vulkan_host.inl": "9b51c683ab4192478f1ce0542ef7d1563071aa8afc1079d333873eea684f2acb",
+      "include\\pufferui\\impl\\typed_inputs.inl": "b7000448abae71477f297bed6c11d8b0e804d129ff3796a27fd91698ae714480",
+      "include\\pufferui\\impl\\uia_windows.inl": "81190fcf0169f493fb552472e03d25f78f9fa39346b6e3aef117dd5fe45d1758",
+      "include\\pufferui\\impl\\vulkan_binning.inl": "c6b12907907cc9a622e9f825b684b5645cfbdc11a345501d3e85242bafb15a07",
+      "include\\pufferui\\impl\\vulkan_blend_lut.inl": "c4f15a86e9f96757d97f3732568b674e77e6d0dd240bdfe39bbfa5f70153e866",
+      "include\\pufferui\\impl\\vulkan_cache.inl": "d6a6b4f6637e149eac2f5d3d7d2dfc50933f295e504156af5cc5587bec628d82",
+      "include\\pufferui\\impl\\vulkan_commands.inl": "d8d6cecfc579d8b50be7437add502b9254ea6a5a143945d814b24b8b0b7049a9",
+      "include\\pufferui\\impl\\vulkan_compute.inl": "872a03b08a61e2cdd8058252ae527cb3bd8467cc73fcf4401a4dffc76c7c6bb5",
+      "include\\pufferui\\impl\\vulkan_device.inl": "13f0cf70d6bb88d8d785faecfc9a146cb34e20ad5d6773e30da4f024a527774a",
+      "include\\pufferui\\impl\\vulkan_dispatch.inl": "642efff7544b89db84a421438e58b08ee7d575959d967329d2a381068493ab0d",
+      "include\\pufferui\\impl\\vulkan_draw.inl": "4803675e42e83243c754f78cf2dbe0beeca6901c38d6b528f50f59673bf7b134",
+      "include\\pufferui\\impl\\vulkan_function_cache.inl": "950c59b3f86081d6c280a6307748b058a23d2746fe3431f6570a01d924d4b91a",
+      "include\\pufferui\\impl\\vulkan_kawase.inl": "daaabad10d1bdfb77869bcf9e34cf38c9bcd56210edeef21bf18800488ece492",
+      "include\\pufferui\\impl\\vulkan_memory.inl": "605b770fd0968b80f832024127ae2e3c63e847bac0e778dc1e2d1233f0a4b1a8",
+      "include\\pufferui\\impl\\vulkan_native.inl": "bc9db22840a735cbb55d2c287d998eb6bc052d199376068c6b82ab271b45279a",
+      "include\\pufferui\\impl\\vulkan_preparation.inl": "2941451c8bb2e539b10387c510e78bc9be4055046462b6ab93d74d755c3548fb",
+      "include\\pufferui\\impl\\vulkan_program_cache.inl": "b182d6c3135adcbcffc37c07d46d09d2c583fb9538e93653349e6a858efca952",
+      "include\\pufferui\\impl\\vulkan_program_probe.inl": "fe601b133ff823f11c55a7d2974db3324376c8b680e698d687613294e4c538c3",
+      "include\\pufferui\\impl\\vulkan_resources.inl": "bb9b4e0156589b4e0207ff9c31631d45669cb9ba36a4078e9961f13159999862",
+      "include\\pufferui\\impl\\vulkan_sdf.inl": "74f07761a5e5e6f8d5b059415ca87440273005d4124d7e67529e1f4a844b2e31",
+      "include\\pufferui\\impl\\vulkan_shaders.inl": "b3d3c59a12a989ea1341db2b57cfa6827974e28e2c6761b55b5b389c002f62c4",
+      "include\\pufferui\\impl\\vulkan_surface.inl": "80590798dd5a94e64bb67ad75776a069818f4b0c8d384e85ad4fc49930d11658",
+      "include\\pufferui\\impl\\widgets.inl": "5c7c078aa6bb95aa7e93ea9047efba018c452d4c16fb953942274661cdfe8f18",
+      "src\\shaders\\vulkan\\bin_coarse.comp": "304b69b47b13b869a6983056d123dd4be608d0b2dde46cd131dcd8a5ccefe746",
+      "src\\shaders\\vulkan\\bin_common.glsl": "cee7816ce9b174bf306123bb849f75a202e72ad342311ae4cbe6c40093f476b4",
+      "src\\shaders\\vulkan\\bin_count.comp": "5074439c27e90b62be7e2f0003e6d7e2e4fba2d05d1d5a260feff2375ef46139",
+      "src\\shaders\\vulkan\\bin_emit.comp": "a8fb862b012b85561618fecd99dc95a56599d66cc610352775a3ec88c870f933",
+      "src\\shaders\\vulkan\\bin_scan.comp": "2ac643a2ebb6c50d1ca8590dd3780abab8e7acd5ff0781bb83d7f6c4d7eef9a5",
+      "src\\shaders\\vulkan\\blend_calibrate.comp": "68efbe57ab46ea913d7eb37b489be3deee0c93eb1030929d439687170e839dac",
+      "src\\shaders\\vulkan\\blend_probe.comp": "7b1c46807711250cec674dee779c7eadbe95552a64cd7d1815d7f81041aa22b5",
+      "src\\shaders\\vulkan\\byte_colors.glsl": "a715106b602b893e481308f8e7c012acd36095631c1ee32c2ab77b3a55b724b8",
+      "src\\shaders\\vulkan\\function.frag": "4f7566d45750c0cadde09106229aef1e9ac0791a1c5d45ccdfc1dd501b9fd8fa",
+      "src\\shaders\\vulkan\\function.vert": "12f3aa39b045bf123426a8c89a219de5f39c67dc22e40e682e5d00149b0edbb6",
+      "src\\shaders\\vulkan\\function_begin.comp": "0b43c2463f6725862d0dc17fccfb0b9b3fa21f8738afccfe0e993d462bfab3b2",
+      "src\\shaders\\vulkan\\function_common.glsl": "1b9524b7926a70de6f49e95ff43e62ac315e8f0157d62c7efea8b3b01cfe1653",
+      "src\\shaders\\vulkan\\function_lookup.glsl": "08c04e44fb12646c546c2fc804e5edc6e52c0cf8be8b982c6a3939467726edb7",
+      "src\\shaders\\vulkan\\function_prepare.comp": "0ecd4c64fd5b3c53311546d063df7c2d7ffa211b6151f906026b8aa786435af6",
+      "src\\shaders\\vulkan\\function_probe.comp": "3b70bde6a2c7494dfbc79747825c9971e3fab32792ca0385ce2285c7a5672a05",
+      "src\\shaders\\vulkan\\function_ready.comp": "63bed643a7ce9749c35dc8002016252331b91c33f37ca0308d86efa883330717",
+      "src\\shaders\\vulkan\\function_reset.comp": "e3ab6d4580501f55b146462bcfb9adc51e573c28a4d3f589ed96605237862f2a",
+      "src\\shaders\\vulkan\\harfbuzz_slug.glsl": "a83b9587e42b1e3db726be5b6237589007ce33a1bf607c8aea8e8c7bdffa12df",
+      "src\\shaders\\vulkan\\integrated_capture.comp": "e0539ec8d04754bb6da9f527032e847e9aaae73725cfb855adf8c4d976422c4c",
+      "src\\shaders\\vulkan\\integrated_commit.comp": "c550d49e42534446e018793235a5a69ccae954c23642ab893a9d8da6ac8d9d6b",
+      "src\\shaders\\vulkan\\integrated_compare.comp": "ce6ada5b73ef2da65a7bb69933f3e95800c9180decc0d5a71f32491089baf359",
+      "src\\shaders\\vulkan\\integrated_paint.comp": "0c8a5aa37f5e6ec5126639cc9643c857e3ee362b9fca4a7003edf0ac31028d30",
+      "src\\shaders\\vulkan\\integrated_replay.comp": "5907662572d77762856f409efba2a5345a1a739cf26de16378bb9e1fdb8777d7",
+      "src\\shaders\\vulkan\\integrated_restore.comp": "be5734be1851ad16da72bc845e320fe7d5f71b2ca0a562a27a3435d78e2eb65a",
+      "src\\shaders\\vulkan\\integrated_snapshot.comp": "b8f37003ce09dcb8075ff63764f4bb86f3266c94c1d9754cedefb9f816e74c10",
+      "src\\shaders\\vulkan\\kawase.comp": "85e82e0b00760dac6ff8b703da32e5b9862d7f4f81fd1a61ab63434ceab0efa9",
+      "src\\shaders\\vulkan\\manifest.json": "6330431cb19790ae7e04729c73c384f84fde8b4f77c1cb51aa1e63c858d9a6a0",
+      "src\\shaders\\vulkan\\native_copy_tiles.glsl": "065ebdad6f0664df0656c52ee00aa87b9f25be572d9fc3f6e5cccc00e38c4b22",
+      "src\\shaders\\vulkan\\paint_args.comp": "9629ddfa3e10141aed3f81ccc3b1197623ec7dee0e2622734c5bd97de89e9536",
+      "src\\shaders\\vulkan\\paint_compat.comp": "d587fb7f661023f719da9cff681e2bed5ff3d15ed0f83dfe4d2e810af17fa0f7",
+      "src\\shaders\\vulkan\\program.frag": "6c244f816e4b8440d88b9b795b19ff95727c31dedef3a84a1f923c1b9d2473a0",
+      "src\\shaders\\vulkan\\program_compare.comp": "d33887ec5abbec232c1aac4dd9cc1ddd71efc4a88235ae86bfc2ce11f184146a",
+      "src\\shaders\\vulkan\\rgba8_blend.glsl": "c9347153254b4fd1730c1bb92c08bfa52d7f29c88e0cd7c6cbf84663a5153a26",
+      "src\\shaders\\vulkan\\sdf.frag": "1d72129c5ae088915b737ada07bca3775a615494d143836d679d74f85966bdde",
+      "src\\shaders\\vulkan\\sdf.vert": "3ff8443224eb24b3ebcd0f37c06298b95a0442500c0951c4c8f99998b44b85c6",
+      "src\\shaders\\vulkan\\sdf_commit.comp": "cbc6a92887c371cc31f7b78094bc1a793763ae9abe2ebf66c1fa10f1103c6469",
+      "src\\shaders\\vulkan\\sdf_commit_body.glsl": "19219c0e96c6042d0a3424a31157745e3a12221016a55b549750e1ec605d5558",
+      "src\\shaders\\vulkan\\sdf_compact.comp": "cd5b0231e8cdc32c0def2f8444eb794ecd059c5e79f45d85c499a659dcc00f48",
+      "src\\shaders\\vulkan\\sdf_compare.comp": "84a83f3aefe330bbee683782bf7718b9d2f2b65ce19bccc6dc6bab9baf203b07",
+      "src\\shaders\\vulkan\\sdf_compare_body.glsl": "e2f01c787c09a66492c619d9f38508aea7bbb675527c5e8496ebf2c1090bf7ad",
+      "src\\shaders\\vulkan\\sdf_fragment.glsl": "7b1648336763906aad612a2ce812743e19c0b5ebeb2bf87fafd8851f3c617a0b",
+      "src\\shaders\\vulkan\\sdf_history.glsl": "eba6b322d3c7a1c42cba2ef1d7748f35e3eda4afe7084449c337e584391c546b",
+      "src\\shaders\\vulkan\\sdf_paint.comp": "b492c3f4dd28818b0644b6ac6273378cf5f8aa7cc46a0c2c63cbcad618a95909",
+      "src\\shaders\\vulkan\\sdf_restore.comp": "068306c0f03259403f382d4fada05f189b4878649ba804a489514586632f8cbc",
+      "src\\shaders\\vulkan\\shape_common.glsl": "f41d59d2bdc0420c2c6fb4f62a95ec6c97665c9dd1027cbaf9185a58e56c747a",
+      "src\\shaders\\vulkan\\source_probe.comp": "d0be663b809bcfd430613eb18cebf7ca33cbedeb1c956c82fdd67e5a4900fd92",
+      "src\\shaders\\vulkan\\ui.frag": "fcd4245a4d741301ced56f1df47a4f571a8935167d194904d27147250e525361",
+      "src\\shaders\\vulkan\\ui.vert": "bcf9c2f2bffb823fe84e9d27b86110ec67375aa669dbe589429f4db333239eb1",
+      "src\\shaders\\vulkan\\workgroup_scan.glsl": "bbdebdbcfde353ca030a060f686f9d3a960b78f04de6853fa44dbbc5a6b3740b",
+      "tests\\test_vulkan_source.inl": "9864c8c8b68cbab90b8769d738274e029a2e1ae050f92106f847a600a6ccdb78",
+      "tests\\test_vulkan_function.inl": "0f8e0cac220eb96de3a36235628de6a777fc66d91d2d9b35efed0ca6e466786e",
+      "tests\\test_vulkan_integrated.inl": "f958c242a3358da9b5dfc8bf0f097aca869a3e7f41215eb9ac63b6722f3eed8f"
+    }
+  },
+  "output_and_red": {
+    "cases": [
+      {
+        "name": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "D:\\myimgui\\out\\build\\x64-release",
+          "--target",
+          "pui_vulkan_output_cache_tests",
+          "-j",
+          "3"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "bitmap-direct",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_output_cache_tests.exe"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "bitmap-staged",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_output_cache_tests.exe",
+          "--staged"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "vector-direct",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_output_cache_tests.exe",
+          "--vector-text"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "vector-staged-flattened",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_output_cache_tests.exe",
+          "--vector-text",
+          "--staged",
+          "--flattened"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "red-compile",
+        "command": [
+          "cl",
+          "/nologo",
+          "/TP",
+          "/DWIN32",
+          "/D_WINDOWS",
+          "/W3",
+          "/GR",
+          "/EHsc",
+          "/MD",
+          "/O2",
+          "/Ob2",
+          "/DNDEBUG",
+          "-std:c++20",
+          "-MD",
+          "-Z7",
+          "/GL",
+          "/DPUFFERUI_ENABLE_SDL3",
+          "/DPUFFERUI_ENABLE_VULKAN",
+          "/DPUFFERUI_ENABLE_HARFBUZZ",
+          "/ID:\\myimgui\\build-vulkan-integrated\\function-cache\\output-03\\red-source\\include",
+          "/ID:\\myimgui\\vendored\\stb",
+          "/ID:\\myimgui\\out\\build\\x64-release\\vendored\\SDL\\include-revision",
+          "/ID:\\myimgui\\vendored\\SDL\\include",
+          "/ID:\\myimgui\\build-vulkan-compute\\harfbuzz-src\\src",
+          "-external:IE:/VulkanSDK/1.4.335.0/include",
+          "-external:W0",
+          "/c",
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\output-03\\red-wrapper.cpp",
+          "/FoD:\\myimgui\\build-vulkan-integrated\\function-cache\\output-03\\red.obj"
+        ],
+        "exit": 0,
+        "passed": true
+      },
+      {
+        "name": "red-link",
+        "command": [
+          "link",
+          "/nologo",
+          "/LTCG",
+          "/OPT:REF",
+          "/OPT:ICF",
+          "/INCREMENTAL:NO",
+          "/MANIFEST:EMBED",
+          "/MANIFESTINPUT:C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\include\\manifest\\segmentheap.manifest",
+          "/SUBSYSTEM:CONSOLE",
+          "D:\\myimgui\\build-vulkan-integrated\\draw-state\\SDL3-static.lib",
+          "E:\\VulkanSDK\\1.4.335.0\\Lib\\vulkan-1.lib",
+          "D:\\myimgui\\build-vulkan-integrated\\draw-state\\harfbuzz-gpu.lib",
+          "D:\\myimgui\\build-vulkan-integrated\\draw-state\\harfbuzz.lib",
+          "kernel32.lib",
+          "user32.lib",
+          "gdi32.lib",
+          "winmm.lib",
+          "imm32.lib",
+          "version.lib",
+          "uuid.lib",
+          "advapi32.lib",
+          "setupapi.lib",
+          "shell32.lib",
+          "hid.lib",
+          "dinput8.lib",
+          "uiautomationcore.lib",
+          "comctl32.lib",
+          "ole32.lib",
+          "oleaut32.lib",
+          "winspool.lib",
+          "comdlg32.lib",
+          "/OUT:D:\\myimgui\\build-vulkan-integrated\\function-cache\\output-03\\red.exe",
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\output-03\\red.obj"
+        ],
+        "exit": 0,
+        "passed": true
+      },
+      {
+        "name": "red-run",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\output-03\\red.exe"
+        ],
+        "exit": 1,
+        "passed": true
+      }
+    ],
+    "oracle_sha256": "42e3a32d532c5e132919416458cb1218749b45a79fa641c4330d4a07f256bf6a",
+    "candidate_sha256": "c2efce055fe1e2a6013aea62d611c2be771887c07abfb53fdf3af7b7112ddd51",
+    "red_sha256": "83541c1f7b4623624d34fa137cee5c5f6e3d19aedac82422c4624946c92b146e"
+  },
+  "debug_and_no_harfbuzz": {
+    "source_before": {
+      "CMakeLists.txt": "09a21d6d3d14ec783d6803731ec3e6067c77320e808e9c468bc7045893ceeaf8",
+      "src\\pufferui_impl.cpp": "ad982e6d0765e831f520891368f02b5cbe69192070d21790863018a78e3f3894",
+      "include\\pufferui\\pufferui.h": "aac927b66687757417a6b6e135092fd8aafa521124852f0381f1ec8fd7fd3535",
+      "include\\pufferui\\vulkan.h": "4e2e5a3a42d32f7a4f26b8dbf4d294ac96817a607447770eb6a74b9b74f0c1d6",
+      "include\\pufferui\\impl\\chrome_scroll.inl": "d8b4cc31ca403fedfd48add4927c42ce0aaef59c1d9bd9e77834fc773882da50",
+      "include\\pufferui\\impl\\components.inl": "21aad5d9c1c3ef8da97b814a54f7414dcb2b4ef1bb47b5d89f7fceebc4e7b3ee",
+      "include\\pufferui\\impl\\core_pool.inl": "121be14ec368e5c0c0773038efff25d01b641a5dec9bc9b223ac6e094ca08fa1",
+      "include\\pufferui\\impl\\core_state.inl": "b2069ccbcfe5744c5cada39db8f816af4ad6559310922f2d18e55aea94feb51d",
+      "include\\pufferui\\impl\\dock_style.inl": "400a11bc84f737312af3049d71779e8b606c54ee04273dfa38be85c5c05c2e19",
+      "include\\pufferui\\impl\\draw_context.inl": "a43f1e7df590d1cccae44daaf2efc607211638149e1e829b073d0f411efee5db",
+      "include\\pufferui\\impl\\draw_primitives.inl": "89260f8e42841cc3279e76941be1c94d11dd2116218a408673ad8f9cd6803b44",
+      "include\\pufferui\\impl\\harfbuzz_text.inl": "6f12456a28a9fabd71ed3cc69cd58ba47c77583e5868149891da52750011b0a0",
+      "include\\pufferui\\impl\\input_interact.inl": "e151e2467bf43b549f45f6e24bf6c41c42a525c294bb72ff0637451d5d1df66e",
+      "include\\pufferui\\impl\\layout_text.inl": "42810dfa6f4c61d1f28f2c81a1a40a9f573fe9aba223232e71e8569d71fa8d85",
+      "include\\pufferui\\impl\\paint_commands.inl": "bd82eb62de019ab34fa8d5ba166a196046582c7ad0de98c36424b1bd8bef0513",
+      "include\\pufferui\\impl\\renderer_gradient.inl": "0c2aaea38a6332c4822c95e74c4b55fc162b3e8cf19da83d10e9aed33644d5a4",
+      "include\\pufferui\\impl\\renderer_mesh_state.inl": "21ea2995fb21fce57826463da171af05634126005b177a4a5a17da7ef36ae290",
+      "include\\pufferui\\impl\\renderer_overlay_state.inl": "b34c3996b46fe2bbbb15f4b93f438fdf15f97bc8aec54d49ec3b78125e807d1f",
+      "include\\pufferui\\impl\\renderer_primitives.inl": "1d9b0bbd4f41273dff48e9bbe5a25cad8fdc0f777cba58487112361396bacc09",
+      "include\\pufferui\\impl\\renderer_text.inl": "35119f09fffaade1992fa6db7e8c3fd3381065d804f8c04c69d5ad27837a11ed",
+      "include\\pufferui\\impl\\renderer_text_state.inl": "34aa0fe722be32eb8f75968a8e5c4219b65556cb62424956fa5625f7c7e4485c",
+      "include\\pufferui\\impl\\renderer_widgets.inl": "1f8f242f6357aa7d3e601135f4b4b9d936489003c60f8c47c6cf2defd649adf1",
+      "include\\pufferui\\impl\\sdl3.inl": "3d2efaf8ad9f6e5974d586842bc2a791e95bf6c89fcdeb538fe93b9d9c1fa7c7",
+      "include\\pufferui\\impl\\sdl3_vulkan_host.inl": "9b51c683ab4192478f1ce0542ef7d1563071aa8afc1079d333873eea684f2acb",
+      "include\\pufferui\\impl\\typed_inputs.inl": "b7000448abae71477f297bed6c11d8b0e804d129ff3796a27fd91698ae714480",
+      "include\\pufferui\\impl\\uia_windows.inl": "81190fcf0169f493fb552472e03d25f78f9fa39346b6e3aef117dd5fe45d1758",
+      "include\\pufferui\\impl\\vulkan_binning.inl": "c6b12907907cc9a622e9f825b684b5645cfbdc11a345501d3e85242bafb15a07",
+      "include\\pufferui\\impl\\vulkan_blend_lut.inl": "c4f15a86e9f96757d97f3732568b674e77e6d0dd240bdfe39bbfa5f70153e866",
+      "include\\pufferui\\impl\\vulkan_cache.inl": "d6a6b4f6637e149eac2f5d3d7d2dfc50933f295e504156af5cc5587bec628d82",
+      "include\\pufferui\\impl\\vulkan_commands.inl": "d8d6cecfc579d8b50be7437add502b9254ea6a5a143945d814b24b8b0b7049a9",
+      "include\\pufferui\\impl\\vulkan_compute.inl": "872a03b08a61e2cdd8058252ae527cb3bd8467cc73fcf4401a4dffc76c7c6bb5",
+      "include\\pufferui\\impl\\vulkan_device.inl": "13f0cf70d6bb88d8d785faecfc9a146cb34e20ad5d6773e30da4f024a527774a",
+      "include\\pufferui\\impl\\vulkan_dispatch.inl": "642efff7544b89db84a421438e58b08ee7d575959d967329d2a381068493ab0d",
+      "include\\pufferui\\impl\\vulkan_draw.inl": "4803675e42e83243c754f78cf2dbe0beeca6901c38d6b528f50f59673bf7b134",
+      "include\\pufferui\\impl\\vulkan_function_cache.inl": "950c59b3f86081d6c280a6307748b058a23d2746fe3431f6570a01d924d4b91a",
+      "include\\pufferui\\impl\\vulkan_kawase.inl": "daaabad10d1bdfb77869bcf9e34cf38c9bcd56210edeef21bf18800488ece492",
+      "include\\pufferui\\impl\\vulkan_memory.inl": "605b770fd0968b80f832024127ae2e3c63e847bac0e778dc1e2d1233f0a4b1a8",
+      "include\\pufferui\\impl\\vulkan_native.inl": "bc9db22840a735cbb55d2c287d998eb6bc052d199376068c6b82ab271b45279a",
+      "include\\pufferui\\impl\\vulkan_preparation.inl": "2941451c8bb2e539b10387c510e78bc9be4055046462b6ab93d74d755c3548fb",
+      "include\\pufferui\\impl\\vulkan_program_cache.inl": "b182d6c3135adcbcffc37c07d46d09d2c583fb9538e93653349e6a858efca952",
+      "include\\pufferui\\impl\\vulkan_program_probe.inl": "fe601b133ff823f11c55a7d2974db3324376c8b680e698d687613294e4c538c3",
+      "include\\pufferui\\impl\\vulkan_resources.inl": "bb9b4e0156589b4e0207ff9c31631d45669cb9ba36a4078e9961f13159999862",
+      "include\\pufferui\\impl\\vulkan_sdf.inl": "74f07761a5e5e6f8d5b059415ca87440273005d4124d7e67529e1f4a844b2e31",
+      "include\\pufferui\\impl\\vulkan_shaders.inl": "b3d3c59a12a989ea1341db2b57cfa6827974e28e2c6761b55b5b389c002f62c4",
+      "include\\pufferui\\impl\\vulkan_surface.inl": "80590798dd5a94e64bb67ad75776a069818f4b0c8d384e85ad4fc49930d11658",
+      "include\\pufferui\\impl\\widgets.inl": "5c7c078aa6bb95aa7e93ea9047efba018c452d4c16fb953942274661cdfe8f18",
+      "src\\shaders\\vulkan\\bin_coarse.comp": "304b69b47b13b869a6983056d123dd4be608d0b2dde46cd131dcd8a5ccefe746",
+      "src\\shaders\\vulkan\\bin_common.glsl": "cee7816ce9b174bf306123bb849f75a202e72ad342311ae4cbe6c40093f476b4",
+      "src\\shaders\\vulkan\\bin_count.comp": "5074439c27e90b62be7e2f0003e6d7e2e4fba2d05d1d5a260feff2375ef46139",
+      "src\\shaders\\vulkan\\bin_emit.comp": "a8fb862b012b85561618fecd99dc95a56599d66cc610352775a3ec88c870f933",
+      "src\\shaders\\vulkan\\bin_scan.comp": "2ac643a2ebb6c50d1ca8590dd3780abab8e7acd5ff0781bb83d7f6c4d7eef9a5",
+      "src\\shaders\\vulkan\\blend_calibrate.comp": "68efbe57ab46ea913d7eb37b489be3deee0c93eb1030929d439687170e839dac",
+      "src\\shaders\\vulkan\\blend_probe.comp": "7b1c46807711250cec674dee779c7eadbe95552a64cd7d1815d7f81041aa22b5",
+      "src\\shaders\\vulkan\\byte_colors.glsl": "a715106b602b893e481308f8e7c012acd36095631c1ee32c2ab77b3a55b724b8",
+      "src\\shaders\\vulkan\\function.frag": "4f7566d45750c0cadde09106229aef1e9ac0791a1c5d45ccdfc1dd501b9fd8fa",
+      "src\\shaders\\vulkan\\function.vert": "12f3aa39b045bf123426a8c89a219de5f39c67dc22e40e682e5d00149b0edbb6",
+      "src\\shaders\\vulkan\\function_begin.comp": "0b43c2463f6725862d0dc17fccfb0b9b3fa21f8738afccfe0e993d462bfab3b2",
+      "src\\shaders\\vulkan\\function_common.glsl": "1b9524b7926a70de6f49e95ff43e62ac315e8f0157d62c7efea8b3b01cfe1653",
+      "src\\shaders\\vulkan\\function_lookup.glsl": "08c04e44fb12646c546c2fc804e5edc6e52c0cf8be8b982c6a3939467726edb7",
+      "src\\shaders\\vulkan\\function_prepare.comp": "0ecd4c64fd5b3c53311546d063df7c2d7ffa211b6151f906026b8aa786435af6",
+      "src\\shaders\\vulkan\\function_probe.comp": "3b70bde6a2c7494dfbc79747825c9971e3fab32792ca0385ce2285c7a5672a05",
+      "src\\shaders\\vulkan\\function_ready.comp": "63bed643a7ce9749c35dc8002016252331b91c33f37ca0308d86efa883330717",
+      "src\\shaders\\vulkan\\function_reset.comp": "e3ab6d4580501f55b146462bcfb9adc51e573c28a4d3f589ed96605237862f2a",
+      "src\\shaders\\vulkan\\harfbuzz_slug.glsl": "a83b9587e42b1e3db726be5b6237589007ce33a1bf607c8aea8e8c7bdffa12df",
+      "src\\shaders\\vulkan\\integrated_capture.comp": "e0539ec8d04754bb6da9f527032e847e9aaae73725cfb855adf8c4d976422c4c",
+      "src\\shaders\\vulkan\\integrated_commit.comp": "c550d49e42534446e018793235a5a69ccae954c23642ab893a9d8da6ac8d9d6b",
+      "src\\shaders\\vulkan\\integrated_compare.comp": "ce6ada5b73ef2da65a7bb69933f3e95800c9180decc0d5a71f32491089baf359",
+      "src\\shaders\\vulkan\\integrated_paint.comp": "0c8a5aa37f5e6ec5126639cc9643c857e3ee362b9fca4a7003edf0ac31028d30",
+      "src\\shaders\\vulkan\\integrated_replay.comp": "5907662572d77762856f409efba2a5345a1a739cf26de16378bb9e1fdb8777d7",
+      "src\\shaders\\vulkan\\integrated_restore.comp": "be5734be1851ad16da72bc845e320fe7d5f71b2ca0a562a27a3435d78e2eb65a",
+      "src\\shaders\\vulkan\\integrated_snapshot.comp": "b8f37003ce09dcb8075ff63764f4bb86f3266c94c1d9754cedefb9f816e74c10",
+      "src\\shaders\\vulkan\\kawase.comp": "85e82e0b00760dac6ff8b703da32e5b9862d7f4f81fd1a61ab63434ceab0efa9",
+      "src\\shaders\\vulkan\\manifest.json": "6330431cb19790ae7e04729c73c384f84fde8b4f77c1cb51aa1e63c858d9a6a0",
+      "src\\shaders\\vulkan\\native_copy_tiles.glsl": "065ebdad6f0664df0656c52ee00aa87b9f25be572d9fc3f6e5cccc00e38c4b22",
+      "src\\shaders\\vulkan\\paint_args.comp": "9629ddfa3e10141aed3f81ccc3b1197623ec7dee0e2622734c5bd97de89e9536",
+      "src\\shaders\\vulkan\\paint_compat.comp": "d587fb7f661023f719da9cff681e2bed5ff3d15ed0f83dfe4d2e810af17fa0f7",
+      "src\\shaders\\vulkan\\program.frag": "6c244f816e4b8440d88b9b795b19ff95727c31dedef3a84a1f923c1b9d2473a0",
+      "src\\shaders\\vulkan\\program_compare.comp": "d33887ec5abbec232c1aac4dd9cc1ddd71efc4a88235ae86bfc2ce11f184146a",
+      "src\\shaders\\vulkan\\rgba8_blend.glsl": "c9347153254b4fd1730c1bb92c08bfa52d7f29c88e0cd7c6cbf84663a5153a26",
+      "src\\shaders\\vulkan\\sdf.frag": "1d72129c5ae088915b737ada07bca3775a615494d143836d679d74f85966bdde",
+      "src\\shaders\\vulkan\\sdf.vert": "3ff8443224eb24b3ebcd0f37c06298b95a0442500c0951c4c8f99998b44b85c6",
+      "src\\shaders\\vulkan\\sdf_commit.comp": "cbc6a92887c371cc31f7b78094bc1a793763ae9abe2ebf66c1fa10f1103c6469",
+      "src\\shaders\\vulkan\\sdf_commit_body.glsl": "19219c0e96c6042d0a3424a31157745e3a12221016a55b549750e1ec605d5558",
+      "src\\shaders\\vulkan\\sdf_compact.comp": "cd5b0231e8cdc32c0def2f8444eb794ecd059c5e79f45d85c499a659dcc00f48",
+      "src\\shaders\\vulkan\\sdf_compare.comp": "84a83f3aefe330bbee683782bf7718b9d2f2b65ce19bccc6dc6bab9baf203b07",
+      "src\\shaders\\vulkan\\sdf_compare_body.glsl": "e2f01c787c09a66492c619d9f38508aea7bbb675527c5e8496ebf2c1090bf7ad",
+      "src\\shaders\\vulkan\\sdf_fragment.glsl": "7b1648336763906aad612a2ce812743e19c0b5ebeb2bf87fafd8851f3c617a0b",
+      "src\\shaders\\vulkan\\sdf_history.glsl": "eba6b322d3c7a1c42cba2ef1d7748f35e3eda4afe7084449c337e584391c546b",
+      "src\\shaders\\vulkan\\sdf_paint.comp": "b492c3f4dd28818b0644b6ac6273378cf5f8aa7cc46a0c2c63cbcad618a95909",
+      "src\\shaders\\vulkan\\sdf_restore.comp": "068306c0f03259403f382d4fada05f189b4878649ba804a489514586632f8cbc",
+      "src\\shaders\\vulkan\\shape_common.glsl": "f41d59d2bdc0420c2c6fb4f62a95ec6c97665c9dd1027cbaf9185a58e56c747a",
+      "src\\shaders\\vulkan\\source_probe.comp": "d0be663b809bcfd430613eb18cebf7ca33cbedeb1c956c82fdd67e5a4900fd92",
+      "src\\shaders\\vulkan\\ui.frag": "fcd4245a4d741301ced56f1df47a4f571a8935167d194904d27147250e525361",
+      "src\\shaders\\vulkan\\ui.vert": "bcf9c2f2bffb823fe84e9d27b86110ec67375aa669dbe589429f4db333239eb1",
+      "src\\shaders\\vulkan\\workgroup_scan.glsl": "bbdebdbcfde353ca030a060f686f9d3a960b78f04de6853fa44dbbc5a6b3740b",
+      "tests\\test_vulkan_binning.inl": "1fa8e0f9668843044fb15544df248e97bc1463c1a22876eaad26843a666802e2",
+      "tests\\test_vulkan_color_upload.inl": "264fd900d0bc11431765f66ee72865d6983432f9de8cad87b260c780e8fa9cbe",
+      "tests\\test_vulkan_commands.inl": "49dc58bbe6ad4ad82835b6cacc4929281bf5e8b12faa59ee9052f50ab2caba2d",
+      "tests\\test_vulkan_compute.inl": "8300dfeefd60b5a1afa03daff637c228e63a889e08342a851e7cd66cf5db02a7",
+      "tests\\test_vulkan_function.inl": "0f8e0cac220eb96de3a36235628de6a777fc66d91d2d9b35efed0ca6e466786e",
+      "tests\\test_vulkan_glyph_residency.inl": "337b1cfdad21f1eb2cb634a1cda663fd8b76fb04a553fed9370df22715c41c27",
+      "tests\\test_vulkan_graphics_state.inl": "ff6c7be48ff2be315650a35f3d543f0ff0ea2c82c824a7535ae060aa1b039782",
+      "tests\\test_vulkan_integrated.inl": "f958c242a3358da9b5dfc8bf0f097aca869a3e7f41215eb9ac63b6722f3eed8f",
+      "tests\\test_vulkan_internal.inl": "11c4539abb1f3430c91067218f8ccedec9bc8093e9355c3d9db4e850c0ac9d7e",
+      "tests\\test_vulkan_memory_roles.inl": "855bffd953b67b87876ec864a5b0376a4308b76615cf6ad181e42c8be72853fd",
+      "tests\\test_vulkan_numeric_probe.inl": "28e618f5d620a97664bd800260172703b9df7c263f2d5d2da7208097b35330b4",
+      "tests\\test_vulkan_output_cache.inl": "42e3a32d532c5e132919416458cb1218749b45a79fa641c4330d4a07f256bf6a",
+      "tests\\test_vulkan_preparation.inl": "d0b1b2ec177afe092355c988e447222d2810eb042eae934904c8cbabe6f4db4f",
+      "tests\\test_vulkan_program.inl": "bec170d59ee9bc5c8282d20591e6360c79d89741ee5333ccd77921cc624c67e1",
+      "tests\\test_vulkan_program_admission.inl": "f179115b59fa07d96048ed53a8b2e71be525f555069377f74764583371077c33",
+      "tests\\test_vulkan_program_probe_preparation.inl": "82668f17edd66e82aa62c6c2c0aeb23eb22188671fce899153f3237403ea2ef8",
+      "tests\\test_vulkan_sdf_cache.inl": "639e09c30b791d4a1e3f839b700027234845310ed69a25b3544fcdb88867419e",
+      "tests\\test_vulkan_source.inl": "9864c8c8b68cbab90b8769d738274e029a2e1ae050f92106f847a600a6ccdb78",
+      "tests\\test_vulkan_spiral_binning.inl": "0d365404a093b43dc436daaae54b21c58bdbd8b2fad339c91c2d4f3494a9f0c1",
+      "tests\\test_vulkan_text_culling.inl": "a47d66aeba713090eb7a6bc261c4758d64d4ef7f417d85805d1dee337b390d2f",
+      "tests\\test_vulkan_workgroup.inl": "c298a25d8ccc1b2dac03c1f08b273285018f1059113a79509abe4eddc76e6457",
+      "tests\\test_vulkan_compute_spiral.cpp": "743f65ab2d5460f6f9be94f5da6a035b2c2fa011469cf5111ba8c743f9ee19ac",
+      "examples\\pui_showcase.cpp": "c8abfb37f081ca55f622443895046c59441ba1cd5814536611606be0e07b7f0d",
+      "examples\\example_common.h": "6484580795bc9505d3e42e2b61c5c6e384b4b89e7c395cf59e73def9efb8328f",
+      "examples\\showcase_trace.h": "6b2e815fdc3953a15cf8f7f735a08c1e46d701253b2d38343a94107246b10cdd"
+    },
+    "steps": [
+      {
+        "name": "debug-build",
+        "command": [
+          "cmake",
+          "--build",
+          "D:\\myimgui\\out\\build\\x64-debug",
+          "--target",
+          "pui_vulkan_source_tests",
+          "pui_vulkan_function_tests",
+          "pui_vulkan_integrated_tests",
+          "pui_vulkan_output_cache_tests",
+          "-j",
+          "3"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-source-0",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_source_tests.exe"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-source-1",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_source_tests.exe",
+          "--staged"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-source-2",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_source_tests.exe",
+          "--negative-control"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-source-3",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_source_tests.exe",
+          "--byte-tints"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-source-4",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_source_tests.exe",
+          "--byte-tints",
+          "--staged"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-function-0",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_function_tests.exe"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-function-1",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_function_tests.exe",
+          "--staged"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-function-2",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_function_tests.exe",
+          "--negative-control"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-integrated-0",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_integrated_tests.exe"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-integrated-1",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_integrated_tests.exe",
+          "--cache"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-integrated-2",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_integrated_tests.exe",
+          "--staged"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-integrated-3",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_integrated_tests.exe",
+          "--cache",
+          "--staged",
+          "--tiles",
+          "1150"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-integrated-4",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_integrated_tests.exe",
+          "--bitmap"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-integrated-5",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_integrated_tests.exe",
+          "--low-budget"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-output_cache-0",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_output_cache_tests.exe"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-output_cache-1",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_output_cache_tests.exe",
+          "--staged"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-output_cache-2",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_output_cache_tests.exe",
+          "--vector-text"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "debug-output_cache-3",
+        "command": [
+          "D:\\myimgui\\out\\build\\x64-debug\\Debug\\pui_vulkan_output_cache_tests.exe",
+          "--vector-text",
+          "--staged",
+          "--flattened"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-source-compile",
+        "command": [
+          "cl",
+          "/nologo",
+          "/TP",
+          "/DWIN32",
+          "/D_WINDOWS",
+          "/W3",
+          "/GR",
+          "/EHsc",
+          "/MD",
+          "/O2",
+          "/Ob2",
+          "/DNDEBUG",
+          "-std:c++20",
+          "-MD",
+          "-Z7",
+          "/GL",
+          "/DPUFFERUI_ENABLE_SDL3",
+          "/DPUFFERUI_ENABLE_VULKAN",
+          "/ID:\\myimgui\\include",
+          "/ID:\\myimgui\\vendored\\stb",
+          "/ID:\\myimgui\\out\\build\\x64-release\\vendored\\SDL\\include-revision",
+          "/ID:\\myimgui\\vendored\\SDL\\include",
+          "/ID:\\myimgui\\build-vulkan-compute\\harfbuzz-src\\src",
+          "-external:IE:/VulkanSDK/1.4.335.0/include",
+          "-external:W0",
+          "/c",
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-source.cpp",
+          "/FoD:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-source.obj"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-source-link",
+        "command": [
+          "link",
+          "/nologo",
+          "/LTCG",
+          "/OPT:REF",
+          "/OPT:ICF",
+          "/INCREMENTAL:NO",
+          "/MANIFEST:EMBED",
+          "/MANIFESTINPUT:C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\include\\manifest\\segmentheap.manifest",
+          "/SUBSYSTEM:CONSOLE",
+          "D:\\myimgui\\build-vulkan-integrated\\draw-state\\SDL3-static.lib",
+          "E:\\VulkanSDK\\1.4.335.0\\Lib\\vulkan-1.lib",
+          "kernel32.lib",
+          "user32.lib",
+          "gdi32.lib",
+          "winmm.lib",
+          "imm32.lib",
+          "version.lib",
+          "uuid.lib",
+          "advapi32.lib",
+          "setupapi.lib",
+          "shell32.lib",
+          "hid.lib",
+          "dinput8.lib",
+          "uiautomationcore.lib",
+          "comctl32.lib",
+          "ole32.lib",
+          "oleaut32.lib",
+          "winspool.lib",
+          "comdlg32.lib",
+          "/OUT:D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-source.exe",
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-source.obj"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-function-compile",
+        "command": [
+          "cl",
+          "/nologo",
+          "/TP",
+          "/DWIN32",
+          "/D_WINDOWS",
+          "/W3",
+          "/GR",
+          "/EHsc",
+          "/MD",
+          "/O2",
+          "/Ob2",
+          "/DNDEBUG",
+          "-std:c++20",
+          "-MD",
+          "-Z7",
+          "/GL",
+          "/DPUFFERUI_ENABLE_SDL3",
+          "/DPUFFERUI_ENABLE_VULKAN",
+          "/ID:\\myimgui\\include",
+          "/ID:\\myimgui\\vendored\\stb",
+          "/ID:\\myimgui\\out\\build\\x64-release\\vendored\\SDL\\include-revision",
+          "/ID:\\myimgui\\vendored\\SDL\\include",
+          "/ID:\\myimgui\\build-vulkan-compute\\harfbuzz-src\\src",
+          "-external:IE:/VulkanSDK/1.4.335.0/include",
+          "-external:W0",
+          "/c",
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-function.cpp",
+          "/FoD:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-function.obj"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-function-link",
+        "command": [
+          "link",
+          "/nologo",
+          "/LTCG",
+          "/OPT:REF",
+          "/OPT:ICF",
+          "/INCREMENTAL:NO",
+          "/MANIFEST:EMBED",
+          "/MANIFESTINPUT:C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\include\\manifest\\segmentheap.manifest",
+          "/SUBSYSTEM:CONSOLE",
+          "D:\\myimgui\\build-vulkan-integrated\\draw-state\\SDL3-static.lib",
+          "E:\\VulkanSDK\\1.4.335.0\\Lib\\vulkan-1.lib",
+          "kernel32.lib",
+          "user32.lib",
+          "gdi32.lib",
+          "winmm.lib",
+          "imm32.lib",
+          "version.lib",
+          "uuid.lib",
+          "advapi32.lib",
+          "setupapi.lib",
+          "shell32.lib",
+          "hid.lib",
+          "dinput8.lib",
+          "uiautomationcore.lib",
+          "comctl32.lib",
+          "ole32.lib",
+          "oleaut32.lib",
+          "winspool.lib",
+          "comdlg32.lib",
+          "/OUT:D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-function.exe",
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-function.obj"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-integrated-compile",
+        "command": [
+          "cl",
+          "/nologo",
+          "/TP",
+          "/DWIN32",
+          "/D_WINDOWS",
+          "/W3",
+          "/GR",
+          "/EHsc",
+          "/MD",
+          "/O2",
+          "/Ob2",
+          "/DNDEBUG",
+          "-std:c++20",
+          "-MD",
+          "-Z7",
+          "/GL",
+          "/DPUFFERUI_ENABLE_SDL3",
+          "/DPUFFERUI_ENABLE_VULKAN",
+          "/ID:\\myimgui\\include",
+          "/ID:\\myimgui\\vendored\\stb",
+          "/ID:\\myimgui\\out\\build\\x64-release\\vendored\\SDL\\include-revision",
+          "/ID:\\myimgui\\vendored\\SDL\\include",
+          "/ID:\\myimgui\\build-vulkan-compute\\harfbuzz-src\\src",
+          "-external:IE:/VulkanSDK/1.4.335.0/include",
+          "-external:W0",
+          "/c",
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-integrated.cpp",
+          "/FoD:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-integrated.obj"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-integrated-link",
+        "command": [
+          "link",
+          "/nologo",
+          "/LTCG",
+          "/OPT:REF",
+          "/OPT:ICF",
+          "/INCREMENTAL:NO",
+          "/MANIFEST:EMBED",
+          "/MANIFESTINPUT:C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\include\\manifest\\segmentheap.manifest",
+          "/SUBSYSTEM:CONSOLE",
+          "D:\\myimgui\\build-vulkan-integrated\\draw-state\\SDL3-static.lib",
+          "E:\\VulkanSDK\\1.4.335.0\\Lib\\vulkan-1.lib",
+          "kernel32.lib",
+          "user32.lib",
+          "gdi32.lib",
+          "winmm.lib",
+          "imm32.lib",
+          "version.lib",
+          "uuid.lib",
+          "advapi32.lib",
+          "setupapi.lib",
+          "shell32.lib",
+          "hid.lib",
+          "dinput8.lib",
+          "uiautomationcore.lib",
+          "comctl32.lib",
+          "ole32.lib",
+          "oleaut32.lib",
+          "winspool.lib",
+          "comdlg32.lib",
+          "/OUT:D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-integrated.exe",
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-integrated.obj"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-output_cache-compile",
+        "command": [
+          "cl",
+          "/nologo",
+          "/TP",
+          "/DWIN32",
+          "/D_WINDOWS",
+          "/W3",
+          "/GR",
+          "/EHsc",
+          "/MD",
+          "/O2",
+          "/Ob2",
+          "/DNDEBUG",
+          "-std:c++20",
+          "-MD",
+          "-Z7",
+          "/GL",
+          "/DPUFFERUI_ENABLE_SDL3",
+          "/DPUFFERUI_ENABLE_VULKAN",
+          "/ID:\\myimgui\\include",
+          "/ID:\\myimgui\\vendored\\stb",
+          "/ID:\\myimgui\\out\\build\\x64-release\\vendored\\SDL\\include-revision",
+          "/ID:\\myimgui\\vendored\\SDL\\include",
+          "/ID:\\myimgui\\build-vulkan-compute\\harfbuzz-src\\src",
+          "-external:IE:/VulkanSDK/1.4.335.0/include",
+          "-external:W0",
+          "/c",
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-output_cache.cpp",
+          "/FoD:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-output_cache.obj"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-output_cache-link",
+        "command": [
+          "link",
+          "/nologo",
+          "/LTCG",
+          "/OPT:REF",
+          "/OPT:ICF",
+          "/INCREMENTAL:NO",
+          "/MANIFEST:EMBED",
+          "/MANIFESTINPUT:C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\include\\manifest\\segmentheap.manifest",
+          "/SUBSYSTEM:CONSOLE",
+          "D:\\myimgui\\build-vulkan-integrated\\draw-state\\SDL3-static.lib",
+          "E:\\VulkanSDK\\1.4.335.0\\Lib\\vulkan-1.lib",
+          "kernel32.lib",
+          "user32.lib",
+          "gdi32.lib",
+          "winmm.lib",
+          "imm32.lib",
+          "version.lib",
+          "uuid.lib",
+          "advapi32.lib",
+          "setupapi.lib",
+          "shell32.lib",
+          "hid.lib",
+          "dinput8.lib",
+          "uiautomationcore.lib",
+          "comctl32.lib",
+          "ole32.lib",
+          "oleaut32.lib",
+          "winspool.lib",
+          "comdlg32.lib",
+          "/OUT:D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-output_cache.exe",
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-output_cache.obj"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-source-0",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-source.exe"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-source-1",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-source.exe",
+          "--staged"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-source-2",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-source.exe",
+          "--negative-control"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-source-3",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-source.exe",
+          "--byte-tints"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-source-4",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-source.exe",
+          "--byte-tints",
+          "--staged"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-function-0",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-function.exe"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-function-1",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-function.exe",
+          "--staged"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-function-2",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-function.exe",
+          "--negative-control"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-integrated-0",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-integrated.exe"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-integrated-1",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-integrated.exe",
+          "--cache"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-integrated-2",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-integrated.exe",
+          "--staged"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-integrated-3",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-integrated.exe",
+          "--cache",
+          "--staged",
+          "--tiles",
+          "1150"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-integrated-4",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-integrated.exe",
+          "--bitmap"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-integrated-5",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-integrated.exe",
+          "--low-budget"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-output_cache-0",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-output_cache.exe"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-output_cache-1",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-output_cache.exe",
+          "--staged"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-output_cache-2",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-output_cache.exe",
+          "--flattened"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "nohb-output_cache-3",
+        "command": [
+          "D:\\myimgui\\build-vulkan-integrated\\function-cache\\variants-01\\nohb-output_cache.exe",
+          "--staged",
+          "--flattened"
+        ],
+        "exit": 0
+      }
+    ],
+    "source_after": {
+      "CMakeLists.txt": "09a21d6d3d14ec783d6803731ec3e6067c77320e808e9c468bc7045893ceeaf8",
+      "src\\pufferui_impl.cpp": "ad982e6d0765e831f520891368f02b5cbe69192070d21790863018a78e3f3894",
+      "include\\pufferui\\pufferui.h": "aac927b66687757417a6b6e135092fd8aafa521124852f0381f1ec8fd7fd3535",
+      "include\\pufferui\\vulkan.h": "4e2e5a3a42d32f7a4f26b8dbf4d294ac96817a607447770eb6a74b9b74f0c1d6",
+      "include\\pufferui\\impl\\chrome_scroll.inl": "d8b4cc31ca403fedfd48add4927c42ce0aaef59c1d9bd9e77834fc773882da50",
+      "include\\pufferui\\impl\\components.inl": "21aad5d9c1c3ef8da97b814a54f7414dcb2b4ef1bb47b5d89f7fceebc4e7b3ee",
+      "include\\pufferui\\impl\\core_pool.inl": "121be14ec368e5c0c0773038efff25d01b641a5dec9bc9b223ac6e094ca08fa1",
+      "include\\pufferui\\impl\\core_state.inl": "b2069ccbcfe5744c5cada39db8f816af4ad6559310922f2d18e55aea94feb51d",
+      "include\\pufferui\\impl\\dock_style.inl": "400a11bc84f737312af3049d71779e8b606c54ee04273dfa38be85c5c05c2e19",
+      "include\\pufferui\\impl\\draw_context.inl": "a43f1e7df590d1cccae44daaf2efc607211638149e1e829b073d0f411efee5db",
+      "include\\pufferui\\impl\\draw_primitives.inl": "89260f8e42841cc3279e76941be1c94d11dd2116218a408673ad8f9cd6803b44",
+      "include\\pufferui\\impl\\harfbuzz_text.inl": "6f12456a28a9fabd71ed3cc69cd58ba47c77583e5868149891da52750011b0a0",
+      "include\\pufferui\\impl\\input_interact.inl": "e151e2467bf43b549f45f6e24bf6c41c42a525c294bb72ff0637451d5d1df66e",
+      "include\\pufferui\\impl\\layout_text.inl": "42810dfa6f4c61d1f28f2c81a1a40a9f573fe9aba223232e71e8569d71fa8d85",
+      "include\\pufferui\\impl\\paint_commands.inl": "bd82eb62de019ab34fa8d5ba166a196046582c7ad0de98c36424b1bd8bef0513",
+      "include\\pufferui\\impl\\renderer_gradient.inl": "0c2aaea38a6332c4822c95e74c4b55fc162b3e8cf19da83d10e9aed33644d5a4",
+      "include\\pufferui\\impl\\renderer_mesh_state.inl": "21ea2995fb21fce57826463da171af05634126005b177a4a5a17da7ef36ae290",
+      "include\\pufferui\\impl\\renderer_overlay_state.inl": "b34c3996b46fe2bbbb15f4b93f438fdf15f97bc8aec54d49ec3b78125e807d1f",
+      "include\\pufferui\\impl\\renderer_primitives.inl": "1d9b0bbd4f41273dff48e9bbe5a25cad8fdc0f777cba58487112361396bacc09",
+      "include\\pufferui\\impl\\renderer_text.inl": "35119f09fffaade1992fa6db7e8c3fd3381065d804f8c04c69d5ad27837a11ed",
+      "include\\pufferui\\impl\\renderer_text_state.inl": "34aa0fe722be32eb8f75968a8e5c4219b65556cb62424956fa5625f7c7e4485c",
+      "include\\pufferui\\impl\\renderer_widgets.inl": "1f8f242f6357aa7d3e601135f4b4b9d936489003c60f8c47c6cf2defd649adf1",
+      "include\\pufferui\\impl\\sdl3.inl": "3d2efaf8ad9f6e5974d586842bc2a791e95bf6c89fcdeb538fe93b9d9c1fa7c7",
+      "include\\pufferui\\impl\\sdl3_vulkan_host.inl": "9b51c683ab4192478f1ce0542ef7d1563071aa8afc1079d333873eea684f2acb",
+      "include\\pufferui\\impl\\typed_inputs.inl": "b7000448abae71477f297bed6c11d8b0e804d129ff3796a27fd91698ae714480",
+      "include\\pufferui\\impl\\uia_windows.inl": "81190fcf0169f493fb552472e03d25f78f9fa39346b6e3aef117dd5fe45d1758",
+      "include\\pufferui\\impl\\vulkan_binning.inl": "c6b12907907cc9a622e9f825b684b5645cfbdc11a345501d3e85242bafb15a07",
+      "include\\pufferui\\impl\\vulkan_blend_lut.inl": "c4f15a86e9f96757d97f3732568b674e77e6d0dd240bdfe39bbfa5f70153e866",
+      "include\\pufferui\\impl\\vulkan_cache.inl": "d6a6b4f6637e149eac2f5d3d7d2dfc50933f295e504156af5cc5587bec628d82",
+      "include\\pufferui\\impl\\vulkan_commands.inl": "d8d6cecfc579d8b50be7437add502b9254ea6a5a143945d814b24b8b0b7049a9",
+      "include\\pufferui\\impl\\vulkan_compute.inl": "872a03b08a61e2cdd8058252ae527cb3bd8467cc73fcf4401a4dffc76c7c6bb5",
+      "include\\pufferui\\impl\\vulkan_device.inl": "13f0cf70d6bb88d8d785faecfc9a146cb34e20ad5d6773e30da4f024a527774a",
+      "include\\pufferui\\impl\\vulkan_dispatch.inl": "642efff7544b89db84a421438e58b08ee7d575959d967329d2a381068493ab0d",
+      "include\\pufferui\\impl\\vulkan_draw.inl": "4803675e42e83243c754f78cf2dbe0beeca6901c38d6b528f50f59673bf7b134",
+      "include\\pufferui\\impl\\vulkan_function_cache.inl": "950c59b3f86081d6c280a6307748b058a23d2746fe3431f6570a01d924d4b91a",
+      "include\\pufferui\\impl\\vulkan_kawase.inl": "daaabad10d1bdfb77869bcf9e34cf38c9bcd56210edeef21bf18800488ece492",
+      "include\\pufferui\\impl\\vulkan_memory.inl": "605b770fd0968b80f832024127ae2e3c63e847bac0e778dc1e2d1233f0a4b1a8",
+      "include\\pufferui\\impl\\vulkan_native.inl": "bc9db22840a735cbb55d2c287d998eb6bc052d199376068c6b82ab271b45279a",
+      "include\\pufferui\\impl\\vulkan_preparation.inl": "2941451c8bb2e539b10387c510e78bc9be4055046462b6ab93d74d755c3548fb",
+      "include\\pufferui\\impl\\vulkan_program_cache.inl": "b182d6c3135adcbcffc37c07d46d09d2c583fb9538e93653349e6a858efca952",
+      "include\\pufferui\\impl\\vulkan_program_probe.inl": "fe601b133ff823f11c55a7d2974db3324376c8b680e698d687613294e4c538c3",
+      "include\\pufferui\\impl\\vulkan_resources.inl": "bb9b4e0156589b4e0207ff9c31631d45669cb9ba36a4078e9961f13159999862",
+      "include\\pufferui\\impl\\vulkan_sdf.inl": "74f07761a5e5e6f8d5b059415ca87440273005d4124d7e67529e1f4a844b2e31",
+      "include\\pufferui\\impl\\vulkan_shaders.inl": "b3d3c59a12a989ea1341db2b57cfa6827974e28e2c6761b55b5b389c002f62c4",
+      "include\\pufferui\\impl\\vulkan_surface.inl": "80590798dd5a94e64bb67ad75776a069818f4b0c8d384e85ad4fc49930d11658",
+      "include\\pufferui\\impl\\widgets.inl": "5c7c078aa6bb95aa7e93ea9047efba018c452d4c16fb953942274661cdfe8f18",
+      "src\\shaders\\vulkan\\bin_coarse.comp": "304b69b47b13b869a6983056d123dd4be608d0b2dde46cd131dcd8a5ccefe746",
+      "src\\shaders\\vulkan\\bin_common.glsl": "cee7816ce9b174bf306123bb849f75a202e72ad342311ae4cbe6c40093f476b4",
+      "src\\shaders\\vulkan\\bin_count.comp": "5074439c27e90b62be7e2f0003e6d7e2e4fba2d05d1d5a260feff2375ef46139",
+      "src\\shaders\\vulkan\\bin_emit.comp": "a8fb862b012b85561618fecd99dc95a56599d66cc610352775a3ec88c870f933",
+      "src\\shaders\\vulkan\\bin_scan.comp": "2ac643a2ebb6c50d1ca8590dd3780abab8e7acd5ff0781bb83d7f6c4d7eef9a5",
+      "src\\shaders\\vulkan\\blend_calibrate.comp": "68efbe57ab46ea913d7eb37b489be3deee0c93eb1030929d439687170e839dac",
+      "src\\shaders\\vulkan\\blend_probe.comp": "7b1c46807711250cec674dee779c7eadbe95552a64cd7d1815d7f81041aa22b5",
+      "src\\shaders\\vulkan\\byte_colors.glsl": "a715106b602b893e481308f8e7c012acd36095631c1ee32c2ab77b3a55b724b8",
+      "src\\shaders\\vulkan\\function.frag": "4f7566d45750c0cadde09106229aef1e9ac0791a1c5d45ccdfc1dd501b9fd8fa",
+      "src\\shaders\\vulkan\\function.vert": "12f3aa39b045bf123426a8c89a219de5f39c67dc22e40e682e5d00149b0edbb6",
+      "src\\shaders\\vulkan\\function_begin.comp": "0b43c2463f6725862d0dc17fccfb0b9b3fa21f8738afccfe0e993d462bfab3b2",
+      "src\\shaders\\vulkan\\function_common.glsl": "1b9524b7926a70de6f49e95ff43e62ac315e8f0157d62c7efea8b3b01cfe1653",
+      "src\\shaders\\vulkan\\function_lookup.glsl": "08c04e44fb12646c546c2fc804e5edc6e52c0cf8be8b982c6a3939467726edb7",
+      "src\\shaders\\vulkan\\function_prepare.comp": "0ecd4c64fd5b3c53311546d063df7c2d7ffa211b6151f906026b8aa786435af6",
+      "src\\shaders\\vulkan\\function_probe.comp": "3b70bde6a2c7494dfbc79747825c9971e3fab32792ca0385ce2285c7a5672a05",
+      "src\\shaders\\vulkan\\function_ready.comp": "63bed643a7ce9749c35dc8002016252331b91c33f37ca0308d86efa883330717",
+      "src\\shaders\\vulkan\\function_reset.comp": "e3ab6d4580501f55b146462bcfb9adc51e573c28a4d3f589ed96605237862f2a",
+      "src\\shaders\\vulkan\\harfbuzz_slug.glsl": "a83b9587e42b1e3db726be5b6237589007ce33a1bf607c8aea8e8c7bdffa12df",
+      "src\\shaders\\vulkan\\integrated_capture.comp": "e0539ec8d04754bb6da9f527032e847e9aaae73725cfb855adf8c4d976422c4c",
+      "src\\shaders\\vulkan\\integrated_commit.comp": "c550d49e42534446e018793235a5a69ccae954c23642ab893a9d8da6ac8d9d6b",
+      "src\\shaders\\vulkan\\integrated_compare.comp": "ce6ada5b73ef2da65a7bb69933f3e95800c9180decc0d5a71f32491089baf359",
+      "src\\shaders\\vulkan\\integrated_paint.comp": "0c8a5aa37f5e6ec5126639cc9643c857e3ee362b9fca4a7003edf0ac31028d30",
+      "src\\shaders\\vulkan\\integrated_replay.comp": "5907662572d77762856f409efba2a5345a1a739cf26de16378bb9e1fdb8777d7",
+      "src\\shaders\\vulkan\\integrated_restore.comp": "be5734be1851ad16da72bc845e320fe7d5f71b2ca0a562a27a3435d78e2eb65a",
+      "src\\shaders\\vulkan\\integrated_snapshot.comp": "b8f37003ce09dcb8075ff63764f4bb86f3266c94c1d9754cedefb9f816e74c10",
+      "src\\shaders\\vulkan\\kawase.comp": "85e82e0b00760dac6ff8b703da32e5b9862d7f4f81fd1a61ab63434ceab0efa9",
+      "src\\shaders\\vulkan\\manifest.json": "6330431cb19790ae7e04729c73c384f84fde8b4f77c1cb51aa1e63c858d9a6a0",
+      "src\\shaders\\vulkan\\native_copy_tiles.glsl": "065ebdad6f0664df0656c52ee00aa87b9f25be572d9fc3f6e5cccc00e38c4b22",
+      "src\\shaders\\vulkan\\paint_args.comp": "9629ddfa3e10141aed3f81ccc3b1197623ec7dee0e2622734c5bd97de89e9536",
+      "src\\shaders\\vulkan\\paint_compat.comp": "d587fb7f661023f719da9cff681e2bed5ff3d15ed0f83dfe4d2e810af17fa0f7",
+      "src\\shaders\\vulkan\\program.frag": "6c244f816e4b8440d88b9b795b19ff95727c31dedef3a84a1f923c1b9d2473a0",
+      "src\\shaders\\vulkan\\program_compare.comp": "d33887ec5abbec232c1aac4dd9cc1ddd71efc4a88235ae86bfc2ce11f184146a",
+      "src\\shaders\\vulkan\\rgba8_blend.glsl": "c9347153254b4fd1730c1bb92c08bfa52d7f29c88e0cd7c6cbf84663a5153a26",
+      "src\\shaders\\vulkan\\sdf.frag": "1d72129c5ae088915b737ada07bca3775a615494d143836d679d74f85966bdde",
+      "src\\shaders\\vulkan\\sdf.vert": "3ff8443224eb24b3ebcd0f37c06298b95a0442500c0951c4c8f99998b44b85c6",
+      "src\\shaders\\vulkan\\sdf_commit.comp": "cbc6a92887c371cc31f7b78094bc1a793763ae9abe2ebf66c1fa10f1103c6469",
+      "src\\shaders\\vulkan\\sdf_commit_body.glsl": "19219c0e96c6042d0a3424a31157745e3a12221016a55b549750e1ec605d5558",
+      "src\\shaders\\vulkan\\sdf_compact.comp": "cd5b0231e8cdc32c0def2f8444eb794ecd059c5e79f45d85c499a659dcc00f48",
+      "src\\shaders\\vulkan\\sdf_compare.comp": "84a83f3aefe330bbee683782bf7718b9d2f2b65ce19bccc6dc6bab9baf203b07",
+      "src\\shaders\\vulkan\\sdf_compare_body.glsl": "e2f01c787c09a66492c619d9f38508aea7bbb675527c5e8496ebf2c1090bf7ad",
+      "src\\shaders\\vulkan\\sdf_fragment.glsl": "7b1648336763906aad612a2ce812743e19c0b5ebeb2bf87fafd8851f3c617a0b",
+      "src\\shaders\\vulkan\\sdf_history.glsl": "eba6b322d3c7a1c42cba2ef1d7748f35e3eda4afe7084449c337e584391c546b",
+      "src\\shaders\\vulkan\\sdf_paint.comp": "b492c3f4dd28818b0644b6ac6273378cf5f8aa7cc46a0c2c63cbcad618a95909",
+      "src\\shaders\\vulkan\\sdf_restore.comp": "068306c0f03259403f382d4fada05f189b4878649ba804a489514586632f8cbc",
+      "src\\shaders\\vulkan\\shape_common.glsl": "f41d59d2bdc0420c2c6fb4f62a95ec6c97665c9dd1027cbaf9185a58e56c747a",
+      "src\\shaders\\vulkan\\source_probe.comp": "d0be663b809bcfd430613eb18cebf7ca33cbedeb1c956c82fdd67e5a4900fd92",
+      "src\\shaders\\vulkan\\ui.frag": "fcd4245a4d741301ced56f1df47a4f571a8935167d194904d27147250e525361",
+      "src\\shaders\\vulkan\\ui.vert": "bcf9c2f2bffb823fe84e9d27b86110ec67375aa669dbe589429f4db333239eb1",
+      "src\\shaders\\vulkan\\workgroup_scan.glsl": "bbdebdbcfde353ca030a060f686f9d3a960b78f04de6853fa44dbbc5a6b3740b",
+      "tests\\test_vulkan_binning.inl": "1fa8e0f9668843044fb15544df248e97bc1463c1a22876eaad26843a666802e2",
+      "tests\\test_vulkan_color_upload.inl": "264fd900d0bc11431765f66ee72865d6983432f9de8cad87b260c780e8fa9cbe",
+      "tests\\test_vulkan_commands.inl": "49dc58bbe6ad4ad82835b6cacc4929281bf5e8b12faa59ee9052f50ab2caba2d",
+      "tests\\test_vulkan_compute.inl": "8300dfeefd60b5a1afa03daff637c228e63a889e08342a851e7cd66cf5db02a7",
+      "tests\\test_vulkan_function.inl": "0f8e0cac220eb96de3a36235628de6a777fc66d91d2d9b35efed0ca6e466786e",
+      "tests\\test_vulkan_glyph_residency.inl": "337b1cfdad21f1eb2cb634a1cda663fd8b76fb04a553fed9370df22715c41c27",
+      "tests\\test_vulkan_graphics_state.inl": "ff6c7be48ff2be315650a35f3d543f0ff0ea2c82c824a7535ae060aa1b039782",
+      "tests\\test_vulkan_integrated.inl": "f958c242a3358da9b5dfc8bf0f097aca869a3e7f41215eb9ac63b6722f3eed8f",
+      "tests\\test_vulkan_internal.inl": "11c4539abb1f3430c91067218f8ccedec9bc8093e9355c3d9db4e850c0ac9d7e",
+      "tests\\test_vulkan_memory_roles.inl": "855bffd953b67b87876ec864a5b0376a4308b76615cf6ad181e42c8be72853fd",
+      "tests\\test_vulkan_numeric_probe.inl": "28e618f5d620a97664bd800260172703b9df7c263f2d5d2da7208097b35330b4",
+      "tests\\test_vulkan_output_cache.inl": "42e3a32d532c5e132919416458cb1218749b45a79fa641c4330d4a07f256bf6a",
+      "tests\\test_vulkan_preparation.inl": "d0b1b2ec177afe092355c988e447222d2810eb042eae934904c8cbabe6f4db4f",
+      "tests\\test_vulkan_program.inl": "bec170d59ee9bc5c8282d20591e6360c79d89741ee5333ccd77921cc624c67e1",
+      "tests\\test_vulkan_program_admission.inl": "f179115b59fa07d96048ed53a8b2e71be525f555069377f74764583371077c33",
+      "tests\\test_vulkan_program_probe_preparation.inl": "82668f17edd66e82aa62c6c2c0aeb23eb22188671fce899153f3237403ea2ef8",
+      "tests\\test_vulkan_sdf_cache.inl": "639e09c30b791d4a1e3f839b700027234845310ed69a25b3544fcdb88867419e",
+      "tests\\test_vulkan_source.inl": "9864c8c8b68cbab90b8769d738274e029a2e1ae050f92106f847a600a6ccdb78",
+      "tests\\test_vulkan_spiral_binning.inl": "0d365404a093b43dc436daaae54b21c58bdbd8b2fad339c91c2d4f3494a9f0c1",
+      "tests\\test_vulkan_text_culling.inl": "a47d66aeba713090eb7a6bc261c4758d64d4ef7f417d85805d1dee337b390d2f",
+      "tests\\test_vulkan_workgroup.inl": "c298a25d8ccc1b2dac03c1f08b273285018f1059113a79509abe4eddc76e6457",
+      "tests\\test_vulkan_compute_spiral.cpp": "743f65ab2d5460f6f9be94f5da6a035b2c2fa011469cf5111ba8c743f9ee19ac",
+      "examples\\pui_showcase.cpp": "c8abfb37f081ca55f622443895046c59441ba1cd5814536611606be0e07b7f0d",
+      "examples\\example_common.h": "6484580795bc9505d3e42e2b61c5c6e384b4b89e7c395cf59e73def9efb8328f",
+      "examples\\showcase_trace.h": "6b2e815fdc3953a15cf8f7f735a08c1e46d701253b2d38343a94107246b10cdd"
+    },
+    "source_unchanged": true,
+    "binaries": {
+      "build-vulkan-integrated\\function-cache\\variants-01\\nohb-function.exe": "bd3b53dd16b8a5f73d70f759f3ce659ba4fb12435d044d7835c8502edd93552f",
+      "build-vulkan-integrated\\function-cache\\variants-01\\nohb-integrated.exe": "6275df3a90e800a68b8c56550c8c2badad6acaafed4919a848c64e3053780956",
+      "build-vulkan-integrated\\function-cache\\variants-01\\nohb-output_cache.exe": "fa50c9bbc0e8366e71d9362a1370c47945191fe162d7876ff0b5c20ccc24f1df",
+      "build-vulkan-integrated\\function-cache\\variants-01\\nohb-source.exe": "c537881d840e4d3e49cbd891919a93272301495adbe7062d3a28f750cd5e38a5",
+      "out\\build\\x64-debug\\Debug\\pui_vulkan_source_tests.exe": "dddceca8bcc44820d1768064ae651e631bd5ac4f62c3d5701c6696d6015cc558",
+      "out\\build\\x64-debug\\Debug\\pui_vulkan_function_tests.exe": "f726e7afa59c9df6c4d2ac0dda3ab1593e8a63fbbab69820389e2642580f6a49",
+      "out\\build\\x64-debug\\Debug\\pui_vulkan_integrated_tests.exe": "0a77a5e651d3937251153869685498212a74f31aa3616bab56c16b9a99f542c4",
+      "out\\build\\x64-debug\\Debug\\pui_vulkan_output_cache_tests.exe": "8d782737ba842c3d7c990160072536fa2e138b55185b7db088f430072c2fc962"
+    }
+  },
+  "release_logs": {
+    "source-0": "all native/compute source-float components matched exactly\ncases=562 compared_float_components=9207808 differences=0 channels=0/0/0/0 validation_errors=0\n",
+    "source-1": "all native/compute source-float components matched exactly\ncases=562 compared_float_components=9207808 differences=0 channels=0/0/0/0 validation_errors=0\n",
+    "source-2": "native source oracle rejected every deliberate alpha bit flip\ncases=562 compared_float_components=9207808 differences=2301952 channels=0/0/0/2301952 validation_errors=0\n",
+    "source-3": "all native/compute source-float components matched exactly\ncases=562 compared_float_components=9207808 differences=0 channels=0/0/0/0 validation_errors=0\n",
+    "source-4": "all native/compute source-float components matched exactly\ncases=562 compared_float_components=9207808 differences=0 channels=0/0/0/0 validation_errors=0\n",
+    "function-0": "function_cache compared_bytes=262144 differences=0 negative=0 exhausted_hit_pixels=2048 overflow_requests=17465 draw_allocations=0 validation_errors=0\n",
+    "function-1": "function_cache compared_bytes=262144 differences=0 negative=0 exhausted_hit_pixels=2048 overflow_requests=15840 draw_allocations=0 validation_errors=0\n",
+    "function-2": "function_cache compared_bytes=262144 differences=161718 negative=1 exhausted_hit_pixels=2048 overflow_requests=14703 draw_allocations=0 validation_errors=0\n",
+    "integrated-0": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=5000 immutable_frames=180 cache=0 staged=0 gpu_pixels=23220065 aa_pixels=26557 glyph_pixels=116548 float_pixels=132346 function_misses=22506918 metadata_peak=22455680 image_bytes=11362560 draw_allocations=0 validation_errors=0\n",
+    "integrated-1": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=5000 immutable_frames=180 cache=1 staged=0 gpu_pixels=23402355 aa_pixels=26504 glyph_pixels=116525 float_pixels=314636 function_misses=22302453 metadata_peak=35307648 image_bytes=51732736 draw_allocations=0 validation_errors=0\n",
+    "integrated-2": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=5000 immutable_frames=180 cache=0 staged=1 gpu_pixels=23382275 aa_pixels=26522 glyph_pixels=116532 float_pixels=294556 function_misses=22309502 metadata_peak=22455680 image_bytes=11362560 draw_allocations=0 validation_errors=0\n",
+    "integrated-3": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=1150 immutable_frames=180 cache=1 staged=1 gpu_pixels=18300838 aa_pixels=26355 glyph_pixels=115773 float_pixels=565363 function_misses=19694246 metadata_peak=35307648 image_bytes=51732736 draw_allocations=0 validation_errors=0\n",
+    "integrated-4": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=5000 immutable_frames=0 cache=0 staged=0 gpu_pixels=23086982 aa_pixels=3497 glyph_pixels=0 float_pixels=102375 function_misses=22536383 metadata_peak=22455680 image_bytes=15556864 draw_allocations=0 validation_errors=0\n",
+    "integrated-5": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=5000 immutable_frames=180 cache=0 staged=0 gpu_pixels=0 aa_pixels=0 glyph_pixels=0 float_pixels=0 function_misses=0 metadata_peak=173184 image_bytes=7168256 draw_allocations=0 validation_errors=0\n"
+  },
+  "output_logs": {
+    "bitmap-direct": "native_output frames=40 compared_bytes=1966080 all_hit_frames=11 restored_pixels=319488 staged=0 vector=0 flattened=0 validation_errors=0\n",
+    "bitmap-staged": "native_output frames=40 compared_bytes=1966080 all_hit_frames=11 restored_pixels=319488 staged=1 vector=0 flattened=0 validation_errors=0\n",
+    "vector-direct": "native_output frames=40 compared_bytes=1966080 all_hit_frames=11 restored_pixels=319488 staged=0 vector=1 flattened=0 validation_errors=0\n",
+    "vector-staged-flattened": "native_output frames=40 compared_bytes=1966080 all_hit_frames=11 restored_pixels=319488 staged=1 vector=1 flattened=1 validation_errors=0\n",
+    "red-run": "frame=5 full cache got=0 expected=12288 hits=12 misses=0 batches=1\nFAIL line188 cached == PIXELS\n"
+  },
+  "variant_logs": {
+    "debug-source-0": "all native/compute source-float components matched exactly\ncases=562 compared_float_components=9207808 differences=0 channels=0/0/0/0 validation_errors=0\n",
+    "debug-source-1": "all native/compute source-float components matched exactly\ncases=562 compared_float_components=9207808 differences=0 channels=0/0/0/0 validation_errors=0\n",
+    "debug-source-2": "native source oracle rejected every deliberate alpha bit flip\ncases=562 compared_float_components=9207808 differences=2301952 channels=0/0/0/2301952 validation_errors=0\n",
+    "debug-source-3": "all native/compute source-float components matched exactly\ncases=562 compared_float_components=9207808 differences=0 channels=0/0/0/0 validation_errors=0\n",
+    "debug-source-4": "all native/compute source-float components matched exactly\ncases=562 compared_float_components=9207808 differences=0 channels=0/0/0/0 validation_errors=0\n",
+    "debug-function-0": "function_cache compared_bytes=262144 differences=0 negative=0 exhausted_hit_pixels=2048 overflow_requests=14075 draw_allocations=0 validation_errors=0\n",
+    "debug-function-1": "function_cache compared_bytes=262144 differences=0 negative=0 exhausted_hit_pixels=2048 overflow_requests=24692 draw_allocations=0 validation_errors=0\n",
+    "debug-function-2": "function_cache compared_bytes=262144 differences=161718 negative=1 exhausted_hit_pixels=2048 overflow_requests=22177 draw_allocations=0 validation_errors=0\n",
+    "debug-integrated-0": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=5000 immutable_frames=180 cache=0 staged=0 gpu_pixels=23205970 aa_pixels=26522 glyph_pixels=116538 float_pixels=118251 function_misses=22524172 metadata_peak=22455680 image_bytes=11362560 draw_allocations=0 validation_errors=0\n",
+    "debug-integrated-1": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=5000 immutable_frames=180 cache=1 staged=0 gpu_pixels=23208859 aa_pixels=26519 glyph_pixels=116531 float_pixels=121140 function_misses=22525241 metadata_peak=35307648 image_bytes=51732736 draw_allocations=0 validation_errors=0\n",
+    "debug-integrated-2": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=5000 immutable_frames=180 cache=0 staged=1 gpu_pixels=24139448 aa_pixels=26527 glyph_pixels=116539 float_pixels=1051729 function_misses=21513118 metadata_peak=22455680 image_bytes=11362560 draw_allocations=0 validation_errors=0\n",
+    "debug-integrated-3": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=1150 immutable_frames=180 cache=1 staged=1 gpu_pixels=18532544 aa_pixels=26339 glyph_pixels=115750 float_pixels=797069 function_misses=19317632 metadata_peak=35307648 image_bytes=51732736 draw_allocations=0 validation_errors=0\n",
+    "debug-integrated-4": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=5000 immutable_frames=0 cache=0 staged=0 gpu_pixels=23095529 aa_pixels=3492 glyph_pixels=0 float_pixels=110922 function_misses=22507258 metadata_peak=22455680 image_bytes=15556864 draw_allocations=0 validation_errors=0\n",
+    "debug-integrated-5": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=5000 immutable_frames=180 cache=0 staged=0 gpu_pixels=0 aa_pixels=0 glyph_pixels=0 float_pixels=0 function_misses=0 metadata_peak=173184 image_bytes=7168256 draw_allocations=0 validation_errors=0\n",
+    "debug-output_cache-0": "native_output frames=40 compared_bytes=1966080 all_hit_frames=11 restored_pixels=319488 staged=0 vector=0 flattened=0 validation_errors=0\n",
+    "debug-output_cache-1": "native_output frames=40 compared_bytes=1966080 all_hit_frames=11 restored_pixels=319488 staged=1 vector=0 flattened=0 validation_errors=0\n",
+    "debug-output_cache-2": "native_output frames=40 compared_bytes=1966080 all_hit_frames=11 restored_pixels=319488 staged=0 vector=1 flattened=0 validation_errors=0\n",
+    "debug-output_cache-3": "native_output frames=40 compared_bytes=1966080 all_hit_frames=11 restored_pixels=319488 staged=1 vector=1 flattened=1 validation_errors=0\n",
+    "nohb-source-0": "all native/compute source-float components matched exactly\ncases=292 compared_float_components=4784128 differences=0 channels=0/0/0/0 validation_errors=0\n",
+    "nohb-source-1": "all native/compute source-float components matched exactly\ncases=292 compared_float_components=4784128 differences=0 channels=0/0/0/0 validation_errors=0\n",
+    "nohb-source-2": "native source oracle rejected every deliberate alpha bit flip\ncases=292 compared_float_components=4784128 differences=1196032 channels=0/0/0/1196032 validation_errors=0\n",
+    "nohb-source-3": "all native/compute source-float components matched exactly\ncases=292 compared_float_components=4784128 differences=0 channels=0/0/0/0 validation_errors=0\n",
+    "nohb-source-4": "all native/compute source-float components matched exactly\ncases=292 compared_float_components=4784128 differences=0 channels=0/0/0/0 validation_errors=0\n",
+    "nohb-function-0": "function_cache compared_bytes=262144 differences=0 negative=0 exhausted_hit_pixels=2048 overflow_requests=20233 draw_allocations=0 validation_errors=0\n",
+    "nohb-function-1": "function_cache compared_bytes=262144 differences=0 negative=0 exhausted_hit_pixels=2048 overflow_requests=15132 draw_allocations=0 validation_errors=0\n",
+    "nohb-function-2": "function_cache compared_bytes=262144 differences=161718 negative=1 exhausted_hit_pixels=2048 overflow_requests=20389 draw_allocations=0 validation_errors=0\n",
+    "nohb-integrated-0": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=5000 immutable_frames=0 cache=0 staged=0 gpu_pixels=23128202 aa_pixels=3483 glyph_pixels=0 float_pixels=143595 function_misses=22432913 metadata_peak=22455680 image_bytes=15556864 draw_allocations=0 validation_errors=0\n",
+    "nohb-integrated-1": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=5000 immutable_frames=0 cache=1 staged=0 gpu_pixels=23143488 aa_pixels=3491 glyph_pixels=0 float_pixels=158881 function_misses=22434018 metadata_peak=35307648 image_bytes=55927040 draw_allocations=0 validation_errors=0\n",
+    "nohb-integrated-2": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=5000 immutable_frames=0 cache=0 staged=1 gpu_pixels=23368454 aa_pixels=3488 glyph_pixels=0 float_pixels=383847 function_misses=22098139 metadata_peak=22455680 image_bytes=15556864 draw_allocations=0 validation_errors=0\n",
+    "nohb-integrated-3": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=1150 immutable_frames=0 cache=1 staged=1 gpu_pixels=17918892 aa_pixels=3361 glyph_pixels=0 float_pixels=286150 function_misses=19918983 metadata_peak=35307648 image_bytes=55927040 draw_allocations=0 validation_errors=0\n",
+    "nohb-integrated-4": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=5000 immutable_frames=0 cache=0 staged=0 gpu_pixels=23203451 aa_pixels=3479 glyph_pixels=0 float_pixels=218844 function_misses=22351131 metadata_peak=22455680 image_bytes=15556864 draw_allocations=0 validation_errors=0\n",
+    "nohb-integrated-5": "all 180 integrated Spiral frames matched native SDF exactly\nintegrated_spiral frames=180 tiles=5000 immutable_frames=0 cache=0 staged=0 gpu_pixels=0 aa_pixels=0 glyph_pixels=0 float_pixels=0 function_misses=0 metadata_peak=173184 image_bytes=11362560 draw_allocations=0 validation_errors=0\n",
+    "nohb-output_cache-0": "native_output frames=40 compared_bytes=1966080 all_hit_frames=11 restored_pixels=319488 staged=0 vector=0 flattened=0 validation_errors=0\n",
+    "nohb-output_cache-1": "native_output frames=40 compared_bytes=1966080 all_hit_frames=11 restored_pixels=319488 staged=1 vector=0 flattened=0 validation_errors=0\n",
+    "nohb-output_cache-2": "native_output frames=40 compared_bytes=1966080 all_hit_frames=11 restored_pixels=319488 staged=0 vector=0 flattened=1 validation_errors=0\n",
+    "nohb-output_cache-3": "native_output frames=40 compared_bytes=1966080 all_hit_frames=11 restored_pixels=319488 staged=1 vector=0 flattened=1 validation_errors=0\n"
+  }
+}

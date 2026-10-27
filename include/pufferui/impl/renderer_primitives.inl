@@ -30,6 +30,13 @@ void renderer_detail::mesh_painter::draw_triangles(texture_handle tex, const ver
         const rect isect = rect::intersect(aabb, bounds);
         if (isect.w <= 0.0f || isect.h <= 0.0f) return;
     }
+    append_triangles(tex, vertices, vertex_count, indices, index_count);
+}
+
+void renderer_detail::mesh_painter::append_triangles(texture_handle tex, const vertex *vertices,
+                                                     i32 vertex_count, const i32 *indices,
+                                                     i32 index_count)
+{
     // Solid geometry (tex == nullptr) joins the glyph batch when an atlas
     // exists: the atlas's reserved (0,0) texel is pure white, and dl_add
     // remaps the copied verts' UVs to it. Without an atlas (no font loaded)
@@ -48,18 +55,29 @@ void renderer_detail::mesh_painter::draw_triangles(texture_handle tex, const ver
 void renderer_detail::mesh_painter::draw_rect(rect r, color c)
 {
     PUFFERUI_CHECK(VIOL_INVALID_RECT, r.is_valid(), "draw_rect with invalid rect");
+    // Match the bounds of the four original vertices, including float rounding,
+    // before preparing semantic capture. Append directly after this one check.
+    const f32 right = r.right(), bottom = r.bottom();
+    rect bounds;
+    if (detail::paint_bounds(ctx, bounds))
+    {
+        const f32 x0 = min2(r.x, right), y0 = min2(r.y, bottom);
+        const rect box{x0, y0, max2(r.x, right) - x0, max2(r.y, bottom) - y0};
+        const rect visible = rect::intersect(box, bounds);
+        if (visible.w <= 0.0f || visible.h <= 0.0f) return;
+    }
 #if defined(PUFFERUI_ENABLE_VULKAN)
     paint_detail::primitive_scope capture(
         ctx, {.operation = paint_detail::opcode::RECT_COMPAT, .shape = r, .tint = c});
 #endif
     vertex v[4] = {
         {r.x, r.y, 0.0f, 0.0f, c},
-        {r.right(), r.y, 1.0f, 0.0f, c},
-        {r.right(), r.bottom(), 1.0f, 1.0f, c},
-        {r.x, r.bottom(), 0.0f, 1.0f, c},
+        {right, r.y, 1.0f, 0.0f, c},
+        {right, bottom, 1.0f, 1.0f, c},
+        {r.x, bottom, 0.0f, 1.0f, c},
     };
     i32 idx[6] = {0, 1, 2, 0, 2, 3};
-    draw_triangles(nullptr, v, 4, idx, 6);
+    append_triangles(nullptr, v, 4, idx, 6);
 }
 
 void renderer_detail::mesh_painter::draw_line(f32 x0, f32 y0, f32 x1, f32 y1, color c,
@@ -511,6 +529,7 @@ void renderer_detail::mesh_painter::draw_sector(vec2 center, f32 r_in, f32 r_out
     }
     const f32 mid = (r_in + r_out) * 0.5f;
     const i32 seg = static_cast<i32>(max2(3.0f, std::ceil((a1 - a0) * max2(2.0f, mid) * 0.25f)));
+    if (seg <= 128 && ctx->dl->sector_preparation == 0) ctx->dl->sector_preparation = 1;
 
     color c_out = c;
     c_out.a = 0;
@@ -632,6 +651,9 @@ void renderer_detail::mesh_painter::blur(rect r, f32 blur_radius, const corner_r
     }
 
     texture_handle scene = surf->scene_target();
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    if (native_scene) scene = native_scene(native_device, surf);
+#endif
     if (!scene) return;
 
     i32 ow = 0, oh = 0;

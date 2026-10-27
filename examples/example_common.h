@@ -119,6 +119,33 @@ struct example_window
     explicit operator bool() const { return win != nullptr; }
 };
 
+// Optional timing for an actual interactive run. Disabled examples do not read
+// a clock here. The recorder owns enabling it and the retained output storage.
+struct example_frame_diagnostics
+{
+    enum stage
+    {
+        PUMP,
+        BEGIN,
+        END,
+        COUNT
+    };
+    bool enabled = false;
+    u64 ticks[COUNT]{};
+    bool valid[COUNT]{};
+    template <typename Fn> void measure(stage part, Fn &&fn)
+    {
+        if (!enabled)
+        {
+            fn();
+            return;
+        }
+        const u64 start = SDL_GetPerformanceCounter();
+        fn();
+        ticks[part] = SDL_GetPerformanceCounter() - start;
+        valid[part] = true;
+    }
+};
 struct example_app
 {
     const char *name = "example";
@@ -143,6 +170,7 @@ struct example_app
     i32 width = 640;
     i32 height = 360;
     bool running = true;
+    example_frame_diagnostics diagnostics;
     f64 now = 0.0;
     f64 dt = 1.0 / 60.0;
 
@@ -237,12 +265,32 @@ inline example_page example_begin_page(ui &u, example_app &app, const char *titl
     return page;
 }
 
+inline bool example_environment_flag(const char *value)
+{
+    return value && value[0] && SDL_strcasecmp(value, "0") != 0 &&
+           SDL_strcasecmp(value, "false") != 0 && SDL_strcasecmp(value, "off") != 0 &&
+           SDL_strcasecmp(value, "no") != 0;
+}
+
 inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int argc, char **argv)
 {
     app.name = title;
     app.width = w;
     app.height = h;
     app.show_violations = true; // interactive dev runs watch; selftests clear it
+#if defined(PUFFERUI_ENABLE_VULKAN) && defined(PUFFERUI_SHOWCASE_INTEGRATED)
+    bool explicit_painter = false;
+    for (int i = 1; i + 1 < argc; ++i)
+        if (std::strcmp(argv[i], "--vulkan-painter") == 0) explicit_painter = true;
+    if (!explicit_painter)
+    {
+        app.boot.vulkan.painter = vulkan_painter_mode::INTEGRATED;
+        app.boot.vulkan.tile_cache = app.boot.vulkan.whole_program_cache = true;
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+        app.boot.vulkan.vector_text = true;
+#endif
+    }
+#endif
     for (int i = 1; i < argc; ++i)
     {
         if (std::strcmp(argv[i], "--selftest") == 0)
@@ -289,6 +337,14 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
                 app.boot.vulkan.painter = vulkan_painter_mode::SDF_RASTER;
             else if (std::strcmp(mode, "compute") == 0)
                 app.boot.vulkan.painter = vulkan_painter_mode::COMPUTE_SDF;
+            else if (std::strcmp(mode, "integrated") == 0)
+            {
+                app.boot.vulkan.painter = vulkan_painter_mode::INTEGRATED;
+                app.boot.vulkan.tile_cache = true;
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+                app.boot.vulkan.vector_text = true;
+#endif
+            }
             else if (std::strcmp(mode, "adaptive") == 0)
             {
                 app.boot.vulkan.painter = vulkan_painter_mode::COMPUTE_SDF;
@@ -299,6 +355,11 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
                 std::fprintf(stderr, "Unknown Vulkan painter: %s\n", mode);
                 return false;
             }
+            app.boot.vulkan.whole_program_cache =
+                (app.boot.vulkan.painter == vulkan_painter_mode::SDF_RASTER ||
+                 app.boot.vulkan.painter == vulkan_painter_mode::COMPUTE_SDF ||
+                 app.boot.vulkan.painter == vulkan_painter_mode::INTEGRATED) &&
+                !app.boot.vulkan.adaptive_compute;
         }
         else if (std::strcmp(argv[i], "--vector-text") == 0)
             app.boot.vulkan.vector_text = true;
@@ -328,7 +389,8 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
             "  --no-script           selftest without the scripted input (screenshots)\n",
             title);
 #if defined(PUFFERUI_ENABLE_VULKAN)
-        std::printf("  --vulkan-painter reference|sdf|compute|adaptive  select the native painter\n"
+        std::printf("  --vulkan-painter reference|sdf|compute|adaptive|integrated  select the "
+                    "native painter\n"
                     "  --vector-text         HarfBuzz shaping and Slug GPU text (optional build)\n"
                     "  --vulkan-blur legacy|kawase  select native blur filtering\n");
 #endif
@@ -357,7 +419,7 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
     boot.renderer_name = app.selftest ? "software" : nullptr;
 #if defined(PUFFERUI_ENABLE_VULKAN)
     boot.use_vulkan = true;
-    boot.vulkan.validation = std::getenv("PUFFERUI_VULKAN_VALIDATION") != nullptr;
+    boot.vulkan.validation = example_environment_flag(std::getenv("PUFFERUI_VULKAN_VALIDATION"));
 #endif
     if (!sdl3_app_init(boot, title, app.width, app.height, 0, nullptr))
     {
@@ -602,28 +664,36 @@ template <typename FrameFn>
 int example_run(const char *title, i32 w, i32 h, int argc, char **argv, FrameFn &&frame)
 {
     example_app app;
-    if (!example_init(app, title, w, h, argc, argv)) return example_shutdown(app);
+    if (!example_init(app, title, w, h, argc, argv))
+    {
+        // Cleanup cannot turn failed initialization into a successful selftest.
+        app.selftest = false;
+        (void)example_shutdown(app);
+        return app.help ? 0 : 1;
+    }
 
     example_clock clock;
     while (app.running)
     {
         if (app.selftest && app.frame_index >= app.selftest_frames) break;
         example_tick(app, clock);
-        example_pump(app);
+        app.diagnostics.measure(example_frame_diagnostics::PUMP, [&] { example_pump(app); });
         if (app.selftest && app.resize_w > 0 && app.frame_index == 1 && app.sdl_window)
         {
             SDL_SetWindowSize(app.sdl_window, app.resize_w, app.resize_h);
             example_sync_client(app); // examples lay out from app.width/height
         }
         example_script(app);
-        begin_frame(app.ctx, *app.win, app.now, app.dt);
+        app.diagnostics.measure(example_frame_diagnostics::BEGIN,
+                                [&] { begin_frame(app.ctx, *app.win, app.now, app.dt); });
         {
             ui u(app.ctx);
             frame(u, app);
             if (app.show_violations) // drawn last so nothing covers it
                 draw_violation_overlay(u, rect::make(8.0f, app.win->area.h - 40.0f, 360.0f, 32.0f));
         }
-        end_frame(app.ctx); // presents: a second present() would wait another vblank
+        // Presents: a second present() would wait another vblank.
+        app.diagnostics.measure(example_frame_diagnostics::END, [&] { end_frame(app.ctx); });
         if (app.screenshot &&
             (app.selftest ? (app.frame_index + 1 >= app.selftest_frames) : (app.frame_index == 60)))
             example_screenshot(app, app.screenshot);

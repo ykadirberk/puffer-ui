@@ -1,26 +1,44 @@
 #version 450
 #extension GL_GOOGLE_include_directive : require
 #include "bin_common.glsl"
+#include "workgroup_scan.glsl"
 layout(local_size_x=64) in;
+shared uint bin_failed;
 void main() {
-    uint tile = gl_GlobalInvocationID.x;
-    if (tile >= p.limits.w || atomicAdd(control.words[3],0) != 0) return;
+    uint tile = gl_WorkGroupID.x+gl_WorkGroupID.y*gl_NumWorkGroups.x;
+    if (tile >= p.limits.w) return;
+    if(gl_LocalInvocationIndex==0u) bin_failed=atomicAdd(control.words[3],0);
+    barrier();
+    if(bin_failed!=0u) return;
     uint first = coarse_base(tile);
     uint at = work.words[p.limits.w+tile];
     uint end = work.words[p.limits.w+tile+1];
-    for (uint word=0; word<p.limits.y; ++word) {
-        uint bits = coarse_bits.words[first+word];
+    for (uint chunk=0u; chunk<p.limits.y; chunk+=64u) {
+        uint word=chunk+gl_LocalInvocationIndex;
+        uint bits=word<p.limits.y?coarse_bits.words[first+word]:0u;
+        uint hits=0u;
         while (bits != 0) {
-            uint id = word*32+uint(findLSB(bits));
+            uint bit=uint(findLSB(bits));
+            uint id = word*32u+bit;
             bits &= bits-1;
-            if (id < p.limits.x && intersects_tile(id,tile)) {
-                if (at >= end || at >= p.limits.z) {
-                    atomicOr(control.words[3],2);
-                    return;
-                }
-                output_list.values[at++] = id;
-            }
+            if (id < p.limits.x && intersects_tile(id,tile)) hits|=1u<<bit;
         }
+        // Lanes own consecutive bitset words; their exclusive prefix preserves
+        // submission order even though each lane writes independently.
+        uvec2 prefix=scan_partitions(uvec2(bitCount(hits),0),p.limits.x);
+        uint total=partition_prefix[63].x;
+        if(at>end || end>p.limits.z || total>end-at) {
+            if(gl_LocalInvocationIndex==0u) atomicOr(control.words[3],2);
+            return;
+        }
+        uint output_at=at+prefix.x;
+        while(hits!=0u) {
+            uint bit=uint(findLSB(hits));
+            hits&=hits-1u;
+            output_list.values[output_at++]=word*32u+bit;
+        }
+        at+=total;
+        barrier(); // no lane may reuse scan storage while another still reads it
     }
-    if (at != end) atomicOr(control.words[3],2);
+    if (at != end && gl_LocalInvocationIndex==0u) atomicOr(control.words[3],2);
 }

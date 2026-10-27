@@ -16,6 +16,20 @@ and [boundary validation report](perf_renderer_boundary.md).
 
 ## Prepared painter resources
 
+The showcase's default `INTEGRATED` configuration combines whole-program/tile
+reuse and optional HarfBuzz/Slug text. Run `pui_showcase_vulkan.exe` directly;
+`--vulkan-painter sdf --vector-text` remains an independent raster control.
+The library default remains `REFERENCE`.
+
+Integrated whole-program observation uses native operands. It does not create
+or execute fine-cache kernels merely to learn whether a page is static. A
+completed GPU comparison that finds changing LOAD content requests fine reuse;
+the next frame boundary prepares its shared kernels, native function atlas,
+metadata arenas and image histories. Glyph cache generations are acceleration
+state; exact bounds, outline, scale, gamma and tint remain image identity.
+See [the integrated contract](vulkan_integrated_painter.md) and
+[the retained validation evidence](perf_vulkan_integrated.md).
+
 SDF surfaces prepare upload pages, graphics descriptor sets and (for compute)
 bounded metadata arenas before recording UI draws. Compute kernels and their
 layouts belong to the device; slots share those immutable programs. Cache kernels
@@ -36,9 +50,22 @@ instead of making five history copies. Qualified pixels are written directly to
 the cache image, eliminating full-target snapshot copies. Cache image budget
 rejection is decided during preparation and is not retried for each draw. Pixel
 telemetry uses workgroup reduction rather than a global atomic for every pixel.
-At most four epochs per slot receive full-size cache images, even if the maximum
-cache budget could hold more. Other epochs paint normally. This bounds the image
-working set independently of the device's maximum budget.
+At most two programs per slot receive full-size cache images, even if the maximum
+cache budget could hold more. After completion, the slot assigns those existing
+image leases to the programs with the largest measured qualified pixel coverage;
+equal scores keep their current owners. Moving a lease invalidates both histories.
+Other programs paint normally. No image is allocated during admission or drawing.
+
+GPU commands, work lists, indices and shapes use unmapped, device-local-preferred
+storage. One host staging bank per completed slot supplies commands and shapes;
+staging does not retain a previous-frame copy. Small readable route/control
+regions prefer coherent local memory and retain a portable host-visible fallback.
+The blend table is calibrated in host memory, copied once to unmapped local
+storage, and its original host allocation is released. A migration budget
+rejection keeps the calibrated table; a Vulkan allocation failure remains an
+error. Actual allocation requirements for every role count against the metadata
+budget. Moving bytes to local memory can increase dedicated usage while reducing
+shared usage; the allocation counters are not a whole-driver residency estimate.
 
 The initial reservation scales with target extent, with 64 KiB rounding, and stays
 within the existing device budgets. Budgets are limits, not amounts that must be
@@ -52,9 +79,69 @@ Vector text additionally keeps append-only glyph outlines in a device-local
 buffer with coherent host staging (each at most 512 KiB and at most one eighth
 of the upload budget). New glyphs append bytes; their new range is transferred
 before the next consuming batch. Repeated text does not upload the accumulated
-font data per batch. Oversized collections and noncoherent host heaps retain
-per-submission uploads.
+font data per batch. Oversized collections retain their complete resident glyph
+prefix. Per-batch glyph references select residency; only a batch containing an
+unresident glyph uploads the outline blob. A shape-only batch never uploads
+unrelated font data. Noncoherent host heaps retain per-submission glyph uploads.
 HarfBuzz shaping, outline encoding, font selection, gamma and DPI remain unchanged.
+
+## Whole native program reuse
+
+`whole_program_cache=true` optionally reuses a complete SDF raster or compute program.
+The showcase's `--vulkan-painter sdf` and `--vulkan-painter compute` enable it.
+The adaptive selector keeps
+its raster fast path without automatically enabling this extra work; applications
+can request the option explicitly. The library default is false. Two frame slots,
+supported RGBA8 targets, a compute-capable queue for certificates and sufficient
+preparation budgets are required. SDF raster reuse does not prepare the suffix
+painter or its finite blend table. A rejected
+candidate always renders the complete program.
+
+The renderer prepares fixed operation metadata and two bounded CPU payload arenas.
+Equal operation payloads retain their existing canonical bytes instead of copying
+vertices, indices, shapes and packed spans again. A changed suffix writes only
+after the equal prefix; arena recycling never overwrites a live prefix.
+Canonical comparisons include the original vertices, indices, shapes, shape-span
+mapping, clips, target generation, texture content revisions and producer order.
+CPU history lives in ordinary CPU memory: reading mapped GPU upload pages was
+measurably slower. Capacity exhaustion renders normally without growing history
+from a draw call. Texture mutation, external images, resource retirement and a
+submitted prefix invalidate the candidate.
+
+After eight consecutive non-repeating programs, the renderer pauses canonical
+recording for 120 frames and draws normally. It then observes consecutive frames
+again, allowing a settled page to recover reuse. The pause bounds wasted CPU
+copies on animated pages and changing performance HUDs. It neither skips a draw
+nor treats an old certificate as evidence for the intervening frames. History
+miss counters cover recorded candidates; frames outside admission render fully.
+
+Identical geometry alone cannot certify blur scratch or a translucent LOAD pass.
+After a program repeats, a GPU probe compares the full RGBA8 bytes of its stateful
+outputs before and after execution. Full overwrites before any read remove an
+image's initial-state dependency. A four-byte asynchronous completion result
+certifies a fixed point; no scene pixels are read back to the CPU. Changing
+geometry, inputs, output revisions or target lifetime discards that certificate.
+An accumulating alpha pass continues rendering until its actual state stops
+changing. The probe's bounded snapshot buffer, comparator pipeline and descriptor
+sets are prepared before drawing and fall back to full rendering on budget/format
+exhaustion. Preparing them only after a repeated LOAD program was observed moved
+a compiler/allocation spike into a later frame in testing; that candidate was
+rejected. Cache preparation remains outside the drawing loop.
+
+A certified clear/raster program defers equal operations before upload, vertex
+conversion, descriptors and GPU command recording. On a changed operation,
+shortened tape or resource side effect, the renderer first replays the deferred
+prefix in order with complete raster output, then executes the changed suffix.
+This replay borrows prepared canonical CPU data and does not allocate. Other
+effect kernels retain the conservative record/discard route.
+
+A certified repeated program preserves its completed targets and submits only
+presentation. Raster draws, binning, suffix painting and effect replay are skipped;
+input, layout, animation and interaction still execute normally. Statistics keep
+requested geometry separate from actual draws and expose `whole_program_hits`,
+`whole_program_misses`, `whole_program_probes` and the probe's pixel count. GPU
+timestamps include the real probe and presentation costs. Resource release waits
+for completion; readback and window/target recreation retain their normal contract.
 
 ## Kawase blur
 
@@ -123,6 +210,13 @@ The generator records compiler identity, flags and source/SPIR-V SHA-256 hashes.
 It requires the SDK's `glslangValidator`. Validation mode additionally requires
 `VK_LAYER_KHRONOS_validation`; it is intentionally separate from timed runs.
 
+The example bootstrap reads `PUFFERUI_VULKAN_VALIDATION` once at startup.
+Unset/empty, `0`, `false`, `off` and `no` disable the application's validation
+request (case insensitive); `1` enables it. Other nonempty values preserve the
+previous opt-in behavior. Previously even `0` enabled synchronization validation.
+Loader/SDK settings can independently force layers; this flag does not override
+them. Performance comparisons record the requested configuration separately.
+
 The backend prefers a compatible discrete physical device, or uses the explicit
 `vulkan_device_opts::physical_device_index`. This cannot expose a device whose
 driver manifest is missing from the system loader's discovery. On this machine,
@@ -140,6 +234,32 @@ a portable driver location. The backend never modifies driver registration.
 mechanism ([Khronos driver discovery](https://github.com/KhronosGroup/Vulkan-Loader/blob/main/docs/LoaderDriverInterface.md)).
 For measured runs, `tools/compare_vulkan.py --require-device "AMD Radeon RX 9070 XT"`
 fails if any Spiral Vulkan run reports a different physical device.
+
+## Actual showcase frame diagnostics
+
+`pui_showcase_vulkan --vulkan-painter sdf --vector-text --perf-trace NEW.csv`
+records the real application's page/settings, item/effect counts, requested and
+executed draws, upload/resource counters and native presentation waits. The file
+must not exist. The recorder prepares a bounded arena before the UI starts and
+does not allocate or write the file while observing a frame. Close the application
+normally to flush the CSV. It preserves the first 2048 observations and the latest
+63488 observations; stderr explicitly reports any dropped middle frames.
+
+`loop_ms` is the interval between consecutive showcase callback starts, including
+event pumping and native presentation. The model and `build_ms` describe the
+previous callback. Native cumulative counters are differenced at these boundaries;
+GPU completion counters are delayed and `gpu_samples` must accompany their time.
+The final rendered frame has no next callback and is explicitly unobserved. This
+is a live diagnostic rather than the separate all-frame benchmark protocol. No
+notes, card titles or other user text are recorded. The default without the flag
+does not prepare recorder storage.
+
+To open the reported scene directly, add `--page 1 --tiles 500 --lab-mode 2
+--lab-size 64`. The same normal application remains interactive. Initial layout
+selection and tile creation run before the UI loop; these flags do not alter the
+default scene. Layout mode numbers are 0 Grid, 1 List, 2 Masonry, 3 Orbit and 4
+Spiral. Tile count accepts 14..5000 and size accepts 64..180. VSync retains its
+normal startup policy and HUD control.
 
 ## SDL shorthand
 

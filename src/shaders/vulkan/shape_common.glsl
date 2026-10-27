@@ -3,7 +3,9 @@
 vec2 pui_slug_ems_per_pixel;
 #include "harfbuzz_slug.glsl"
 struct Shape { vec4 bounds; vec4 radii; vec4 params; uvec4 corners; };
+#ifndef PUI_EXTERNAL_SHAPES
 layout(std430,set=1,binding=0) readonly buffer Shapes { Shape values[]; } shapes;
+#endif
 vec4 pui_unpack_bytes(uint c) { return vec4(c&255u,(c>>8)&255u,(c>>16)&255u,c>>24); }
 uint pui_gradient(Shape s,vec2 point) {
     vec2 t=clamp((point-s.bounds.xy)/s.bounds.zw,vec2(0.0),vec2(1.0));

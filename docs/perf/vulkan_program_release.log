@@ -1,0 +1,1828 @@
+MSVC environment: C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat
+
+==== configure Vulkan registry
+-- Could NOT find PkgConfig (missing: PKG_CONFIG_EXECUTABLE) 
+-- Could NOT find LibUSB (missing: LibUSB_LIBRARY LibUSB_INCLUDE_PATH) (found version "LibUSB_VERSION-NOTFOUND")
+-- 
+-- SDL3 was configured with the following options:
+-- 
+-- Platform: Windows-10.0.26200
+-- 64-bit:   TRUE
+-- Compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe
+-- Revision: SDL-3.5.0-release-3.4.0-951-g64998d2bc
+-- Vendor:   
+-- 
+-- Subsystems:
+--   Audio:    ON
+--   Video:    ON
+--   GPU:      ON
+--   Render:   ON
+--   Camera:   ON
+--   Joystick: ON
+--   Haptic:   ON
+--   Hidapi:   ON
+--   Power:    ON
+--   Sensor:   ON
+--   Dialog:   ON
+--   Tray:     ON
+-- 
+-- Options:
+--   SDL_ALSA                    (Wanted: OFF): OFF
+--   SDL_ALSA_SHARED             (Wanted: OFF): OFF
+--   SDL_ALTIVEC                 (Wanted: OFF): OFF
+--   SDL_ARMNEON                 (Wanted: OFF): OFF
+--   SDL_ARMSVE2                 (Wanted: OFF): OFF
+--   SDL_ASAN                    (Wanted: OFF): OFF
+--   SDL_ASSEMBLY                (Wanted: ON): ON
+--   SDL_ASSERTIONS              (Wanted: auto): auto
+--   SDL_AVX                     (Wanted: ON): ON
+--   SDL_AVX2                    (Wanted: ON): ON
+--   SDL_AVX512F                 (Wanted: ON): ON
+--   SDL_BACKGROUNDING_SIGNAL    (Wanted: OFF): OFF
+--   SDL_CCACHE                  (Wanted: OFF): OFF
+--   SDL_CLANG_TIDY              (Wanted: OFF): OFF
+--   SDL_CLOCK_GETTIME           (Wanted: OFF): OFF
+--   SDL_COCOA                   (Wanted: OFF): OFF
+--   SDL_DBUS                    (Wanted: OFF): OFF
+--   SDL_DEPS_SHARED             (Wanted: ON): OFF
+--   SDL_DIRECTX                 (Wanted: ON): ON
+--   SDL_DISKAUDIO               (Wanted: ON): ON
+--   SDL_DLOPEN_NOTES            (Wanted: OFF): OFF
+--   SDL_DUMMYAUDIO              (Wanted: ON): ON
+--   SDL_DUMMYCAMERA             (Wanted: ON): ON
+--   SDL_DUMMYVIDEO              (Wanted: ON): ON
+--   SDL_EXAMPLES                (Wanted: OFF): OFF
+--   SDL_EXAMPLES_LINK_SHARED    (Wanted: OFF): OFF
+--   SDL_FOREGROUNDING_SIGNAL    (Wanted: OFF): OFF
+--   SDL_FRIBIDI                 (Wanted: OFF): OFF
+--   SDL_FRIBIDI_SHARED          (Wanted: OFF): OFF
+--   SDL_GCC_ATOMICS             (Wanted: OFF): OFF
+--   SDL_GPU_OPENXR              (Wanted: ON): ON
+--   SDL_HIDAPI                  (Wanted: ON): ON
+--   SDL_HIDAPI_JOYSTICK         (Wanted: ON): ON
+--   SDL_HIDAPI_LIBUSB           (Wanted: ON): OFF
+--   SDL_HIDAPI_LIBUSB_SHARED    (Wanted: ON): OFF
+--   SDL_IBUS                    (Wanted: OFF): OFF
+--   SDL_INSTALL                 (Wanted: ON): OFF
+--   SDL_INSTALL_TESTS           (Wanted: OFF): OFF
+--   SDL_JACK                    (Wanted: OFF): OFF
+--   SDL_JACK_SHARED             (Wanted: OFF): OFF
+--   SDL_KMSDRM                  (Wanted: OFF): OFF
+--   SDL_KMSDRM_SHARED           (Wanted: OFF): OFF
+--   SDL_LASX                    (Wanted: OFF): OFF
+--   SDL_LIBC                    (Wanted: ON): ON
+--   SDL_LIBICONV                (Wanted: OFF): OFF
+--   SDL_LIBTHAI                 (Wanted: OFF): OFF
+--   SDL_LIBTHAI_SHARED          (Wanted: OFF): OFF
+--   SDL_LIBUDEV                 (Wanted: ON): OFF
+--   SDL_LIBURING                (Wanted: OFF): OFF
+--   SDL_LSX                     (Wanted: OFF): OFF
+--   SDL_METAL                   (Wanted: OFF): OFF
+--   SDL_MMX                     (Wanted: ON): OFF
+--   SDL_OFFSCREEN               (Wanted: ON): ON
+--   SDL_OPENGL                  (Wanted: ON): ON
+--   SDL_OPENGLES                (Wanted: ON): ON
+--   SDL_OPENVR                  (Wanted: OFF): OFF
+--   SDL_OSS                     (Wanted: OFF): OFF
+--   SDL_PIPEWIRE                (Wanted: OFF): OFF
+--   SDL_PIPEWIRE_SHARED         (Wanted: OFF): OFF
+--   SDL_PTHREADS                (Wanted: OFF): OFF
+--   SDL_PTHREADS_SEM            (Wanted: OFF): OFF
+--   SDL_PULSEAUDIO              (Wanted: OFF): OFF
+--   SDL_PULSEAUDIO_SHARED       (Wanted: OFF): OFF
+--   SDL_RENDER_D3D              (Wanted: ON): ON
+--   SDL_RENDER_D3D11            (Wanted: ON): ON
+--   SDL_RENDER_D3D12            (Wanted: ON): ON
+--   SDL_RENDER_GPU              (Wanted: ON): ON
+--   SDL_RENDER_METAL            (Wanted: OFF): OFF
+--   SDL_RENDER_VULKAN           (Wanted: ON): ON
+--   SDL_ROCKCHIP                (Wanted: OFF): OFF
+--   SDL_RPATH                   (Wanted: OFF): OFF
+--   SDL_RPI                     (Wanted: OFF): OFF
+--   SDL_SNDIO                   (Wanted: OFF): OFF
+--   SDL_SNDIO_SHARED            (Wanted: OFF): OFF
+--   SDL_SSE                     (Wanted: ON): ON
+--   SDL_SSE2                    (Wanted: ON): ON
+--   SDL_SSE3                    (Wanted: ON): ON
+--   SDL_SSE4_1                  (Wanted: ON): ON
+--   SDL_SSE4_2                  (Wanted: ON): ON
+--   SDL_SYSTEM_ICONV            (Wanted: OFF): OFF
+--   SDL_TESTS                   (Wanted: OFF): OFF
+--   SDL_TESTS_LINK_SHARED       (Wanted: OFF): OFF
+--   SDL_UNINSTALL               (Wanted: OFF): OFF
+--   SDL_VIRTUAL_JOYSTICK        (Wanted: ON): ON
+--   SDL_VIVANTE                 (Wanted: OFF): OFF
+--   SDL_VULKAN                  (Wanted: ON): ON
+--   SDL_WASAPI                  (Wanted: ON): ON
+--   SDL_WAYLAND                 (Wanted: OFF): OFF
+--   SDL_WAYLAND_LIBDECOR        (Wanted: OFF): OFF
+--   SDL_WAYLAND_LIBDECOR_SHARED (Wanted: OFF): OFF
+--   SDL_WAYLAND_SHARED          (Wanted: OFF): OFF
+--   SDL_X11                     (Wanted: OFF): OFF
+--   SDL_X11_SHARED              (Wanted: OFF): OFF
+--   SDL_X11_XCURSOR             (Wanted: OFF): OFF
+--   SDL_X11_XDBE                (Wanted: OFF): OFF
+--   SDL_X11_XFIXES              (Wanted: OFF): OFF
+--   SDL_X11_XINPUT              (Wanted: OFF): OFF
+--   SDL_X11_XRANDR              (Wanted: OFF): OFF
+--   SDL_X11_XSCRNSAVER          (Wanted: OFF): OFF
+--   SDL_X11_XSHAPE              (Wanted: OFF): OFF
+--   SDL_X11_XSYNC               (Wanted: OFF): OFF
+--   SDL_X11_XTEST               (Wanted: OFF): OFF
+--   SDL_XINPUT                  (Wanted: ON): ON
+-- 
+--  Build Shared Library: OFF
+--  Build Static Library: ON
+-- 
+-- Enabled backends:
+--   Video drivers: dummy offscreen windows
+--   Render drivers: d3d d3d11 d3d12 gpu ogl ogl_es2 vulkan
+--   GPU drivers: d3d12 openxr vulkan
+--   Audio drivers: disk dsound dummy wasapi
+--   Joystick drivers: dinput gameinput hidapi rawinput virtual wgi xinput
+--   Camera drivers: dummy mediafoundation
+-- 
+CMake Warning at build-vulkan-compute/harfbuzz-src/CMakeLists.txt:4 (message):
+  The main build system for HarfBuzz is Meson.  CMake build support is
+  community-maintained and is not actively supported by HarfBuzz developers.
+
+
+Building introspection files on Windows requires BUILD_SHARED_LIBS to be enabled.
+-- Enabling segment heap for target: pui_vulkan_tests
+-- Enabling segment heap for target: pui_vulkan_external_tests
+-- Enabling segment heap for target: pui_vulkan_cache_tests
+-- Enabling segment heap for target: pui_vulkan_interaction_tests
+-- Enabling segment heap for target: pui_vulkan_fault_tests
+-- Enabling segment heap for target: pui_vulkan_internal_tests
+-- Enabling segment heap for target: pui_vulkan_command_tests
+-- Enabling segment heap for target: pui_vulkan_binning_tests
+-- Enabling segment heap for target: pui_vulkan_workgroup_tests
+-- Enabling segment heap for target: pui_vulkan_program_tests
+-- Enabling segment heap for target: pui_vulkan_numeric_probe
+-- Enabling segment heap for target: pui_vulkan_compute_tests
+-- Enabling segment heap for target: pui_vulkan_sdf_tests
+-- Enabling segment heap for target: pui_vulkan_sdf_cache_tests
+-- Enabling segment heap for target: pui_vulkan_sdf_interaction_tests
+-- Enabling segment heap for target: pui_harfbuzz_tests
+-- Enabling segment heap for target: pui_harfbuzz_interaction_tests
+-- Enabling segment heap for target: pui_vulkan_kawase_interaction_tests
+-- Enabling segment heap for target: pui_vulkan_preparation_tests
+-- Enabling segment heap for target: pui_vulkan_memory_role_tests
+-- Enabling segment heap for target: pui_vulkan_kawase_spiral_tests
+-- Enabling segment heap for target: pui_vulkan_spiral_binning_tests
+-- Enabling segment heap for target: pui_vulkan_wsi_tests
+-- Enabling segment heap for target: pui_vulkan_showcase_tests
+-- Enabling segment heap for target: pui_vulkan_spiral_tests
+-- Enabling segment heap for target: pui_vulkan_compute_spiral_tests
+-- Enabling segment heap for target: pui_vulkan_retained_spiral_tests
+-- Enabling segment heap for target: pui_vulkan_painter_bench
+-- Enabling segment heap for target: pui_vulkan_program_bench
+-- Enabling segment heap for target: pui_vulkan_kawase_bench
+-- Enabling segment heap for target: pui_core_tests
+-- Enabling segment heap for target: pui_bench
+-- Enabling segment heap for target: pui_core_bench
+-- Enabling segment heap for target: pui_perf_tests
+-- Enabling segment heap for target: pui_memory_tests
+-- Enabling segment heap for target: pui_preparation_tests
+-- Enabling segment heap for target: pui_pump_tests
+-- Enabling segment heap for target: pui_perf_pixels
+-- Enabling segment heap for target: pui_core_perf_pixels
+-- Enabling segment heap for target: pui_showcase_tests
+-- Enabling segment heap for target: pui_golden_tests
+-- Enabling segment heap for target: pui_counter
+-- Enabling segment heap for target: pui_demo
+-- Enabling segment heap for target: pui_ex_hello
+-- Enabling segment heap for target: pui_ex_bootstrap
+-- Enabling segment heap for target: pui_ex_rect
+-- Enabling segment heap for target: pui_ex_cursors
+-- Enabling segment heap for target: pui_ex_tracks
+-- Enabling segment heap for target: pui_ex_grid
+-- Enabling segment heap for target: pui_ex_ids
+-- Enabling segment heap for target: pui_ex_text
+-- Enabling segment heap for target: pui_ex_buttons
+-- Enabling segment heap for target: pui_ex_inputs
+-- Enabling segment heap for target: pui_ex_widgets
+-- Enabling segment heap for target: pui_ex_panels
+-- Enabling segment heap for target: pui_ex_scroll
+-- Enabling segment heap for target: pui_ex_popups
+-- Enabling segment heap for target: pui_ex_dock
+-- Enabling segment heap for target: pui_ex_windows
+-- Enabling segment heap for target: pui_ex_drawing
+-- Enabling segment heap for target: pui_ex_blur
+-- Enabling segment heap for target: pui_ex_animation
+-- Enabling segment heap for target: pui_ex_theme
+-- Enabling segment heap for target: pui_ex_custom
+-- Enabling segment heap for target: pui_ex_patterns
+-- Enabling segment heap for target: pui_ex_expander
+-- Enabling segment heap for target: pui_ex_combo
+-- Enabling segment heap for target: pui_ex_keyboard
+-- Enabling segment heap for target: pui_ex_components
+-- Enabling segment heap for target: pui_ex_vlist
+-- Enabling segment heap for target: pui_ex_overflow
+-- Enabling segment heap for target: pui_ex_relayout
+-- Enabling segment heap for target: pui_ex_controls
+-- Enabling segment heap for target: pui_ex_tables
+-- Enabling segment heap for target: pui_ex_tree
+-- Enabling segment heap for target: pui_ex_numeric
+-- Enabling segment heap for target: pui_ex_colors
+-- Enabling segment heap for target: pui_ex_dpi
+-- Enabling segment heap for target: pui_ex_files
+-- Enabling segment heap for target: pui_ex_textarea
+-- Enabling segment heap for target: pui_ex_a11y
+-- Enabling segment heap for target: pui_ex_pickers
+-- Enabling segment heap for target: pui_ex_headless
+-- Enabling segment heap for target: pui_ex_renderer
+-- Enabling segment heap for target: pui_tour
+-- Enabling segment heap for target: pui_showcase
+-- Enabling segment heap for target: pui_showcase_vulkan
+-- Enabling segment heap for target: pui_ex_vulkan
+-- Enabling segment heap for target: pui_ex_vulkan_painter
+-- Enabling segment heap for target: pui_ex_vulkan_blur
+-- Enabling segment heap for target: pui_tut_step01_window
+-- Enabling segment heap for target: pui_tut_step01_shot
+-- Enabling segment heap for target: pui_tut_button_states
+-- Enabling segment heap for target: pui_tut_step02_layout
+-- Enabling segment heap for target: pui_tut_step03_tasks
+-- Enabling segment heap for target: pui_tut_step04_filters
+-- Enabling segment heap for target: pui_tut_step05_glass
+-- Enabling segment heap for target: pui_tut_step06_motion
+-- Enabling segment heap for target: pui_tut_todo
+-- Enabling segment heap for target: pui_tut_todo_test
+-- Configuring done (1.2s)
+-- Generating done (0.4s)
+-- Build files have been written to: D:/myimgui/out/build/x64-release
+
+==== build (pui_core_tests, pui_pump_tests, pui_perf_tests, pui_memory_tests, pui_preparation_tests, pui_showcase_tests, pui_vulkan_tests, pui_vulkan_external_tests, pui_vulkan_cache_tests, pui_vulkan_interaction_tests, pui_vulkan_fault_tests, pui_vulkan_internal_tests, pui_vulkan_command_tests, pui_vulkan_binning_tests, pui_vulkan_workgroup_tests, pui_vulkan_program_tests, pui_vulkan_compute_tests, pui_vulkan_sdf_tests, pui_vulkan_sdf_cache_tests, pui_vulkan_sdf_interaction_tests, pui_harfbuzz_tests, pui_harfbuzz_interaction_tests, pui_vulkan_kawase_interaction_tests, pui_vulkan_preparation_tests, pui_vulkan_memory_role_tests, pui_vulkan_kawase_spiral_tests, pui_vulkan_spiral_binning_tests, pui_vulkan_wsi_tests, pui_vulkan_showcase_tests, pui_vulkan_spiral_tests, pui_vulkan_compute_spiral_tests, pui_vulkan_retained_spiral_tests, pui_golden_tests, pui_perf_pixels, pui_core_perf_pixels)
+[0/2] Re-checking globbed directories...
+[1/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\cmake_pch.c.obj
+[2/308] Building CXX object vendored\SDL\CMakeFiles\SDL3-static.dir\cmake_pch.cxx.obj
+[3/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_error.c.obj
+[4/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_guid.c.obj
+[5/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_hashtable.c.obj
+[6/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_hints.c.obj
+[7/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_list.c.obj
+[8/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_assert.c.obj
+[9/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_properties.c.obj
+[10/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL.c.obj
+[11/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\atomic\SDL_atomic.c.obj
+[12/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_utils.c.obj
+[13/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\SDL_audioqueue.c.obj
+[14/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\SDL_audiodev.c.obj
+[15/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\SDL_audiocvt.c.obj
+[16/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\SDL_audioresample.c.obj
+[17/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\SDL_audiotypecvt.c.obj
+[18/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\SDL_log.c.obj
+[19/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\SDL_mixer.c.obj
+[20/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\atomic\SDL_spinlock.c.obj
+[21/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\SDL_wave.c.obj
+[22/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\core\SDL_core_unsupported.c.obj
+[23/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_categories.c.obj
+[24/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\SDL_audio.c.obj
+[25/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_displayevents.c.obj
+[26/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_clipboardevents.c.obj
+[27/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_dropevents.c.obj
+[28/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_eventwatch.c.obj
+[29/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\cpuinfo\SDL_cpuinfo.c.obj
+[30/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\camera\SDL_camera.c.obj
+[31/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_keyboard.c.obj
+[32/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_keymap.c.obj
+[33/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_keysym_to_keycode.c.obj
+[34/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_keysym_to_scancode.c.obj
+[35/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_pen.c.obj
+[36/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_scancode_tables.c.obj
+[37/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_quit.c.obj
+[38/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_touch.c.obj
+[39/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\imKStoUCS.c.obj
+[40/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_windowevents.c.obj
+[41/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\filesystem\SDL_filesystem.c.obj
+[42/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_events.c.obj
+[43/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\gpu\xr\SDL_gpu_openxr.c.obj
+[44/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\gpu\SDL_gpu.c.obj
+[45/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\haptic\SDL_haptic.c.obj
+[46/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\gpu\xr\SDL_openxrdyn.c.obj
+[47/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\io\SDL_asyncio.c.obj
+[48/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\events\SDL_mouse.c.obj
+[49/308] Linking CXX executable Release\pui_perf_tests.exe
+[50/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\io\generic\SDL_asyncio_generic.c.obj
+[51/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\controller_type.c.obj
+[52/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\locale\SDL_locale.c.obj
+[53/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\main\SDL_main_callbacks.c.obj
+[54/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\main\SDL_runapp.c.obj
+[55/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\io\SDL_iostream.c.obj
+[56/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\hidapi\SDL_hidapi.c.obj
+[57/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\misc\SDL_url.c.obj
+[58/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\misc\SDL_libusb.c.obj
+[59/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\power\SDL_power.c.obj
+[60/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\SDL_gamepad.c.obj
+[61/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\SDL_steam_virtual_gamepad.c.obj
+[62/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\SDL_joystick.c.obj
+[63/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\SDL_render_unsupported.c.obj
+[64/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\SDL_yuv_sw.c.obj
+[65/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\SDL_render.c.obj
+[66/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\gpu\SDL_pipeline_gpu.c.obj
+[67/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\gpu\SDL_render_gpu.c.obj
+[68/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\direct3d\SDL_shaders_d3d.c.obj
+[69/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\gpu\SDL_shaders_gpu.c.obj
+[70/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\direct3d\SDL_render_d3d.c.obj
+[71/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\ngage\SDL_render_ngage.c.obj
+[72/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\direct3d11\SDL_shaders_d3d11.c.obj
+[73/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\__\__\pufferui-sdl\SDL_render_d3d11.c.obj
+[74/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\opengles\SDL_render_gles.c.obj
+[75/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\direct3d12\SDL_render_d3d12.c.obj
+[76/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\direct3d12\SDL_shaders_d3d12.c.obj
+[77/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\ps2\SDL_render_ps2.c.obj
+[78/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\opengles2\SDL_shaders_gles2.c.obj
+[79/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\psp\SDL_render_psp.c.obj
+[80/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\opengles2\SDL_render_gles2.c.obj
+[81/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\software\SDL_blendfillrect.c.obj
+[82/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\software\SDL_blendpoint.c.obj
+[83/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\software\SDL_drawline.c.obj
+[84/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\software\SDL_blendline.c.obj
+[85/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\software\SDL_drawpoint.c.obj
+[86/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\vitagxm\SDL_render_vita_gxm.c.obj
+[87/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\software\SDL_triangle.c.obj
+[88/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\software\SDL_render_sw.c.obj
+[89/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\vitagxm\SDL_render_vita_gxm_memory.c.obj
+[90/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\vitagxm\SDL_render_vita_gxm_tools.c.obj
+[91/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\vulkan\SDL_shaders_vulkan.c.obj
+[92/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_crc16.c.obj
+[93/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\opengl\SDL_shaders_gl.c.obj
+[94/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\sensor\SDL_sensor.c.obj
+[95/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_crc32.c.obj
+[96/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\opengl\SDL_render_gl.c.obj
+[97/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_iconv.c.obj
+[98/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_memcpy.c.obj
+[99/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_malloc.c.obj
+[100/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_memmove.c.obj
+[101/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_memset.c.obj
+[102/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_murmur3.c.obj
+[103/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_mslibc.c.obj
+cl : Command line warning D9025 : overriding '/GL' with '/GL-'
+D:\myimgui\vendored\SDL\src\stdlib\SDL_mslibc.c: warning C4652: compiler option 'link-time code generation (/GL)' inconsistent with precompiled header; current command-line option will override that defined in the precompiled header
+[104/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_qsort.c.obj
+[105/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_random.c.obj
+[106/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_stdlib.c.obj
+[107/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_strtokr.c.obj
+[108/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\storage\SDL_storage.c.obj
+[109/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_string.c.obj
+[110/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\time\SDL_time.c.obj
+[111/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\stdlib\SDL_getenv.c.obj
+[112/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_blit.c.obj
+[113/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_RLEaccel.c.obj
+[114/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\render\vulkan\SDL_render_vulkan.c.obj
+[115/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_blit_0.c.obj
+[116/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_blit_1.c.obj
+[117/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_blit_A.c.obj
+[118/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_blit_N.c.obj
+[119/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_blit_copy.c.obj
+[120/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_blit_slow.c.obj
+[121/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_blit_auto.c.obj
+[122/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_bmp.c.obj
+[123/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\SDL_thread.c.obj
+[124/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_clipboard.c.obj
+[125/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_fillrect.c.obj
+[126/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_rect.c.obj
+[127/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\timer\SDL_timer.c.obj
+[128/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_pixels.c.obj
+[129/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_rotate.c.obj
+[130/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_stretch.c.obj
+[131/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_video_unsupported.c.obj
+[132/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_stb.c.obj
+[133/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_surface.c.obj
+[134/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_yuv.c.obj
+[135/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\yuv2rgb\yuv_rgb_lsx.c.obj
+[136/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\yuv2rgb\yuv_rgb_std.c.obj
+[137/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\yuv2rgb\yuv_rgb_sse.c.obj
+[138/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\e_atan2.c.obj
+[139/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_egl.c.obj
+[140/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\e_exp.c.obj
+[141/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\e_fmod.c.obj
+[142/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\e_log.c.obj
+[143/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\e_log10.c.obj
+[144/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\e_pow.c.obj
+[145/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\e_sqrt.c.obj
+[146/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\e_rem_pio2.c.obj
+[147/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\k_cos.c.obj
+[148/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\k_sin.c.obj
+[149/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\k_rem_pio2.c.obj
+[150/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_video.c.obj
+[151/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_copysign.c.obj
+[152/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\k_tan.c.obj
+[153/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_atan.c.obj
+[154/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\SDL_vulkan_utils.c.obj
+[155/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_cos.c.obj
+[156/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_fabs.c.obj
+[157/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_floor.c.obj
+[158/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_isinf.c.obj
+[159/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_isinff.c.obj
+[160/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_isnanf.c.obj
+[161/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_isnan.c.obj
+[162/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_modf.c.obj
+[163/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_scalbn.c.obj
+[164/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_sin.c.obj
+[165/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\libm\s_tan.c.obj
+[166/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\dummy\SDL_dummyaudio.c.obj
+[167/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\disk\SDL_diskaudio.c.obj
+[168/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\camera\dummy\SDL_camera_dummy.c.obj
+[169/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\dummy\SDL_nullevents.c.obj
+[170/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\virtual\SDL_virtualjoystick.c.obj
+[171/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\dummy\SDL_nullframebuffer.c.obj
+[172/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\dummy\SDL_nullvideo.c.obj
+[173/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\core\windows\pch.c.obj
+[174/308] Building CXX object vendored\SDL\CMakeFiles\SDL3-static.dir\src\core\windows\pch_cpp.cpp.obj
+[175/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\io\windows\SDL_asyncio_windows_ioring.c.obj
+[176/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\core\windows\SDL_hid.c.obj
+[177/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\core\windows\SDL_xinput.c.obj
+[178/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\main\windows\SDL_sysmain_runapp.c.obj
+[179/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\core\windows\SDL_windows.c.obj
+[180/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\core\windows\SDL_immdevice.c.obj
+[181/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\misc\windows\SDL_sysurl.c.obj
+[182/308] Building CXX object vendored\SDL\CMakeFiles\SDL3-static.dir\src\core\windows\SDL_gameinput.cpp.obj
+[183/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\directsound\SDL_directsound.c.obj
+[184/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\audio\wasapi\SDL_wasapi.c.obj
+[185/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsclipboard.c.obj
+[186/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsframebuffer.c.obj
+[187/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsevents.c.obj
+[188/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowskeyboard.c.obj
+[189/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsmessagebox.c.obj
+[190/308] Building CXX object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsgameinput.cpp.obj
+[191/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsmodes.c.obj
+[192/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsmouse.c.obj
+[193/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsopengl.c.obj
+[194/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\generic\SDL_syscond.c.obj
+[195/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsopengles.c.obj
+[196/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\generic\SDL_sysrwlock.c.obj
+[197/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsrawinput.c.obj
+[198/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsshape.c.obj
+[199/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\windows\SDL_syscond_cv.c.obj
+[200/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\windows\SDL_sysmutex.c.obj
+[201/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsvulkan.c.obj
+[202/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowswindow.c.obj
+[203/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\windows\SDL_sysrwlock_srw.c.obj
+[204/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\windows\SDL_windowsvideo.c.obj
+[205/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\windows\SDL_syssem.c.obj
+[206/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\windows\SDL_systhread.c.obj
+[207/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\thread\windows\SDL_systls.c.obj
+[208/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\storage\generic\SDL_genericstorage.c.obj
+[209/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\storage\steam\SDL_steamstorage.c.obj
+[210/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\power\windows\SDL_syspower.c.obj
+[211/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\locale\windows\SDL_syslocale.c.obj
+[212/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\sensor\windows\SDL_windowssensor.c.obj
+[213/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\filesystem\windows\SDL_sysfsops.c.obj
+[214/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_8bitdo.c.obj
+[215/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_combined.c.obj
+[216/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\time\windows\SDL_systime.c.obj
+[217/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\timer\windows\SDL_systimer.c.obj
+[218/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\loadso\windows\SDL_sysloadso.c.obj
+[219/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_flydigi.c.obj
+[220/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\tray\windows\SDL_tray.c.obj
+[221/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_gamecube.c.obj
+[222/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\filesystem\windows\SDL_sysfilesystem.c.obj
+[223/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_lg4ff.c.obj
+[224/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_gip.c.obj
+[225/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_luna.c.obj
+[226/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_ps4.c.obj
+[227/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_ps3.c.obj
+[228/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_ps5.c.obj
+[229/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_shield.c.obj
+[230/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_sinput.c.obj
+[231/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_stadia.c.obj
+[232/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_steam.c.obj
+[233/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_steam_hori.c.obj
+[234/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_steamdeck.c.obj
+[235/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_steam_triton.c.obj
+[236/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_switch2.c.obj
+[237/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_switch.c.obj
+[238/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_rumble.c.obj
+[239/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_wii.c.obj
+[240/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_xbox360w.c.obj
+[241/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_xbox360.c.obj
+[242/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_zuiki.c.obj
+[243/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_report_descriptor.c.obj
+[244/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_xboxone.c.obj
+[245/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\haptic\hidapi\SDL_hidapihaptic.c.obj
+[246/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\haptic\hidapi\SDL_hidapihaptic_lg4ff.c.obj
+[247/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapi_gamesir.c.obj
+[248/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\hidapi\SDL_hidapijoystick.c.obj
+[249/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\windows\SDL_dinputjoystick.c.obj
+[250/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\windows\SDL_xinputjoystick.c.obj
+[251/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\windows\SDL_windowsjoystick.c.obj
+[252/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\dialog\SDL_dialog.c.obj
+[253/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\dialog\SDL_dialog_utils.c.obj
+[254/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\haptic\windows\SDL_dinputhaptic.c.obj
+[255/308] Building CXX object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\gdk\SDL_gameinputjoystick.cpp.obj
+[256/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\process\SDL_process.c.obj
+[257/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\offscreen\SDL_offscreenevents.c.obj
+[258/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\haptic\windows\SDL_windowshaptic.c.obj
+[259/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\offscreen\SDL_offscreenframebuffer.c.obj
+[260/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\camera\mediafoundation\SDL_camera_mediafoundation.c.obj
+[261/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\process\windows\SDL_windowsprocess.c.obj
+[262/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\offscreen\SDL_offscreenopengles.c.obj
+[263/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\offscreen\SDL_offscreenvideo.c.obj
+[264/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\dialog\windows\SDL_windowsdialog.c.obj
+[265/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\windows\SDL_rawinputjoystick.c.obj
+[266/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\tray\SDL_tray_utils.c.obj
+[267/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\joystick\windows\SDL_windows_gaming_input.c.obj
+[268/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\main\generic\SDL_sysmain_callbacks.c.obj
+[269/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\offscreen\SDL_offscreenwindow.c.obj
+[270/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\video\offscreen\SDL_offscreenvulkan.c.obj
+[271/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\gpu\vulkan\SDL_gpu_vulkan.c.obj
+[272/308] Building C object vendored\SDL\CMakeFiles\SDL3-static.dir\src\gpu\d3d12\SDL_gpu_d3d12.c.obj
+[273/308] Linking CXX static library vendored\SDL\SDL3-static.lib
+[274/308] Linking CXX executable Release\pui_core_tests.exe
+[275/308] Linking CXX executable Release\pui_vulkan_cache_tests.exe
+[276/308] Linking CXX executable Release\pui_vulkan_workgroup_tests.exe
+[277/308] Linking CXX executable Release\pui_vulkan_tests.exe
+[278/308] Linking CXX executable Release\pui_vulkan_program_tests.exe
+[279/308] Linking CXX executable Release\pui_vulkan_external_tests.exe
+[280/308] Linking CXX executable Release\pui_vulkan_fault_tests.exe
+[281/308] Linking CXX executable Release\pui_vulkan_command_tests.exe
+[282/308] Linking CXX executable Release\pui_vulkan_internal_tests.exe
+[283/308] Linking CXX executable Release\pui_vulkan_binning_tests.exe
+[284/308] Linking CXX executable Release\pui_vulkan_interaction_tests.exe
+[285/308] Linking CXX executable Release\pui_vulkan_compute_tests.exe
+[286/308] Linking CXX executable Release\pui_vulkan_memory_role_tests.exe
+[287/308] Linking CXX executable Release\pui_vulkan_preparation_tests.exe
+[288/308] Linking CXX executable Release\pui_vulkan_sdf_tests.exe
+[289/308] Linking CXX executable Release\pui_vulkan_sdf_cache_tests.exe
+[290/308] Linking CXX executable Release\pui_vulkan_kawase_interaction_tests.exe
+[291/308] Linking CXX executable Release\pui_vulkan_sdf_interaction_tests.exe
+[292/308] Linking CXX executable Release\pui_harfbuzz_tests.exe
+[293/308] Linking CXX executable Release\pui_harfbuzz_interaction_tests.exe
+[294/308] Linking CXX executable Release\pui_vulkan_kawase_spiral_tests.exe
+[295/308] Linking CXX executable Release\pui_vulkan_spiral_binning_tests.exe
+[296/308] Linking CXX executable Release\pui_memory_tests.exe
+[297/308] Linking CXX executable Release\pui_pump_tests.exe
+[298/308] Linking CXX executable Release\pui_preparation_tests.exe
+[299/308] Linking CXX executable Release\pui_perf_pixels.exe
+[300/308] Linking CXX executable Release\pui_golden_tests.exe
+[301/308] Linking CXX executable Release\pui_vulkan_wsi_tests.exe
+[302/308] Linking CXX executable Release\pui_core_perf_pixels.exe
+[303/308] Linking CXX executable Release\pui_showcase_tests.exe
+[304/308] Linking CXX executable Release\pui_vulkan_showcase_tests.exe
+[305/308] Linking CXX executable Release\pui_vulkan_compute_spiral_tests.exe
+[306/308] Linking CXX executable Release\pui_vulkan_spiral_tests.exe
+[307/308] Linking CXX executable Release\pui_vulkan_retained_spiral_tests.exe
+
+==== core tests
+all core tests passed
+
+==== performance regressions
+all performance regression tests passed (23 tests)
+
+==== memory performance regressions
+all memory performance regressions passed (12 tests)
+
+==== geometry preparation regressions
+all geometry preparation regressions passed (7 tests)
+
+==== showcase regressions
+all showcase regressions passed (11 tests)
+
+==== pump tests (SDL event routing)
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+all pump tests passed
+
+==== Python tool regressions
+..............Vulkan device: test discrete
+.....
+----------------------------------------------------------------------
+Ran 19 tests in 0.128s
+
+OK
+
+==== Vulkan pui_vulkan_tests
+Vulkan device initialized, queue family 0
+all Vulkan conformance tests passed
+Vulkan device initialized, queue family 0
+all Vulkan conformance tests passed
+
+==== Vulkan pui_vulkan_external_tests
+all Vulkan external image tests passed
+all Vulkan external image tests passed
+all Vulkan external image tests passed
+all Vulkan external image tests passed
+
+==== Vulkan pui_vulkan_cache_tests
+all 43 Vulkan cache/reference frames matched exactly
+
+==== Vulkan pui_vulkan_interaction_tests
+all 180 native interaction cache/reference frames matched
+
+==== Vulkan pui_vulkan_interaction_tests --staged
+all 180 native interaction cache/reference frames matched
+
+==== Vulkan pui_vulkan_fault_tests
+all Vulkan fault injection tests passed
+
+==== Vulkan pui_vulkan_internal_tests
+all Vulkan internal regressions passed (5 tests)
+
+==== Vulkan pui_vulkan_command_tests
+all GPU command regressions passed (10 tests)
+
+==== Vulkan pui_vulkan_binning_tests
+all GPU binning regressions passed (3 tests)
+
+==== Vulkan pui_vulkan_workgroup_tests
+all GPU binning regressions passed (10 tests)
+
+==== Vulkan pui_vulkan_program_tests
+all GPU binning regressions passed (15 tests)
+
+==== Vulkan pui_vulkan_compute_tests
+all actual compute painter regressions passed (2 tests)
+
+==== Vulkan pui_vulkan_sdf_tests
+all SDF batching, legacy isolation and slot regressions passed
+
+==== Vulkan pui_vulkan_sdf_cache_tests
+all GPU SDF cache regressions passed
+
+==== Vulkan pui_vulkan_sdf_interaction_tests
+all 180 native interaction cache/reference frames matched
+
+==== Vulkan pui_vulkan_sdf_interaction_tests --staged
+all 180 native interaction cache/reference frames matched
+
+==== Vulkan pui_harfbuzz_tests
+all HarfBuzz shaping, ligature, Arabic, Slug GPU and reuse regressions passed
+
+==== Vulkan pui_harfbuzz_interaction_tests
+all 180 HarfBuzz/Slug field, scroll, DPI, gamma, popup and recreation frames matched
+
+==== Vulkan pui_harfbuzz_interaction_tests --staged
+all 180 HarfBuzz/Slug field, scroll, DPI, gamma, popup and recreation frames matched
+
+==== Vulkan pui_vulkan_kawase_interaction_tests
+all 180 HarfBuzz/Slug field, scroll, DPI, gamma, popup and recreation frames matched
+
+==== Vulkan pui_vulkan_kawase_interaction_tests --staged
+all 180 HarfBuzz/Slug field, scroll, DPI, gamma, popup and recreation frames matched
+
+==== Vulkan pui_vulkan_preparation_tests
+prepared arena capacity=5013504 peak=9758408 current=2475808
+prepared arena capacity=5013504 peak=9612036 current=2474244
+resident upload=25559040 metadata=52239144 images=27353344 glyph_bytes=149152 glyph_batches=2366
+prepared arena capacity=5013504 peak=9758408 current=2475808
+prepared arena capacity=5013504 peak=9612036 current=2474244
+resident upload=51118080 metadata=52239144 images=27353344 glyph_bytes=149152 glyph_batches=2366
+resident upload=25559040 metadata=33948200 images=7168256 glyph_bytes=149152 glyph_batches=2366
+all native resource preparation regressions passed
+
+==== Vulkan pui_vulkan_memory_role_tests
+prepared arena capacity=5013504 peak=9758408 current=2475808
+prepared arena capacity=5013504 peak=9612036 current=2474244
+resident upload=25559040 metadata=52239144 images=27353344 glyph_bytes=149152 glyph_batches=2366
+prepared arena capacity=5013504 peak=9758408 current=2475808
+prepared arena capacity=5013504 peak=9612036 current=2474244
+resident upload=51118080 metadata=52239144 images=27353344 glyph_bytes=149152 glyph_batches=2366
+resident upload=25559040 metadata=33948200 images=7168256 glyph_bytes=149152 glyph_batches=2366
+role work=4789824/5013504 input=4144384/5013504 readable=989040/1114112
+role work=4711548/5013504 input=4076288/5013504 readable=989040/1114112
+all native resource preparation regressions passed
+
+==== Vulkan pui_vulkan_kawase_spiral_tests
+all 180 Kawase 5000-item raster/cache frames matched (direct)
+frame,fnv1a64
+0,a98c9ee7a53e2e6d
+1,cb224852dfbd53bc
+2,74ca2e3e5668fa36
+3,93102609243ef541
+4,e8906708f20faea2
+5,ead76f567e48c52f
+6,06717c8152115f9c
+7,576786f54f2fdcda
+8,f6268bbd82d68514
+9,6f478eb9dd007058
+10,9a9479c50eacef9b
+11,ec27871be5110abf
+12,611660e05315dd72
+13,9357b66ea080f79d
+14,15792ac982f878b0
+15,fe6ee4c3c29fdf09
+16,c770222cf82ac06d
+17,70b4894d00634187
+18,2b4aa0f22ba67e38
+19,a9313c8bcc20d91d
+20,020db7783d1be745
+21,20c14861e29d29c0
+22,5c8f09e946be8285
+23,0572fe2fba653cca
+24,4aa751ad0d5ba34a
+25,4f28d73056e5220d
+26,7aff9787469fdf6c
+27,1c1aef5772a4b7f3
+28,e6d0f4ef676b8742
+29,f964b33eff0f626e
+30,88712c9b8b355a3e
+31,f710cd222c036a69
+32,b532926bf9fd4de9
+33,b24984147ab91770
+34,14a1a2e2e28604e8
+35,17cda299f6460e95
+36,47eeee2ae74c9df4
+37,fb871b49ab40a420
+38,de84a57c2c3bf7d6
+39,af5f37f132815ed3
+40,268fcbaab6829c2d
+41,af50e5228329c352
+42,566faa99d9e03f1a
+43,978ba5880df45597
+44,a5234d2b11258f12
+45,6d89db091d06c45c
+46,bba1517917378acc
+47,8d3dbbb6a7d4ead2
+48,386212360f509793
+49,8050e3ebcd34051a
+50,e2dcbdd33e7cfa86
+51,bdd96d3931a78c81
+52,a5815893d8b0600e
+53,e825c3006bffed52
+54,cd488eb2075c9bb6
+55,06aa2d926b7a5f8d
+56,afb29450bff73d4a
+57,0134eb15a5128c16
+58,f23fe7cd734af694
+59,348fb1544c88faef
+60,d61e53db72bcc77b
+61,6956804d30f092bf
+62,28d5c6ee24a09c0d
+63,55d1990c22faa3cd
+64,1388124d06ebd778
+65,e0ebeaa39eef6c2d
+66,2c8184d5c2245da0
+67,826509a3ee0b9762
+68,18774abe0f1afa26
+69,7f87b014275abdc3
+70,0eb805ca67d353b6
+71,8ba8d9965735e6e4
+72,e0794c2be3655e23
+73,1453149042d8d9fa
+74,564c5336b769c076
+75,b9293843fee483f7
+76,90aac63f011d30fa
+77,b0afd379de9b919b
+78,7529bd29f1dba125
+79,52f7ec37a3a88296
+80,cce800d1373e4fad
+81,000f62a4f5124b38
+82,7378059173f3e530
+83,d66518cb2fbd9092
+84,fa57abd9a671fc44
+85,5c938147adfbeac8
+86,54718df5079ca55c
+87,f1bc5488d716bb2d
+88,42723325b02ccc27
+89,602361ac00f1856f
+90,322ba47a4c51a820
+91,e1abff90776a3c1e
+92,04ba32b6ac2c4473
+93,f3b00a00c2be4e7c
+94,8e3414c6cbf1cd4b
+95,4f8f6a7cdc37f42b
+96,503cfc2c7bbbe43e
+97,f905854496ae1f54
+98,f4d6f806affa84a9
+99,8987d73879673e59
+100,067b3a66fe933097
+101,86139b897ef5e788
+102,fcd34822be06d1ab
+103,c9d72615d3988a94
+104,ef86243c34caed43
+105,c444f241d1cefbf2
+106,89c18d93ad12d3b2
+107,cccee2d0a6c2ead3
+108,881f013d48873a90
+109,282b9e3ca08bd112
+110,9b29f0addb1b6bf3
+111,37600e0f2996919d
+112,c930f0313f390fa2
+113,cdcd967fa5af0c91
+114,4bfa4c60be4635ad
+115,e2db589b0870e9f9
+116,8f52176d24f4df84
+117,c39542ebf5095f15
+118,0ab71c8c0700ed7d
+119,38e57580ade23ad7
+120,5aff3e8c4a1f23fe
+121,cb3e322da7d4e969
+122,dd97201e32b495ee
+123,7a70260d2f951090
+124,4fdd1f109b01b486
+125,580190ffd9491aa4
+126,1fb55cf252f5d8e3
+127,ff6120422b2095b9
+128,6d13c69895ebb33f
+129,12fecbe47f7aa1bd
+130,d9ce27701fef4874
+131,a246fc0b090a1c3e
+132,778cf8182cf5debf
+133,418ba2b58ad0e767
+134,6c6b7ae1013c822d
+135,ec75cd0232c384aa
+136,f267828fa197ab82
+137,64947690c49d9e09
+138,626c2df576cd0f62
+139,e427df120af3ae14
+140,e4cffdda15b089b5
+141,cfdab15f5c4ef5be
+142,0a099ce31121f4d0
+143,237556690ba575fc
+144,f2dffb84a7a0ac8f
+145,3afc1e1f68c92f9d
+146,ef31b1c8ebe6df03
+147,4a7be564ba52e4c0
+148,9bb9a405930817ca
+149,b9e3a4ea0944dd53
+150,37a6a9ad3999090f
+151,34ae7b885d24d0a6
+152,b8637d52f1893bc9
+153,2e4927e26e130566
+154,a04e37a3c28072ed
+155,838d06fe3c8592df
+156,59c64dc21bef4c78
+157,5ef1e6ff2a78a0a1
+158,09d0d2d3a3f9380c
+159,eba144ba159be45c
+160,145cff888e0421e3
+161,b0881b479af9bf8b
+162,6140ce9b9269a77e
+163,3408a974080c11b6
+164,e55012760f290552
+165,3b7ea574d0a6eb6c
+166,7e29ce99a1853514
+167,e904a013b3f590a9
+168,5e35e6df0091fad4
+169,7210b4bc07d45c72
+170,e58c0d5a4251eadb
+171,ddf2e3c2321c83c2
+172,600a80af2923f9ce
+173,051ecd27a66aa9a9
+174,533818eb5875da20
+175,d49665ac9910adda
+176,61988241081f7c0b
+177,150223ba74e7a3a3
+178,0a4b98289e8d785c
+179,367f831ef73e138e
+
+==== Vulkan pui_vulkan_kawase_spiral_tests --staged
+all 180 Kawase 5000-item raster/cache frames matched (staged)
+frame,fnv1a64
+0,a98c9ee7a53e2e6d
+1,cb224852dfbd53bc
+2,74ca2e3e5668fa36
+3,93102609243ef541
+4,e8906708f20faea2
+5,ead76f567e48c52f
+6,06717c8152115f9c
+7,576786f54f2fdcda
+8,f6268bbd82d68514
+9,6f478eb9dd007058
+10,9a9479c50eacef9b
+11,ec27871be5110abf
+12,611660e05315dd72
+13,9357b66ea080f79d
+14,15792ac982f878b0
+15,fe6ee4c3c29fdf09
+16,c770222cf82ac06d
+17,70b4894d00634187
+18,2b4aa0f22ba67e38
+19,a9313c8bcc20d91d
+20,020db7783d1be745
+21,20c14861e29d29c0
+22,5c8f09e946be8285
+23,0572fe2fba653cca
+24,4aa751ad0d5ba34a
+25,4f28d73056e5220d
+26,7aff9787469fdf6c
+27,1c1aef5772a4b7f3
+28,e6d0f4ef676b8742
+29,f964b33eff0f626e
+30,88712c9b8b355a3e
+31,f710cd222c036a69
+32,b532926bf9fd4de9
+33,b24984147ab91770
+34,14a1a2e2e28604e8
+35,17cda299f6460e95
+36,47eeee2ae74c9df4
+37,fb871b49ab40a420
+38,de84a57c2c3bf7d6
+39,af5f37f132815ed3
+40,268fcbaab6829c2d
+41,af50e5228329c352
+42,566faa99d9e03f1a
+43,978ba5880df45597
+44,a5234d2b11258f12
+45,6d89db091d06c45c
+46,bba1517917378acc
+47,8d3dbbb6a7d4ead2
+48,386212360f509793
+49,8050e3ebcd34051a
+50,e2dcbdd33e7cfa86
+51,bdd96d3931a78c81
+52,a5815893d8b0600e
+53,e825c3006bffed52
+54,cd488eb2075c9bb6
+55,06aa2d926b7a5f8d
+56,afb29450bff73d4a
+57,0134eb15a5128c16
+58,f23fe7cd734af694
+59,348fb1544c88faef
+60,d61e53db72bcc77b
+61,6956804d30f092bf
+62,28d5c6ee24a09c0d
+63,55d1990c22faa3cd
+64,1388124d06ebd778
+65,e0ebeaa39eef6c2d
+66,2c8184d5c2245da0
+67,826509a3ee0b9762
+68,18774abe0f1afa26
+69,7f87b014275abdc3
+70,0eb805ca67d353b6
+71,8ba8d9965735e6e4
+72,e0794c2be3655e23
+73,1453149042d8d9fa
+74,564c5336b769c076
+75,b9293843fee483f7
+76,90aac63f011d30fa
+77,b0afd379de9b919b
+78,7529bd29f1dba125
+79,52f7ec37a3a88296
+80,cce800d1373e4fad
+81,000f62a4f5124b38
+82,7378059173f3e530
+83,d66518cb2fbd9092
+84,fa57abd9a671fc44
+85,5c938147adfbeac8
+86,54718df5079ca55c
+87,f1bc5488d716bb2d
+88,42723325b02ccc27
+89,602361ac00f1856f
+90,322ba47a4c51a820
+91,e1abff90776a3c1e
+92,04ba32b6ac2c4473
+93,f3b00a00c2be4e7c
+94,8e3414c6cbf1cd4b
+95,4f8f6a7cdc37f42b
+96,503cfc2c7bbbe43e
+97,f905854496ae1f54
+98,f4d6f806affa84a9
+99,8987d73879673e59
+100,067b3a66fe933097
+101,86139b897ef5e788
+102,fcd34822be06d1ab
+103,c9d72615d3988a94
+104,ef86243c34caed43
+105,c444f241d1cefbf2
+106,89c18d93ad12d3b2
+107,cccee2d0a6c2ead3
+108,881f013d48873a90
+109,282b9e3ca08bd112
+110,9b29f0addb1b6bf3
+111,37600e0f2996919d
+112,c930f0313f390fa2
+113,cdcd967fa5af0c91
+114,4bfa4c60be4635ad
+115,e2db589b0870e9f9
+116,8f52176d24f4df84
+117,c39542ebf5095f15
+118,0ab71c8c0700ed7d
+119,38e57580ade23ad7
+120,5aff3e8c4a1f23fe
+121,cb3e322da7d4e969
+122,dd97201e32b495ee
+123,7a70260d2f951090
+124,4fdd1f109b01b486
+125,580190ffd9491aa4
+126,1fb55cf252f5d8e3
+127,ff6120422b2095b9
+128,6d13c69895ebb33f
+129,12fecbe47f7aa1bd
+130,d9ce27701fef4874
+131,a246fc0b090a1c3e
+132,778cf8182cf5debf
+133,418ba2b58ad0e767
+134,6c6b7ae1013c822d
+135,ec75cd0232c384aa
+136,f267828fa197ab82
+137,64947690c49d9e09
+138,626c2df576cd0f62
+139,e427df120af3ae14
+140,e4cffdda15b089b5
+141,cfdab15f5c4ef5be
+142,0a099ce31121f4d0
+143,237556690ba575fc
+144,f2dffb84a7a0ac8f
+145,3afc1e1f68c92f9d
+146,ef31b1c8ebe6df03
+147,4a7be564ba52e4c0
+148,9bb9a405930817ca
+149,b9e3a4ea0944dd53
+150,37a6a9ad3999090f
+151,34ae7b885d24d0a6
+152,b8637d52f1893bc9
+153,2e4927e26e130566
+154,a04e37a3c28072ed
+155,838d06fe3c8592df
+156,59c64dc21bef4c78
+157,5ef1e6ff2a78a0a1
+158,09d0d2d3a3f9380c
+159,eba144ba159be45c
+160,145cff888e0421e3
+161,b0881b479af9bf8b
+162,6140ce9b9269a77e
+163,3408a974080c11b6
+164,e55012760f290552
+165,3b7ea574d0a6eb6c
+166,7e29ce99a1853514
+167,e904a013b3f590a9
+168,5e35e6df0091fad4
+169,7210b4bc07d45c72
+170,e58c0d5a4251eadb
+171,ddf2e3c2321c83c2
+172,600a80af2923f9ce
+173,051ecd27a66aa9a9
+174,533818eb5875da20
+175,d49665ac9910adda
+176,61988241081f7c0b
+177,150223ba74e7a3a3
+178,0a4b98289e8d785c
+179,367f831ef73e138e
+
+==== Vulkan pui_vulkan_spiral_binning_tests
+frame=0 legacy=284/3141 rect=1042/4168 rounded=129/9417 (commands/vertices)
+frame=0 commands=1455 tile_indices=11120 exact ordered match
+frame=90 legacy=1541/37895 rect=981/3924 rounded=3691/269443 (commands/vertices)
+frame=90 commands=6213 tile_indices=28002 exact ordered match
+frame=120 legacy=1648/41157 rect=981/3924 rounded=4033/294409 (commands/vertices)
+frame=120 commands=6662 tile_indices=29970 exact ordered match
+frame=127 legacy=8186/230929 rect=981/3924 rounded=23686/1729078 (commands/vertices)
+frame=127 commands=32853 tile_indices=113664 exact ordered match
+frame=150 legacy=1584/39182 rect=981/3924 rounded=3807/277911 (commands/vertices)
+frame=150 commands=6372 tile_indices=28494 exact ordered match
+frame=179 legacy=1548/38205 rect=981/3924 rounded=3711/270903 (commands/vertices)
+frame=179 commands=6240 tile_indices=28048 exact ordered match
+all actual 5000-item Spiral GPU binning/peak regressions passed
+
+==== Vulkan pui_vulkan_wsi_tests
+all Vulkan SDL WSI tests passed
+
+==== Vulkan pui_vulkan_showcase_tests
+ok   Vulkan showcase startup
+all Vulkan showcase startup/vsync tests passed
+
+==== Vulkan pui_vulkan_spiral_tests
+device=AMD Radeon RX 9070 XT vendor=4098 device=30032 driver=8389024 windowed=0 cache=0 validation=1 staged=0
+all 180 Vulkan Spiral cache/reference frames matched (1150 tiles + three Adds)
+
+==== Vulkan pui_vulkan_spiral_tests --tiles 5000
+device=AMD Radeon RX 9070 XT vendor=4098 device=30032 driver=8389024 windowed=0 cache=0 validation=1 staged=0
+all 180 Vulkan Spiral cache/reference frames matched (5000 tiles + three Adds)
+
+==== Vulkan pui_vulkan_spiral_tests --tiles 1150 --upload-reference
+device=AMD Radeon RX 9070 XT vendor=4098 device=30032 driver=8389024 windowed=0 cache=0 validation=1 staged=0
+all 180 Vulkan Spiral upload/reference frames matched (1150 tiles + three Adds)
+
+==== Vulkan pui_vulkan_spiral_tests --tiles 5000 --upload-reference
+device=AMD Radeon RX 9070 XT vendor=4098 device=30032 driver=8389024 windowed=0 cache=0 validation=1 staged=0
+all 180 Vulkan Spiral upload/reference frames matched (5000 tiles + three Adds)
+
+==== Vulkan pui_vulkan_spiral_tests --tiles 1150 --staged
+device=AMD Radeon RX 9070 XT vendor=4098 device=30032 driver=8389024 windowed=0 cache=0 validation=1 staged=1
+all 180 Vulkan Spiral cache/reference frames matched (1150 tiles + three Adds)
+
+==== Vulkan pui_vulkan_spiral_tests --tiles 5000 --staged
+device=AMD Radeon RX 9070 XT vendor=4098 device=30032 driver=8389024 windowed=0 cache=0 validation=1 staged=1
+all 180 Vulkan Spiral cache/reference frames matched (5000 tiles + three Adds)
+
+==== Vulkan pui_vulkan_compute_spiral_tests
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=0 gpu_pixels=0 vertex_requests=71000754 metadata_peak=0
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=0 cached_pixels=0 avoided_vertices=0
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=71000754 metadata_peak=0
+variant=1 shadow_commands=1362324 shadow_bytes=2795051448 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=0
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_compute_spiral_tests --tiles 1150
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=1150
+variant=0 gpu_batches=0 gpu_pixels=0 vertex_requests=64131760 metadata_peak=0
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=0 cached_pixels=0 avoided_vertices=0
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=64131760 metadata_peak=0
+variant=1 shadow_commands=1252982 shadow_bytes=2526340152 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=0
+all 180 1150-item Spiral frames matched
+
+==== Vulkan pui_vulkan_compute_spiral_tests --compute --cache
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=933 gpu_pixels=46107662 vertex_requests=5943645 metadata_peak=52239144
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=206123 cached_pixels=305736 avoided_vertices=65345884
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5942621 metadata_peak=0
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_retained_spiral_tests
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=0 gpu_pixels=0 vertex_requests=71000754 metadata_peak=0
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=0 cached_pixels=0 avoided_vertices=0
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=71000754 metadata_peak=0
+variant=1 shadow_commands=1362324 shadow_bytes=2795051448 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=0
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_retained_spiral_tests --compute --cache
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=933 gpu_pixels=46107662 vertex_requests=5943645 metadata_peak=56917672
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=206123 cached_pixels=305736 avoided_vertices=65345884
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5942621 metadata_peak=0
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_retained_spiral_tests --compute --cache --staged
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=933 gpu_pixels=46107662 vertex_requests=5943645 metadata_peak=56917672
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=206123 cached_pixels=305736 avoided_vertices=65345884
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5942621 metadata_peak=0
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_compute_spiral_tests --compute --vector-text
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=929 gpu_pixels=46414457 vertex_requests=5940073 metadata_peak=39387944
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5939049 metadata_peak=0
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_compute_spiral_tests --compute --vector-text --cache
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=929 gpu_pixels=46096452 vertex_requests=5940073 metadata_peak=52239144
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=234890 cached_pixels=318005 avoided_vertices=65345884
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5939049 metadata_peak=0
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_compute_spiral_tests --compute --vector-text --cache --staged --tiles 1150
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=1150
+variant=0 gpu_batches=929 gpu_pixels=34890222 vertex_requests=5496513 metadata_peak=52239144
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=242391 cached_pixels=318005 avoided_vertices=58838210
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5495489 metadata_peak=0
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=58838210
+all 180 1150-item Spiral frames matched
+
+==== Vulkan pui_vulkan_compute_spiral_tests --adaptive --vector-text
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=0 gpu_pixels=0 vertex_requests=5940073 metadata_peak=33948200
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5939049 metadata_peak=0
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_compute_spiral_tests --compute --vector-text --cache --growth
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=929 gpu_pixels=37283400 vertex_requests=8675609 metadata_peak=52239144
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=235515 cached_pixels=318005 avoided_vertices=104128921
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=8674585 metadata_peak=0
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=104128921
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_retained_spiral_tests --compute --vector-text --cache
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=929 gpu_pixels=46096452 vertex_requests=5940073 metadata_peak=56917672
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=234890 cached_pixels=318005 avoided_vertices=65345884
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5939049 metadata_peak=0
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_retained_spiral_tests --compute --vector-text --cache --staged
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=5000
+variant=0 gpu_batches=929 gpu_pixels=46096452 vertex_requests=5940073 metadata_peak=56917672
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=234890 cached_pixels=318005 avoided_vertices=65345884
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5939049 metadata_peak=0
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=65345884
+all 180 5000-item Spiral frames matched
+
+==== Vulkan pui_vulkan_retained_spiral_tests --compute --vector-text --cache --tiles 1150
+device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024 frames=180 tiles=1150
+variant=0 gpu_batches=929 gpu_pixels=34890222 vertex_requests=5496513 metadata_peak=56917672
+variant=0 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=0 cache_hits=242391 cached_pixels=318005 avoided_vertices=58838210
+variant=1 gpu_batches=0 gpu_pixels=0 vertex_requests=5495489 metadata_peak=0
+variant=1 shadow_commands=0 shadow_bytes=0 overflows=0
+variant=1 cache_hits=0 cached_pixels=0 avoided_vertices=58838210
+all 180 1150-item Spiral frames matched
+
+==== golden-image tests
+ok   dpi_1x       0x6291ff0d9b30efeb
+ok   dpi_2x       0x984abc5d421e7c60
+ok   shapes       0x9756b6aa8380680f
+ok   text         0xce6e257364264446
+ok   widgets_f3   0x8268659dae2edcf6
+ok   widgets_f4   0x3f477f0337c33372
+ok   layers_f1    0x019d29b647ec0a09
+ok   menus_f2     0xbcded6704961c70e
+ok   menus_f3     0x8be4c69c182214fa
+ok   menus_f4     0x9e3ea22f8381dd83
+ok   menus_f5     0x0eee8f079a1c69bd
+ok   anim_f0      0xd128371028038ce8
+ok   anim_f1      0x174bdb0e85e8ebaf
+ok   anim_f2      0x00623bd5930a84b5
+ok   windows_a    0x553abb7efffa8c4c
+ok   windows_b    0x2c090fd8344b2359
+ok   layout_f2    0x26d0cc39013c26e1
+ok   blur_f1      0x0aed3ae5043a9800
+ok   blur_edge_f1 0x4d44a96492272b57
+ok   inputs_f3    0x1be8ebd09b02e7bf
+ok   relayout_f7  0xf8c193d451ae38b5
+ok   relayout_f8  0x1950bb70b6be519e
+ok   blur_stable  (drift 0 over 30 frames)
+golden: 22 scene(s), 0 failure(s)
+
+==== performance pixel baselines
+all 16 performance pixel baselines matched
+
+==== core performance pixel baselines
+all 24 core performance pixel baselines matched
+
+==== 1150-tile Spiral golden frames
+all 4 Spiral golden frames matched (1150 tiles + Add)
+
+==== 5000-tile Spiral golden frames
+all 4 Spiral golden frames matched (5000 tiles + Add)
+
+==== 5000-tile Spiral peak golden frames
+all 10 Spiral peak golden frames matched (5000 tiles + three Adds)
+
+==== external consumer builds
+-- The C compiler identification is MSVC 19.51.36260.0
+-- The CXX compiler identification is MSVC 19.51.36260.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done (1.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: D:/myimgui/out/consumer-checks/run-smbouu1r/library
+[1/2] Building CXX object CMakeFiles\pufferui.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+[2/2] Linking CXX static library pufferui.lib
+-- Install configuration: "Debug"
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/lib/pufferui.lib
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/pufferui.h
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/vulkan.h
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/pufferui_impl.cpp
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/stb_truetype.h
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/chrome_scroll.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/components.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/core_pool.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/core_state.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/dock_style.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/draw_context.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/draw_primitives.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/harfbuzz_text.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/input_interact.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/layout_text.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/paint_commands.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/renderer_gradient.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/renderer_mesh_state.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/renderer_overlay_state.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/renderer_primitives.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/renderer_text.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/renderer_text_state.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/renderer_widgets.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/sdl3.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/sdl3_vulkan_host.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/typed_inputs.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/uia_windows.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_binning.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_blend_lut.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_cache.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_commands.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_compute.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_device.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_dispatch.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_draw.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_kawase.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_memory.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_native.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_preparation.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_program_cache.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_program_probe.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_resources.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_sdf.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_shaders.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/vulkan_surface.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/include/pufferui/impl/widgets.inl
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/lib/cmake/pufferui/pufferuiTargets.cmake
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/lib/cmake/pufferui/pufferuiTargets-debug.cmake
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/lib/cmake/pufferui/pufferuiConfig.cmake
+-- Installing: D:/myimgui/out/consumer-checks/run-smbouu1r/install/lib/cmake/pufferui/pufferuiConfigVersion.cmake
+-- The CXX compiler identification is MSVC 19.51.36260.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- The C compiler identification is MSVC 19.51.36260.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Configuring done (1.2s)
+-- Generating done (0.0s)
+-- Build files have been written to: D:/myimgui/out/consumer-checks/run-smbouu1r/in-tree
+[1/4] Building CXX object CMakeFiles\consumer.dir\main.cpp.obj
+[2/4] Building CXX object pufferui\CMakeFiles\pufferui.dir\src\pufferui_impl.cpp.obj
+D:\myimgui\include\pufferui\impl/layout_text.inl(197): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(206): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/layout_text.inl(215): warning C4834: discarding return value of function with [[nodiscard]] attribute
+D:\myimgui\include\pufferui\impl/components.inl(1185): warning C4834: discarding return value of function with [[nodiscard]] attribute
+[3/4] Linking CXX static library pufferui\pufferui.lib
+[4/4] Linking CXX executable consumer.exe
+-- The CXX compiler identification is MSVC 19.51.36260.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done (0.7s)
+-- Generating done (0.0s)
+-- Build files have been written to: D:/myimgui/out/consumer-checks/run-smbouu1r/installed
+[1/2] Building CXX object CMakeFiles\consumer.dir\main.cpp.obj
+[2/2] Linking CXX executable consumer.exe
+all consumer checks passed
+
+==== installed Vulkan/core/SDL consumers
+-- Install configuration: "Release"
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/lib/pkgconfig/sdl3.pc
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/lib/SDL3-static.lib
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/cmake/SDL3headersTargets.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/cmake/SDL3staticTargets.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/cmake/SDL3staticTargets-release.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/cmake/SDL3Config.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/cmake/SDL3ConfigVersion.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_assert.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_asyncio.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_atomic.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_audio.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_begin_code.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_bits.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_blendmode.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_camera.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_clipboard.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_close_code.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_copying.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_cpuinfo.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_dialog.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_dlopennote.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_egl.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_endian.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_error.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_events.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_filesystem.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_gamepad.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_gpu.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_guid.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_haptic.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_hidapi.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_hints.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_init.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_intrin.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_iostream.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_joystick.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_keyboard.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_keycode.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_loadso.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_locale.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_log.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_main.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_main_impl.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_messagebox.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_metal.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_misc.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_mouse.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_mutex.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_oldnames.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_opengl.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_opengl_glext.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_opengles.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_opengles2.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_opengles2_gl2.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_opengles2_gl2ext.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_opengles2_gl2platform.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_opengles2_khrplatform.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_openxr.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_pen.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_pixels.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_platform.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_platform_defines.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_power.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_process.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_properties.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_rect.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_render.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_scancode.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_sensor.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_stdinc.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_storage.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_surface.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_system.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_thread.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_time.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_timer.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_touch.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_tray.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_version.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_video.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_vulkan.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/SDL3/SDL_revision.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/licenses/SDL3/LICENSE.txt
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-aat-layout.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-aat.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-blob.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-buffer.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-common.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-cplusplus.hh
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-deprecated.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-draw.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-face.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-font.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-map.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-ot-color.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-ot-deprecated.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-ot-fetch.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-ot-font.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-ot-layout.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-ot-math.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-ot-meta.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-ot-metrics.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-ot-name.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-ot-shape.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-ot-var.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-ot.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-paint.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-set.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-script-list.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-shape-plan.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-shape.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-style.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-unicode.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-version.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-gpu.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/lib/pkgconfig/harfbuzz.pc
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/lib/pkgconfig/harfbuzz-gpu.pc
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/harfbuzz/hb-features.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/lib/harfbuzz.lib
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/lib/harfbuzz-gpu.lib
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/lib/cmake/harfbuzz/harfbuzzConfig.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/lib/cmake/harfbuzz/harfbuzzConfig-release.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/lib/pufferui_vulkan.lib
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/share/pufferui/licenses/harfbuzz-slug.txt
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/lib/cmake/pufferui/pufferuiVulkanTargets.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/lib/cmake/pufferui/pufferuiVulkanTargets-release.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/lib/pufferui.lib
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/lib/pufferui_sdl3.lib
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/pufferui.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/vulkan.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/pufferui_impl.cpp
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/stb_truetype.h
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/chrome_scroll.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/components.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/core_pool.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/core_state.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/dock_style.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/draw_context.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/draw_primitives.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/harfbuzz_text.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/input_interact.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/layout_text.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/paint_commands.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/renderer_gradient.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/renderer_mesh_state.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/renderer_overlay_state.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/renderer_primitives.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/renderer_text.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/renderer_text_state.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/renderer_widgets.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/sdl3.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/sdl3_vulkan_host.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/typed_inputs.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/uia_windows.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_binning.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_blend_lut.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_cache.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_commands.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_compute.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_device.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_dispatch.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_draw.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_kawase.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_memory.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_native.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_preparation.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_program_cache.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_program_probe.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_resources.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_sdf.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_shaders.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/vulkan_surface.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/include/pufferui/impl/widgets.inl
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/lib/cmake/pufferui/pufferuiTargets.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/lib/cmake/pufferui/pufferuiTargets-release.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/lib/cmake/pufferui/pufferuiConfig.cmake
+-- Installing: D:\myimgui\out\vulkan-consumer-checks\run-23sq4cym\install/lib/cmake/pufferui/pufferuiConfigVersion.cmake
+-- The CXX compiler identification is MSVC 19.51.36260.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done (0.7s)
+-- Generating done (0.0s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_DISABLE_FIND_PACKAGE_Vulkan
+
+
+-- Build files have been written to: D:/myimgui/out/vulkan-consumer-checks/run-23sq4cym/core
+[1/2] Building CXX object CMakeFiles\consumer.dir\main.cpp.obj
+[2/2] Linking CXX executable consumer.exe
+-- The CXX compiler identification is MSVC 19.51.36260.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done (0.7s)
+-- Generating done (0.0s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    CMAKE_DISABLE_FIND_PACKAGE_Vulkan
+
+
+-- Build files have been written to: D:/myimgui/out/vulkan-consumer-checks/run-23sq4cym/sdl
+[1/2] Building CXX object CMakeFiles\consumer.dir\main.cpp.obj
+[2/2] Linking CXX executable consumer.exe
+-- The CXX compiler identification is MSVC 19.51.36260.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found Vulkan: E:/VulkanSDK/1.4.335.0/Lib/vulkan-1.lib (found suitable version "1.4.335", minimum required is "1.3") found components: glslc glslangValidator
+-- Configuring done (0.8s)
+-- Generating done (0.0s)
+-- Build files have been written to: D:/myimgui/out/vulkan-consumer-checks/run-23sq4cym/vulkan
+[1/2] Building CXX object CMakeFiles\consumer.dir\main.cpp.obj
+[2/2] Linking CXX executable consumer.exe
+installed Vulkan consumer: borrowed and owned devices passed
+all installed Vulkan/core/SDL consumer checks passed
+
+==== examples_selftest (every example, offscreen)
+[0/2] Re-checking globbed directories...
+[1/58] Linking CXX executable Release\pui_ex_tracks.exe
+[2/58] Linking CXX executable Release\pui_ex_buttons.exe
+[3/58] Linking CXX executable Release\pui_ex_bootstrap.exe
+[4/58] Linking CXX executable Release\pui_ex_hello.exe
+[5/58] Linking CXX executable Release\pui_ex_cursors.exe
+[6/58] Linking CXX executable Release\pui_ex_ids.exe
+[7/58] Linking CXX executable Release\pui_ex_grid.exe
+[8/58] Linking CXX executable Release\pui_ex_text.exe
+[9/58] Linking CXX executable Release\pui_ex_rect.exe
+[10/58] Linking CXX executable Release\pui_ex_inputs.exe
+[11/58] Linking CXX executable Release\pui_ex_blur.exe
+[12/58] Linking CXX executable Release\pui_ex_animation.exe
+[13/58] Linking CXX executable Release\pui_ex_panels.exe
+[14/58] Linking CXX executable Release\pui_ex_popups.exe
+[15/58] Linking CXX executable Release\pui_ex_dock.exe
+[16/58] Linking CXX executable Release\pui_ex_widgets.exe
+[17/58] Linking CXX executable Release\pui_ex_windows.exe
+[18/58] Linking CXX executable Release\pui_ex_scroll.exe
+[19/58] Linking CXX executable Release\pui_ex_drawing.exe
+[20/58] Linking CXX executable Release\pui_ex_theme.exe
+[21/58] Linking CXX executable Release\pui_ex_overflow.exe
+[22/58] Linking CXX executable Release\pui_ex_custom.exe
+[23/58] Linking CXX executable Release\pui_ex_patterns.exe
+[24/58] Linking CXX executable Release\pui_ex_expander.exe
+[25/58] Linking CXX executable Release\pui_ex_relayout.exe
+[26/58] Linking CXX executable Release\pui_ex_combo.exe
+[27/58] Linking CXX executable Release\pui_ex_vlist.exe
+[28/58] Linking CXX executable Release\pui_ex_components.exe
+[29/58] Linking CXX executable Release\pui_ex_keyboard.exe
+[30/58] Linking CXX executable Release\pui_ex_tree.exe
+[31/58] Linking CXX executable Release\pui_ex_a11y.exe
+[32/58] Linking CXX executable Release\pui_ex_controls.exe
+[33/58] Linking CXX executable Release\pui_ex_headless.exe
+[34/58] Linking CXX executable Release\pui_ex_tables.exe
+[35/58] Linking CXX executable Release\pui_ex_renderer.exe
+[36/58] Linking CXX executable Release\pui_ex_colors.exe
+[37/58] Linking CXX executable Release\pui_ex_numeric.exe
+[38/58] Linking CXX executable Release\pui_ex_textarea.exe
+[39/58] Linking CXX executable Release\pui_ex_dpi.exe
+[40/58] Linking CXX executable Release\pui_ex_files.exe
+[41/58] Linking CXX executable Release\pui_showcase.exe
+[42/58] Linking CXX executable Release\pui_ex_pickers.exe
+[43/58] Linking CXX executable Release\pui_tut_step01_shot.exe
+[44/58] Linking CXX executable Release\pui_tour.exe
+[45/58] Linking CXX executable Release\pui_tut_step02_layout.exe
+[46/58] Linking CXX executable Release\pui_tut_step04_filters.exe
+[47/58] Linking CXX executable Release\pui_tut_button_states.exe
+[48/58] Linking CXX executable Release\pui_tut_step06_motion.exe
+[49/58] Linking CXX executable Release\pui_tut_step03_tasks.exe
+[50/58] Linking CXX executable Release\pui_tut_todo_test.exe
+[51/58] Linking CXX executable Release\pui_tut_step05_glass.exe
+[52/58] Linking CXX executable Release\pui_showcase_vulkan.exe
+[53/58] Linking CXX executable Release\pui_ex_vulkan.exe
+[54/58] Linking CXX executable Release\pui_tut_todo.exe
+[55/58] Linking CXX executable Release\pui_ex_vulkan_painter.exe
+[56/58] Linking CXX executable Release\pui_ex_vulkan_blur.exe
+[57/58] CMakeFiles\examples_selftest-bf79ca6.bat 77c3c4e704c40dbc
+ok   hello
+ok   bootstrap (clicks: 1)
+ok   rect
+ok   cursors
+ok   tracks
+ok   grid
+ok   ids
+ok   text
+ok   buttons
+ok   inputs
+ok   widgets
+ok   panels
+ok   scroll
+ok   popups
+ok   dock
+ok   windows
+ok   drawing
+ok   blur
+ok   animation
+ok   theme
+ok   custom
+ok   patterns
+ok   expander
+ok   combo
+ok   keyboard
+ok   components
+ok   vlist
+ok   overflow
+ok   relayout
+ok   controls
+ok   tables
+ok   tree
+ok   numeric
+ok   colors
+ok   dpi
+ok   files
+ok   textarea
+ok   a11y
+ok   pickers
+draw calls: 1   vertices: 387   cursor sets: 5
+flag: on   value: 0.44
+RENDER_TARGETS: yes   SHARED_DEVICE: yes
+duplicate region captured: 1 (duplicate region id among siblings)
+violation_count(): 1
+ok   headless
+wrote pui_renderer_example.ppm (480 x 320) via a custom render_device
+draw calls: 3   textures alive: 1
+ok   renderer
+ok   tour
+ok   showcase
+ok   showcase
+ok   Vulkan
+ok   GPU painter
+ok   Vulkan blur
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+ok   Glass Todo
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+ok   Button states
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+ok   Glass Todo
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+ok   Glass Todo
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+ok   Glass Todo
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+ok   Glass Todo
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+ok   Glass Todo
+Installed Vulkan doesn't implement the VK_EXT_headless_surface extension
+ok   Glass Todo
+all todo tests passed
+
+==== API reference drift
+docs/api.md is up to date
+
+==== tutorial snippets
+tutorial check ok: 57 code blocks match their sources
+
+==== clang-format
+
+================ summary (x64-release)
+ok     configure Vulkan registry  (2.2s)
+ok     build (pui_core_tests, pui_pump_tests, pui_perf_tests, pui_memory_tests, pui_preparation_tests, pui_showcase_tests, pui_vulkan_tests, pui_vulkan_external_tests, pui_vulkan_cache_tests, pui_vulkan_interaction_tests, pui_vulkan_fault_tests, pui_vulkan_internal_tests, pui_vulkan_command_tests, pui_vulkan_binning_tests, pui_vulkan_workgroup_tests, pui_vulkan_program_tests, pui_vulkan_compute_tests, pui_vulkan_sdf_tests, pui_vulkan_sdf_cache_tests, pui_vulkan_sdf_interaction_tests, pui_harfbuzz_tests, pui_harfbuzz_interaction_tests, pui_vulkan_kawase_interaction_tests, pui_vulkan_preparation_tests, pui_vulkan_memory_role_tests, pui_vulkan_kawase_spiral_tests, pui_vulkan_spiral_binning_tests, pui_vulkan_wsi_tests, pui_vulkan_showcase_tests, pui_vulkan_spiral_tests, pui_vulkan_compute_spiral_tests, pui_vulkan_retained_spiral_tests, pui_golden_tests, pui_perf_pixels, pui_core_perf_pixels)  (284.7s)
+ok     core tests  (0.3s)
+ok     performance regressions  (0.2s)
+ok     memory performance regressions  (0.1s)
+ok     geometry preparation regressions  (0.6s)
+ok     showcase regressions  (0.1s)
+ok     pump tests (SDL event routing)  (2.1s)
+ok     Python tool regressions  (0.6s)
+ok     Vulkan pui_vulkan_tests  (0.6s)
+ok     Vulkan pui_vulkan_external_tests  (0.6s)
+ok     Vulkan pui_vulkan_cache_tests  (0.4s)
+ok     Vulkan pui_vulkan_interaction_tests  (0.9s)
+ok     Vulkan pui_vulkan_interaction_tests --staged  (0.9s)
+ok     Vulkan pui_vulkan_fault_tests  (0.7s)
+ok     Vulkan pui_vulkan_internal_tests  (0.0s)
+ok     Vulkan pui_vulkan_command_tests  (0.0s)
+ok     Vulkan pui_vulkan_binning_tests  (0.4s)
+ok     Vulkan pui_vulkan_workgroup_tests  (1.6s)
+ok     Vulkan pui_vulkan_program_tests  (4.5s)
+ok     Vulkan pui_vulkan_compute_tests  (0.4s)
+ok     Vulkan pui_vulkan_sdf_tests  (1.9s)
+ok     Vulkan pui_vulkan_sdf_cache_tests  (2.7s)
+ok     Vulkan pui_vulkan_sdf_interaction_tests  (1.9s)
+ok     Vulkan pui_vulkan_sdf_interaction_tests --staged  (1.6s)
+ok     Vulkan pui_harfbuzz_tests  (0.4s)
+ok     Vulkan pui_harfbuzz_interaction_tests  (1.8s)
+ok     Vulkan pui_harfbuzz_interaction_tests --staged  (0.8s)
+ok     Vulkan pui_vulkan_kawase_interaction_tests  (1.3s)
+ok     Vulkan pui_vulkan_kawase_interaction_tests --staged  (0.9s)
+ok     Vulkan pui_vulkan_preparation_tests  (5.5s)
+ok     Vulkan pui_vulkan_memory_role_tests  (6.7s)
+ok     Vulkan pui_vulkan_kawase_spiral_tests  (4.2s)
+ok     Vulkan pui_vulkan_kawase_spiral_tests --staged  (3.6s)
+ok     Vulkan pui_vulkan_spiral_binning_tests  (2.0s)
+ok     Vulkan pui_vulkan_wsi_tests  (0.9s)
+ok     Vulkan pui_vulkan_showcase_tests  (0.9s)
+ok     Vulkan pui_vulkan_spiral_tests  (2.6s)
+ok     Vulkan pui_vulkan_spiral_tests --tiles 5000  (2.8s)
+ok     Vulkan pui_vulkan_spiral_tests --tiles 1150 --upload-reference  (2.6s)
+ok     Vulkan pui_vulkan_spiral_tests --tiles 5000 --upload-reference  (3.1s)
+ok     Vulkan pui_vulkan_spiral_tests --tiles 1150 --staged  (3.3s)
+ok     Vulkan pui_vulkan_spiral_tests --tiles 5000 --staged  (3.8s)
+ok     Vulkan pui_vulkan_compute_spiral_tests  (3.7s)
+ok     Vulkan pui_vulkan_compute_spiral_tests --tiles 1150  (3.1s)
+ok     Vulkan pui_vulkan_compute_spiral_tests --compute --cache  (2.7s)
+ok     Vulkan pui_vulkan_retained_spiral_tests  (3.3s)
+ok     Vulkan pui_vulkan_retained_spiral_tests --compute --cache  (2.7s)
+ok     Vulkan pui_vulkan_retained_spiral_tests --compute --cache --staged  (2.5s)
+ok     Vulkan pui_vulkan_compute_spiral_tests --compute --vector-text  (2.2s)
+ok     Vulkan pui_vulkan_compute_spiral_tests --compute --vector-text --cache  (2.1s)
+ok     Vulkan pui_vulkan_compute_spiral_tests --compute --vector-text --cache --staged --tiles 1150  (2.1s)
+ok     Vulkan pui_vulkan_compute_spiral_tests --adaptive --vector-text  (1.8s)
+ok     Vulkan pui_vulkan_compute_spiral_tests --compute --vector-text --cache --growth  (2.9s)
+ok     Vulkan pui_vulkan_retained_spiral_tests --compute --vector-text --cache  (2.2s)
+ok     Vulkan pui_vulkan_retained_spiral_tests --compute --vector-text --cache --staged  (2.4s)
+ok     Vulkan pui_vulkan_retained_spiral_tests --compute --vector-text --cache --tiles 1150  (1.8s)
+ok     golden-image tests  (6.4s)
+ok     performance pixel baselines  (0.7s)
+ok     core performance pixel baselines  (0.8s)
+ok     1150-tile Spiral golden frames  (24.5s)
+ok     5000-tile Spiral golden frames  (25.2s)
+ok     5000-tile Spiral peak golden frames  (48.5s)
+ok     external consumer builds  (8.7s)
+ok     installed Vulkan/core/SDL consumers  (21.5s)
+ok     examples_selftest (every example, offscreen)  (278.8s)
+ok     API reference drift  (0.5s)
+ok     tutorial snippets  (0.6s)
+ok     clang-format  (2.0s)
+all steps passed

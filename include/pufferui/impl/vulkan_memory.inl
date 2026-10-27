@@ -27,6 +27,7 @@ u64 device::completed()
     if (timeline)
         check(vkGetSemaphoreCounterValue(native.device, timeline, &value),
               "vkGetSemaphoreCounterValue");
+    known_completed = std::max(known_completed, value);
     return value;
 }
 bool device::wait(u64 value)
@@ -40,6 +41,7 @@ bool device::wait(u64 value)
     wi.pValues = &value;
     const bool okay = check(vkWaitSemaphores(native.device, &wi, UINT64_MAX), "vkWaitSemaphores");
     stats.slot_wait_ms += wall_ms() - start;
+    if (okay) known_completed = std::max(known_completed, value);
     return okay;
 }
 bool device::begin(frame_slot &slot)
@@ -78,6 +80,9 @@ bool device::begin(frame_slot &slot)
     VkCommandBufferBeginInfo bi{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     bi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     if (!check(vkBeginCommandBuffer(slot.command, &bi), "vkBeginCommandBuffer")) return false;
+    slot.graphics = {}; // state is undefined after every begin, including discarded tapes
+    slot.recording_token = ++recording_generation;
+    slot.glyph_requests.used = 0;
     if (stats.timestamps_supported)
     {
         if (!slot.queries)
@@ -117,7 +122,9 @@ bool device::flush_page(page &p)
 }
 u64 device::submit(VkSemaphore acquired, VkSemaphore finished)
 {
+    retained_abort(); // a submitted prefix can no longer be discarded
     if (!frame || !frame->recording || result != VK_SUCCESS) return 0;
+    if (!program_flushing && !flush_program()) return 0;
     end_rendering();
     if (frame->queries)
         vkCmdWriteTimestamp2(frame->command, VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, frame->queries,
@@ -129,7 +136,7 @@ u64 device::submit(VkSemaphore acquired, VkSemaphore finished)
     if (acquired)
     {
         ai.semaphore = acquired;
-        ai.stageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+        ai.stageMask = PRESENT_BLIT_STAGE;
         frame->waits.push_back(ai);
     }
     VkSemaphoreSubmitInfo signals[2]{};
@@ -155,6 +162,7 @@ u64 device::submit(VkSemaphore acquired, VkSemaphore finished)
         check(vkQueueSubmit2(native.queue, 1, &si, VK_NULL_HANDLE), "vkQueueSubmit2");
     stats.submit_ms += wall_ms() - start;
     if (!submitted) return 0;
+    submitted_glyph_sources(frame->recording_token);
     frame->serial = next_serial++;
     frame->query_serial = frame->serial;
     ++stats.submissions;
@@ -332,6 +340,7 @@ page *device::upload(VkDeviceSize bytes, VkDeviceSize &offset, bool geometry)
 }
 void device::destroy_slot(frame_slot &slot)
 {
+    free_page(slot.glyph_requests);
     if (slot.kawase_pool)
     {
         stats.descriptor_sets -= slot.kawase_sets.size();

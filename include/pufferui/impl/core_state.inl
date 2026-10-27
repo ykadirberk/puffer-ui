@@ -222,16 +222,21 @@ struct glyph
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
 struct harfbuzz_font_data
 {
+    retained_pool_resource outline_pool{8192};
     struct outline
     {
         hb_glyph_extents_t extents{};
-        std::vector<u8> data;
+        std::pmr::vector<u8> data;
         u32 location = 0;
         bool uploaded = false;
+        explicit outline(std::pmr::memory_resource *source = std::pmr::get_default_resource())
+            : data(source)
+        {
+        }
     };
     hb_font_t *shaping = nullptr;
     hb_gpu_draw_t *encoder = nullptr;
-    std::unordered_map<u32, outline> outlines;
+    std::pmr::unordered_map<u32, outline> outlines{&outline_pool};
     ~harfbuzz_font_data()
     {
         hb_font_destroy(shaping);
@@ -382,9 +387,47 @@ struct kerning_memo
     }
 };
 
+// Renderer cache vectors transfer their allocator together with their storage.
+// Empty/default vectors keep the established standard-allocation path; vector
+// text opts into a context-owned pool. Propagating moves avoid a hidden deep
+// copy when a freshly shaped run enters the direct cache or its victim slot.
+template <class T> struct renderer_pool_allocator
+{
+    using value_type = T;
+    using propagate_on_container_move_assignment = std::true_type;
+    std::pmr::memory_resource *source = nullptr;
+    renderer_pool_allocator() = default;
+    explicit renderer_pool_allocator(std::pmr::memory_resource *value) : source(value) {}
+    template <class U>
+    renderer_pool_allocator(const renderer_pool_allocator<U> &other) : source(other.source)
+    {
+    }
+    T *allocate(usize count)
+    {
+        if (!source) return std::allocator<T>{}.allocate(count);
+        if (count > std::numeric_limits<usize>::max() / sizeof(T))
+            throw std::bad_array_new_length();
+        return static_cast<T *>(source->allocate(count * sizeof(T), alignof(T)));
+    }
+    void deallocate(T *pointer, usize count)
+    {
+        if (source)
+            source->deallocate(pointer, count * sizeof(T), alignof(T));
+        else
+            std::allocator<T>{}.deallocate(pointer, count);
+    }
+    template <class U> bool operator==(const renderer_pool_allocator<U> &other) const noexcept
+    {
+        return source == other.source;
+    }
+};
+
 struct text_store
 {
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    // Declared first so every cached run dies before its backing pool. Large
+    // unbounded paragraphs pass through upstream; labels reuse size classes.
+    retained_pool_resource run_pool{65536};
     hb_buffer_t *shaping_buffer = nullptr;
     bool vector_enabled = false;
     ~text_store()
@@ -470,7 +513,12 @@ struct text_store
         // has been recycled since, the draw loop needs no per-glyph checks.
         i32 epoch = -1;
         i32 build_epoch = -1; // immutable: width was summed before any later recycling
-        std::vector<cached_glyph> gs;
+        std::vector<cached_glyph, renderer_pool_allocator<cached_glyph>> gs;
+        text_layout() = default;
+        explicit text_layout(std::pmr::memory_resource *source)
+            : gs(renderer_pool_allocator<cached_glyph>(source))
+        {
+        }
         f32 built_size = 0.0f;
         bool builtin = false;
         // Last ellipsis cut, in UTF-8 bytes. Exact size matters: layout keys
@@ -625,6 +673,28 @@ struct sweep_clock
     bool valid = false;
 };
 
+// Stable nodes are allocated in chunks and returned to their context's pool.
+// Keep unordered-map hashing, traversal, reference stability and TTL semantics;
+// only the node allocator changes. Declare ownership before the map base so
+// the map releases every element before its pool is destroyed.
+struct state_node_pool
+{
+    retained_pool_resource resource;
+    explicit state_node_pool(std::pmr::memory_resource *upstream) : resource(256, upstream) {}
+};
+template <class Value>
+struct pooled_state_map : private state_node_pool, std::pmr::unordered_map<uiid, Value>
+{
+    using table = std::pmr::unordered_map<uiid, Value>;
+    explicit pooled_state_map(
+        std::pmr::memory_resource *upstream = std::pmr::get_default_resource())
+        : state_node_pool(upstream), table(&resource)
+    {
+    }
+    pooled_state_map(const pooled_state_map &) = delete;
+    pooled_state_map &operator=(const pooled_state_map &) = delete;
+};
+
 struct anim_store
 {
     struct entry
@@ -641,7 +711,7 @@ struct anim_store
         bool initialized = false;
         bool settled = true;
     };
-    std::unordered_map<uiid, entry> map;
+    pooled_state_map<entry> map;
     sweep_clock gc;
 };
 
@@ -659,7 +729,7 @@ struct rect_store
         u64 stepped_frame = ~0ull; // the frame it was last stepped (double-step guard)
         bool settled = true;
     };
-    std::unordered_map<uiid, entry> map;
+    pooled_state_map<entry> map;
     sweep_clock gc;
 };
 
@@ -744,6 +814,7 @@ struct ctx_stores
     };
     std::vector<caption_rect> caption_drags;
     std::vector<caption_rect> caption_hits;
+    usize caption_candidates = 0; // includes clipped/blocked/non-focusable submissions
     // Finished file dialogs waiting for take_file_dialog (few at a time).
     struct dialog_entry
     {

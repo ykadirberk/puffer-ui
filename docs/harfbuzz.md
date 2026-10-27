@@ -28,13 +28,34 @@ GPU outlines are encoded once per font/glyph, then cached separately from
 size-specific layout. Size and DPI scale the same outline instead of requiring
 a new coverage bitmap for every size/subpixel bin.
 
+CPU outline nodes/blobs and shaped vector-text runs use context/font-owned
+retained size-class pools. Moves into the layout and victim caches transfer
+storage together with its allocator; they do not copy a run into another heap
+allocation. Free blocks remain reusable until the owner is destroyed. Oversized
+paragraph/outline allocations still use the upstream heap. Cache lookup,
+eviction and float metric arithmetic retain their established representation.
+Before shaping a vector run, the renderer applies its existing vertical
+paint-bounds rejection. Completely clipped labels do not create outlines or
+displace visible shaped runs. This early admission uses the exact-size vector
+cache domain; legacy quantized-size caches and installed custom shapers retain
+their original invocation and cache history. Measurement calls still shape the
+requested run.
+After copying an encoded outline into its owning cache, the temporary blob is
+returned to HarfBuzz's encoder recycling stash. A scope guard also returns it
+if the cache allocation throws. Independent fresh-blob encoding regressions
+check the retained bytes, extents and cache lifetime.
+
 Encoded outlines are additionally resident in one append-only device-local
 buffer shared by frame slots. Coherent host staging transfers only newly
 encountered glyphs before their next consuming batch. Repeated text no longer
 copies every previously encoded glyph at each batch. Each of the device and
 staging buffers reserves at most 512 KiB (and at most one eighth of the upload
-budget); larger collections and noncoherent host memory use the existing
-per-submission copy path. CPU shaping/layout caches remain independent. This
+budget). A larger collection keeps its complete resident glyph prefix: only
+batches that actually reference a glyph beyond that prefix use the existing
+per-submission copy path. Returning to an older page keeps its resident glyphs,
+and shape-only batches do not copy unrelated outline data. Noncoherent host
+memory uses the per-submission path for glyph batches. CPU shaping/layout caches
+remain independent. This
 changes transfer/lifetime policy, not the outline encoding, coverage shader,
 font metrics, DPI or gamma.
 

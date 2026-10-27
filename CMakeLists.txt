@@ -183,31 +183,70 @@ if(PUFFERUI_WITH_VULKAN)
   pui_add_vulkan_test(pui_vulkan_internal_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VULKAN_INTERNAL_TESTS)
   pui_add_vulkan_test(pui_vulkan_command_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VULKAN_COMMAND_TESTS)
   pui_add_vulkan_test(pui_vulkan_binning_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VULKAN_BINNING_TESTS)
+  pui_add_vulkan_test(pui_vulkan_workgroup_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VULKAN_WORKGROUP_TESTS)
+  pui_add_vulkan_test(pui_vulkan_program_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VULKAN_PROGRAM_TESTS)
   pui_add_exe(pui_vulkan_numeric_probe VULKAN SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VULKAN_NUMERIC_PROBE)
   pui_add_vulkan_test(pui_vulkan_compute_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VULKAN_COMPUTE_TESTS)
   pui_add_vulkan_test(pui_vulkan_sdf_tests SOURCES tests/test_vulkan_sdf.cpp)
   pui_add_vulkan_test(pui_vulkan_sdf_cache_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VULKAN_SDF_CACHE_TESTS)
+  pui_add_vulkan_test(pui_vulkan_source_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VULKAN_SOURCE_TESTS
+      RUNS "--staged" "--negative-control" "--byte-tints" "--byte-tints --staged")
+  pui_add_vulkan_test(pui_vulkan_function_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VULKAN_FUNCTION_TESTS
+      RUNS "--staged" "--negative-control")
+  pui_add_vulkan_test(pui_vulkan_output_cache_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VULKAN_OUTPUT_CACHE_TESTS
+      RUNS "--staged")
+  pui_add_vulkan_test(pui_vulkan_producer_tests SOURCES src/pufferui_impl.cpp
+      DEFS PUFFERUI_VULKAN_PRODUCER_TESTS RUNS "--staged")
+  pui_add_vulkan_test(pui_vulkan_group_tests SOURCES src/pufferui_impl.cpp
+      DEFS PUFFERUI_VULKAN_GROUP_TESTS RUNS "--staged")
+  pui_add_vulkan_test(pui_vulkan_alpha_tests SOURCES src/pufferui_impl.cpp
+      DEFS PUFFERUI_VULKAN_ALPHA_TESTS RUNS "--staged")
+  pui_add_vulkan_test(pui_vulkan_load_tests SOURCES src/pufferui_impl.cpp
+      DEFS PUFFERUI_VULKAN_LOAD_TESTS RUNS "--staged")
+  if(PUFFERUI_WITH_HARFBUZZ)
+    pui_add_vulkan_test(pui_vulkan_glyph_source_tests SOURCES src/pufferui_impl.cpp
+        DEFS PUFFERUI_VULKAN_GLYPH_SOURCE_TESTS RUNS "--staged")
+    pui_add_vulkan_test(pui_vulkan_identity_tests SOURCES src/pufferui_impl.cpp
+        DEFS PUFFERUI_VULKAN_IDENTITY_TESTS
+        RUNS "--staged" "--tiles-only" "--tiles-only --staged" "--feedback" "--feedback --staged")
+    pui_vulkan_case(pui_vulkan_output_cache_tests false --vector-text)
+    pui_vulkan_case(pui_vulkan_output_cache_tests false --vector-text --staged --flattened)
+  endif()
   pui_add_vulkan_test(pui_vulkan_sdf_interaction_tests FULL_ONLY SOURCES tests/test_vulkan_sdf_interaction.cpp RUNS "--staged")
   if(PUFFERUI_WITH_HARFBUZZ)
     pui_add_vulkan_test(pui_harfbuzz_tests SOURCES tests/test_harfbuzz.cpp)
     pui_add_vulkan_test(pui_harfbuzz_interaction_tests FULL_ONLY SOURCES tests/test_harfbuzz_interaction.cpp RUNS "--staged")
   endif()
   if(PUFFERUI_WITH_SDL3)
+    pui_add_vulkan_test(pui_vulkan_integrated_tests FULL_ONLY SOURCES src/pufferui_impl.cpp
+        DEFS PUFFERUI_VULKAN_INTEGRATED_TESTS
+        RUNS "--cache" "--staged" "--cache --staged --tiles 1150" "--bitmap" "--low-budget"
+             "--production --cache" "--production --cache --staged"
+             "--cache --long-run" "--production --cache --staged --long-run")
     pui_add_vulkan_test(pui_vulkan_kawase_interaction_tests FULL_ONLY SOURCES tests/test_vulkan_kawase_interaction.cpp RUNS "--staged")
     pui_add_vulkan_test(pui_vulkan_preparation_tests FULL_ONLY SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VULKAN_PREPARATION_TESTS)
+    pui_add_vulkan_test(pui_vulkan_memory_role_tests FULL_ONLY SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VULKAN_MEMORY_ROLE_TESTS)
     if(PUFFERUI_WITH_HARFBUZZ)
       pui_add_vulkan_test(pui_vulkan_kawase_spiral_tests FULL_ONLY SOURCES tests/test_vulkan_kawase_spiral.cpp RUNS "--staged")
     endif()
     pui_add_vulkan_test(pui_vulkan_spiral_binning_tests FULL_ONLY
         SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VULKAN_SPIRAL_BINNING_TESTS)
     pui_add_vulkan_test(pui_vulkan_wsi_tests SOURCES tests/test_vulkan_wsi.cpp)
+    pui_add_vulkan_test(pui_vulkan_present_stage_tests SOURCES tests/test_vulkan_present_stages.cpp)
     pui_add_vulkan_test(pui_vulkan_showcase_tests SOURCES tests/test_vulkan_showcase.cpp)
+    pui_add_vulkan_test(pui_vulkan_unified_showcase_tests SOURCES tests/test_vulkan_unified_showcase.cpp
+        DEFS PUFFERUI_SHOWCASE_INTEGRATED)
+    pui_add_vulkan_test(pui_vulkan_example_validation_tests SOURCES tests/test_vulkan_example_validation.cpp)
     pui_add_vulkan_test(pui_vulkan_spiral_tests FULL_ONLY SOURCES tests/test_vulkan_spiral.cpp
         RUNS "--tiles 5000" "--tiles 1150 --upload-reference" "--tiles 5000 --upload-reference"
              "--tiles 1150 --staged" "--tiles 5000 --staged")
     pui_add_vulkan_test(pui_vulkan_compute_spiral_tests FULL_ONLY
         SOURCES tests/test_vulkan_compute_spiral.cpp RUNS "--tiles 1150" "--compute --cache")
+    pui_add_vulkan_test(pui_vulkan_retained_spiral_tests FULL_ONLY
+        SOURCES tests/test_vulkan_retained_spiral.cpp RUNS "--compute --cache" "--compute --cache --staged")
     pui_add_exe(pui_vulkan_painter_bench VULKAN SOURCES tests/bench_vulkan_painter.cpp)
+    pui_add_vulkan_test(pui_vulkan_program_bench FULL_ONLY
+        SOURCES tests/bench_vulkan_program.cpp RUNS "--sdf --vsync --tiles 14 --frames 4")
     pui_add_exe(pui_vulkan_kawase_bench VULKAN SOURCES tests/bench_vulkan_kawase.cpp)
     if(PUFFERUI_WITH_HARFBUZZ)
       pui_vulkan_case(pui_vulkan_compute_spiral_tests true --compute --vector-text)
@@ -215,6 +254,9 @@ if(PUFFERUI_WITH_VULKAN)
       pui_vulkan_case(pui_vulkan_compute_spiral_tests true --compute --vector-text --cache --staged --tiles 1150)
       pui_vulkan_case(pui_vulkan_compute_spiral_tests true --adaptive --vector-text)
       pui_vulkan_case(pui_vulkan_compute_spiral_tests true --compute --vector-text --cache --growth)
+      pui_vulkan_case(pui_vulkan_retained_spiral_tests true --compute --vector-text --cache)
+      pui_vulkan_case(pui_vulkan_retained_spiral_tests true --compute --vector-text --cache --staged)
+      pui_vulkan_case(pui_vulkan_retained_spiral_tests true --compute --vector-text --cache --tiles 1150)
     endif()
   endif()
   get_property(cases GLOBAL PROPERTY PUFFERUI_VULKAN_CASES)
@@ -302,10 +344,13 @@ pui_add_selftest_exe(pui_tour SDL3 SOURCES examples/pui_tour.cpp)
 # The motion showcase: animated layout (FLIP), blur, particles, components.
 pui_add_selftest_exe(pui_showcase SDL3 SOURCES examples/pui_showcase.cpp)
 if(PUFFERUI_WITH_VULKAN)
-pui_add_selftest_exe(pui_showcase_vulkan VULKAN SOURCES examples/pui_showcase.cpp)
+pui_add_selftest_exe(pui_showcase_vulkan VULKAN SOURCES examples/pui_showcase.cpp
+    DEFS PUFFERUI_SHOWCASE_INTEGRATED)
 pui_add_selftest_exe(pui_ex_vulkan VULKAN SOURCES examples/atomic/vulkan.cpp)
 pui_add_selftest_exe(pui_ex_vulkan_painter VULKAN SOURCES examples/atomic/vulkan_painter.cpp)
 pui_add_selftest_exe(pui_ex_vulkan_blur VULKAN SOURCES examples/atomic/vulkan_blur.cpp)
+pui_add_selftest_exe(pui_ex_vulkan_groups VULKAN SOURCES examples/atomic/vulkan_groups.cpp)
+pui_add_selftest_exe(pui_ex_vulkan_alpha VULKAN SOURCES examples/atomic/vulkan_alpha.cpp)
 endif()
 
 # ---------------------------------------------------------------------------

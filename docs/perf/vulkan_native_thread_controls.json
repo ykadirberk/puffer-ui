@@ -1,0 +1,1186 @@
+{
+  "schema": 1,
+  "status": "DIAGNOSTIC_NOT_CAUSAL_FOREGROUND_ACCEPTANCE",
+  "method": "Only child processes launched for this diagnosis; read-only Toolhelp/CPU counters every50ms. The two stack cases additionally briefly pause the child AMD worker after1.2s; no symbols downloaded and no external process, driver, registry, priority or application altered.",
+  "limitations": "Thread times are lifetime counters, not exact frame-window intervals. Entry-module labels are not CPU stack samples. AMD symbols are private: large-offset nearest exports printed by DbgHelp must not be interpreted as function names. Raw/backend initial quiet controls sleep3s without SDL event pumping; pumped cases have explicit SDL event pumping. Visible cases had cached focus0; they do not establish foreground behavior or the cause of the first user trace.",
+  "driver": {
+    "command": [
+      "dumpbin",
+      "/nologo",
+      "/DISASM:BYTES",
+      "/RANGE:0x180385100,0x1803851B0",
+      "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll"
+    ],
+    "exit": 1147,
+    "dll_sha256": "36a9ef32d75476aa154acab3c79c0d1b6ef8ffe36b378239f5a48eee851b7a44",
+    "image_base": 6442450944,
+    "valid": true
+  },
+  "observation": "All26 before/after worker stack samples include NtWaitForSingleObject -> WaitForSingleObjectEx -> amdvlk64.dll+0x385165 -> +0x24da25. Local disassembly sets the wait timeout to0 and the caller retry branch calls Sleep(0). This identifies polling in the observed driver thread, not the exact Vulkan API cause.",
+  "controls": "Raw device/timeline creation and fence/timeline signaling, offscreen rendering, and WSI surface creation without presentation do not show this high-CPU worker. Four actual WSI presents then3s quiet do, for Reference/SDF/compute and FIFO. Visible-but-unfocused quiet controls also do. Pumping during the quiet interval, destroying the surface, three extra created/destroyed overlay surfaces, disabling implicit layers or only OBS in this child and a host-released pending timeline wait do not stop the one busy worker. This does not measure active capture cost on the real user workload. True-foreground control remains open.",
+  "successful_child_controls": 29,
+  "rejected_attempts": [
+    {
+      "name": "backend-focused-16",
+      "status": "INCOMPLETE_REJECTED_NO_DRAWING_FRAMES",
+      "cause": "Computer Use app approval timed out; refreshed window inventory was empty; focus/start-gate prelude timed out and returned1 before presentation.",
+      "stderr": "device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024\nready_before_present; awaiting_focus_and_gate\nFAIL no focused start gate; no frames presented\n"
+    }
+  ],
+  "layer_ablation": [
+    {
+      "name": "default",
+      "command": [
+        "C:\\Users\\Kadir Berk\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+        "build-vulkan-integrated/profile_threads.py",
+        "--output",
+        "D:\\myimgui\\build-vulkan-integrated\\thread-control\\layers-default",
+        "--",
+        "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_focused.exe",
+        "12"
+      ],
+      "exit": 0,
+      "child_environment_overrides": {
+        "VK_LOADER_DEBUG": "layer,warn"
+      }
+    },
+    {
+      "name": "no-implicit",
+      "command": [
+        "C:\\Users\\Kadir Berk\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+        "build-vulkan-integrated/profile_threads.py",
+        "--output",
+        "D:\\myimgui\\build-vulkan-integrated\\thread-control\\layers-no-implicit",
+        "--",
+        "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_focused.exe",
+        "12"
+      ],
+      "exit": 0,
+      "child_environment_overrides": {
+        "VK_LOADER_DEBUG": "layer,warn",
+        "VK_LOADER_LAYERS_DISABLE": "~implicit~"
+      }
+    },
+    {
+      "name": "no-obs",
+      "command": [
+        "C:\\Users\\Kadir Berk\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+        "build-vulkan-integrated/profile_threads.py",
+        "--output",
+        "D:\\myimgui\\build-vulkan-integrated\\thread-control\\layers-no-obs",
+        "--",
+        "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_focused.exe",
+        "12"
+      ],
+      "exit": 0,
+      "child_environment_overrides": {
+        "VK_LOADER_DEBUG": "layer,warn",
+        "VK_LOADER_LAYERS_DISABLE": "*OBS*"
+      }
+    }
+  ],
+  "runs": [
+    {
+      "name": "before-cache-60hz",
+      "stderr": "device=AMD Radeon RX 9070 XT driver=8389024 mode=3 cache=1 vector=1 hidden_wsi=1\nidle=1 local=0 vsync=0 calibration_ms=76.328000\nactual_present_mode=0 model_vsync=0 applied_vsync=0\nframe_window_cpu_ms=3062.500000 frame_window_cycles=14462393030\nframe_window_main_cpu_ms=437.500000 frame_window_main_cycles=1975870130\nresident_images=47538432 resident_metadata=45491752 resident_upload=25559040\n",
+      "executable_sha256": "d68fc3ba3841db52865570c853d2779380d30e2c04e6b774a069068519d4f878",
+      "top_threads": [
+        {
+          "tid": 48460,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134374831069850137,
+          "kernel_ms": 1609.375,
+          "user_ms": 1031.25,
+          "cycles": 12575964370,
+          "cpu_ms": 2640.625
+        },
+        {
+          "tid": 7348,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\phase2-abi-control\\baseline-matched.exe",
+          "creation": 134374831062680780,
+          "kernel_ms": 265.625,
+          "user_ms": 750.0,
+          "cycles": 4650981820,
+          "cpu_ms": 1015.625
+        },
+        {
+          "tid": 30164,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374831062989046,
+          "kernel_ms": 0.0,
+          "user_ms": 15.625,
+          "cycles": 61394690,
+          "cpu_ms": 15.625
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "after-cache-60hz",
+      "stderr": "device=AMD Radeon RX 9070 XT driver=8389024 mode=3 cache=1 vector=1 hidden_wsi=1\nidle=1 local=0 vsync=0 calibration_ms=74.715800\nactual_present_mode=0 model_vsync=0 applied_vsync=0\nframe_window_cpu_ms=3281.250000 frame_window_cycles=15472096850\nframe_window_main_cpu_ms=421.875000 frame_window_main_cycles=1633622240\nresident_images=27353344 resident_metadata=56917672 resident_upload=25559040\n",
+      "executable_sha256": "18d1e47d3ee232190b5e4fe462407c00287816adeefb09d610aa1575d810e3cc",
+      "top_threads": [
+        {
+          "tid": 46064,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134374831109599779,
+          "kernel_ms": 1500.0,
+          "user_ms": 1390.625,
+          "cycles": 13955275720,
+          "cpu_ms": 2890.625
+        },
+        {
+          "tid": 47892,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\draw-state\\color-sdf.exe",
+          "creation": 134374831102600649,
+          "kernel_ms": 343.75,
+          "user_ms": 640.625,
+          "cycles": 4293344250,
+          "cpu_ms": 984.375
+        },
+        {
+          "tid": 43132,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374831102970694,
+          "kernel_ms": 15.625,
+          "user_ms": 0.0,
+          "cycles": 55792290,
+          "cpu_ms": 15.625
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "stacks-before-cache",
+      "stderr": "device=AMD Radeon RX 9070 XT driver=8389024 mode=3 cache=1 vector=1 hidden_wsi=1\nidle=1 local=0 vsync=0 calibration_ms=72.579700\nactual_present_mode=0 model_vsync=0 applied_vsync=0\nframe_window_cpu_ms=3031.250000 frame_window_cycles=14339488030\nframe_window_main_cpu_ms=375.000000 frame_window_main_cycles=1893199010\nresident_images=47538432 resident_metadata=45491752 resident_upload=25559040\n",
+      "executable_sha256": "d68fc3ba3841db52865570c853d2779380d30e2c04e6b774a069068519d4f878",
+      "top_threads": [
+        {
+          "tid": 35704,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134374834492871768,
+          "kernel_ms": 1718.75,
+          "user_ms": 968.75,
+          "cycles": 12544453690,
+          "cpu_ms": 2687.5
+        },
+        {
+          "tid": 10876,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\phase2-abi-control\\baseline-matched.exe",
+          "creation": 134374834486244109,
+          "kernel_ms": 140.625,
+          "user_ms": 796.875,
+          "cycles": 4445528840,
+          "cpu_ms": 937.5
+        },
+        {
+          "tid": 47892,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374834486569990,
+          "kernel_ms": 15.625,
+          "user_ms": 0.0,
+          "cycles": 59720550,
+          "cpu_ms": 15.625
+        }
+      ],
+      "stack_samples": 13
+    },
+    {
+      "name": "stacks-after-cache",
+      "stderr": "device=AMD Radeon RX 9070 XT driver=8389024 mode=3 cache=1 vector=1 hidden_wsi=1\nidle=1 local=0 vsync=0 calibration_ms=77.504900\nactual_present_mode=0 model_vsync=0 applied_vsync=0\nframe_window_cpu_ms=3296.875000 frame_window_cycles=15405738960\nframe_window_main_cpu_ms=312.500000 frame_window_main_cycles=1664830240\nresident_images=27353344 resident_metadata=56917672 resident_upload=25559040\n",
+      "executable_sha256": "18d1e47d3ee232190b5e4fe462407c00287816adeefb09d610aa1575d810e3cc",
+      "top_threads": [
+        {
+          "tid": 45932,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134374834452990394,
+          "kernel_ms": 1812.5,
+          "user_ms": 1187.5,
+          "cycles": 13864367380,
+          "cpu_ms": 3000.0
+        },
+        {
+          "tid": 43088,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\draw-state\\color-sdf.exe",
+          "creation": 134374834445731130,
+          "kernel_ms": 265.625,
+          "user_ms": 625.0,
+          "cycles": 4355779050,
+          "cpu_ms": 890.625
+        },
+        {
+          "tid": 12896,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374834446069839,
+          "kernel_ms": 15.625,
+          "user_ms": 0.0,
+          "cycles": 59855440,
+          "cpu_ms": 15.625
+        }
+      ],
+      "stack_samples": 13
+    },
+    {
+      "name": "raw-mode-0",
+      "stderr": "device=AMD Radeon RX 9070 XT driver=8389024 mode=0\nbegin_quiet_interval\n",
+      "executable_sha256": "b14b44566cd3b17d9e1092ea8b18702834366223806910c33dab3096eb488208",
+      "top_threads": [
+        {
+          "tid": 46752,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\raw_timeline_control.exe",
+          "creation": 134374838526532995,
+          "kernel_ms": 78.125,
+          "user_ms": 46.875,
+          "cycles": 563389940,
+          "cpu_ms": 125.0
+        },
+        {
+          "tid": 45224,
+          "description": "",
+          "entry_module": "C:\\ProgramData\\obs-studio-hook\\graphics-hook64.dll",
+          "creation": 134374838527962089,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 11125370,
+          "cpu_ms": 0.0
+        },
+        {
+          "tid": 32156,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\SYSTEM32\\ntdll.dll",
+          "creation": 134374838526630230,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 10450450,
+          "cpu_ms": 0.0
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "raw-mode-1",
+      "stderr": "device=AMD Radeon RX 9070 XT driver=8389024 mode=1\nbegin_quiet_interval\n",
+      "executable_sha256": "b14b44566cd3b17d9e1092ea8b18702834366223806910c33dab3096eb488208",
+      "top_threads": [
+        {
+          "tid": 44124,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\raw_timeline_control.exe",
+          "creation": 134374838559484006,
+          "kernel_ms": 46.875,
+          "user_ms": 31.25,
+          "cycles": 422102300,
+          "cpu_ms": 78.125
+        },
+        {
+          "tid": 4580,
+          "description": "",
+          "entry_module": "C:\\ProgramData\\obs-studio-hook\\graphics-hook64.dll",
+          "creation": 134374838560940898,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 11007870,
+          "cpu_ms": 0.0
+        },
+        {
+          "tid": 15276,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\SYSTEM32\\ntdll.dll",
+          "creation": 134374838559532915,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 10297230,
+          "cpu_ms": 0.0
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "raw-mode-2",
+      "stderr": "device=AMD Radeon RX 9070 XT driver=8389024 mode=2\nbegin_quiet_interval\n",
+      "executable_sha256": "b14b44566cd3b17d9e1092ea8b18702834366223806910c33dab3096eb488208",
+      "top_threads": [
+        {
+          "tid": 6636,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\raw_timeline_control.exe",
+          "creation": 134374838592351017,
+          "kernel_ms": 62.5,
+          "user_ms": 15.625,
+          "cycles": 427749350,
+          "cpu_ms": 78.125
+        },
+        {
+          "tid": 49048,
+          "description": "",
+          "entry_module": "C:\\ProgramData\\obs-studio-hook\\graphics-hook64.dll",
+          "creation": 134374838593733875,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 11197750,
+          "cpu_ms": 0.0
+        },
+        {
+          "tid": 40528,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\SYSTEM32\\ntdll.dll",
+          "creation": 134374838592396656,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 10067870,
+          "cpu_ms": 0.0
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "raw-mode-3",
+      "stderr": "device=AMD Radeon RX 9070 XT driver=8389024 mode=3\nbegin_quiet_interval\n",
+      "executable_sha256": "b14b44566cd3b17d9e1092ea8b18702834366223806910c33dab3096eb488208",
+      "top_threads": [
+        {
+          "tid": 24116,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\raw_timeline_control.exe",
+          "creation": 134374838625208824,
+          "kernel_ms": 31.25,
+          "user_ms": 31.25,
+          "cycles": 437259330,
+          "cpu_ms": 62.5
+        },
+        {
+          "tid": 34980,
+          "description": "",
+          "entry_module": "C:\\ProgramData\\obs-studio-hook\\graphics-hook64.dll",
+          "creation": 134374838626650610,
+          "kernel_ms": 0.0,
+          "user_ms": 15.625,
+          "cycles": 10485700,
+          "cpu_ms": 15.625
+        },
+        {
+          "tid": 49408,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\SYSTEM32\\ntdll.dll",
+          "creation": 134374838625253713,
+          "kernel_ms": 0.0,
+          "user_ms": 15.625,
+          "cycles": 9882220,
+          "cpu_ms": 15.625
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "raw-mode-4",
+      "stderr": "device=AMD Radeon RX 9070 XT driver=8389024 mode=4\nbegin_quiet_interval\n",
+      "executable_sha256": "b14b44566cd3b17d9e1092ea8b18702834366223806910c33dab3096eb488208",
+      "top_threads": [
+        {
+          "tid": 39976,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\raw_timeline_control.exe",
+          "creation": 134374838657993475,
+          "kernel_ms": 62.5,
+          "user_ms": 31.25,
+          "cycles": 430049060,
+          "cpu_ms": 93.75
+        },
+        {
+          "tid": 44660,
+          "description": "",
+          "entry_module": "C:\\ProgramData\\obs-studio-hook\\graphics-hook64.dll",
+          "creation": 134374838659405656,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 10608370,
+          "cpu_ms": 0.0
+        },
+        {
+          "tid": 28540,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\SYSTEM32\\ntdll.dll",
+          "creation": 134374838658037999,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 8835530,
+          "cpu_ms": 0.0
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "backend-mode-0",
+      "stderr": "mode=0 wsi=0 render=0 painter=0 begin_quiet_interval\n",
+      "executable_sha256": "96fb7ae231217d8a0f3a4facaac80df0ca3925cdd8c0735c71c3491019b4f02b",
+      "top_threads": [
+        {
+          "tid": 13776,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_control.exe",
+          "creation": 134374841512739897,
+          "kernel_ms": 93.75,
+          "user_ms": 46.875,
+          "cycles": 649432840,
+          "cpu_ms": 140.625
+        },
+        {
+          "tid": 44372,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\SYSTEM32\\ntdll.dll",
+          "creation": 134374841512827688,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 12830530,
+          "cpu_ms": 0.0
+        },
+        {
+          "tid": 14500,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\SYSTEM32\\ntdll.dll",
+          "creation": 134374841512830325,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 12125530,
+          "cpu_ms": 0.0
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "backend-mode-1",
+      "stderr": "mode=1 wsi=0 render=0 painter=2 begin_quiet_interval\n",
+      "executable_sha256": "96fb7ae231217d8a0f3a4facaac80df0ca3925cdd8c0735c71c3491019b4f02b",
+      "top_threads": [
+        {
+          "tid": 49776,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_control.exe",
+          "creation": 134374841649670642,
+          "kernel_ms": 46.875,
+          "user_ms": 171.875,
+          "cycles": 947684030,
+          "cpu_ms": 218.75
+        },
+        {
+          "tid": 16552,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\SYSTEM32\\ntdll.dll",
+          "creation": 134374841649721869,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 12148560,
+          "cpu_ms": 0.0
+        },
+        {
+          "tid": 47036,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\SYSTEM32\\ntdll.dll",
+          "creation": 134374841649722462,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 11859510,
+          "cpu_ms": 0.0
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "backend-mode-2",
+      "stderr": "mode=2 wsi=0 render=0 painter=3 begin_quiet_interval\n",
+      "executable_sha256": "96fb7ae231217d8a0f3a4facaac80df0ca3925cdd8c0735c71c3491019b4f02b",
+      "top_threads": [
+        {
+          "tid": 26092,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_control.exe",
+          "creation": 134374841684116206,
+          "kernel_ms": 93.75,
+          "user_ms": 281.25,
+          "cycles": 1719880870,
+          "cpu_ms": 375.0
+        },
+        {
+          "tid": 49844,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\SYSTEM32\\ntdll.dll",
+          "creation": 134374841684164000,
+          "kernel_ms": 15.625,
+          "user_ms": 0.0,
+          "cycles": 13402990,
+          "cpu_ms": 15.625
+        },
+        {
+          "tid": 46372,
+          "description": "",
+          "entry_module": "C:\\ProgramData\\obs-studio-hook\\graphics-hook64.dll",
+          "creation": 134374841685571083,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 11019150,
+          "cpu_ms": 0.0
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "backend-mode-3",
+      "stderr": "mode=3 wsi=1 render=0 painter=0 begin_quiet_interval\n",
+      "executable_sha256": "96fb7ae231217d8a0f3a4facaac80df0ca3925cdd8c0735c71c3491019b4f02b",
+      "top_threads": [
+        {
+          "tid": 49768,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_control.exe",
+          "creation": 134374841546760459,
+          "kernel_ms": 78.125,
+          "user_ms": 78.125,
+          "cycles": 868299620,
+          "cpu_ms": 156.25
+        },
+        {
+          "tid": 6620,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374841547092929,
+          "kernel_ms": 15.625,
+          "user_ms": 0.0,
+          "cycles": 58837420,
+          "cpu_ms": 15.625
+        },
+        {
+          "tid": 49100,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\SYSTEM32\\ntdll.dll",
+          "creation": 134374841546805687,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 13152480,
+          "cpu_ms": 0.0
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "backend-mode-4",
+      "stderr": "mode=4 wsi=1 render=1 painter=0 begin_quiet_interval\n",
+      "executable_sha256": "96fb7ae231217d8a0f3a4facaac80df0ca3925cdd8c0735c71c3491019b4f02b",
+      "top_threads": [
+        {
+          "tid": 44044,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134374841583968905,
+          "kernel_ms": 1625.0,
+          "user_ms": 1390.625,
+          "cycles": 14126117430,
+          "cpu_ms": 3015.625
+        },
+        {
+          "tid": 49484,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_control.exe",
+          "creation": 134374841581534533,
+          "kernel_ms": 78.125,
+          "user_ms": 46.875,
+          "cycles": 804970410,
+          "cpu_ms": 125.0
+        },
+        {
+          "tid": 26832,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374841581858809,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 55053450,
+          "cpu_ms": 0.0
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "backend-mode-5",
+      "stderr": "mode=5 wsi=1 render=1 painter=2 begin_quiet_interval\n",
+      "executable_sha256": "96fb7ae231217d8a0f3a4facaac80df0ca3925cdd8c0735c71c3491019b4f02b",
+      "top_threads": [
+        {
+          "tid": 15632,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134374841722497585,
+          "kernel_ms": 2000.0,
+          "user_ms": 1000.0,
+          "cycles": 14121785910,
+          "cpu_ms": 3000.0
+        },
+        {
+          "tid": 40892,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_control.exe",
+          "creation": 134374841720123785,
+          "kernel_ms": 93.75,
+          "user_ms": 78.125,
+          "cycles": 800831590,
+          "cpu_ms": 171.875
+        },
+        {
+          "tid": 43672,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374841720438780,
+          "kernel_ms": 15.625,
+          "user_ms": 0.0,
+          "cycles": 60840560,
+          "cpu_ms": 15.625
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "backend-mode-6",
+      "stderr": "mode=6 wsi=1 render=1 painter=3 begin_quiet_interval\n",
+      "executable_sha256": "96fb7ae231217d8a0f3a4facaac80df0ca3925cdd8c0735c71c3491019b4f02b",
+      "top_threads": [
+        {
+          "tid": 49716,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134374841757353632,
+          "kernel_ms": 1750.0,
+          "user_ms": 1250.0,
+          "cycles": 14134783760,
+          "cpu_ms": 3000.0
+        },
+        {
+          "tid": 45420,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_control.exe",
+          "creation": 134374841754798013,
+          "kernel_ms": 140.625,
+          "user_ms": 46.875,
+          "cycles": 838033500,
+          "cpu_ms": 187.5
+        },
+        {
+          "tid": 46972,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374841755121439,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 58237700,
+          "cpu_ms": 0.0
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "backend-mode-7",
+      "stderr": "mode=7 wsi=0 render=1 painter=0 begin_quiet_interval\n",
+      "executable_sha256": "96fb7ae231217d8a0f3a4facaac80df0ca3925cdd8c0735c71c3491019b4f02b",
+      "top_threads": [
+        {
+          "tid": 42268,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_control.exe",
+          "creation": 134374841616192849,
+          "kernel_ms": 31.25,
+          "user_ms": 31.25,
+          "cycles": 454383310,
+          "cpu_ms": 62.5
+        },
+        {
+          "tid": 25500,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\SYSTEM32\\ntdll.dll",
+          "creation": 134374841616239348,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 13476780,
+          "cpu_ms": 0.0
+        },
+        {
+          "tid": 15804,
+          "description": "",
+          "entry_module": "C:\\ProgramData\\obs-studio-hook\\graphics-hook64.dll",
+          "creation": 134374841617577591,
+          "kernel_ms": 0.0,
+          "user_ms": 15.625,
+          "cycles": 13440590,
+          "cpu_ms": 15.625
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "backend-mode-8",
+      "stderr": "mode=8 wsi=0 render=1 painter=3 begin_quiet_interval\n",
+      "executable_sha256": "96fb7ae231217d8a0f3a4facaac80df0ca3925cdd8c0735c71c3491019b4f02b",
+      "top_threads": [
+        {
+          "tid": 48160,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_control.exe",
+          "creation": 134374841789419452,
+          "kernel_ms": 78.125,
+          "user_ms": 15.625,
+          "cycles": 467290920,
+          "cpu_ms": 93.75
+        },
+        {
+          "tid": 13004,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\SYSTEM32\\ntdll.dll",
+          "creation": 134374841789470527,
+          "kernel_ms": 0.0,
+          "user_ms": 15.625,
+          "cycles": 12756270,
+          "cpu_ms": 15.625
+        },
+        {
+          "tid": 41140,
+          "description": "",
+          "entry_module": "C:\\ProgramData\\obs-studio-hook\\graphics-hook64.dll",
+          "creation": 134374841790860731,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 11039360,
+          "cpu_ms": 0.0
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "backend-mode-9",
+      "stderr": "mode=9 wsi=1 render=1 painter=2 begin_quiet_interval\n",
+      "executable_sha256": "96fb7ae231217d8a0f3a4facaac80df0ca3925cdd8c0735c71c3491019b4f02b",
+      "top_threads": [
+        {
+          "tid": 41616,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134374841825186329,
+          "kernel_ms": 1796.875,
+          "user_ms": 1187.5,
+          "cycles": 14138538120,
+          "cpu_ms": 2984.375
+        },
+        {
+          "tid": 43020,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_control.exe",
+          "creation": 134374841822830081,
+          "kernel_ms": 109.375,
+          "user_ms": 46.875,
+          "cycles": 813247580,
+          "cpu_ms": 156.25
+        },
+        {
+          "tid": 19792,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374841823170242,
+          "kernel_ms": 0.0,
+          "user_ms": 15.625,
+          "cycles": 58077430,
+          "cpu_ms": 15.625
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "backend-visible-10",
+      "stderr": "mode=10 wsi=1 render=1 painter=0 focused=0 visible=1 begin_quiet_interval\n",
+      "executable_sha256": "c51b806f8df929e2963edd48686b23c96f612ea37631d31aded3a5b1d215d997",
+      "top_threads": [
+        {
+          "tid": 47208,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134374843150665538,
+          "kernel_ms": 1625.0,
+          "user_ms": 1390.625,
+          "cycles": 14122553420,
+          "cpu_ms": 3015.625
+        },
+        {
+          "tid": 45676,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_visible.exe",
+          "creation": 134374843147052356,
+          "kernel_ms": 187.5,
+          "user_ms": 109.375,
+          "cycles": 1184630770,
+          "cpu_ms": 296.875
+        },
+        {
+          "tid": 45992,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374843147418033,
+          "kernel_ms": 0.0,
+          "user_ms": 15.625,
+          "cycles": 60451870,
+          "cpu_ms": 15.625
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "backend-visible-11",
+      "stderr": "mode=11 wsi=1 render=1 painter=0 focused=0 visible=1 begin_quiet_interval\n",
+      "executable_sha256": "c51b806f8df929e2963edd48686b23c96f612ea37631d31aded3a5b1d215d997",
+      "top_threads": [
+        {
+          "tid": 44496,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134374843185345792,
+          "kernel_ms": 1734.375,
+          "user_ms": 1265.625,
+          "cycles": 14150790080,
+          "cpu_ms": 3000.0
+        },
+        {
+          "tid": 37724,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_visible.exe",
+          "creation": 134374843182870827,
+          "kernel_ms": 125.0,
+          "user_ms": 62.5,
+          "cycles": 842050120,
+          "cpu_ms": 187.5
+        },
+        {
+          "tid": 45224,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374843183213056,
+          "kernel_ms": 15.625,
+          "user_ms": 0.0,
+          "cycles": 58496200,
+          "cpu_ms": 15.625
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "backend-pumped-12",
+      "stderr": "mode=12 wsi=1 render=1 painter=0 focused=0 visible=0 begin_quiet_interval\nquiet_pumps=294\n",
+      "executable_sha256": "97ce290cc63d6abbd9958dbc808886655d40f6bfe09a76d5a72a2ad791cccc31",
+      "top_threads": [
+        {
+          "tid": 46964,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134374865230463074,
+          "kernel_ms": 1859.375,
+          "user_ms": 1140.625,
+          "cycles": 14098836280,
+          "cpu_ms": 3000.0
+        },
+        {
+          "tid": 32796,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_pumped.exe",
+          "creation": 134374865226516699,
+          "kernel_ms": 140.625,
+          "user_ms": 140.625,
+          "cycles": 1165817140,
+          "cpu_ms": 281.25
+        },
+        {
+          "tid": 45044,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374865227266175,
+          "kernel_ms": 0.0,
+          "user_ms": 15.625,
+          "cycles": 61860460,
+          "cpu_ms": 15.625
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "backend-pumped-13",
+      "stderr": "mode=13 wsi=1 render=1 painter=0 focused=0 visible=1 begin_quiet_interval\nquiet_pumps=284\n",
+      "executable_sha256": "97ce290cc63d6abbd9958dbc808886655d40f6bfe09a76d5a72a2ad791cccc31",
+      "top_threads": [
+        {
+          "tid": 32512,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134374865265454636,
+          "kernel_ms": 1718.75,
+          "user_ms": 1296.875,
+          "cycles": 14094007030,
+          "cpu_ms": 3015.625
+        },
+        {
+          "tid": 49776,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_pumped.exe",
+          "creation": 134374865262852738,
+          "kernel_ms": 93.75,
+          "user_ms": 46.875,
+          "cycles": 867988950,
+          "cpu_ms": 140.625
+        },
+        {
+          "tid": 40356,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374865263172146,
+          "kernel_ms": 0.0,
+          "user_ms": 15.625,
+          "cycles": 56906190,
+          "cpu_ms": 15.625
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "backend-pumped-14",
+      "stderr": "mode=14 wsi=1 render=1 painter=0 focused=0 visible=0 begin_quiet_interval\nquiet_pumps=289\n",
+      "executable_sha256": "97ce290cc63d6abbd9958dbc808886655d40f6bfe09a76d5a72a2ad791cccc31",
+      "top_threads": [
+        {
+          "tid": 25292,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134374865300138366,
+          "kernel_ms": 1687.5,
+          "user_ms": 1296.875,
+          "cycles": 14080142030,
+          "cpu_ms": 2984.375
+        },
+        {
+          "tid": 35320,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_pumped.exe",
+          "creation": 134374865297728939,
+          "kernel_ms": 187.5,
+          "user_ms": 0.0,
+          "cycles": 802250990,
+          "cpu_ms": 187.5
+        },
+        {
+          "tid": 44408,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374865298049891,
+          "kernel_ms": 0.0,
+          "user_ms": 15.625,
+          "cycles": 60047200,
+          "cpu_ms": 15.625
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "backend-pumped-15",
+      "stderr": "mode=15 wsi=1 render=1 painter=0 focused=0 visible=0 begin_quiet_interval\nquiet_pumps=290\n",
+      "executable_sha256": "97ce290cc63d6abbd9958dbc808886655d40f6bfe09a76d5a72a2ad791cccc31",
+      "top_threads": [
+        {
+          "tid": 24060,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134374865334830320,
+          "kernel_ms": 1718.75,
+          "user_ms": 1343.75,
+          "cycles": 14588936770,
+          "cpu_ms": 3062.5
+        },
+        {
+          "tid": 22184,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_pumped.exe",
+          "creation": 134374865332385461,
+          "kernel_ms": 93.75,
+          "user_ms": 140.625,
+          "cycles": 998518760,
+          "cpu_ms": 234.375
+        },
+        {
+          "tid": 26956,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374865332719768,
+          "kernel_ms": 0.0,
+          "user_ms": 15.625,
+          "cycles": 55602410,
+          "cpu_ms": 15.625
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "layers-default",
+      "stderr": "[Vulkan Loader] LAYER:          Searching for implicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\ProgramData\\obs-studio-hook\\obs-vulkan64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayVkLayer-Win64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamOverlayVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamFossilizeVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] WARNING:        Removing layer VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\u0205305.inf_amd64_0a0a37c758a0b24b\\B026653\\amd-vulkan64.json) because it is a duplicate of VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amd-vulkan64.json)\n[Vulkan Loader] LAYER:          Searching for implicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\ProgramData\\obs-studio-hook\\obs-vulkan64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayVkLayer-Win64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamOverlayVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamFossilizeVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] WARNING:        Removing layer VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\u0205305.inf_amd64_0a0a37c758a0b24b\\B026653\\amd-vulkan64.json) because it is a duplicate of VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amd-vulkan64.json)\n[Vulkan Loader] LAYER:          Searching for implicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\ProgramData\\obs-studio-hook\\obs-vulkan64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayVkLayer-Win64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamOverlayVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamFossilizeVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] WARNING:        Removing layer VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\u0205305.inf_amd64_0a0a37c758a0b24b\\B026653\\amd-vulkan64.json) because it is a duplicate of VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amd-vulkan64.json)\n[Vulkan Loader] LAYER:          Searching for implicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\ProgramData\\obs-studio-hook\\obs-vulkan64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayVkLayer-Win64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamOverlayVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamFossilizeVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] WARNING:        Removing layer VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\u0205305.inf_amd64_0a0a37c758a0b24b\\B026653\\amd-vulkan64.json) because it is a duplicate of VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amd-vulkan64.json)\n[Vulkan Loader] LAYER:          Searching for implicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\ProgramData\\obs-studio-hook\\obs-vulkan64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayVkLayer-Win64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamOverlayVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamFossilizeVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] LAYER:          Searching for explicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: opening device ROOT\\DISPLAY\\0000\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: unable to open child-device error:13\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: opening device PCI\\VEN_1002&DEV_7550&SUBSYS_061A1043&REV_C0\\6&196380d0&0&00000009\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 19 - SWD\\DRIVERENUM\\AMDCP&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 175 - SWD\\DRIVERENUM\\AMDFDANS&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 163 - SWD\\DRIVERENUM\\AMDOCL&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 231 - SWD\\DRIVERENUM\\AMDOGL&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 233 - SWD\\DRIVERENUM\\AMDVLK&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 226 - SWD\\DRIVERENUM\\AMDWIN&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 118 - DISPLAY\\AUS27FE\\7&2DC8A9D9&0&UID256\n[Vulkan Loader] DEBUG | LAYER:  windows_get_device_registry_files: GUID for 118 is not SoftwareComponent skipping\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 119 - DISPLAY\\AUS27FE\\7&2DC8A9D9&0&UID264\n[Vulkan Loader] DEBUG | LAYER:  windows_get_device_registry_files: GUID for 119 is not SoftwareComponent skipping\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 83 - DISPLAY\\SAM7091\\7&2DC8A9D9&0&UID268\n[Vulkan Loader] DEBUG | LAYER:  windows_get_device_registry_files: GUID for 83 is not SoftwareComponent skipping\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: opening device PCI\\VEN_1002&DEV_13C0&SUBSYS_88771043&REV_CB\\4&1ebe6a9c&0&0041\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 225 - SWD\\DRIVERENUM\\AMDFDANS&5&1AD3DD84&1\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 212 - SWD\\DRIVERENUM\\AMDOCL&5&1AD3DD84&1\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 7 - SWD\\DRIVERENUM\\AMDWIN&5&1AD3DD84&1\n[Vulkan Loader] LAYER:          windows_get_device_registry_files: found no registry files\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_api_dump.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_gfxreconstruct.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_khronos_synchronization2.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_khronos_validation.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_monitor.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_screenshot.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_khronos_profiles.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_khronos_shader_object.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_crash_diagnostic.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] WARNING:        Removing layer VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\u0205305.inf_amd64_0a0a37c758a0b24b\\B026653\\amd-vulkan64.json) because it is a duplicate of VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amd-vulkan64.json)\n[Vulkan Loader] DEBUG | LAYER:  Loading layer library C:\\ProgramData\\obs-studio-hook\\.\\graphics-hook64.dll\n[Vulkan Loader] INFO | LAYER:   Insert instance layer \"VK_LAYER_OBS_HOOK\" (C:\\ProgramData\\obs-studio-hook\\graphics-hook64.dll)\n[Vulkan Loader] DEBUG | LAYER:  Loading layer library C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\.\\amdvlk64.dll\n[Vulkan Loader] INFO | LAYER:   Insert instance layer \"VK_LAYER_AMD_switchable_graphics\" (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll)\n[Vulkan Loader] LAYER:          vkCreateInstance layer callstack setup to:\n[Vulkan Loader] LAYER:             <Application>\n[Vulkan Loader] LAYER:               ||\n[Vulkan Loader] LAYER:             <Loader>\n[Vulkan Loader] LAYER:               ||\n[Vulkan Loader] LAYER:             VK_LAYER_AMD_switchable_graphics\n[Vulkan Loader] LAYER:                     Type: Implicit\n[Vulkan Loader] LAYER:                     Enabled By: Implicit Layer\n[Vulkan Loader] LAYER:                         Disable Env Var:  DISABLE_LAYER_AMD_SWITCHABLE_GRAPHICS_1\n[Vulkan Loader] LAYER:                     Manifest: C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amd-vulkan64.json\n[Vulkan Loader] LAYER:                     Library:  C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll\n[Vulkan Loader] LAYER:               ||\n[Vulkan Loader] LAYER:             VK_LAYER_OBS_HOOK\n[Vulkan Loader] LAYER:                     Type: Implicit\n[Vulkan Loader] LAYER:                     Enabled By: Implicit Layer\n[Vulkan Loader] LAYER:                         Disable Env Var:  DISABLE_VULKAN_OBS_CAPTURE\n[Vulkan Loader] LAYER:                     Manifest: C:\\ProgramData\\obs-studio-hook\\obs-vulkan64.json\n[Vulkan Loader] LAYER:                     Library:  C:\\ProgramData\\obs-studio-hook\\graphics-hook64.dll\n[Vulkan Loader] LAYER:               ||\n[Vulkan Loader] LAYER:             <Drivers>\n[Vulkan Loader] INFO | LAYER:   Inserted device layer \"VK_LAYER_OBS_HOOK\" (C:\\ProgramData\\obs-studio-hook\\graphics-hook64.dll)\n[Vulkan Loader] INFO | LAYER:   Failed to find vkGetDeviceProcAddr in layer \"C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll\"\n[Vulkan Loader] DRIVER:         vkCreateDevice layer callstack setup to:\n[Vulkan Loader] DRIVER:            <Application>\n[Vulkan Loader] DRIVER:              ||\n[Vulkan Loader] DRIVER:            <Loader>\n[Vulkan Loader] DRIVER:              ||\n[Vulkan Loader] LAYER:             VK_LAYER_OBS_HOOK\n[Vulkan Loader] LAYER:                     Type: Implicit\n[Vulkan Loader] LAYER:                     Enabled By: Implicit Layer\n[Vulkan Loader] LAYER:                         Disable Env Var:  DISABLE_VULKAN_OBS_CAPTURE\n[Vulkan Loader] LAYER:                     Manifest: C:\\ProgramData\\obs-studio-hook\\obs-vulkan64.json\n[Vulkan Loader] LAYER:                     Library:  C:\\ProgramData\\obs-studio-hook\\graphics-hook64.dll\n[Vulkan Loader] LAYER:               ||\n[Vulkan Loader] DRIVER:            <Device>\n[Vulkan Loader] DRIVER:                Using \"AMD Radeon RX 9070 XT\" with driver: \"C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll\"\ndevice=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024\nmode=12 wsi=1 render=1 painter=0 focused=0 visible=0 begin_quiet_interval\nquiet_pumps=293 focused_pumps=0\n[Vulkan Loader] DEBUG | LAYER:  Unloading layer library C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll\n[Vulkan Loader] DEBUG | LAYER:  Unloading layer library C:\\ProgramData\\obs-studio-hook\\graphics-hook64.dll\n",
+      "executable_sha256": "bf6068760ea5664acfbafe61bd806f65445113734c0b2383db9f108da05b6738",
+      "top_threads": [
+        {
+          "tid": 45672,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134374869956023196,
+          "kernel_ms": 1859.375,
+          "user_ms": 1140.625,
+          "cycles": 14050993570,
+          "cpu_ms": 3000.0
+        },
+        {
+          "tid": 23288,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_focused.exe",
+          "creation": 134374869952579444,
+          "kernel_ms": 218.75,
+          "user_ms": 62.5,
+          "cycles": 1124113100,
+          "cpu_ms": 281.25
+        },
+        {
+          "tid": 37428,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374869952963188,
+          "kernel_ms": 15.625,
+          "user_ms": 0.0,
+          "cycles": 59026830,
+          "cpu_ms": 15.625
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "layers-no-implicit",
+      "stderr": "[Vulkan Loader] LAYER:          Searching for implicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\ProgramData\\obs-studio-hook\\obs-vulkan64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayVkLayer-Win64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamOverlayVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamFossilizeVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] WARNING | LAYER: Implicit layer \"VK_LAYER_AMD_switchable_graphics\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING | LAYER: Implicit layer \"VK_LAYER_AMD_switchable_graphics\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING | LAYER: Implicit layer \"VK_LAYER_OBS_HOOK\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] LAYER:          Searching for implicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\ProgramData\\obs-studio-hook\\obs-vulkan64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayVkLayer-Win64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamOverlayVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamFossilizeVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] WARNING | LAYER: Implicit layer \"VK_LAYER_AMD_switchable_graphics\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING | LAYER: Implicit layer \"VK_LAYER_AMD_switchable_graphics\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING | LAYER: Implicit layer \"VK_LAYER_OBS_HOOK\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] LAYER:          Searching for implicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\ProgramData\\obs-studio-hook\\obs-vulkan64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayVkLayer-Win64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamOverlayVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamFossilizeVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] WARNING | LAYER: Implicit layer \"VK_LAYER_AMD_switchable_graphics\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING | LAYER: Implicit layer \"VK_LAYER_AMD_switchable_graphics\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING | LAYER: Implicit layer \"VK_LAYER_OBS_HOOK\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] LAYER:          Searching for implicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\ProgramData\\obs-studio-hook\\obs-vulkan64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayVkLayer-Win64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamOverlayVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamFossilizeVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] WARNING | LAYER: Implicit layer \"VK_LAYER_AMD_switchable_graphics\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING | LAYER: Implicit layer \"VK_LAYER_AMD_switchable_graphics\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING | LAYER: Implicit layer \"VK_LAYER_OBS_HOOK\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] LAYER:          Searching for implicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\ProgramData\\obs-studio-hook\\obs-vulkan64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayVkLayer-Win64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamOverlayVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamFossilizeVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] LAYER:          Searching for explicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: opening device ROOT\\DISPLAY\\0000\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: unable to open child-device error:13\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: opening device PCI\\VEN_1002&DEV_7550&SUBSYS_061A1043&REV_C0\\6&196380d0&0&00000009\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 19 - SWD\\DRIVERENUM\\AMDCP&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 175 - SWD\\DRIVERENUM\\AMDFDANS&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 163 - SWD\\DRIVERENUM\\AMDOCL&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 231 - SWD\\DRIVERENUM\\AMDOGL&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 233 - SWD\\DRIVERENUM\\AMDVLK&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 226 - SWD\\DRIVERENUM\\AMDWIN&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 118 - DISPLAY\\AUS27FE\\7&2DC8A9D9&0&UID256\n[Vulkan Loader] DEBUG | LAYER:  windows_get_device_registry_files: GUID for 118 is not SoftwareComponent skipping\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 119 - DISPLAY\\AUS27FE\\7&2DC8A9D9&0&UID264\n[Vulkan Loader] DEBUG | LAYER:  windows_get_device_registry_files: GUID for 119 is not SoftwareComponent skipping\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 83 - DISPLAY\\SAM7091\\7&2DC8A9D9&0&UID268\n[Vulkan Loader] DEBUG | LAYER:  windows_get_device_registry_files: GUID for 83 is not SoftwareComponent skipping\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: opening device PCI\\VEN_1002&DEV_13C0&SUBSYS_88771043&REV_CB\\4&1ebe6a9c&0&0041\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 225 - SWD\\DRIVERENUM\\AMDFDANS&5&1AD3DD84&1\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 212 - SWD\\DRIVERENUM\\AMDOCL&5&1AD3DD84&1\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 7 - SWD\\DRIVERENUM\\AMDWIN&5&1AD3DD84&1\n[Vulkan Loader] LAYER:          windows_get_device_registry_files: found no registry files\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_api_dump.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_gfxreconstruct.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_khronos_synchronization2.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_khronos_validation.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_monitor.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_screenshot.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_khronos_profiles.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_khronos_shader_object.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_crash_diagnostic.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] WARNING | LAYER: Layer \"VK_LAYER_AMD_switchable_graphics\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING | LAYER: Layer \"VK_LAYER_AMD_switchable_graphics\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING | LAYER: Layer \"VK_LAYER_OBS_HOOK\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING | LAYER: Layer \"VK_LAYER_EOS_Overlay\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING | LAYER: Layer \"VK_LAYER_VALVE_steam_overlay\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING | LAYER: Layer \"VK_LAYER_VALVE_steam_fossilize\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] LAYER:          vkCreateInstance layer callstack setup to:\n[Vulkan Loader] LAYER:             <Application>\n[Vulkan Loader] LAYER:               ||\n[Vulkan Loader] LAYER:             <Loader>\n[Vulkan Loader] LAYER:               ||\n[Vulkan Loader] LAYER:             <Drivers>\n[Vulkan Loader] DRIVER:         vkCreateDevice layer callstack setup to:\n[Vulkan Loader] DRIVER:            <Application>\n[Vulkan Loader] DRIVER:              ||\n[Vulkan Loader] DRIVER:            <Loader>\n[Vulkan Loader] DRIVER:              ||\n[Vulkan Loader] DRIVER:            <Device>\n[Vulkan Loader] DRIVER:                Using \"AMD Radeon RX 9070 XT\" with driver: \"C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll\"\ndevice=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024\nmode=12 wsi=1 render=1 painter=0 focused=0 visible=0 begin_quiet_interval\nquiet_pumps=290 focused_pumps=0\n",
+      "executable_sha256": "bf6068760ea5664acfbafe61bd806f65445113734c0b2383db9f108da05b6738",
+      "top_threads": [
+        {
+          "tid": 29800,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134374869990754401,
+          "kernel_ms": 1718.75,
+          "user_ms": 1296.875,
+          "cycles": 14138809310,
+          "cpu_ms": 3015.625
+        },
+        {
+          "tid": 31584,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_focused.exe",
+          "creation": 134374869988388794,
+          "kernel_ms": 78.125,
+          "user_ms": 78.125,
+          "cycles": 784122620,
+          "cpu_ms": 156.25
+        },
+        {
+          "tid": 45940,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374869988697637,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 56845090,
+          "cpu_ms": 0.0
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "layers-no-obs",
+      "stderr": "[Vulkan Loader] LAYER:          Searching for implicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\ProgramData\\obs-studio-hook\\obs-vulkan64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayVkLayer-Win64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamOverlayVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamFossilizeVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] WARNING | LAYER: Implicit layer \"VK_LAYER_OBS_HOOK\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING:        Removing layer VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\u0205305.inf_amd64_0a0a37c758a0b24b\\B026653\\amd-vulkan64.json) because it is a duplicate of VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amd-vulkan64.json)\n[Vulkan Loader] LAYER:          Searching for implicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\ProgramData\\obs-studio-hook\\obs-vulkan64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayVkLayer-Win64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamOverlayVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamFossilizeVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] WARNING | LAYER: Implicit layer \"VK_LAYER_OBS_HOOK\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING:        Removing layer VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\u0205305.inf_amd64_0a0a37c758a0b24b\\B026653\\amd-vulkan64.json) because it is a duplicate of VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amd-vulkan64.json)\n[Vulkan Loader] LAYER:          Searching for implicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\ProgramData\\obs-studio-hook\\obs-vulkan64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayVkLayer-Win64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamOverlayVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamFossilizeVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] WARNING | LAYER: Implicit layer \"VK_LAYER_OBS_HOOK\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING:        Removing layer VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\u0205305.inf_amd64_0a0a37c758a0b24b\\B026653\\amd-vulkan64.json) because it is a duplicate of VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amd-vulkan64.json)\n[Vulkan Loader] LAYER:          Searching for implicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\ProgramData\\obs-studio-hook\\obs-vulkan64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayVkLayer-Win64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamOverlayVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamFossilizeVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] WARNING | LAYER: Implicit layer \"VK_LAYER_OBS_HOOK\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING:        Removing layer VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\u0205305.inf_amd64_0a0a37c758a0b24b\\B026653\\amd-vulkan64.json) because it is a duplicate of VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amd-vulkan64.json)\n[Vulkan Loader] LAYER:          Searching for implicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\ProgramData\\obs-studio-hook\\obs-vulkan64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"C:\\Program Files (x86)\\Epic Games\\Epic Online Services\\managedArtifacts\\98bc04bc842e4906993fd6d6644ffb8d\\EOSOverlayVkLayer-Win64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamOverlayVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"D:\\Program Files (x86)\\Steam\\SteamFossilizeVulkanLayer64.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers\"\n[Vulkan Loader] LAYER:          Searching for explicit layer manifest files\n[Vulkan Loader] LAYER:             In following locations:\n[Vulkan Loader] LAYER:             Found no files\n[Vulkan Loader] LAYER:          Checking for Layer Manifest files in Registry at HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: opening device ROOT\\DISPLAY\\0000\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: unable to open child-device error:13\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: opening device PCI\\VEN_1002&DEV_7550&SUBSYS_061A1043&REV_C0\\6&196380d0&0&00000009\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 19 - SWD\\DRIVERENUM\\AMDCP&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 175 - SWD\\DRIVERENUM\\AMDFDANS&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 163 - SWD\\DRIVERENUM\\AMDOCL&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 231 - SWD\\DRIVERENUM\\AMDOGL&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 233 - SWD\\DRIVERENUM\\AMDVLK&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 226 - SWD\\DRIVERENUM\\AMDWIN&7&2DC8A9D9&0\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 118 - DISPLAY\\AUS27FE\\7&2DC8A9D9&0&UID256\n[Vulkan Loader] DEBUG | LAYER:  windows_get_device_registry_files: GUID for 118 is not SoftwareComponent skipping\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 119 - DISPLAY\\AUS27FE\\7&2DC8A9D9&0&UID264\n[Vulkan Loader] DEBUG | LAYER:  windows_get_device_registry_files: GUID for 119 is not SoftwareComponent skipping\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 83 - DISPLAY\\SAM7091\\7&2DC8A9D9&0&UID268\n[Vulkan Loader] DEBUG | LAYER:  windows_get_device_registry_files: GUID for 83 is not SoftwareComponent skipping\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: opening device PCI\\VEN_1002&DEV_13C0&SUBSYS_88771043&REV_CB\\4&1ebe6a9c&0&0041\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 225 - SWD\\DRIVERENUM\\AMDFDANS&5&1AD3DD84&1\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 212 - SWD\\DRIVERENUM\\AMDOCL&5&1AD3DD84&1\n[Vulkan Loader] INFO | LAYER:   windows_get_device_registry_files: Opening child device 7 - SWD\\DRIVERENUM\\AMDWIN&5&1AD3DD84&1\n[Vulkan Loader] LAYER:          windows_get_device_registry_files: found no registry files\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_api_dump.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_gfxreconstruct.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_khronos_synchronization2.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_khronos_validation.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_monitor.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_screenshot.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_khronos_profiles.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_khronos_shader_object.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] INFO | LAYER:   Located json file \"E:\\VulkanSDK\\1.4.335.0\\Bin\\VkLayer_crash_diagnostic.json\" from registry \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ExplicitLayers\"\n[Vulkan Loader] WARNING | LAYER: Layer \"VK_LAYER_OBS_HOOK\" forced disabled because name matches filter of env var 'VK_LOADER_LAYERS_DISABLE'.\n[Vulkan Loader] WARNING:        Removing layer VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\u0205305.inf_amd64_0a0a37c758a0b24b\\B026653\\amd-vulkan64.json) because it is a duplicate of VK_LAYER_AMD_switchable_graphics (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amd-vulkan64.json)\n[Vulkan Loader] DEBUG | LAYER:  Loading layer library C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\.\\amdvlk64.dll\n[Vulkan Loader] INFO | LAYER:   Insert instance layer \"VK_LAYER_AMD_switchable_graphics\" (C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll)\n[Vulkan Loader] LAYER:          vkCreateInstance layer callstack setup to:\n[Vulkan Loader] LAYER:             <Application>\n[Vulkan Loader] LAYER:               ||\n[Vulkan Loader] LAYER:             <Loader>\n[Vulkan Loader] LAYER:               ||\n[Vulkan Loader] LAYER:             VK_LAYER_AMD_switchable_graphics\n[Vulkan Loader] LAYER:                     Type: Implicit\n[Vulkan Loader] LAYER:                     Enabled By: Implicit Layer\n[Vulkan Loader] LAYER:                         Disable Env Var:  DISABLE_LAYER_AMD_SWITCHABLE_GRAPHICS_1\n[Vulkan Loader] LAYER:                     Manifest: C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amd-vulkan64.json\n[Vulkan Loader] LAYER:                     Library:  C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll\n[Vulkan Loader] LAYER:               ||\n[Vulkan Loader] LAYER:             <Drivers>\n[Vulkan Loader] INFO | LAYER:   Failed to find vkGetDeviceProcAddr in layer \"C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll\"\n[Vulkan Loader] DRIVER:         vkCreateDevice layer callstack setup to:\n[Vulkan Loader] DRIVER:            <Application>\n[Vulkan Loader] DRIVER:              ||\n[Vulkan Loader] DRIVER:            <Loader>\n[Vulkan Loader] DRIVER:              ||\n[Vulkan Loader] DRIVER:            <Device>\n[Vulkan Loader] DRIVER:                Using \"AMD Radeon RX 9070 XT\" with driver: \"C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll\"\ndevice=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024\nmode=12 wsi=1 render=1 painter=0 focused=0 visible=0 begin_quiet_interval\nquiet_pumps=291 focused_pumps=0\n[Vulkan Loader] DEBUG | LAYER:  Unloading layer library C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll\n",
+      "executable_sha256": "bf6068760ea5664acfbafe61bd806f65445113734c0b2383db9f108da05b6738",
+      "top_threads": [
+        {
+          "tid": 37232,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134374870025513708,
+          "kernel_ms": 1953.125,
+          "user_ms": 1062.5,
+          "cycles": 14126571920,
+          "cpu_ms": 3015.625
+        },
+        {
+          "tid": 44812,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_focused.exe",
+          "creation": 134374870023113214,
+          "kernel_ms": 93.75,
+          "user_ms": 78.125,
+          "cycles": 792194870,
+          "cpu_ms": 171.875
+        },
+        {
+          "tid": 23660,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134374870023422560,
+          "kernel_ms": 0.0,
+          "user_ms": 0.0,
+          "cycles": 60153420,
+          "cpu_ms": 0.0
+        }
+      ],
+      "stack_samples": 0
+    },
+    {
+      "name": "backend-park-17",
+      "stderr": "device=AMD Radeon RX 9070 XT vendor=4098 device_id=30032 driver=8389024\npark_submit_result=0 park_submit_ms=0\nmode=17 wsi=1 render=1 painter=0 focused=0 visible=0 begin_quiet_interval\nquiet_pumps=290 focused_pumps=0\n",
+      "executable_sha256": "29b1eb8736963db7b777cdf5d45ffa7d44c78d0076be8d9fc503f9497a1649b9",
+      "top_threads": [
+        {
+          "tid": 47264,
+          "description": "",
+          "entry_module": "C:\\WINDOWS\\System32\\DriverStore\\FileRepository\\amdvlk.inf_amd64_865a9c4fff871fca\\amdvlk64.dll",
+          "creation": 134375052493570058,
+          "kernel_ms": 1843.75,
+          "user_ms": 1171.875,
+          "cycles": 14128843900,
+          "cpu_ms": 3015.625
+        },
+        {
+          "tid": 43372,
+          "description": "",
+          "entry_module": "D:\\myimgui\\build-vulkan-integrated\\thread-control\\backend_quiet_park.exe",
+          "creation": 134375052488358417,
+          "kernel_ms": 171.875,
+          "user_ms": 93.75,
+          "cycles": 1328300840,
+          "cpu_ms": 265.625
+        },
+        {
+          "tid": 44200,
+          "description": "DeviceHotplugThread",
+          "entry_module": "C:\\WINDOWS\\System32\\ucrtbase.dll",
+          "creation": 134375052488862727,
+          "kernel_ms": 15.625,
+          "user_ms": 0.0,
+          "cycles": 69706640,
+          "cpu_ms": 15.625
+        }
+      ],
+      "stack_samples": 0
+    }
+  ]
+}

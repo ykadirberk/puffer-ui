@@ -80,6 +80,7 @@ bool device::kawase_blur(texture *scene, rect source, f32 radius, paint_detail::
 {
     if (!kawase_pipeline || !current_surface || scene != current_surface->scene) return false;
     if (cache_active) cache_flush(false);
+    flush_program();
     if (!commands() || frame->kawase_sets.empty()) return false;
     const u32 levels = radius > 20 ? 4 : radius > 4 ? 3 : 2;
     const u32 passes = levels * 2 - 1;
@@ -108,7 +109,13 @@ bool device::kawase_blur(texture *scene, rect source, f32 radius, paint_detail::
     const float offset = std::clamp(radius / static_cast<float>(1u << levels), 0.5f, 2.0f);
     const auto pass = [&](texture *input, texture *output, rect valid, u32 w, u32 h, bool up)
     {
+        retained_draw event;
+        event.key[0] = 3;
+        const parameters key{valid.x, valid.y, valid.w, valid.h, w, h, offset, up ? 1u : 0u};
+        std::memcpy(&event.key[6], &key, sizeof(key));
+        retained_add(event, output, input, true);
         transition(input, VK_IMAGE_LAYOUT_GENERAL);
+        output->producer = nullptr; // no native-output certificate for this compute producer
         transition(output, VK_IMAGE_LAYOUT_GENERAL);
         const VkDescriptorImageInfo images[] = {
             {samplers[1], input->view, VK_IMAGE_LAYOUT_GENERAL},

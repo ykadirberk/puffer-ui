@@ -1,0 +1,17 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#include "function_common.glsl"
+layout(local_size_x=64) in;
+void main() {
+    uint lane=gl_LocalInvocationIndex;
+    for(uint index=lane;index<function_hashes();index+=64u)
+        functions.words[function_hash_base()+index*8u+4u]=0u;
+    if(lane==0u) {
+        functions.words[0]=functions.words[1]=functions.words[2]=functions.words[3]=0u;
+        functions.words[4]+=1u; // wrap changes admission age, never key equality
+        functions.words[5]=0u;
+        functions.words[16]=6u;functions.words[17]=0u;
+        functions.words[18]=functions.words[19]=0u;
+        functions.words[20]=4u;functions.words[21]=0u;functions.words[22]=1u;
+    }
+}

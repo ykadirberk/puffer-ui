@@ -1557,11 +1557,16 @@ This atomic starts with the analytic SDF raster painter. Add
 upstream Slug GPU outline renderer. It draws rounded gradients and shaped text;
 the default core and SDL renderers retain their bitmap text and existing pixels.
 
-`pui_showcase_vulkan --vulkan-painter sdf --vector-text` selects this visual path
-in the actual showcase. `--vulkan-painter compute` forces GPU binning/painting;
+`pui_showcase_vulkan` starts the integrated painter: native command operands,
+whole-program and tile reuse, and HarfBuzz/Slug text when that build option is
+enabled. Run the executable directly from the project; Python is optional.
+The renderer observes changing programs natively, skips certified unchanged
+outputs, and prepares fine-grained compute reuse when GPU feedback requires it.
+`--vulkan-painter sdf --vector-text` selects the independent raster reference.
+`--vulkan-painter compute` forces GPU binning/painting;
 `--vulkan-painter adaptive` enables conservative eligibility and completed
-coverage feedback. Compute stays opt-in: the Spiral workload can be faster on
-the SDF raster path. Cache/compute results must match that independent raster
+coverage feedback. Forced compute is diagnostic: moving Spiral scenes can be
+faster on the native path. Cache/compute results must match that independent raster
 reference exactly. See [the renderer architecture](docs/vulkan_compute_architecture.md)
 and [font contracts and limits](docs/harfbuzz.md).
 
@@ -1580,6 +1585,37 @@ pyramid and descriptor sets before drawing. The new filter has its own appearanc
 it does not replace the legacy golden images. See [the blur contract](docs/vulkan.md#kawase-blur).
 
 Full source: `examples/atomic/vulkan_blur.cpp`.
+
+### Vulkan distance groups
+
+![Vulkan distance groups](docs/img/readme/vulkan-groups.png)
+
+Run: `pui_ex_vulkan_groups` (configure with `-DPUFFERUI_WITH_VULKAN=ON`).
+
+The integrated painter can paint a bounded union of rounded shapes with one
+fill, outline and glow. The group is one ordered operation; overlapping children
+do not paint the same style twice. `vulkan_shape_group` accepts explicit geometry
+and an options struct, and returns false without appending on invalid input or
+insufficient prepared capacity. Ordinary primitive opacity remains unchanged.
+See [the integrated renderer design](docs/vulkan_integrated_painter.md).
+
+Full source: `examples/atomic/vulkan_groups.cpp`.
+
+### Vulkan common opacity
+
+![Vulkan common opacity](docs/img/readme/vulkan-alpha.png)
+
+Run: `pui_ex_vulkan_alpha` (configure with `-DPUFFERUI_WITH_VULKAN=ON`).
+
+`vulkan_alpha(u, {.opacity = 0.5f})` returns a scope that applies opacity to the
+completed group of shapes, images and text. Overlaps inside the group retain
+their original order. The scope uses one image prepared for the surface and
+must end before `end_frame()`. Only one barrier may be active on a device;
+nesting reports `VIOL_SCOPE_UNBALANCED` and leaves the outer group active.
+Check `active()` when preparation can be rejected by an explicit resource budget.
+Existing disabled scopes and per-primitive alpha retain their behavior.
+
+Full source: `examples/atomic/vulkan_alpha.cpp`.
 
 ## Examples index
 
@@ -1635,6 +1671,8 @@ Full source: `examples/atomic/vulkan_blur.cpp`.
 | `pui_ex_vulkan` | `examples/atomic/vulkan.cpp` | optional native Vulkan renderer, SDL windows, application-owned VkImage |
 | `pui_ex_vulkan_painter` | `examples/atomic/vulkan_painter.cpp` | analytic rounded shapes, GPU tile painter, optional HarfBuzz / Slug text |
 | `pui_ex_vulkan_blur` | `examples/atomic/vulkan_blur.cpp` | optional native dual-filter Kawase blur |
+| `pui_ex_vulkan_groups` | `examples/atomic/vulkan_groups.cpp` | bounded native distance unions and shared styling |
+| `pui_ex_vulkan_alpha` | `examples/atomic/vulkan_alpha.cpp` | shared opacity for ordered local groups |
 | `pui_showcase_vulkan` | `examples/pui_showcase.cpp` | the existing motion showcase on the optional native Vulkan backend |
 
 Every example supports:

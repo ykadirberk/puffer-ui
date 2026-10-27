@@ -25,8 +25,8 @@
       ]
     },
     "sdf_frag": {
-      "source_sha256": "ae5e9e007d1bd8dd95f906ec9d31bee9becaefd7d27d4aba76c7e648f852b973",
-      "spirv_sha256": "96e7492f7b79733890f4b6d1acaad2776695a37d77f883f7d39ed531a59f94e4",
+      "source_sha256": "1d72129c5ae088915b737ada07bca3775a615494d143836d679d74f85966bdde",
+      "spirv_sha256": "1afcb85fcc7df643139ad08dd3084c5674bbafaf3c910f998c778922f9d36c0f",
       "command_flags": [
         "-V",
         "--target-env",
@@ -44,6 +44,55 @@
         "vulkan1.3"
       ]
     },
+    "program_frag": {
+      "source_sha256": "6c244f816e4b8440d88b9b795b19ff95727c31dedef3a84a1f923c1b9d2473a0",
+      "spirv_sha256": "63be0a9743c43403709d2d88b8a77eae2c2b010fe88211bef29a688c33d314c0",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3",
+        "--target-env",
+        "spirv1.5"
+      ]
+    },
+    "function_vert": {
+      "source_sha256": "12f3aa39b045bf123426a8c89a219de5f39c67dc22e40e682e5d00149b0edbb6",
+      "spirv_sha256": "5640bb78d610872b39fc5959b7c2c176b62562acadc55b19274c3714fa21bea8",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "native_packed_vert": {
+      "source_sha256": "3cb003c45f71165f94ddab41bec0d0602ce1e93e118feb756f441b7d4f6f4ead",
+      "spirv_sha256": "fa51eee71d7f3fba73053dcd361748762dc1e7a3aca909e9e76b61b5c0d39097",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "function_frag": {
+      "source_sha256": "4f7566d45750c0cadde09106229aef1e9ac0791a1c5d45ccdfc1dd501b9fd8fa",
+      "spirv_sha256": "5f17f2f8eff52420451ec7c8a760fc3e3f42a28466ff425d48e4b3ffd4acee64",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "integrated_frag": {
+      "source_sha256": "6caa8ddc441013a55f257e63eaaee3b3b2358222f8927bb49784ec12373f4ca6",
+      "spirv_sha256": "f661b2ac313073ea791df00e2ce82b8d4d7a36a0c39fc46e114227d47c6e781b",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3",
+        "--target-env",
+        "spirv1.5"
+      ]
+    },
     "bin_coarse": {
       "source_sha256": "304b69b47b13b869a6983056d123dd4be608d0b2dde46cd131dcd8a5ccefe746",
       "spirv_sha256": "5ef19283b07b3be639a62a6f957cdd7f9f099dd34959012e4da677078539637e",
@@ -54,8 +103,8 @@
       ]
     },
     "bin_count": {
-      "source_sha256": "1bcc180a25a32187f590bace9e01e1c6e7268b6df7e9b8c52dbe3e25ed83c82a",
-      "spirv_sha256": "abbf388a81e6a1223408c9634b219a7aa90fd4f03256bd3cc8b1adfffa0e45c4",
+      "source_sha256": "5074439c27e90b62be7e2f0003e6d7e2e4fba2d05d1d5a260feff2375ef46139",
+      "spirv_sha256": "08d333148362b9f6b41142ae7c74a04a92cde5d520401f989f458a6e43d14d0b",
       "command_flags": [
         "-V",
         "--target-env",
@@ -63,8 +112,8 @@
       ]
     },
     "bin_emit": {
-      "source_sha256": "8cb989d17d5c6709ab916d57ef98f1143534183ad5350d6201c5c3e737da30c2",
-      "spirv_sha256": "4adfb65943f5d72e815c3b96661c0ec866458745f80acc89cabc09ec4111aab8",
+      "source_sha256": "a8fb862b012b85561618fecd99dc95a56599d66cc610352775a3ec88c870f933",
+      "spirv_sha256": "ffea98c2452494058e294380ed1c8f597530b242034a027fbc22765e25b0a1da",
       "command_flags": [
         "-V",
         "--target-env",
@@ -72,8 +121,8 @@
       ]
     },
     "bin_scan": {
-      "source_sha256": "ee34e8c65bf48b7c2c0720520aee65a821586d7103c5b721055aea3d8e34268c",
-      "spirv_sha256": "67c48c1ce8593f06114ffcefcfa47efdf2323ed6ae61b36d3d598109d8ab4227",
+      "source_sha256": "2ac643a2ebb6c50d1ca8590dd3780abab8e7acd5ff0781bb83d7f6c4d7eef9a5",
+      "spirv_sha256": "14c18b002530c3ea7434206f26afecf82d0b2ca6d03ec669351a07f0108d6f8b",
       "command_flags": [
         "-V",
         "--target-env",
@@ -92,6 +141,132 @@
     "blend_probe": {
       "source_sha256": "7b1c46807711250cec674dee779c7eadbe95552a64cd7d1815d7f81041aa22b5",
       "spirv_sha256": "c7d21f85b8af19d03f3def97afdd56b62bbc09102af62b60e7816cadc02d8df4",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "function_begin": {
+      "source_sha256": "0b43c2463f6725862d0dc17fccfb0b9b3fa21f8738afccfe0e993d462bfab3b2",
+      "spirv_sha256": "800b34aa6a52d171fbe2818418f62bb94b71150774b85a04d1af4ef7bfba19ec",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "function_prepare": {
+      "source_sha256": "0ecd4c64fd5b3c53311546d063df7c2d7ffa211b6151f906026b8aa786435af6",
+      "spirv_sha256": "ae2aec257db79ddcd89569968749582705b09edbf26b731528528791dd63c275",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "function_probe": {
+      "source_sha256": "3b70bde6a2c7494dfbc79747825c9971e3fab32792ca0385ce2285c7a5672a05",
+      "spirv_sha256": "688ddebda11b2d9358cbe4b4edadab932be6f2dc979444d2b4aad32bc8ce62e1",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "function_ready": {
+      "source_sha256": "63bed643a7ce9749c35dc8002016252331b91c33f37ca0308d86efa883330717",
+      "spirv_sha256": "85146a45feabd2b12862aec192a27290ba1781c43066bb1b6c63182540e241be",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "function_reset": {
+      "source_sha256": "e3ab6d4580501f55b146462bcfb9adc51e573c28a4d3f589ed96605237862f2a",
+      "spirv_sha256": "06e1ac92196ae091c57c63aa623b2df63b06fed9bd1636639d50212cbe1c4a0d",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "glyph_source_fill": {
+      "source_sha256": "84d5c2b3c051effe279db197194fe7123026a1a7d400e8cc4b2ef19138507f5f",
+      "spirv_sha256": "80ecef965f546ff1e1d122a0a7d49b5f4ca9cb65d30bcab54f795dde395d0e8b",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "glyph_source_publish": {
+      "source_sha256": "6722161ba342d73e17dbd07d950db2e10e16c85149addbdb98584ee161f463f7",
+      "spirv_sha256": "c618b4757f7d5e0ba1944cbde491030fd346208626fe5cdf5094b3a8ecb04dd6",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "integrated_capture": {
+      "source_sha256": "e0539ec8d04754bb6da9f527032e847e9aaae73725cfb855adf8c4d976422c4c",
+      "spirv_sha256": "bc348526b8a99b3e2343e8d07195c8eee8a1b8185bd2085dd570da8a37d2f4a3",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "integrated_commit": {
+      "source_sha256": "18536b66c56bc555df34a0a829f17f894daacc334f24f126843dd6b37a623dc1",
+      "spirv_sha256": "baa7172699e21a432be86b9821815ab97f0571cd377df8238312c77f94dcc215",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "integrated_compare": {
+      "source_sha256": "ce6ada5b73ef2da65a7bb69933f3e95800c9180decc0d5a71f32491089baf359",
+      "spirv_sha256": "0e2df4f7366cde076260c44beb47fb09311f6d04b7cb8373866e0c7f73789a6b",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "integrated_paint": {
+      "source_sha256": "9ebebbc227d8c61df36049741f977a4281c62d3520cb9b566ee859313611ff59",
+      "spirv_sha256": "eadcad993abb770aa94845ad35dfb0f4e9f54b4a68a950f279182f8e5d1b6d6e",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "integrated_replay": {
+      "source_sha256": "e85f8be973880a25de9ab9a1a46285c7333cd58c94602e9d47af029932a0ea2f",
+      "spirv_sha256": "c26c2db9029019a4732887fbe572ffe7861eedc3fae5d4b531fbb0e9b44c4264",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "integrated_restore": {
+      "source_sha256": "be5734be1851ad16da72bc845e320fe7d5f71b2ca0a562a27a3435d78e2eb65a",
+      "spirv_sha256": "2e62cc48acb19958db0c9dc3c92c9361e3e891f5095396572c8d07564aee3579",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
+    "integrated_snapshot": {
+      "source_sha256": "b8f37003ce09dcb8075ff63764f4bb86f3266c94c1d9754cedefb9f816e74c10",
+      "spirv_sha256": "94b87194e27dc7186271f144fac867eaf5a919f558bb9ff0749bac14cdc6d22d",
       "command_flags": [
         "-V",
         "--target-env",
@@ -125,8 +300,17 @@
         "vulkan1.3"
       ]
     },
+    "program_compare": {
+      "source_sha256": "d33887ec5abbec232c1aac4dd9cc1ddd71efc4a88235ae86bfc2ce11f184146a",
+      "spirv_sha256": "1f7975718bdeb4c40fa2274c9dc5a2e6ba63ad490a88f96f1712a1911d2daae0",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
+    },
     "sdf_commit": {
-      "source_sha256": "8b896c37b45c454a9c739a2f88d414ca7011e29e0910d1a73f4f6ab5c8a591fe",
+      "source_sha256": "cbc6a92887c371cc31f7b78094bc1a793763ae9abe2ebf66c1fa10f1103c6469",
       "spirv_sha256": "6272665a03e7172a836e7520d4c0c9292abf99dac8451bb33c1602e9abcb70d1",
       "command_flags": [
         "-V",
@@ -135,8 +319,8 @@
       ]
     },
     "sdf_compact": {
-      "source_sha256": "44750148a247beb056bf598ffbac414cf22adeaf24977b09a2db65c10d37a307",
-      "spirv_sha256": "c0d133b880469bd8bc409ac31631b641c17570dd1ac4778189dcba3847007386",
+      "source_sha256": "cd5b0231e8cdc32c0def2f8444eb794ecd059c5e79f45d85c499a659dcc00f48",
+      "spirv_sha256": "2a79ed8adde532bd50da31bb6ef44aa7392cff13837be45c2a631a8ef0c1cdfa",
       "command_flags": [
         "-V",
         "--target-env",
@@ -144,7 +328,7 @@
       ]
     },
     "sdf_compare": {
-      "source_sha256": "8e6edd9a4fea8cb33090086f3fb30d3ba681646fbb2982d56f023c450bf24306",
+      "source_sha256": "84a83f3aefe330bbee683782bf7718b9d2f2b65ce19bccc6dc6bab9baf203b07",
       "spirv_sha256": "dde4b9322ac0eff290b8f6b3066f0e927ff74c19cbf42c4101a36949d7c69654",
       "command_flags": [
         "-V",
@@ -169,13 +353,34 @@
         "--target-env",
         "vulkan1.3"
       ]
+    },
+    "source_probe": {
+      "source_sha256": "d0be663b809bcfd430613eb18cebf7ca33cbedeb1c956c82fdd67e5a4900fd92",
+      "spirv_sha256": "18b364e157f8b6b9bd28c59d1b08385daf19545755f662925b7d97ad28f8f2d3",
+      "command_flags": [
+        "-V",
+        "--target-env",
+        "vulkan1.3"
+      ]
     }
   },
   "includes": {
-    "bin_common.glsl": "b5f9821845b417700c0cecf9c8de641719293b15eb6b7684331b700f11de1b6c",
+    "alpha_source.glsl": "9a3b5496b8fd787393178d3ca020a7d620fd57fb8da9c343cff328ffd2b34108",
+    "bin_common.glsl": "cee7816ce9b174bf306123bb849f75a202e72ad342311ae4cbe6c40093f476b4",
+    "byte_colors.glsl": "a715106b602b893e481308f8e7c012acd36095631c1ee32c2ab77b3a55b724b8",
+    "function_common.glsl": "1b9524b7926a70de6f49e95ff43e62ac315e8f0157d62c7efea8b3b01cfe1653",
+    "function_lookup.glsl": "08c04e44fb12646c546c2fc804e5edc6e52c0cf8be8b982c6a3939467726edb7",
+    "glyph_source_requests.glsl": "4027953382406548f7d3739920806178337a76dd0e095b3aa7e2e84faecf007d",
     "harfbuzz_slug.glsl": "a83b9587e42b1e3db726be5b6237589007ce33a1bf607c8aea8e8c7bdffa12df",
+    "native_copy_tiles.glsl": "065ebdad6f0664df0656c52ee00aa87b9f25be572d9fc3f6e5cccc00e38c4b22",
     "rgba8_blend.glsl": "c9347153254b4fd1730c1bb92c08bfa52d7f29c88e0cd7c6cbf84663a5153a26",
-    "sdf_history.glsl": "4e415e33aafd90bb564c77f013943fa242b7b8430a6c8e04647f171dffafcbde",
-    "shape_common.glsl": "f41d59d2bdc0420c2c6fb4f62a95ec6c97665c9dd1027cbaf9185a58e56c747a"
+    "sdf_commit_body.glsl": "19219c0e96c6042d0a3424a31157745e3a12221016a55b549750e1ec605d5558",
+    "sdf_compare_body.glsl": "e2f01c787c09a66492c619d9f38508aea7bbb675527c5e8496ebf2c1090bf7ad",
+    "sdf_fragment.glsl": "9e67a18c38ad47d48d65e5aeb82bf4d0876ddd97e56233a60cf7accbdccbcb9a",
+    "sdf_history.glsl": "1a8eff271ccd79b2afea3eeb5ce5ac1c68c8c00af19ad2dedc7b02d40429d11b",
+    "shape_common.glsl": "51217c85c4b2617afe574027a2cdc7afb7e89892a6fb46b972d32157edacf44e",
+    "shape_groups.glsl": "7af3d161e6192708f07a8a0e44e50540a4e5d88a598b90ce7bb79d2380b38e16",
+    "source_alpha.glsl": "9f63275004d89c3f18fae78083c990c3415604ae46cecd74df14af2ad46ee6d1",
+    "workgroup_scan.glsl": "bbdebdbcfde353ca030a060f686f9d3a960b78f04de6853fa44dbbc5a6b3740b"
   }
 }

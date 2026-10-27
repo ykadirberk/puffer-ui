@@ -66,6 +66,12 @@ bool device::initialize_bin_kernels()
     }
     return true;
 }
+enum class storage_role
+{
+    HOST,
+    READABLE,
+    DEVICE
+};
 struct gpu_bin_job
 {
     device *dev = nullptr;
@@ -79,12 +85,13 @@ struct gpu_bin_job
     u64 serial = 0;
     bool recorded = false;
     page *arena = nullptr; // prepared slot storage; standalone binning owns its pages
+    page command_input;
     gpu_bin_job() = default;
     gpu_bin_job(const gpu_bin_job &) = delete;
     gpu_bin_job &operator=(const gpu_bin_job &) = delete;
     ~gpu_bin_job() { release(); }
 
-    bool storage(page &p, u64 bytes)
+    bool storage(page &p, u64 bytes, storage_role role = storage_role::HOST)
     {
         bytes = bytes ? bytes : 4;
         if (arena)
@@ -98,10 +105,11 @@ struct gpu_bin_job
                 return false;
             p.buffer = arena->buffer;
             p.memory = arena->memory;
-            p.mapped = arena->mapped + at;
+            p.mapped = arena->mapped ? arena->mapped + at : nullptr;
             p.offset = at;
             p.capacity = size;
             p.coherent = arena->coherent;
+            p.memory_flags = arena->memory_flags;
             p.borrowed = true;
             arena->used = at + size;
             return true;
@@ -118,8 +126,14 @@ struct gpu_bin_job
         const u64 budget = dev->options.gpu_command_budget_bytes;
         if (req.size > budget || dev->stats.gpu_metadata_allocated_bytes > budget - req.size)
             return false; // eligibility failure, not a sticky device failure
-        const u32 type = dev->memory_type(req.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                                          VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        const auto required = role == storage_role::DEVICE ? VkMemoryPropertyFlags(0)
+                                                           : VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+        const auto preferred =
+            role == storage_role::DEVICE ? VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+            : role == storage_role::READABLE
+                ? VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+                : VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+        const u32 type = dev->memory_type(req.memoryTypeBits, required, preferred);
         if (type == UINT32_MAX) return false;
         VkMemoryAllocateInfo ac{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
         ac.allocationSize = req.size;
@@ -134,12 +148,15 @@ struct gpu_bin_job
         if (dev->stats.gpu_metadata_allocated_bytes > dev->stats.peak_gpu_metadata_allocated_bytes)
             dev->stats.peak_gpu_metadata_allocated_bytes = dev->stats.gpu_metadata_allocated_bytes;
         if (!dev->check(dev->vkBindBufferMemory(dev->native.device, p.buffer, p.memory, 0),
-                        "bin bind") ||
+                        "bin bind"))
+            return false;
+        if (role != storage_role::DEVICE &&
             !dev->check(dev->vkMapMemory(dev->native.device, p.memory, 0, VK_WHOLE_SIZE, 0,
                                          reinterpret_cast<void **>(&p.mapped)),
                         "bin map"))
             return false;
         p.capacity = bytes;
+        p.memory_flags = dev->memory_properties.memoryTypes[type].propertyFlags;
         p.coherent = (dev->memory_properties.memoryTypes[type].propertyFlags &
                       VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0;
         return true;
@@ -232,7 +249,9 @@ struct gpu_bin_job
         const u64 words = (tape.commands.size() + 31) / 32;
         const u64 tiles = tx * ty;
         if (tiles > 0x7fffffc0u ||
-            (tiles + 63) / 64 > owner.properties.limits.maxComputeWorkGroupCount[0] ||
+            (tiles + owner.properties.limits.maxComputeWorkGroupCount[0] - 1) /
+                    owner.properties.limits.maxComputeWorkGroupCount[0] >
+                owner.properties.limits.maxComputeWorkGroupCount[1] ||
             (tape.commands.size() + 63) / 64 > owner.properties.limits.maxComputeWorkGroupCount[0])
             return false;
         parameters[0] = width;
@@ -333,16 +352,37 @@ struct gpu_bin_job
         dev->end_rendering();
         recorded = true;
         serial = dev->next_serial;
-        for (u32 i = 1; i < 5; ++i)
-            dev->vkCmdFillBuffer(dev->frame->command, buffers[i].buffer, buffers[i].offset,
-                                 buffers[i].capacity, 0);
+        if (command_input.used)
+        {
+            const VkBufferCopy copy{command_input.offset, buffers[0].offset, command_input.used};
+            dev->vkCmdCopyBuffer(dev->frame->command, command_input.buffer, buffers[0].buffer, 1,
+                                 &copy);
+        }
+        // Only bitset atomics and control counters need initialized storage.
+        // Count/scan overwrite all live work words, and ordered emit writes
+        // every published index. Clearing their prepared high-water capacity
+        // wasted bandwidth at every epoch (including large inactive tails).
+        const u64 coarse_bytes =
+            static_cast<u64>(parameters[6]) * parameters[7] * parameters[9] * 4;
+        if (coarse_bytes)
+            dev->vkCmdFillBuffer(dev->frame->command, buffers[1].buffer, buffers[1].offset,
+                                 coarse_bytes, 0);
+        dev->vkCmdFillBuffer(dev->frame->command, buffers[4].buffer, buffers[4].offset,
+                             buffers[4].capacity, 0);
         barrier(VK_PIPELINE_STAGE_2_TRANSFER_BIT, VK_ACCESS_2_TRANSFER_WRITE_BIT,
                 VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
                 VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT);
         dev->vkCmdBindDescriptorSets(dev->frame->command, VK_PIPELINE_BIND_POINT_COMPUTE, layout, 0,
                                      1, &descriptor, 0, nullptr);
+        u32 push[12];
+        std::copy(std::begin(parameters), std::end(parameters), push);
+        // Coarse rows remain CPU allocation metadata. Kernels use this word for
+        // the portable two-dimensional fine-tile dispatch width instead.
+        const u32 columns =
+            std::min(parameters[11], dev->properties.limits.maxComputeWorkGroupCount[0]);
+        push[7] = columns;
         dev->vkCmdPushConstants(dev->frame->command, layout, VK_SHADER_STAGE_COMPUTE_BIT, 0,
-                                sizeof(parameters), parameters);
+                                sizeof(push), push);
         for (u32 i = 0; i < 4; ++i)
         {
             dev->vkCmdBindPipeline(dev->frame->command, VK_PIPELINE_BIND_POINT_COMPUTE,
@@ -350,10 +390,12 @@ struct gpu_bin_job
             if (i == 3)
                 dev->vkCmdDispatchIndirect(dev->frame->command, buffers[4].buffer,
                                            buffers[4].offset);
+            else if (i == 1)
+                dev->vkCmdDispatch(dev->frame->command, std::min(parameters[11], columns),
+                                   (parameters[11] + columns - 1) / columns, 1);
             else
-                dev->vkCmdDispatch(
-                    dev->frame->command,
-                    i == 2 ? 1 : ((i == 0 ? parameters[8] : parameters[11]) + 63) / 64, 1, 1);
+                dev->vkCmdDispatch(dev->frame->command, i == 2 ? 1 : (parameters[8] + 63) / 64, 1,
+                                   1);
             barrier(VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT,
                     VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_2_DRAW_INDIRECT_BIT,
                     VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT |

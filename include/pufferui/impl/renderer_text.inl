@@ -43,6 +43,37 @@ void renderer_detail::mesh_painter::text(rect r, std::string_view s, color c, al
     }
 
     const f32 size = cc->active_theme.text_size;
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    if (cc->ts->vector_enabled && !cc->ts->shaper)
+    {
+        // Vector runs have exact-size keys. Reject the same vertical bounds
+        // used below before HarfBuzz and outline preparation can evict a
+        // visible run. Legacy quantized-size/custom-shaper cache history stays
+        // on its established path.
+        rect bounds;
+        if (detail::paint_bounds(cc, bounds))
+        {
+            if (bounds.w <= 0.0f || bounds.h <= 0.0f) return;
+            if (r.y >= bounds.bottom() || r.bottom() <= bounds.y)
+            {
+                // Visible labels keep their single established metric pass.
+                // A nominally outside rect still needs the exact font bounds:
+                // its glyphs can overhang the requested text area.
+                i32 ascent = 0, descent = 0, gap = 0;
+                const auto &font = cc->ts->fonts[static_cast<usize>(fh)];
+                stbtt_GetFontVMetrics(&font.info, &ascent, &descent, &gap);
+                const f32 scale = stbtt_ScaleForPixelHeight(&font.info, size);
+                const f32 baseline = r.y + (r.h - size) * 0.5f + static_cast<f32>(ascent) * scale;
+                const f32 base_y =
+                    std::floor(baseline * cc->render_scale + 0.5f) / cc->render_scale;
+                const f32 slack = size * 0.5f;
+                const f32 up = static_cast<f32>(ascent) * scale + slack;
+                const f32 down = static_cast<f32>(-descent) * scale + slack;
+                if (base_y - up >= bounds.bottom() || base_y + down <= bounds.y) return;
+            }
+        }
+    }
+#endif
     // The layout cache is shared with text_width (same key): a hit emits
     // from cached glyph copies — no decode, no glyph-map lookups, no stb
     // calls.

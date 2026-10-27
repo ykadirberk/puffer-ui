@@ -1,0 +1,19 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+#include "shape_common.glsl"
+#include "byte_colors.glsl"
+layout(std430,set=1,binding=2) buffer Output { vec4 values[]; } result;
+layout(push_constant) uniform Parameters { vec4 tint; uint width; uint height; uint alpha_flip;
+    uint packed_tint; uint use_byte_tints; } p;
+layout(local_size_x=8,local_size_y=8) in;
+void main() {
+    uvec2 pixel=gl_GlobalInvocationID.xy;
+    if(any(greaterThanEqual(pixel,uvec2(p.width,p.height)))) return;
+    vec2 point=vec2(pixel)+vec2(0.5);
+    Shape s=shapes.values[0];
+    float coverage=pui_coverage(s,point);
+    vec4 color=s.params.y==2.0?pui_unpack_bytes(pui_gradient(s,point))/255.0:
+        p.use_byte_tints!=0u?pui_cpu_tint(p.packed_tint):p.tint;
+    float alpha=color.a*coverage;
+    result.values[pixel.y*p.width+pixel.x]=vec4(color.rgb,uintBitsToFloat(floatBitsToUint(alpha)^p.alpha_flip));
+}

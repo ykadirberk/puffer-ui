@@ -1,0 +1,231 @@
+{
+  "scope": "C++ ordinary/aligned new and executable/static-library C malloc/calloc/realloc; DLL/driver heap, aligned C heap and liveness excluded; cold UI/font preparation retained; diagnostic only",
+  "runs": {
+    "cache": {
+      "captured_calls": 320,
+      "frames": {
+        "0": 280,
+        "1": 22,
+        "3": 2,
+        "7": 16
+      },
+      "warm_calls": 0,
+      "draw_stack_allocations": [],
+      "kinds": {
+        "new": 88,
+        "calloc": 105,
+        "realloc": 85,
+        "malloc": 42
+      }
+    },
+    "compute": {
+      "captured_calls": 319,
+      "frames": {
+        "0": 279,
+        "1": 22,
+        "3": 2,
+        "7": 16
+      },
+      "warm_calls": 0,
+      "draw_stack_allocations": [],
+      "kinds": {
+        "new": 87,
+        "calloc": 105,
+        "realloc": 85,
+        "malloc": 42
+      }
+    },
+    "idle": {
+      "captured_calls": 328,
+      "frames": {
+        "0": 306,
+        "1": 22
+      },
+      "warm_calls": 0,
+      "draw_stack_allocations": [],
+      "kinds": {
+        "new": 98,
+        "calloc": 103,
+        "realloc": 85,
+        "malloc": 42
+      }
+    },
+    "local": {
+      "captured_calls": 328,
+      "frames": {
+        "0": 306,
+        "1": 22
+      },
+      "warm_calls": 0,
+      "draw_stack_allocations": [],
+      "kinds": {
+        "new": 98,
+        "calloc": 103,
+        "realloc": 85,
+        "malloc": 42
+      }
+    },
+    "sdf": {
+      "captured_calls": 322,
+      "frames": {
+        "0": 282,
+        "1": 22,
+        "3": 2,
+        "7": 16
+      },
+      "warm_calls": 0,
+      "draw_stack_allocations": [],
+      "kinds": {
+        "new": 90,
+        "calloc": 105,
+        "realloc": 85,
+        "malloc": 42
+      }
+    },
+    "staged": {
+      "captured_calls": 320,
+      "frames": {
+        "0": 280,
+        "1": 22,
+        "3": 2,
+        "7": 16
+      },
+      "warm_calls": 0,
+      "draw_stack_allocations": [],
+      "kinds": {
+        "new": 88,
+        "calloc": 105,
+        "realloc": 85,
+        "malloc": 42
+      }
+    }
+  },
+  "receipt": {
+    "protocol": "diagnostic only; ordinary/aligned C++ and module C heap stacks; not acceptance timings; actual 180-frame 5000-item showcase",
+    "heap_only": true,
+    "program_workloads": true,
+    "implementation_root": "D:\\myimgui",
+    "compiler": [
+      "cl",
+      "/nologo",
+      "/std:c++20",
+      "/EHsc",
+      "/O2",
+      "/Ob1",
+      "/MD",
+      "/DNDEBUG",
+      "/D_CRT_SECURE_NO_WARNINGS",
+      "/GL",
+      "/Z7",
+      "/DPUFFERUI_ENABLE_VULKAN",
+      "/DPUFFERUI_ENABLE_SDL3",
+      "/DPUFFERUI_ENABLE_HARFBUZZ",
+      "/DPUFFERUI_ASSET_DIR=\"D:/myimgui/assets\"",
+      "/DPUI_PROFILE_BENCHMARK=\"D:/myimgui/build-vulkan-program/final-heap/benchmark.inl\"",
+      "/ID:\\myimgui\\include",
+      "/ID:\\myimgui\\vendored\\stb",
+      "/ID:\\myimgui\\vendored\\SDL\\include",
+      "/ID:\\myimgui\\out\\build\\x64-release\\vendored\\SDL\\include-revision",
+      "/ID:\\myimgui\\build-vulkan-compute\\harfbuzz-src\\src",
+      "/IE:\\VulkanSDK\\1.4.335.0\\Include",
+      "/c",
+      "D:\\myimgui\\tools\\profile_vulkan_painter.cpp",
+      "/FoD:\\myimgui\\build-vulkan-program\\final-heap\\profile.obj",
+      "/DPUI_PROFILE_HEAP_ONLY"
+    ],
+    "linker": [
+      "link",
+      "/nologo",
+      "/LTCG",
+      "/DEBUG:FULL",
+      "/INCREMENTAL:NO",
+      "/SUBSYSTEM:CONSOLE",
+      "/OUT:D:\\myimgui\\build-vulkan-program\\final-heap\\profile.exe",
+      "/PDB:D:\\myimgui\\build-vulkan-program\\final-heap\\profile.pdb",
+      "D:\\myimgui\\build-vulkan-program\\final-heap\\profile.obj",
+      "D:\\myimgui\\out\\build\\x64-release\\vendored\\SDL\\SDL3-static.lib",
+      "E:\\VulkanSDK\\1.4.335.0\\Lib\\vulkan-1.lib",
+      "D:\\myimgui\\out\\build\\x64-release\\_deps\\pufferui_harfbuzz-build\\harfbuzz-gpu.lib",
+      "D:\\myimgui\\out\\build\\x64-release\\_deps\\pufferui_harfbuzz-build\\harfbuzz.lib",
+      "dbghelp.lib",
+      "kernel32.lib",
+      "user32.lib",
+      "gdi32.lib",
+      "winmm.lib",
+      "imm32.lib",
+      "version.lib",
+      "uuid.lib",
+      "advapi32.lib",
+      "setupapi.lib",
+      "shell32.lib",
+      "hid.lib",
+      "dinput8.lib",
+      "uiautomationcore.lib",
+      "comctl32.lib",
+      "ole32.lib",
+      "oleaut32.lib",
+      "winspool.lib",
+      "comdlg32.lib"
+    ],
+    "binary_sha256": "433ff40071314e53b733acf9b9f000f9c93e2ed89eeeb999b013fd2d0584c446",
+    "source_sha256": "6cabef3a6d6d1d3e6d8212dec6925d19b8aec7a057c05700a039e5629426582b",
+    "fixture_sha256": "f54faebe1902f424d21481d001ef5431d8c525048673291cf5db8b4fbf8fc154",
+    "runs": [
+      {
+        "mode": "sdf",
+        "arguments": [
+          "--sdf",
+          "--vector-text"
+        ],
+        "exit_code": 0
+      },
+      {
+        "mode": "compute",
+        "arguments": [
+          "--compute",
+          "--vector-text"
+        ],
+        "exit_code": 0
+      },
+      {
+        "mode": "cache",
+        "arguments": [
+          "--compute",
+          "--vector-text",
+          "--cache"
+        ],
+        "exit_code": 0
+      },
+      {
+        "mode": "idle",
+        "arguments": [
+          "--idle",
+          "--compute",
+          "--vector-text",
+          "--cache"
+        ],
+        "exit_code": 0
+      },
+      {
+        "mode": "local",
+        "arguments": [
+          "--local-change",
+          "--compute",
+          "--vector-text",
+          "--cache"
+        ],
+        "exit_code": 0
+      },
+      {
+        "mode": "staged",
+        "arguments": [
+          "--compute",
+          "--vector-text",
+          "--cache",
+          "--staged"
+        ],
+        "exit_code": 0
+      }
+    ]
+  }
+}

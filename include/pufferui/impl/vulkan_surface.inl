@@ -170,13 +170,28 @@ void surface::make_current(render_device &)
         dirty = true;
     if (dirty)
     {
-        if (!rebuild() || !dev->prepare_sdf_surface(*this)) return;
+        if (!rebuild()) return;
+        if (program_cache && scene &&
+            (program_cache->width != static_cast<u32>(scene->width) ||
+             program_cache->height != static_cast<u32>(scene->height)))
+            dev->release_program_cache(*this);
+        if (!dev->prepare_sdf_surface(*this) || !dev->prepare_program_cache(*this)) return;
     }
     if (!extent.width || !extent.height || !scene) return;
+    if (program_compute_preparation_pending)
+    {
+        // The completed GPU certificate requested fine-grained reuse. Prepare
+        // its arenas/history once at the frame boundary, preserving the native
+        // program's identity and certificate state. Never allocate in paint.
+        program_compute_preparation_pending = false;
+        if (!dev->wait(dev->next_serial - 1) || !dev->prepare_sdf_surface(*this)) return;
+    }
     if (sdf_preparation_pending)
     {
         sdf_preparation_pending = false;
-        if (!dev->wait(dev->next_serial - 1) || !dev->prepare_sdf_surface(*this)) return;
+        if (!dev->wait(dev->next_serial - 1)) return;
+        dev->release_program_cache(*this);
+        if (!dev->prepare_sdf_surface(*this) || !dev->prepare_program_cache(*this)) return;
     }
     if (dev->frame && dev->frame->recording) dev->submit();
     slot = (slot + 1) % static_cast<u32>(slots.size());
@@ -201,10 +216,12 @@ void surface::make_current(render_device &)
     }
     suspended = false;
     dev->target = scene;
+    dev->command_clip_valid = false;
     dev->has_clip = scene->clipped;
     dev->clip = scene->clip;
     presented = false;
     dev->cache_begin(this);
+    dev->retained_begin(*this);
     if (dev->options.painter != vulkan_painter_mode::REFERENCE)
     {
         dev->primitive_commands.owner = dev;
@@ -213,8 +230,10 @@ void surface::make_current(render_device &)
 }
 void surface::present()
 {
+    if (!dev->flush_program()) return;
     if (presented || !scene || dev->result != VK_SUCCESS) return;
     if (dev->cache_active) dev->cache_flush(true);
+    if (!dev->retained_finish(*this)) return;
     presented = true;
     if (!native)
     {
@@ -225,8 +244,8 @@ void surface::present()
     dev->end_rendering();
     dev->transition(scene, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
     VkImageMemoryBarrier2 barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2};
-    barrier.srcStageMask = VK_PIPELINE_STAGE_2_NONE;
-    barrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+    barrier.srcStageMask = PRESENT_BLIT_STAGE;
+    barrier.dstStageMask = PRESENT_BLIT_STAGE;
     barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
     barrier.oldLayout =
         initialized[image_index] ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : VK_IMAGE_LAYOUT_UNDEFINED;
@@ -318,8 +337,9 @@ render_surface *device::make_surface(void *window, i32 width, i32 height)
                 return nullptr;
             }
     }
-    if (!s->rebuild() || !prepare_sdf_surface(*s))
+    if (!s->rebuild() || !prepare_sdf_surface(*s) || !prepare_program_cache(*s))
     {
+        release_program_cache(*s);
         s->release_swapchain();
         for (auto &f : s->slots) destroy_slot(f);
         if (s->native) vkDestroySurfaceKHR(native.instance, s->native, nullptr);
@@ -333,6 +353,8 @@ void device::destroy_surface(render_surface *base)
 {
     auto *s = dynamic_cast<surface *>(base);
     if (!s || s->dev != this) return;
+    retained_abort();
+    retaining = retained_previous = nullptr;
     bool was_pacer = false;
     for (const surface *candidate : surfaces)
         if (candidate->native)
@@ -341,12 +363,14 @@ void device::destroy_surface(render_surface *base)
             break;
         }
     if (cache_active) cache_flush(false);
+    flush_program();
     if (frame && frame->recording) submit();
     wait(next_serial - 1);
     end_rendering();
     s->release_swapchain();
     if (target == s->scene) target = nullptr;
     if (s->scene) destroy_texture(s->scene);
+    if (s->alpha_scratch) destroy_texture(s->alpha_scratch);
     for (auto *image : s->kawase)
         if (image) destroy_texture(image);
     for (auto &slot : s->slots)
@@ -369,6 +393,7 @@ void device::destroy_surface(render_surface *base)
                 candidate->dirty = true;
                 break;
             }
+    release_program_cache(*s);
     delete s;
     collect();
 }

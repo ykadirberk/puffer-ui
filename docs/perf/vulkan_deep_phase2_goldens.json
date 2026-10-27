@@ -1,0 +1,112 @@
+{
+  "binary_sha256": "aa307bb4c0a22d9cb6e3c804d402d2ccf19804ff25a36f7b0c341fdc225b77b1",
+  "cases": [
+    {
+      "case": "reference",
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_compute_spiral_tests.exe",
+        "--golden",
+        "--reference",
+        "build-vulkan-compute/r0/pixels-5000"
+      ],
+      "exit": 0,
+      "frames": 180
+    },
+    {
+      "case": "sdf",
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_compute_spiral_tests.exe",
+        "--sdf",
+        "--vector-text",
+        "--golden",
+        "--reference",
+        "build-vulkan-compute/r1/pixels-5000"
+      ],
+      "exit": 0,
+      "frames": 180
+    },
+    {
+      "case": "compute",
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_compute_spiral_tests.exe",
+        "--compute",
+        "--vector-text",
+        "--golden",
+        "--reference",
+        "build-vulkan-compute/r1/pixels-5000"
+      ],
+      "exit": 0,
+      "frames": 180
+    },
+    {
+      "case": "cache",
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_compute_spiral_tests.exe",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--golden",
+        "--reference",
+        "build-vulkan-compute/r1/pixels-5000"
+      ],
+      "exit": 0,
+      "frames": 180
+    },
+    {
+      "case": "adaptive",
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_compute_spiral_tests.exe",
+        "--adaptive",
+        "--vector-text",
+        "--golden",
+        "--reference",
+        "build-vulkan-compute/r1/pixels-5000"
+      ],
+      "exit": 0,
+      "frames": 180
+    },
+    {
+      "case": "staged-cache",
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_compute_spiral_tests.exe",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--staged",
+        "--golden",
+        "--reference",
+        "build-vulkan-compute/r1/pixels-5000"
+      ],
+      "exit": 0,
+      "frames": 180
+    },
+    {
+      "case": "staged-reference",
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_compute_spiral_tests.exe",
+        "--staged",
+        "--golden",
+        "--reference",
+        "build-vulkan-compute/r0/pixels-5000"
+      ],
+      "exit": 0,
+      "frames": 180
+    },
+    {
+      "case": "1150-cache",
+      "command": [
+        "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_vulkan_compute_spiral_tests.exe",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--tiles",
+        "1150",
+        "--golden",
+        "--reference",
+        "build-vulkan-compute/r1/pixels-1150"
+      ],
+      "exit": 0,
+      "frames": 180
+    }
+  ]
+}

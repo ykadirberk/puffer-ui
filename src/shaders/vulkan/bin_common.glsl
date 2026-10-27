@@ -6,7 +6,22 @@ struct PaintCommand {
     uvec4 identity;
 };
 vec4 rect_geometry(PaintCommand c) { return uintBitsToFloat(uvec4(c.payload.zw,c.identity.zw)); }
+#ifdef PUI_NATIVE_PAYLOAD
+layout(std430, set=0, binding=0) readonly buffer Commands { uint words[]; } program_tape;
+uvec4 program_words(uint at) {
+    return uvec4(program_tape.words[at],program_tape.words[at+1u],
+        program_tape.words[at+2u],program_tape.words[at+3u]);
+}
+PaintCommand program_command(uint index) {
+    uint at=index*16u;
+    return PaintCommand(program_words(at),uintBitsToFloat(program_words(at+4u)),
+        program_words(at+8u),program_words(at+12u));
+}
+#define PUI_COMMAND(index) program_command(index)
+#else
 layout(std430, set=0, binding=0) readonly buffer Commands { PaintCommand commands[]; } tape;
+#define PUI_COMMAND(index) tape.commands[index]
+#endif
 layout(std430, set=0, binding=1) buffer Coarse { uint words[]; } coarse_bits;
 layout(std430, set=0, binding=2) buffer Work { uint words[]; } work;
 layout(std430, set=0, binding=3) buffer Indices { uint values[]; } output_list;
@@ -21,7 +36,7 @@ layout(push_constant) uniform Parameters {
 #endif
 } p;
 bool intersects_tile(uint command_index, uint tile_index) {
-    vec4 b = tape.commands[command_index].bounds;
+    vec4 b = PUI_COMMAND(command_index).bounds;
     uvec2 tile = uvec2(tile_index % p.grid.x, tile_index / p.grid.x);
     uvec2 low = tile * p.extent.z;
     uvec2 high = min(low + uvec2(p.extent.z), p.extent.xy);

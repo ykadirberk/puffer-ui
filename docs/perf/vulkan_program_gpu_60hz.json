@@ -1,0 +1,3423 @@
+{
+  "protocol": "per-PID PDH; visible native WSI; VSync requested; harness cap 60 Hz; all raw counters and frames retained; adapters/engines separate",
+  "binaries": {
+    "before": {
+      "path": "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+      "sha256": "df68725fa459c7f4430d88ce42d05407cca4834110788ffd1f201c2ced2c94d3"
+    },
+    "after": {
+      "path": "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+      "sha256": "3474693fb01e9cf5b9a42d6ccdf2aae159939e1f169e3b3e47d1b9f93b3a9502"
+    }
+  },
+  "runs": [
+    {
+      "mode": "idle-sdf",
+      "side": "before",
+      "repeat": 0,
+      "pid": 42884,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--idle",
+        "--sdf",
+        "--vector-text",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 4.046921299999667,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 173074139.42857143,
+          "max": 191410176.0,
+          "samples": 7
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 2.8236083407103134,
+          "max": 3.2084629908777758,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.005218229760951198,
+          "max": 0.03130937856570719,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0013735684456805894,
+          "max": 0.008241410674083537,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 52895158.85714286,
+          "max": 61313024.0,
+          "samples": 7
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 7
+        }
+      },
+      "focused_frames": 7,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 3187.5,
+      "frame_window_cycles": 15332547740
+    },
+    {
+      "mode": "idle-sdf",
+      "side": "after",
+      "repeat": 0,
+      "pid": 41976,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--idle",
+        "--sdf",
+        "--vector-text",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 4.044473100000687,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 173074139.42857143,
+          "max": 191410176.0,
+          "samples": 7
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 2.6955129199094783,
+          "max": 2.8135990855249284,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.00434930684333219,
+          "max": 0.026095841059993144,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0010159449572974429,
+          "max": 0.006095669743784658,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 52895158.85714286,
+          "max": 61313024.0,
+          "samples": 7
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 7
+        }
+      },
+      "focused_frames": 180,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 3140.625,
+      "frame_window_cycles": 15044634670
+    },
+    {
+      "mode": "idle-cache",
+      "side": "before",
+      "repeat": 0,
+      "pid": 42176,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--idle",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 4.023120599998947,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 209137664.0,
+          "max": 233353216.0,
+          "samples": 7
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 9.352962805687314,
+          "max": 9.898857376155583,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.005097663596312334,
+          "max": 0.030585981577874004,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0009431507891548553,
+          "max": 0.005658904734929132,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 94349604.57142857,
+          "max": 106823680.0,
+          "samples": 7
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 7
+        }
+      },
+      "focused_frames": 180,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 2968.75,
+      "frame_window_cycles": 14259048470
+    },
+    {
+      "mode": "idle-cache",
+      "side": "after",
+      "repeat": 0,
+      "pid": 35092,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--idle",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 4.021660399999746,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 237523529.14285713,
+          "max": 270839808.0,
+          "samples": 7
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 0.46896700686233206,
+          "max": 1.2971534925418609,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.008108912532350906,
+          "max": 0.048653475194105435,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0009537942199937336,
+          "max": 0.0057227653199624015,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 62236379.428571425,
+          "max": 72220672.0,
+          "samples": 7
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 7
+        }
+      },
+      "focused_frames": 180,
+      "visible_frames": 180,
+      "program_hits": 175,
+      "frame_window_cpu_ms": 3281.25,
+      "frame_window_cycles": 15349206420
+    },
+    {
+      "mode": "animated-sdf",
+      "side": "before",
+      "repeat": 0,
+      "pid": 11196,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--sdf",
+        "--vector-text",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 3.5221904999998515,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 191410176.0,
+          "max": 191410176.0,
+          "samples": 6
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 2.9800887653624253,
+          "max": 3.3062604309284156,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 61313024.0,
+          "max": 61313024.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 6
+        }
+      },
+      "focused_frames": 180,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 3296.875,
+      "frame_window_cycles": 15276232340
+    },
+    {
+      "mode": "animated-sdf",
+      "side": "after",
+      "repeat": 0,
+      "pid": 27144,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--sdf",
+        "--vector-text",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 3.5217910000010306,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 191410176.0,
+          "max": 191410176.0,
+          "samples": 6
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 2.9706915901370974,
+          "max": 3.2210986284831247,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 61313024.0,
+          "max": 61313024.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 6
+        }
+      },
+      "focused_frames": 61,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 3250.0,
+      "frame_window_cycles": 15335262930
+    },
+    {
+      "mode": "animated-cache",
+      "side": "before",
+      "repeat": 0,
+      "pid": 39504,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 4.022377299999789,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 209004836.57142857,
+          "max": 233353216.0,
+          "samples": 7
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 101814.85714285714,
+          "max": 118784.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 11.051721140437204,
+          "max": 13.759093790352853,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 91563154.28571428,
+          "max": 106823680.0,
+          "samples": 7
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 681106.2857142857,
+          "max": 794624.0,
+          "samples": 7
+        }
+      },
+      "focused_frames": 109,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 2875.0,
+      "frame_window_cycles": 14159094040
+    },
+    {
+      "mode": "animated-cache",
+      "side": "after",
+      "repeat": 0,
+      "pid": 32788,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 4.020987399999285,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 240062464.0,
+          "max": 260354048.0,
+          "samples": 7
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 117613.71428571429,
+          "max": 118784.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 7.910119462045779,
+          "max": 9.83812835801644,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 65994166.85714286,
+          "max": 72220672.0,
+          "samples": 7
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 7
+        }
+      },
+      "focused_frames": 89,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 3171.875,
+      "frame_window_cycles": 14681121630
+    },
+    {
+      "mode": "idle-sdf",
+      "side": "after",
+      "repeat": 1,
+      "pid": 33464,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--idle",
+        "--sdf",
+        "--vector-text",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 4.019012600001588,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 173053659.42857143,
+          "max": 191410176.0,
+          "samples": 7
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 101814.85714285714,
+          "max": 118784.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 2.7454341066130254,
+          "max": 2.8721479054558308,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 52554020.571428575,
+          "max": 61313024.0,
+          "samples": 7
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 681106.2857142857,
+          "max": 794624.0,
+          "samples": 7
+        }
+      },
+      "focused_frames": 180,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 3218.75,
+      "frame_window_cycles": 15272113260
+    },
+    {
+      "mode": "idle-sdf",
+      "side": "before",
+      "repeat": 1,
+      "pid": 32668,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--idle",
+        "--sdf",
+        "--vector-text",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 3.518417100000079,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 191410176.0,
+          "max": 191410176.0,
+          "samples": 6
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 2.7978012366263583,
+          "max": 2.8472405868200013,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 61313024.0,
+          "max": 61313024.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 6
+        }
+      },
+      "focused_frames": 180,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 3250.0,
+      "frame_window_cycles": 15169544690
+    },
+    {
+      "mode": "idle-cache",
+      "side": "after",
+      "repeat": 1,
+      "pid": 18908,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--idle",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 4.020142699999269,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 265596928.0,
+          "max": 270839808.0,
+          "samples": 6
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 0.3009962489107644,
+          "max": 0.3051800715839238,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 72220672.0,
+          "max": 72220672.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 6
+        }
+      },
+      "focused_frames": 180,
+      "visible_frames": 180,
+      "program_hits": 175,
+      "frame_window_cpu_ms": 3265.625,
+      "frame_window_cycles": 15315600480
+    },
+    {
+      "mode": "idle-cache",
+      "side": "before",
+      "repeat": 1,
+      "pid": 42056,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--idle",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 4.020747799999299,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 233353216.0,
+          "max": 233353216.0,
+          "samples": 6
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 9.703362828742083,
+          "max": 9.861450010032339,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 106823680.0,
+          "max": 106823680.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 6
+        }
+      },
+      "focused_frames": 63,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 3062.5,
+      "frame_window_cycles": 14386238460
+    },
+    {
+      "mode": "animated-sdf",
+      "side": "after",
+      "repeat": 1,
+      "pid": 13372,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--sdf",
+        "--vector-text",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 3.518778300000122,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 191410176.0,
+          "max": 191410176.0,
+          "samples": 6
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 2.9806530046699184,
+          "max": 3.355169079928567,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 61313024.0,
+          "max": 61313024.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 6
+        }
+      },
+      "focused_frames": 180,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 3312.5,
+      "frame_window_cycles": 15292741560
+    },
+    {
+      "mode": "animated-sdf",
+      "side": "before",
+      "repeat": 1,
+      "pid": 11884,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--sdf",
+        "--vector-text",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 3.5186723999995593,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 191410176.0,
+          "max": 191410176.0,
+          "samples": 6
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 2.9341581441018705,
+          "max": 3.152407042321301,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 61313024.0,
+          "max": 61313024.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 6
+        }
+      },
+      "focused_frames": 180,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 3203.125,
+      "frame_window_cycles": 15218054330
+    },
+    {
+      "mode": "animated-cache",
+      "side": "after",
+      "repeat": 1,
+      "pid": 34636,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 4.021886099999392,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 260354048.0,
+          "max": 260354048.0,
+          "samples": 6
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 101814.85714285714,
+          "max": 118784.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 8.103312755840337,
+          "max": 10.695033123746102,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 5
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 72220672.0,
+          "max": 72220672.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 681106.2857142857,
+          "max": 794624.0,
+          "samples": 7
+        }
+      },
+      "focused_frames": 162,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 3140.625,
+      "frame_window_cycles": 14536355520
+    },
+    {
+      "mode": "animated-cache",
+      "side": "before",
+      "repeat": 1,
+      "pid": 42144,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 4.062500500000169,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 233353216.0,
+          "max": 233353216.0,
+          "samples": 7
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 9.487254008836837,
+          "max": 12.104629716090795,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 106823680.0,
+          "max": 106823680.0,
+          "samples": 7
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 7
+        }
+      },
+      "focused_frames": 0,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 2734.375,
+      "frame_window_cycles": 12969412180
+    },
+    {
+      "mode": "idle-sdf",
+      "side": "before",
+      "repeat": 2,
+      "pid": 19892,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--idle",
+        "--sdf",
+        "--vector-text",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 5.641186499999094,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 165725388.8,
+          "max": 191410176.0,
+          "samples": 10
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 106905.6,
+          "max": 118784.0,
+          "samples": 10
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 2.098919892703037,
+          "max": 2.72754597251472,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.004019291010942384,
+          "max": 0.03215432808753907,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0008970304229106922,
+          "max": 0.0071762433832855375,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 49289216.0,
+          "max": 61313024.0,
+          "samples": 10
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 715161.6,
+          "max": 794624.0,
+          "samples": 10
+        }
+      },
+      "focused_frames": 0,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 2578.125,
+      "frame_window_cycles": 12784154630
+    },
+    {
+      "mode": "idle-sdf",
+      "side": "after",
+      "repeat": 2,
+      "pid": 16116,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--idle",
+        "--sdf",
+        "--vector-text",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 6.885097500000484,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 170018133.33333334,
+          "max": 191410176.0,
+          "samples": 12
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 12
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 1.3505807716974456,
+          "max": 2.734613040828763,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.002675582859230081,
+          "max": 0.02943141145153089,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0008592318938177902,
+          "max": 0.009451550831995692,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 11
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 11
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 51492181.333333336,
+          "max": 61313024.0,
+          "samples": 12
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 12
+        }
+      },
+      "focused_frames": 0,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 3125.0,
+      "frame_window_cycles": 15381017430
+    },
+    {
+      "mode": "idle-cache",
+      "side": "before",
+      "repeat": 2,
+      "pid": 42632,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--idle",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 5.066672400000243,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 195684579.55555555,
+          "max": 233353216.0,
+          "samples": 9
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 9
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 7.171654463486362,
+          "max": 9.43755862962199,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.004455556866860386,
+          "max": 0.03564445493488309,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.000954406196872219,
+          "max": 0.007635249574977752,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 8
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 87419562.66666667,
+          "max": 106823680.0,
+          "samples": 9
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 9
+        }
+      },
+      "focused_frames": 0,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 2968.75,
+      "frame_window_cycles": 13434641680
+    },
+    {
+      "mode": "idle-cache",
+      "side": "after",
+      "repeat": 2,
+      "pid": 38208,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--idle",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 4.555798100000175,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 218171904.0,
+          "max": 270839808.0,
+          "samples": 8
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 8
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 0.4289102229812647,
+          "max": 1.3915132818177773,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.00440431871842518,
+          "max": 0.030830231028976262,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0014097210009584127,
+          "max": 0.009868047006708888,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 7
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 54835200.0,
+          "max": 72220672.0,
+          "samples": 8
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 8
+        }
+      },
+      "focused_frames": 0,
+      "visible_frames": 180,
+      "program_hits": 175,
+      "frame_window_cpu_ms": 3218.75,
+      "frame_window_cycles": 15145311020
+    },
+    {
+      "mode": "animated-sdf",
+      "side": "before",
+      "repeat": 2,
+      "pid": 22060,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--sdf",
+        "--vector-text",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 4.02654739999889,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 184180736.0,
+          "max": 191410176.0,
+          "samples": 7
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 2.9541619476634686,
+          "max": 3.390709871845788,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0028496864149270963,
+          "max": 0.017098118489562577,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 60263277.71428572,
+          "max": 61313024.0,
+          "samples": 7
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 7
+        }
+      },
+      "focused_frames": 0,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 3421.875,
+      "frame_window_cycles": 15444342410
+    },
+    {
+      "mode": "animated-sdf",
+      "side": "after",
+      "repeat": 2,
+      "pid": 38020,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--sdf",
+        "--vector-text",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 4.023623399998542,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 186279643.42857143,
+          "max": 191410176.0,
+          "samples": 7
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 2.9410092514581967,
+          "max": 3.385484214079322,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0028383236920169236,
+          "max": 0.017029942152101542,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 57195373.71428572,
+          "max": 61313024.0,
+          "samples": 7
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 7
+        }
+      },
+      "focused_frames": 0,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 3218.75,
+      "frame_window_cycles": 15506704360
+    },
+    {
+      "mode": "animated-cache",
+      "side": "before",
+      "repeat": 2,
+      "pid": 35188,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\baseline-program-bench-v5\\bench.exe",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 4.024150700000973,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 226273572.57142857,
+          "max": 233353216.0,
+          "samples": 7
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 11.123741597544083,
+          "max": 14.031181156074322,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0026886523317960487,
+          "max": 0.016131913990776292,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 105923730.28571428,
+          "max": 106823680.0,
+          "samples": 7
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 7
+        }
+      },
+      "focused_frames": 0,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 2984.375,
+      "frame_window_cycles": 14535157490
+    },
+    {
+      "mode": "animated-cache",
+      "side": "after",
+      "repeat": 2,
+      "pid": 21976,
+      "command": [
+        "D:\\myimgui\\build-vulkan-program\\deferred-prefix\\pui_vulkan_program_bench.exe",
+        "--compute",
+        "--vector-text",
+        "--cache",
+        "--visible",
+        "--vsync",
+        "--hz",
+        "60",
+        "--frames",
+        "180"
+      ],
+      "elapsed": 4.0233130999986315,
+      "frames": 180,
+      "summary": {
+        "dedicated/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 260354048.0,
+          "max": 260354048.0,
+          "samples": 7
+        },
+        "dedicated/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 118784.0,
+          "max": 118784.0,
+          "samples": 7
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_0_engtype_3D": {
+          "mean": 7.975107403695098,
+          "max": 10.238906010690338,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_3_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_6_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x0001681A_phys_0_eng_7_engtype_Video Codec Engine": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_0_engtype_3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_10_engtype_Video Codec 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_1_engtype_Copy": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_2_engtype_Compute 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_3_engtype_Compute 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_4_engtype_Timer 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_5_engtype_Security 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_6_engtype_High Priority Compute": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_7_engtype_High Priority 3D": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_8_engtype_Video JPEG 0": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "engine/luid_0x00000000_0x000189C0_phys_0_eng_9_engtype_Video Decode 1": {
+          "mean": 0.0,
+          "max": 0.0,
+          "samples": 6
+        },
+        "shared/luid_0x00000000_0x0001681A_phys_0": {
+          "mean": 72220672.0,
+          "max": 72220672.0,
+          "samples": 7
+        },
+        "shared/luid_0x00000000_0x000189C0_phys_0": {
+          "mean": 794624.0,
+          "max": 794624.0,
+          "samples": 7
+        }
+      },
+      "focused_frames": 0,
+      "visible_frames": 180,
+      "program_hits": 0,
+      "frame_window_cpu_ms": 3187.5,
+      "frame_window_cycles": 14753378020
+    }
+  ]
+}

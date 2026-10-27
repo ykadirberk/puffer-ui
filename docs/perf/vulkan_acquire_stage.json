@@ -1,0 +1,3281 @@
+{
+  "protocol": "Same harness object and same dependency libraries; only semaphore wait and matching first swapchain barrier stages differ. All frames, no readback, no overlapping builds/tests. Live-clock animation is a matching configuration diagnostic, not an exact user-input replay. SDL focus/visibility counts retained. GPU timestamp spans may include acquisition waits after changing their submission stage.",
+  "binaries": {
+    "before": {
+      "path": "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+      "sha256": "079d16a4bd613f4930b312c4f9090f28e0f73fef558ce2da4611937886b2dcf6"
+    },
+    "after": {
+      "path": "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+      "sha256": "7b0f7e13492c519edab658539febc44572220df882949c540f1c0b8e3f98fca8"
+    }
+  },
+  "runs": [
+    {
+      "name": "masonry-live-before-0",
+      "side": "before",
+      "scenario": "masonry-live",
+      "repeat": 0,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--sdf",
+        "--vector-text",
+        "--no-add",
+        "--tiles",
+        "512",
+        "--lab-mode",
+        "2",
+        "--lab-size",
+        "64",
+        "--lab-gap",
+        "0",
+        "--lab-selected",
+        "34",
+        "--compact-hud",
+        "--live-clock",
+        "--visible",
+        "--frames",
+        "12000"
+      ],
+      "frames": 12000,
+      "elapsed_ms": 11180.928000001586,
+      "process_kernel_ms": 2140.625,
+      "process_user_ms": 8625.0,
+      "process_cpu_ms": 10765.625,
+      "process_cycles": 50333681330,
+      "frame_window_cpu_ms": 10453.125,
+      "frame_window_cycles": 48778907700,
+      "frame_window_main_cpu_ms": 10359.375,
+      "frame_window_main_cycles": 48235787920,
+      "metrics": {
+        "total_ms": {
+          "mean": 0.8696071583333334,
+          "median": 0.7499,
+          "max": 27.6828
+        },
+        "begin_ms": {
+          "mean": 0.07773840833333333,
+          "median": 0.0573,
+          "max": 16.4067
+        },
+        "build_ms": {
+          "mean": 0.447457825,
+          "median": 0.4326,
+          "max": 4.9266
+        },
+        "end_ms": {
+          "mean": 0.344410925,
+          "median": 0.2278,
+          "max": 6.3495
+        },
+        "present_ms": {
+          "mean": 0.30790280833333333,
+          "median": 0.1931,
+          "max": 6.2792
+        },
+        "slot_wait_ms": {
+          "mean": 0.024877883333333333,
+          "median": 0.012,
+          "max": 1.7045
+        }
+      },
+      "completed_gpu_ms": 6673.54832,
+      "gpu_samples": 12000.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 12000.0,
+      "peaks": [
+        0,
+        70,
+        108,
+        96,
+        170,
+        120,
+        83,
+        57,
+        133,
+        145
+      ]
+    },
+    {
+      "name": "masonry-live-after-0",
+      "side": "after",
+      "scenario": "masonry-live",
+      "repeat": 0,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--sdf",
+        "--vector-text",
+        "--no-add",
+        "--tiles",
+        "512",
+        "--lab-mode",
+        "2",
+        "--lab-size",
+        "64",
+        "--lab-gap",
+        "0",
+        "--lab-selected",
+        "34",
+        "--compact-hud",
+        "--live-clock",
+        "--visible",
+        "--frames",
+        "12000"
+      ],
+      "frames": 12000,
+      "elapsed_ms": 11121.75269999716,
+      "process_kernel_ms": 2406.25,
+      "process_user_ms": 8187.5,
+      "process_cpu_ms": 10593.75,
+      "process_cycles": 49885977660,
+      "frame_window_cpu_ms": 10437.5,
+      "frame_window_cycles": 48977471890,
+      "frame_window_main_cpu_ms": 10328.125,
+      "frame_window_main_cycles": 48450695420,
+      "metrics": {
+        "total_ms": {
+          "mean": 0.8776052583333334,
+          "median": 0.755,
+          "max": 29.3448
+        },
+        "begin_ms": {
+          "mean": 0.07958413333333333,
+          "median": 0.0588,
+          "max": 17.5389
+        },
+        "build_ms": {
+          "mean": 0.44704345,
+          "median": 0.4321,
+          "max": 5.1375
+        },
+        "end_ms": {
+          "mean": 0.350977675,
+          "median": 0.2279,
+          "max": 6.6684
+        },
+        "present_ms": {
+          "mean": 0.3139499333333333,
+          "median": 0.1918,
+          "max": 6.5971
+        },
+        "slot_wait_ms": {
+          "mean": 0.02516905,
+          "median": 0.0107,
+          "max": 1.8778
+        }
+      },
+      "completed_gpu_ms": 6745.92784,
+      "gpu_samples": 12000.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 12000.0,
+      "peaks": [
+        0,
+        99,
+        180,
+        88,
+        110,
+        65,
+        1014,
+        192,
+        76,
+        145
+      ]
+    },
+    {
+      "name": "tour-live-before-0",
+      "side": "before",
+      "scenario": "tour-live",
+      "repeat": 0,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--sdf",
+        "--vector-text",
+        "--no-add",
+        "--tiles",
+        "512",
+        "--lab-mode",
+        "2",
+        "--lab-size",
+        "64",
+        "--lab-gap",
+        "0",
+        "--lab-selected",
+        "34",
+        "--compact-hud",
+        "--live-clock",
+        "--visible",
+        "--frames",
+        "12000",
+        "--mouse-tour",
+        "--scroll-tour"
+      ],
+      "frames": 12000,
+      "elapsed_ms": 11098.365199999535,
+      "process_kernel_ms": 2578.125,
+      "process_user_ms": 8062.5,
+      "process_cpu_ms": 10640.625,
+      "process_cycles": 49734297380,
+      "frame_window_cpu_ms": 10468.75,
+      "frame_window_cycles": 48835705320,
+      "frame_window_main_cpu_ms": 10328.125,
+      "frame_window_main_cycles": 48213295130,
+      "metrics": {
+        "total_ms": {
+          "mean": 0.8756195916666667,
+          "median": 0.7339,
+          "max": 27.4131
+        },
+        "begin_ms": {
+          "mean": 0.09530985,
+          "median": 0.0723,
+          "max": 16.1442
+        },
+        "build_ms": {
+          "mean": 0.25930331666666667,
+          "median": 0.2525,
+          "max": 4.8767
+        },
+        "end_ms": {
+          "mean": 0.521006425,
+          "median": 0.4068,
+          "max": 6.3922
+        },
+        "present_ms": {
+          "mean": 0.4920336416666667,
+          "median": 0.38465,
+          "max": 6.3171
+        },
+        "slot_wait_ms": {
+          "mean": 0.036095175,
+          "median": 0.022449999999999998,
+          "max": 2.7122
+        }
+      },
+      "completed_gpu_ms": 6886.69412,
+      "gpu_samples": 12000.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 12000.0,
+      "peaks": [
+        0,
+        9,
+        20,
+        32,
+        229,
+        45,
+        69,
+        118,
+        105,
+        217
+      ]
+    },
+    {
+      "name": "tour-live-after-0",
+      "side": "after",
+      "scenario": "tour-live",
+      "repeat": 0,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--sdf",
+        "--vector-text",
+        "--no-add",
+        "--tiles",
+        "512",
+        "--lab-mode",
+        "2",
+        "--lab-size",
+        "64",
+        "--lab-gap",
+        "0",
+        "--lab-selected",
+        "34",
+        "--compact-hud",
+        "--live-clock",
+        "--visible",
+        "--frames",
+        "12000",
+        "--mouse-tour",
+        "--scroll-tour"
+      ],
+      "frames": 12000,
+      "elapsed_ms": 10925.908700002765,
+      "process_kernel_ms": 1984.375,
+      "process_user_ms": 8484.375,
+      "process_cpu_ms": 10468.75,
+      "process_cycles": 48865155990,
+      "frame_window_cpu_ms": 10265.625,
+      "frame_window_cycles": 47936828440,
+      "frame_window_main_cpu_ms": 10203.125,
+      "frame_window_main_cycles": 47367255650,
+      "metrics": {
+        "total_ms": {
+          "mean": 0.8602677083333333,
+          "median": 0.727,
+          "max": 29.427
+        },
+        "begin_ms": {
+          "mean": 0.09191101666666666,
+          "median": 0.0705,
+          "max": 17.2607
+        },
+        "build_ms": {
+          "mean": 0.2579728,
+          "median": 0.2517,
+          "max": 5.4371
+        },
+        "end_ms": {
+          "mean": 0.5103838916666666,
+          "median": 0.4013,
+          "max": 6.7292
+        },
+        "present_ms": {
+          "mean": 0.48141358333333334,
+          "median": 0.3792,
+          "max": 6.5114
+        },
+        "slot_wait_ms": {
+          "mean": 0.03549783333333333,
+          "median": 0.0231,
+          "max": 2.9114
+        }
+      },
+      "completed_gpu_ms": 6775.2616,
+      "gpu_samples": 12000.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 12000.0,
+      "peaks": [
+        0,
+        3,
+        59,
+        81,
+        228,
+        70,
+        120,
+        242,
+        304,
+        369
+      ]
+    },
+    {
+      "name": "spiral-sdf-before-0",
+      "side": "before",
+      "scenario": "spiral-sdf",
+      "repeat": 0,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--sdf",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 723.6985999988974,
+      "process_kernel_ms": 343.75,
+      "process_user_ms": 531.25,
+      "process_cpu_ms": 875.0,
+      "process_cycles": 3742363720,
+      "frame_window_cpu_ms": 625.0,
+      "frame_window_cycles": 2738294730,
+      "frame_window_main_cpu_ms": 390.625,
+      "frame_window_main_cycles": 1726982570,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.1914688888888887,
+          "median": 1.8223500000000001,
+          "max": 34.516
+        },
+        "begin_ms": {
+          "mean": 0.16083444444444445,
+          "median": 0.04055,
+          "max": 20.0768
+        },
+        "build_ms": {
+          "mean": 1.711738888888889,
+          "median": 1.5608,
+          "max": 7.6974
+        },
+        "end_ms": {
+          "mean": 0.31889555555555554,
+          "median": 0.18195,
+          "max": 6.7418
+        },
+        "present_ms": {
+          "mean": 0.2622833333333333,
+          "median": 0.1324,
+          "max": 6.6674
+        },
+        "slot_wait_ms": {
+          "mean": 0.009465555555555555,
+          "median": 0.0045,
+          "max": 0.1477
+        }
+      },
+      "completed_gpu_ms": 94.55244,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        127,
+        128,
+        126,
+        130,
+        129,
+        17,
+        1,
+        49,
+        125
+      ]
+    },
+    {
+      "name": "spiral-sdf-after-0",
+      "side": "after",
+      "scenario": "spiral-sdf",
+      "repeat": 0,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--sdf",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 708.2534000001033,
+      "process_kernel_ms": 296.875,
+      "process_user_ms": 531.25,
+      "process_cpu_ms": 828.125,
+      "process_cycles": 3736602930,
+      "frame_window_cpu_ms": 546.875,
+      "frame_window_cycles": 2721421730,
+      "frame_window_main_cpu_ms": 359.375,
+      "frame_window_main_cycles": 1723772940,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.1552005555555556,
+          "median": 1.8230499999999998,
+          "max": 30.0259
+        },
+        "begin_ms": {
+          "mean": 0.14103333333333332,
+          "median": 0.040499999999999994,
+          "max": 16.1758
+        },
+        "build_ms": {
+          "mean": 1.7114833333333332,
+          "median": 1.57185,
+          "max": 7.4245
+        },
+        "end_ms": {
+          "mean": 0.30268388888888886,
+          "median": 0.18985,
+          "max": 6.4256
+        },
+        "present_ms": {
+          "mean": 0.24688555555555555,
+          "median": 0.13405,
+          "max": 6.3501
+        },
+        "slot_wait_ms": {
+          "mean": 0.00934111111111111,
+          "median": 0.0045,
+          "max": 0.1297
+        }
+      },
+      "completed_gpu_ms": 86.2876,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        126,
+        128,
+        127,
+        129,
+        130,
+        125,
+        131,
+        171,
+        104
+      ]
+    },
+    {
+      "name": "spiral-compute-before-0",
+      "side": "before",
+      "scenario": "spiral-compute",
+      "repeat": 0,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--compute",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 1025.911199998518,
+      "process_kernel_ms": 265.625,
+      "process_user_ms": 765.625,
+      "process_cpu_ms": 1031.25,
+      "process_cycles": 4675636610,
+      "frame_window_cpu_ms": 531.25,
+      "frame_window_cycles": 2390179360,
+      "frame_window_main_cpu_ms": 421.875,
+      "frame_window_main_cycles": 1975316940,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.4096033333333335,
+          "median": 1.9273,
+          "max": 31.1575
+        },
+        "begin_ms": {
+          "mean": 0.13162444444444443,
+          "median": 0.0295,
+          "max": 16.5
+        },
+        "build_ms": {
+          "mean": 1.8616272222222223,
+          "median": 1.6982,
+          "max": 7.9022
+        },
+        "end_ms": {
+          "mean": 0.4163516666666667,
+          "median": 0.18255,
+          "max": 6.7553
+        },
+        "present_ms": {
+          "mean": 0.3689661111111111,
+          "median": 0.13715,
+          "max": 6.6786
+        },
+        "slot_wait_ms": {
+          "mean": 0.008102777777777778,
+          "median": 0.0043,
+          "max": 0.1394
+        }
+      },
+      "completed_gpu_ms": 244.61552,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        128,
+        100,
+        159,
+        131,
+        127,
+        126,
+        129,
+        125,
+        130
+      ]
+    },
+    {
+      "name": "spiral-compute-after-0",
+      "side": "after",
+      "scenario": "spiral-compute",
+      "repeat": 0,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--compute",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 762.3759999987669,
+      "process_kernel_ms": 296.875,
+      "process_user_ms": 390.625,
+      "process_cpu_ms": 687.5,
+      "process_cycles": 3442040300,
+      "frame_window_cpu_ms": 515.625,
+      "frame_window_cycles": 2401738070,
+      "frame_window_main_cpu_ms": 437.5,
+      "frame_window_main_cycles": 1983482250,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.4216155555555554,
+          "median": 1.96275,
+          "max": 29.7495
+        },
+        "begin_ms": {
+          "mean": 0.13483944444444446,
+          "median": 0.02975,
+          "max": 15.5332
+        },
+        "build_ms": {
+          "mean": 1.867755,
+          "median": 1.70525,
+          "max": 7.6377
+        },
+        "end_ms": {
+          "mean": 0.4190211111111111,
+          "median": 0.1839,
+          "max": 6.5786
+        },
+        "present_ms": {
+          "mean": 0.3664327777777778,
+          "median": 0.13815,
+          "max": 6.5066
+        },
+        "slot_wait_ms": {
+          "mean": 0.017483333333333333,
+          "median": 0.0043,
+          "max": 1.207
+        }
+      },
+      "completed_gpu_ms": 244.96588,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        129,
+        127,
+        128,
+        126,
+        97,
+        130,
+        89,
+        140,
+        134
+      ]
+    },
+    {
+      "name": "spiral-cache-before-0",
+      "side": "before",
+      "scenario": "spiral-cache",
+      "repeat": 0,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--compute",
+        "--cache",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 837.311099996441,
+      "process_kernel_ms": 296.875,
+      "process_user_ms": 515.625,
+      "process_cpu_ms": 812.5,
+      "process_cycles": 3701896250,
+      "frame_window_cpu_ms": 500.0,
+      "frame_window_cycles": 2332149870,
+      "frame_window_main_cpu_ms": 437.5,
+      "frame_window_main_cycles": 1995768990,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.4117566666666668,
+          "median": 1.9377,
+          "max": 29.6503
+        },
+        "begin_ms": {
+          "mean": 0.1263788888888889,
+          "median": 0.0295,
+          "max": 15.5736
+        },
+        "build_ms": {
+          "mean": 1.8506183333333333,
+          "median": 1.69015,
+          "max": 7.6851
+        },
+        "end_ms": {
+          "mean": 0.4347594444444444,
+          "median": 0.1827,
+          "max": 6.3916
+        },
+        "present_ms": {
+          "mean": 0.38281611111111113,
+          "median": 0.13119999999999998,
+          "max": 6.3169
+        },
+        "slot_wait_ms": {
+          "mean": 0.008887777777777777,
+          "median": 0.0044,
+          "max": 0.1173
+        }
+      },
+      "completed_gpu_ms": 262.01956,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        159,
+        100,
+        131,
+        126,
+        127,
+        128,
+        129,
+        130,
+        23
+      ]
+    },
+    {
+      "name": "spiral-cache-after-0",
+      "side": "after",
+      "scenario": "spiral-cache",
+      "repeat": 0,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--compute",
+        "--cache",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 778.6460999996052,
+      "process_kernel_ms": 265.625,
+      "process_user_ms": 546.875,
+      "process_cpu_ms": 812.5,
+      "process_cycles": 3425815430,
+      "frame_window_cpu_ms": 515.625,
+      "frame_window_cycles": 2366808140,
+      "frame_window_main_cpu_ms": 437.5,
+      "frame_window_main_cycles": 2023463270,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.451575,
+          "median": 1.9526,
+          "max": 30.3347
+        },
+        "begin_ms": {
+          "mean": 0.12552,
+          "median": 0.028749999999999998,
+          "max": 15.7954
+        },
+        "build_ms": {
+          "mean": 1.8739244444444445,
+          "median": 1.70115,
+          "max": 8.2983
+        },
+        "end_ms": {
+          "mean": 0.45213055555555554,
+          "median": 0.18785000000000002,
+          "max": 6.241
+        },
+        "present_ms": {
+          "mean": 0.39976055555555556,
+          "median": 0.138,
+          "max": 6.1687
+        },
+        "slot_wait_ms": {
+          "mean": 0.008246666666666666,
+          "median": 0.0043,
+          "max": 0.1126
+        }
+      },
+      "completed_gpu_ms": 261.63536,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        99,
+        130,
+        127,
+        126,
+        128,
+        134,
+        129,
+        162,
+        169
+      ]
+    },
+    {
+      "name": "masonry-live-after-1",
+      "side": "after",
+      "scenario": "masonry-live",
+      "repeat": 1,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--sdf",
+        "--vector-text",
+        "--no-add",
+        "--tiles",
+        "512",
+        "--lab-mode",
+        "2",
+        "--lab-size",
+        "64",
+        "--lab-gap",
+        "0",
+        "--lab-selected",
+        "34",
+        "--compact-hud",
+        "--live-clock",
+        "--visible",
+        "--frames",
+        "12000"
+      ],
+      "frames": 12000,
+      "elapsed_ms": 11259.476300001552,
+      "process_kernel_ms": 2656.25,
+      "process_user_ms": 8234.375,
+      "process_cpu_ms": 10890.625,
+      "process_cycles": 50809955830,
+      "frame_window_cpu_ms": 10671.875,
+      "frame_window_cycles": 49918085710,
+      "frame_window_main_cpu_ms": 10593.75,
+      "frame_window_main_cycles": 49381331140,
+      "metrics": {
+        "total_ms": {
+          "mean": 0.88987425,
+          "median": 0.7633,
+          "max": 29.2583
+        },
+        "begin_ms": {
+          "mean": 0.08191478333333334,
+          "median": 0.0619,
+          "max": 17.2876
+        },
+        "build_ms": {
+          "mean": 0.44665951666666664,
+          "median": 0.4325,
+          "max": 5.271
+        },
+        "end_ms": {
+          "mean": 0.36129995,
+          "median": 0.2397,
+          "max": 6.6997
+        },
+        "present_ms": {
+          "mean": 0.32604900833333333,
+          "median": 0.2054,
+          "max": 6.625
+        },
+        "slot_wait_ms": {
+          "mean": 0.026538075,
+          "median": 0.014,
+          "max": 1.8492
+        }
+      },
+      "completed_gpu_ms": 6962.72328,
+      "gpu_samples": 12000.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 12000.0,
+      "peaks": [
+        0,
+        108,
+        61,
+        85,
+        97,
+        35,
+        73,
+        120,
+        132,
+        156
+      ]
+    },
+    {
+      "name": "masonry-live-before-1",
+      "side": "before",
+      "scenario": "masonry-live",
+      "repeat": 1,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--sdf",
+        "--vector-text",
+        "--no-add",
+        "--tiles",
+        "512",
+        "--lab-mode",
+        "2",
+        "--lab-size",
+        "64",
+        "--lab-gap",
+        "0",
+        "--lab-selected",
+        "34",
+        "--compact-hud",
+        "--live-clock",
+        "--visible",
+        "--frames",
+        "12000"
+      ],
+      "frames": 12000,
+      "elapsed_ms": 11292.564800001855,
+      "process_kernel_ms": 2312.5,
+      "process_user_ms": 8640.625,
+      "process_cpu_ms": 10953.125,
+      "process_cycles": 50793340390,
+      "frame_window_cpu_ms": 10765.625,
+      "frame_window_cycles": 49882956970,
+      "frame_window_main_cpu_ms": 10578.125,
+      "frame_window_main_cycles": 49349455740,
+      "metrics": {
+        "total_ms": {
+          "mean": 0.8918367166666666,
+          "median": 0.7704,
+          "max": 30.3193
+        },
+        "begin_ms": {
+          "mean": 0.08206700833333333,
+          "median": 0.0597,
+          "max": 17.9
+        },
+        "build_ms": {
+          "mean": 0.44971798333333335,
+          "median": 0.4342,
+          "max": 5.3273
+        },
+        "end_ms": {
+          "mean": 0.360051725,
+          "median": 0.233,
+          "max": 7.092
+        },
+        "present_ms": {
+          "mean": 0.32330905,
+          "median": 0.1964,
+          "max": 7.0192
+        },
+        "slot_wait_ms": {
+          "mean": 0.02710855,
+          "median": 0.0129,
+          "max": 4.6886
+        }
+      },
+      "completed_gpu_ms": 6969.49916,
+      "gpu_samples": 12000.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 12000.0,
+      "peaks": [
+        0,
+        3,
+        57,
+        101,
+        124,
+        19,
+        156,
+        168,
+        191,
+        112
+      ]
+    },
+    {
+      "name": "tour-live-after-1",
+      "side": "after",
+      "scenario": "tour-live",
+      "repeat": 1,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--sdf",
+        "--vector-text",
+        "--no-add",
+        "--tiles",
+        "512",
+        "--lab-mode",
+        "2",
+        "--lab-size",
+        "64",
+        "--lab-gap",
+        "0",
+        "--lab-selected",
+        "34",
+        "--compact-hud",
+        "--live-clock",
+        "--visible",
+        "--frames",
+        "12000",
+        "--mouse-tour",
+        "--scroll-tour"
+      ],
+      "frames": 12000,
+      "elapsed_ms": 10886.620400000538,
+      "process_kernel_ms": 2093.75,
+      "process_user_ms": 8234.375,
+      "process_cpu_ms": 10328.125,
+      "process_cycles": 48675077180,
+      "frame_window_cpu_ms": 10140.625,
+      "frame_window_cycles": 47750218230,
+      "frame_window_main_cpu_ms": 10031.25,
+      "frame_window_main_cycles": 47161207650,
+      "metrics": {
+        "total_ms": {
+          "mean": 0.8573926916666667,
+          "median": 0.7303,
+          "max": 29.8404
+        },
+        "begin_ms": {
+          "mean": 0.093322975,
+          "median": 0.0717,
+          "max": 17.9076
+        },
+        "build_ms": {
+          "mean": 0.258006175,
+          "median": 0.2519,
+          "max": 4.7843
+        },
+        "end_ms": {
+          "mean": 0.5060635416666667,
+          "median": 0.3971,
+          "max": 7.1485
+        },
+        "present_ms": {
+          "mean": 0.476992125,
+          "median": 0.3743,
+          "max": 7.0758
+        },
+        "slot_wait_ms": {
+          "mean": 0.035288258333333336,
+          "median": 0.0227,
+          "max": 3.0208
+        }
+      },
+      "completed_gpu_ms": 6785.59656,
+      "gpu_samples": 12000.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 12000.0,
+      "peaks": [
+        0,
+        32,
+        10,
+        43,
+        67,
+        54,
+        3,
+        79,
+        105,
+        440
+      ]
+    },
+    {
+      "name": "tour-live-before-1",
+      "side": "before",
+      "scenario": "tour-live",
+      "repeat": 1,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--sdf",
+        "--vector-text",
+        "--no-add",
+        "--tiles",
+        "512",
+        "--lab-mode",
+        "2",
+        "--lab-size",
+        "64",
+        "--lab-gap",
+        "0",
+        "--lab-selected",
+        "34",
+        "--compact-hud",
+        "--live-clock",
+        "--visible",
+        "--frames",
+        "12000",
+        "--mouse-tour",
+        "--scroll-tour"
+      ],
+      "frames": 12000,
+      "elapsed_ms": 11086.349500001234,
+      "process_kernel_ms": 2234.375,
+      "process_user_ms": 8359.375,
+      "process_cpu_ms": 10593.75,
+      "process_cycles": 49679939530,
+      "frame_window_cpu_ms": 10406.25,
+      "frame_window_cycles": 48722588540,
+      "frame_window_main_cpu_ms": 10281.25,
+      "frame_window_main_cycles": 48137703620,
+      "metrics": {
+        "total_ms": {
+          "mean": 0.8726686083333334,
+          "median": 0.7386,
+          "max": 31.3057
+        },
+        "begin_ms": {
+          "mean": 0.094462525,
+          "median": 0.0716,
+          "max": 18.4359
+        },
+        "build_ms": {
+          "mean": 0.2581764166666667,
+          "median": 0.2524,
+          "max": 5.9002
+        },
+        "end_ms": {
+          "mean": 0.5200296666666666,
+          "median": 0.40975,
+          "max": 6.9696
+        },
+        "present_ms": {
+          "mean": 0.49046255833333335,
+          "median": 0.3874,
+          "max": 6.8986
+        },
+        "slot_wait_ms": {
+          "mean": 0.03714435,
+          "median": 0.0246,
+          "max": 4.0129
+        }
+      },
+      "completed_gpu_ms": 6937.65524,
+      "gpu_samples": 12000.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 12000.0,
+      "peaks": [
+        0,
+        3,
+        48,
+        60,
+        25,
+        198,
+        225,
+        97,
+        37,
+        13
+      ]
+    },
+    {
+      "name": "spiral-sdf-after-1",
+      "side": "after",
+      "scenario": "spiral-sdf",
+      "repeat": 1,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--sdf",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 700.7731999983662,
+      "process_kernel_ms": 203.125,
+      "process_user_ms": 500.0,
+      "process_cpu_ms": 703.125,
+      "process_cycles": 3699028310,
+      "frame_window_cpu_ms": 546.875,
+      "frame_window_cycles": 2712512880,
+      "frame_window_main_cpu_ms": 343.75,
+      "frame_window_main_cycles": 1714510650,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.159385,
+          "median": 1.82205,
+          "max": 31.3899
+        },
+        "begin_ms": {
+          "mean": 0.14020444444444444,
+          "median": 0.04005,
+          "max": 16.4024
+        },
+        "build_ms": {
+          "mean": 1.6955227777777777,
+          "median": 1.5433,
+          "max": 8.2456
+        },
+        "end_ms": {
+          "mean": 0.32365777777777777,
+          "median": 0.17925000000000002,
+          "max": 6.7419
+        },
+        "present_ms": {
+          "mean": 0.262845,
+          "median": 0.13040000000000002,
+          "max": 6.6558
+        },
+        "slot_wait_ms": {
+          "mean": 0.011864444444444445,
+          "median": 0.0044,
+          "max": 0.3525
+        }
+      },
+      "completed_gpu_ms": 86.50731999999999,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        127,
+        128,
+        126,
+        129,
+        130,
+        124,
+        125,
+        1,
+        133
+      ]
+    },
+    {
+      "name": "spiral-sdf-before-1",
+      "side": "before",
+      "scenario": "spiral-sdf",
+      "repeat": 1,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--sdf",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 701.0838000060176,
+      "process_kernel_ms": 390.625,
+      "process_user_ms": 421.875,
+      "process_cpu_ms": 812.5,
+      "process_cycles": 3742033310,
+      "frame_window_cpu_ms": 609.375,
+      "frame_window_cycles": 2731921530,
+      "frame_window_main_cpu_ms": 359.375,
+      "frame_window_main_cycles": 1744731650,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.1836855555555554,
+          "median": 1.85005,
+          "max": 30.3064
+        },
+        "begin_ms": {
+          "mean": 0.1440538888888889,
+          "median": 0.04065,
+          "max": 15.9087
+        },
+        "build_ms": {
+          "mean": 1.7186894444444445,
+          "median": 1.5587,
+          "max": 7.7095
+        },
+        "end_ms": {
+          "mean": 0.32094222222222224,
+          "median": 0.1901,
+          "max": 6.6882
+        },
+        "present_ms": {
+          "mean": 0.2637638888888889,
+          "median": 0.1353,
+          "max": 6.5811
+        },
+        "slot_wait_ms": {
+          "mean": 0.011676111111111111,
+          "median": 0.0044,
+          "max": 0.1798
+        }
+      },
+      "completed_gpu_ms": 92.47524,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        128,
+        127,
+        114,
+        126,
+        129,
+        130,
+        54,
+        71,
+        125
+      ]
+    },
+    {
+      "name": "spiral-compute-after-1",
+      "side": "after",
+      "scenario": "spiral-compute",
+      "repeat": 1,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--compute",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 762.1526999937487,
+      "process_kernel_ms": 187.5,
+      "process_user_ms": 578.125,
+      "process_cpu_ms": 765.625,
+      "process_cycles": 3395508420,
+      "frame_window_cpu_ms": 562.5,
+      "frame_window_cycles": 2356037150,
+      "frame_window_main_cpu_ms": 421.875,
+      "frame_window_main_cycles": 1975195680,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.397831111111111,
+          "median": 1.9332500000000001,
+          "max": 29.5869
+        },
+        "begin_ms": {
+          "mean": 0.12677166666666667,
+          "median": 0.0295,
+          "max": 15.6961
+        },
+        "build_ms": {
+          "mean": 1.8604033333333334,
+          "median": 1.6994,
+          "max": 7.6027
+        },
+        "end_ms": {
+          "mean": 0.4106561111111111,
+          "median": 0.1844,
+          "max": 6.2881
+        },
+        "present_ms": {
+          "mean": 0.36093277777777777,
+          "median": 0.13545000000000001,
+          "max": 6.2158
+        },
+        "slot_wait_ms": {
+          "mean": 0.009710555555555556,
+          "median": 0.00445,
+          "max": 0.1564
+        }
+      },
+      "completed_gpu_ms": 247.1744,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        128,
+        161,
+        101,
+        127,
+        126,
+        129,
+        132,
+        130,
+        125
+      ]
+    },
+    {
+      "name": "spiral-compute-before-1",
+      "side": "before",
+      "scenario": "spiral-compute",
+      "repeat": 1,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--compute",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 764.821299999312,
+      "process_kernel_ms": 265.625,
+      "process_user_ms": 468.75,
+      "process_cpu_ms": 734.375,
+      "process_cycles": 3462859890,
+      "frame_window_cpu_ms": 500.0,
+      "frame_window_cycles": 2434901740,
+      "frame_window_main_cpu_ms": 437.5,
+      "frame_window_main_cycles": 2008932750,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.439816111111111,
+          "median": 1.97415,
+          "max": 29.3184
+        },
+        "begin_ms": {
+          "mean": 0.12873333333333334,
+          "median": 0.02985,
+          "max": 15.4577
+        },
+        "build_ms": {
+          "mean": 1.8925427777777777,
+          "median": 1.714,
+          "max": 7.5365
+        },
+        "end_ms": {
+          "mean": 0.41854,
+          "median": 0.19240000000000002,
+          "max": 6.3242
+        },
+        "present_ms": {
+          "mean": 0.36806055555555556,
+          "median": 0.1356,
+          "max": 6.2513
+        },
+        "slot_wait_ms": {
+          "mean": 0.011198333333333333,
+          "median": 0.0045,
+          "max": 0.1062
+        }
+      },
+      "completed_gpu_ms": 244.03452000000001,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        100,
+        128,
+        127,
+        131,
+        126,
+        14,
+        129,
+        136,
+        130
+      ]
+    },
+    {
+      "name": "spiral-cache-after-1",
+      "side": "after",
+      "scenario": "spiral-cache",
+      "repeat": 1,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--compute",
+        "--cache",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 768.9307999971788,
+      "process_kernel_ms": 156.25,
+      "process_user_ms": 515.625,
+      "process_cpu_ms": 671.875,
+      "process_cycles": 3372095370,
+      "frame_window_cpu_ms": 500.0,
+      "frame_window_cycles": 2337746160,
+      "frame_window_main_cpu_ms": 406.25,
+      "frame_window_main_cycles": 1990256830,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.4186916666666667,
+          "median": 1.9392,
+          "max": 30.3077
+        },
+        "begin_ms": {
+          "mean": 0.12733833333333333,
+          "median": 0.0294,
+          "max": 15.7429
+        },
+        "build_ms": {
+          "mean": 1.8727672222222222,
+          "median": 1.6981000000000002,
+          "max": 7.9817
+        },
+        "end_ms": {
+          "mean": 0.4185861111111111,
+          "median": 0.18564999999999998,
+          "max": 6.5831
+        },
+        "present_ms": {
+          "mean": 0.3695616666666667,
+          "median": 0.1359,
+          "max": 6.5104
+        },
+        "slot_wait_ms": {
+          "mean": 0.010244444444444445,
+          "median": 0.0044,
+          "max": 0.2014
+        }
+      },
+      "completed_gpu_ms": 260.19016,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        128,
+        127,
+        101,
+        160,
+        126,
+        132,
+        129,
+        130,
+        124
+      ]
+    },
+    {
+      "name": "spiral-cache-before-1",
+      "side": "before",
+      "scenario": "spiral-cache",
+      "repeat": 1,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--compute",
+        "--cache",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 770.5628999974579,
+      "process_kernel_ms": 234.375,
+      "process_user_ms": 453.125,
+      "process_cpu_ms": 687.5,
+      "process_cycles": 3379839560,
+      "frame_window_cpu_ms": 515.625,
+      "frame_window_cycles": 2346911160,
+      "frame_window_main_cpu_ms": 421.875,
+      "frame_window_main_cycles": 2007685840,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.4347172222222224,
+          "median": 1.9328,
+          "max": 29.9358
+        },
+        "begin_ms": {
+          "mean": 0.12747277777777777,
+          "median": 0.0296,
+          "max": 15.7478
+        },
+        "build_ms": {
+          "mean": 1.8670305555555555,
+          "median": 1.6971,
+          "max": 7.9204
+        },
+        "end_ms": {
+          "mean": 0.4402138888888889,
+          "median": 0.1845,
+          "max": 6.2676
+        },
+        "present_ms": {
+          "mean": 0.39293944444444445,
+          "median": 0.1346,
+          "max": 6.1942
+        },
+        "slot_wait_ms": {
+          "mean": 0.009105,
+          "median": 0.0044,
+          "max": 0.1712
+        }
+      },
+      "completed_gpu_ms": 262.842,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        129,
+        160,
+        97,
+        127,
+        128,
+        126,
+        133,
+        130,
+        102
+      ]
+    },
+    {
+      "name": "masonry-live-before-2",
+      "side": "before",
+      "scenario": "masonry-live",
+      "repeat": 2,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--sdf",
+        "--vector-text",
+        "--no-add",
+        "--tiles",
+        "512",
+        "--lab-mode",
+        "2",
+        "--lab-size",
+        "64",
+        "--lab-gap",
+        "0",
+        "--lab-selected",
+        "34",
+        "--compact-hud",
+        "--live-clock",
+        "--visible",
+        "--frames",
+        "12000"
+      ],
+      "frames": 12000,
+      "elapsed_ms": 11261.277600002359,
+      "process_kernel_ms": 2406.25,
+      "process_user_ms": 8343.75,
+      "process_cpu_ms": 10750.0,
+      "process_cycles": 50771541320,
+      "frame_window_cpu_ms": 10546.875,
+      "frame_window_cycles": 49887586940,
+      "frame_window_main_cpu_ms": 10468.75,
+      "frame_window_main_cycles": 49344938570,
+      "metrics": {
+        "total_ms": {
+          "mean": 0.8899898916666666,
+          "median": 0.7627,
+          "max": 29.1997
+        },
+        "begin_ms": {
+          "mean": 0.08121013333333334,
+          "median": 0.06125,
+          "max": 16.7652
+        },
+        "build_ms": {
+          "mean": 0.44781581666666664,
+          "median": 0.4326,
+          "max": 5.6396
+        },
+        "end_ms": {
+          "mean": 0.3609639416666667,
+          "median": 0.239,
+          "max": 6.7949
+        },
+        "present_ms": {
+          "mean": 0.3251473833333333,
+          "median": 0.20555,
+          "max": 6.7241
+        },
+        "slot_wait_ms": {
+          "mean": 0.026562475,
+          "median": 0.0143,
+          "max": 2.0707
+        }
+      },
+      "completed_gpu_ms": 6976.40032,
+      "gpu_samples": 12000.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 12000.0,
+      "peaks": [
+        0,
+        44,
+        30,
+        93,
+        13,
+        215,
+        105,
+        153,
+        270,
+        422
+      ]
+    },
+    {
+      "name": "masonry-live-after-2",
+      "side": "after",
+      "scenario": "masonry-live",
+      "repeat": 2,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--sdf",
+        "--vector-text",
+        "--no-add",
+        "--tiles",
+        "512",
+        "--lab-mode",
+        "2",
+        "--lab-size",
+        "64",
+        "--lab-gap",
+        "0",
+        "--lab-selected",
+        "34",
+        "--compact-hud",
+        "--live-clock",
+        "--visible",
+        "--frames",
+        "12000"
+      ],
+      "frames": 12000,
+      "elapsed_ms": 11531.932799996866,
+      "process_kernel_ms": 2015.625,
+      "process_user_ms": 9015.625,
+      "process_cpu_ms": 11031.25,
+      "process_cycles": 51699252230,
+      "frame_window_cpu_ms": 10796.875,
+      "frame_window_cycles": 50788817580,
+      "frame_window_main_cpu_ms": 10640.625,
+      "frame_window_main_cycles": 50235640740,
+      "metrics": {
+        "total_ms": {
+          "mean": 0.911379475,
+          "median": 0.7764,
+          "max": 29.2828
+        },
+        "begin_ms": {
+          "mean": 0.08420059166666667,
+          "median": 0.0633,
+          "max": 16.9889
+        },
+        "build_ms": {
+          "mean": 0.450635825,
+          "median": 0.4339,
+          "max": 5.1802
+        },
+        "end_ms": {
+          "mean": 0.37654305833333335,
+          "median": 0.2436,
+          "max": 7.1137
+        },
+        "present_ms": {
+          "mean": 0.34199565833333334,
+          "median": 0.213,
+          "max": 6.8762
+        },
+        "slot_wait_ms": {
+          "mean": 0.028792625,
+          "median": 0.0148,
+          "max": 3.2365
+        }
+      },
+      "completed_gpu_ms": 7106.17476,
+      "gpu_samples": 12000.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 12000.0,
+      "peaks": [
+        0,
+        144,
+        91,
+        80,
+        110,
+        45,
+        70,
+        5,
+        58,
+        189
+      ]
+    },
+    {
+      "name": "tour-live-before-2",
+      "side": "before",
+      "scenario": "tour-live",
+      "repeat": 2,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--sdf",
+        "--vector-text",
+        "--no-add",
+        "--tiles",
+        "512",
+        "--lab-mode",
+        "2",
+        "--lab-size",
+        "64",
+        "--lab-gap",
+        "0",
+        "--lab-selected",
+        "34",
+        "--compact-hud",
+        "--live-clock",
+        "--visible",
+        "--frames",
+        "12000",
+        "--mouse-tour",
+        "--scroll-tour"
+      ],
+      "frames": 12000,
+      "elapsed_ms": 11465.08360000007,
+      "process_kernel_ms": 2328.125,
+      "process_user_ms": 8625.0,
+      "process_cpu_ms": 10953.125,
+      "process_cycles": 51132359850,
+      "frame_window_cpu_ms": 10781.25,
+      "frame_window_cycles": 50209804370,
+      "frame_window_main_cpu_ms": 10625.0,
+      "frame_window_main_cycles": 49626987450,
+      "metrics": {
+        "total_ms": {
+          "mean": 0.9055262833333333,
+          "median": 0.77055,
+          "max": 28.0274
+        },
+        "begin_ms": {
+          "mean": 0.10152999166666667,
+          "median": 0.0759,
+          "max": 16.8903
+        },
+        "build_ms": {
+          "mean": 0.28550841666666665,
+          "median": 0.2629,
+          "max": 4.7403
+        },
+        "end_ms": {
+          "mean": 0.518487875,
+          "median": 0.4124,
+          "max": 6.3968
+        },
+        "present_ms": {
+          "mean": 0.486630375,
+          "median": 0.38575,
+          "max": 6.3231
+        },
+        "slot_wait_ms": {
+          "mean": 0.038880733333333334,
+          "median": 0.0245,
+          "max": 2.9009
+        }
+      },
+      "completed_gpu_ms": 7097.18844,
+      "gpu_samples": 12000.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 12000.0,
+      "peaks": [
+        0,
+        55,
+        21,
+        8,
+        44,
+        81,
+        69,
+        240,
+        120,
+        106
+      ]
+    },
+    {
+      "name": "tour-live-after-2",
+      "side": "after",
+      "scenario": "tour-live",
+      "repeat": 2,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--sdf",
+        "--vector-text",
+        "--no-add",
+        "--tiles",
+        "512",
+        "--lab-mode",
+        "2",
+        "--lab-size",
+        "64",
+        "--lab-gap",
+        "0",
+        "--lab-selected",
+        "34",
+        "--compact-hud",
+        "--live-clock",
+        "--visible",
+        "--frames",
+        "12000",
+        "--mouse-tour",
+        "--scroll-tour"
+      ],
+      "frames": 12000,
+      "elapsed_ms": 11367.906200001016,
+      "process_kernel_ms": 2093.75,
+      "process_user_ms": 8562.5,
+      "process_cpu_ms": 10656.25,
+      "process_cycles": 50596239310,
+      "frame_window_cpu_ms": 10468.75,
+      "frame_window_cycles": 49588642030,
+      "frame_window_main_cpu_ms": 10343.75,
+      "frame_window_main_cycles": 49001345070,
+      "metrics": {
+        "total_ms": {
+          "mean": 0.8950889583333334,
+          "median": 0.763,
+          "max": 47.4952
+        },
+        "begin_ms": {
+          "mean": 0.099983625,
+          "median": 0.076,
+          "max": 20.8554
+        },
+        "build_ms": {
+          "mean": 0.28497116666666666,
+          "median": 0.2618,
+          "max": 7.0525
+        },
+        "end_ms": {
+          "mean": 0.5101341666666667,
+          "median": 0.3995,
+          "max": 19.5873
+        },
+        "present_ms": {
+          "mean": 0.478522825,
+          "median": 0.375,
+          "max": 19.469
+        },
+        "slot_wait_ms": {
+          "mean": 0.0379662,
+          "median": 0.024,
+          "max": 1.7405
+        }
+      },
+      "completed_gpu_ms": 7042.65332,
+      "gpu_samples": 12000.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 12000.0,
+      "peaks": [
+        0,
+        70,
+        58,
+        33,
+        83,
+        13,
+        176,
+        156,
+        47,
+        327
+      ]
+    },
+    {
+      "name": "spiral-sdf-before-2",
+      "side": "before",
+      "scenario": "spiral-sdf",
+      "repeat": 2,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--sdf",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 720.0959999972838,
+      "process_kernel_ms": 296.875,
+      "process_user_ms": 515.625,
+      "process_cpu_ms": 812.5,
+      "process_cycles": 3726077750,
+      "frame_window_cpu_ms": 593.75,
+      "frame_window_cycles": 2723152270,
+      "frame_window_main_cpu_ms": 375.0,
+      "frame_window_main_cycles": 1750483040,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.2074627777777778,
+          "median": 1.8576000000000001,
+          "max": 33.0078
+        },
+        "begin_ms": {
+          "mean": 0.15425944444444445,
+          "median": 0.041999999999999996,
+          "max": 17.6838
+        },
+        "build_ms": {
+          "mean": 1.714588888888889,
+          "median": 1.5765,
+          "max": 8.0432
+        },
+        "end_ms": {
+          "mean": 0.33861444444444444,
+          "median": 0.18895,
+          "max": 7.2808
+        },
+        "present_ms": {
+          "mean": 0.27826944444444446,
+          "median": 0.13515,
+          "max": 7.2119
+        },
+        "slot_wait_ms": {
+          "mean": 0.011928333333333334,
+          "median": 0.00455,
+          "max": 0.1883
+        }
+      },
+      "completed_gpu_ms": 92.64844,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        128,
+        127,
+        129,
+        126,
+        130,
+        57,
+        125,
+        140,
+        83
+      ]
+    },
+    {
+      "name": "spiral-sdf-after-2",
+      "side": "after",
+      "scenario": "spiral-sdf",
+      "repeat": 2,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--sdf",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 714.0832000004593,
+      "process_kernel_ms": 328.125,
+      "process_user_ms": 484.375,
+      "process_cpu_ms": 812.5,
+      "process_cycles": 3818815800,
+      "frame_window_cpu_ms": 593.75,
+      "frame_window_cycles": 2795371060,
+      "frame_window_main_cpu_ms": 343.75,
+      "frame_window_main_cycles": 1759183210,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.2341844444444443,
+          "median": 1.87415,
+          "max": 34.5725
+        },
+        "begin_ms": {
+          "mean": 0.1587838888888889,
+          "median": 0.0422,
+          "max": 19.2747
+        },
+        "build_ms": {
+          "mean": 1.7655955555555556,
+          "median": 1.5772,
+          "max": 8.5042
+        },
+        "end_ms": {
+          "mean": 0.309805,
+          "median": 0.20495,
+          "max": 6.7936
+        },
+        "present_ms": {
+          "mean": 0.2554411111111111,
+          "median": 0.1391,
+          "max": 6.7136
+        },
+        "slot_wait_ms": {
+          "mean": 0.01800222222222222,
+          "median": 0.0055,
+          "max": 1.5321
+        }
+      },
+      "completed_gpu_ms": 87.98304,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        126,
+        127,
+        128,
+        130,
+        125,
+        129,
+        1,
+        131,
+        133
+      ]
+    },
+    {
+      "name": "spiral-compute-before-2",
+      "side": "before",
+      "scenario": "spiral-compute",
+      "repeat": 2,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--compute",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 778.868200002762,
+      "process_kernel_ms": 125.0,
+      "process_user_ms": 546.875,
+      "process_cpu_ms": 671.875,
+      "process_cycles": 3485457490,
+      "frame_window_cpu_ms": 531.25,
+      "frame_window_cycles": 2402527200,
+      "frame_window_main_cpu_ms": 421.875,
+      "frame_window_main_cycles": 1988907930,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.4262205555555556,
+          "median": 1.986,
+          "max": 32.1364
+        },
+        "begin_ms": {
+          "mean": 0.14317388888888888,
+          "median": 0.03,
+          "max": 16.3236
+        },
+        "build_ms": {
+          "mean": 1.872341111111111,
+          "median": 1.7088,
+          "max": 8.1851
+        },
+        "end_ms": {
+          "mean": 0.41070555555555555,
+          "median": 0.18835000000000002,
+          "max": 7.6277
+        },
+        "present_ms": {
+          "mean": 0.35691,
+          "median": 0.1376,
+          "max": 7.551
+        },
+        "slot_wait_ms": {
+          "mean": 0.02,
+          "median": 0.00445,
+          "max": 1.1672
+        }
+      },
+      "completed_gpu_ms": 243.4974,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        130,
+        98,
+        127,
+        128,
+        126,
+        156,
+        129,
+        135,
+        104
+      ]
+    },
+    {
+      "name": "spiral-compute-after-2",
+      "side": "after",
+      "scenario": "spiral-compute",
+      "repeat": 2,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--compute",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 771.4913000017987,
+      "process_kernel_ms": 156.25,
+      "process_user_ms": 453.125,
+      "process_cpu_ms": 609.375,
+      "process_cycles": 3473451810,
+      "frame_window_cpu_ms": 468.75,
+      "frame_window_cycles": 2425884320,
+      "frame_window_main_cpu_ms": 421.875,
+      "frame_window_main_cycles": 1995377010,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.4315683333333333,
+          "median": 1.9763000000000002,
+          "max": 29.8677
+        },
+        "begin_ms": {
+          "mean": 0.12828611111111113,
+          "median": 0.03065,
+          "max": 15.7718
+        },
+        "build_ms": {
+          "mean": 1.8864916666666667,
+          "median": 1.71345,
+          "max": 7.6274
+        },
+        "end_ms": {
+          "mean": 0.41679055555555555,
+          "median": 0.19240000000000002,
+          "max": 6.4685
+        },
+        "present_ms": {
+          "mean": 0.3665833333333333,
+          "median": 0.13705,
+          "max": 6.3963
+        },
+        "slot_wait_ms": {
+          "mean": 0.009111111111111111,
+          "median": 0.0046,
+          "max": 0.1103
+        }
+      },
+      "completed_gpu_ms": 244.65456,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        99,
+        127,
+        158,
+        126,
+        128,
+        131,
+        129,
+        130,
+        136
+      ]
+    },
+    {
+      "name": "spiral-cache-before-2",
+      "side": "before",
+      "scenario": "spiral-cache",
+      "repeat": 2,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--compute",
+        "--cache",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 781.4224999965518,
+      "process_kernel_ms": 171.875,
+      "process_user_ms": 531.25,
+      "process_cpu_ms": 703.125,
+      "process_cycles": 3427412490,
+      "frame_window_cpu_ms": 500.0,
+      "frame_window_cycles": 2350794300,
+      "frame_window_main_cpu_ms": 421.875,
+      "frame_window_main_cycles": 1998071520,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.4426594444444443,
+          "median": 1.9858500000000001,
+          "max": 32.3728
+        },
+        "begin_ms": {
+          "mean": 0.14349166666666666,
+          "median": 0.0302,
+          "max": 18.2776
+        },
+        "build_ms": {
+          "mean": 1.8623033333333334,
+          "median": 1.70475,
+          "max": 7.7172
+        },
+        "end_ms": {
+          "mean": 0.43686444444444444,
+          "median": 0.19369999999999998,
+          "max": 6.378
+        },
+        "present_ms": {
+          "mean": 0.38083666666666666,
+          "median": 0.13624999999999998,
+          "max": 6.2989
+        },
+        "slot_wait_ms": {
+          "mean": 0.02343722222222222,
+          "median": 0.0044,
+          "max": 2.5856
+        }
+      },
+      "completed_gpu_ms": 259.73464,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        129,
+        125,
+        127,
+        126,
+        133,
+        128,
+        97,
+        161,
+        130
+      ]
+    },
+    {
+      "name": "spiral-cache-after-2",
+      "side": "after",
+      "scenario": "spiral-cache",
+      "repeat": 2,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--compute",
+        "--cache",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 776.4809000000241,
+      "process_kernel_ms": 250.0,
+      "process_user_ms": 515.625,
+      "process_cpu_ms": 765.625,
+      "process_cycles": 3427922910,
+      "frame_window_cpu_ms": 562.5,
+      "frame_window_cycles": 2399681350,
+      "frame_window_main_cpu_ms": 437.5,
+      "frame_window_main_cycles": 2035084490,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.4639433333333334,
+          "median": 1.9639,
+          "max": 30.0413
+        },
+        "begin_ms": {
+          "mean": 0.1272811111111111,
+          "median": 0.0298,
+          "max": 15.7
+        },
+        "build_ms": {
+          "mean": 1.8885883333333333,
+          "median": 1.71445,
+          "max": 7.9552
+        },
+        "end_ms": {
+          "mean": 0.4480738888888889,
+          "median": 0.18380000000000002,
+          "max": 6.3861
+        },
+        "present_ms": {
+          "mean": 0.3942338888888889,
+          "median": 0.13375,
+          "max": 6.3134
+        },
+        "slot_wait_ms": {
+          "mean": 0.01007,
+          "median": 0.00445,
+          "max": 0.1732
+        }
+      },
+      "completed_gpu_ms": 263.13272,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        128,
+        159,
+        102,
+        132,
+        127,
+        126,
+        130,
+        129,
+        96
+      ]
+    },
+    {
+      "name": "masonry-live-after-3",
+      "side": "after",
+      "scenario": "masonry-live",
+      "repeat": 3,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--sdf",
+        "--vector-text",
+        "--no-add",
+        "--tiles",
+        "512",
+        "--lab-mode",
+        "2",
+        "--lab-size",
+        "64",
+        "--lab-gap",
+        "0",
+        "--lab-selected",
+        "34",
+        "--compact-hud",
+        "--live-clock",
+        "--visible",
+        "--frames",
+        "12000"
+      ],
+      "frames": 12000,
+      "elapsed_ms": 11630.217300000368,
+      "process_kernel_ms": 2656.25,
+      "process_user_ms": 8531.25,
+      "process_cpu_ms": 11187.5,
+      "process_cycles": 52296547500,
+      "frame_window_cpu_ms": 10968.75,
+      "frame_window_cycles": 51380464860,
+      "frame_window_main_cpu_ms": 10843.75,
+      "frame_window_main_cycles": 50838243720,
+      "metrics": {
+        "total_ms": {
+          "mean": 0.9197774166666667,
+          "median": 0.79235,
+          "max": 28.5849
+        },
+        "begin_ms": {
+          "mean": 0.08446155,
+          "median": 0.0646,
+          "max": 16.7835
+        },
+        "build_ms": {
+          "mean": 0.45801706666666664,
+          "median": 0.4357,
+          "max": 5.0082
+        },
+        "end_ms": {
+          "mean": 0.3772988,
+          "median": 0.2548,
+          "max": 6.7932
+        },
+        "present_ms": {
+          "mean": 0.3401349083333333,
+          "median": 0.218,
+          "max": 6.7211
+        },
+        "slot_wait_ms": {
+          "mean": 0.028628525,
+          "median": 0.0156,
+          "max": 2.1204
+        }
+      },
+      "completed_gpu_ms": 7159.82296,
+      "gpu_samples": 12000.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 12000.0,
+      "peaks": [
+        0,
+        70,
+        82,
+        105,
+        94,
+        117,
+        128,
+        163,
+        188,
+        58
+      ]
+    },
+    {
+      "name": "masonry-live-before-3",
+      "side": "before",
+      "scenario": "masonry-live",
+      "repeat": 3,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--sdf",
+        "--vector-text",
+        "--no-add",
+        "--tiles",
+        "512",
+        "--lab-mode",
+        "2",
+        "--lab-size",
+        "64",
+        "--lab-gap",
+        "0",
+        "--lab-selected",
+        "34",
+        "--compact-hud",
+        "--live-clock",
+        "--visible",
+        "--frames",
+        "12000"
+      ],
+      "frames": 12000,
+      "elapsed_ms": 12337.608100002399,
+      "process_kernel_ms": 2484.375,
+      "process_user_ms": 9171.875,
+      "process_cpu_ms": 11656.25,
+      "process_cycles": 55323549130,
+      "frame_window_cpu_ms": 11468.75,
+      "frame_window_cycles": 54422366430,
+      "frame_window_main_cpu_ms": 11343.75,
+      "frame_window_main_cycles": 53867940330,
+      "metrics": {
+        "total_ms": {
+          "mean": 0.9780566666666667,
+          "median": 0.85155,
+          "max": 32.2616
+        },
+        "begin_ms": {
+          "mean": 0.090356175,
+          "median": 0.0675,
+          "max": 20.0682
+        },
+        "build_ms": {
+          "mean": 0.4864195083333333,
+          "median": 0.4447,
+          "max": 5.472
+        },
+        "end_ms": {
+          "mean": 0.40128098333333334,
+          "median": 0.27515,
+          "max": 6.7214
+        },
+        "present_ms": {
+          "mean": 0.3614925666666667,
+          "median": 0.23265,
+          "max": 6.6471
+        },
+        "slot_wait_ms": {
+          "mean": 0.031012025,
+          "median": 0.0172,
+          "max": 1.1253
+        }
+      },
+      "completed_gpu_ms": 7654.24484,
+      "gpu_samples": 12000.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 12000.0,
+      "peaks": [
+        0,
+        50,
+        83,
+        148,
+        104,
+        74,
+        38,
+        25,
+        94,
+        126
+      ]
+    },
+    {
+      "name": "tour-live-after-3",
+      "side": "after",
+      "scenario": "tour-live",
+      "repeat": 3,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--sdf",
+        "--vector-text",
+        "--no-add",
+        "--tiles",
+        "512",
+        "--lab-mode",
+        "2",
+        "--lab-size",
+        "64",
+        "--lab-gap",
+        "0",
+        "--lab-selected",
+        "34",
+        "--compact-hud",
+        "--live-clock",
+        "--visible",
+        "--frames",
+        "12000",
+        "--mouse-tour",
+        "--scroll-tour"
+      ],
+      "frames": 12000,
+      "elapsed_ms": 11194.422799999302,
+      "process_kernel_ms": 3453.125,
+      "process_user_ms": 7187.5,
+      "process_cpu_ms": 10640.625,
+      "process_cycles": 49818184390,
+      "frame_window_cpu_ms": 10484.375,
+      "frame_window_cycles": 48911030340,
+      "frame_window_main_cpu_ms": 10328.125,
+      "frame_window_main_cycles": 48316376470,
+      "metrics": {
+        "total_ms": {
+          "mean": 0.8829981583333333,
+          "median": 0.7398,
+          "max": 29.1316
+        },
+        "begin_ms": {
+          "mean": 0.095776075,
+          "median": 0.0738,
+          "max": 17.5579
+        },
+        "build_ms": {
+          "mean": 0.26106691666666665,
+          "median": 0.2523,
+          "max": 4.8478
+        },
+        "end_ms": {
+          "mean": 0.5261551666666666,
+          "median": 0.4046,
+          "max": 6.7259
+        },
+        "present_ms": {
+          "mean": 0.4961717583333333,
+          "median": 0.3815,
+          "max": 6.6274
+        },
+        "slot_wait_ms": {
+          "mean": 0.037491275,
+          "median": 0.0244,
+          "max": 3.7275
+        }
+      },
+      "completed_gpu_ms": 7007.69456,
+      "gpu_samples": 12000.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 12000.0,
+      "peaks": [
+        0,
+        5,
+        27,
+        63,
+        15,
+        202,
+        3,
+        241,
+        402,
+        102
+      ]
+    },
+    {
+      "name": "tour-live-before-3",
+      "side": "before",
+      "scenario": "tour-live",
+      "repeat": 3,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--sdf",
+        "--vector-text",
+        "--no-add",
+        "--tiles",
+        "512",
+        "--lab-mode",
+        "2",
+        "--lab-size",
+        "64",
+        "--lab-gap",
+        "0",
+        "--lab-selected",
+        "34",
+        "--compact-hud",
+        "--live-clock",
+        "--visible",
+        "--frames",
+        "12000",
+        "--mouse-tour",
+        "--scroll-tour"
+      ],
+      "frames": 12000,
+      "elapsed_ms": 11277.127599998494,
+      "process_kernel_ms": 2796.875,
+      "process_user_ms": 7937.5,
+      "process_cpu_ms": 10734.375,
+      "process_cycles": 50185578220,
+      "frame_window_cpu_ms": 10562.5,
+      "frame_window_cycles": 49275543070,
+      "frame_window_main_cpu_ms": 10406.25,
+      "frame_window_main_cycles": 48668545120,
+      "metrics": {
+        "total_ms": {
+          "mean": 0.8898512916666667,
+          "median": 0.7444500000000001,
+          "max": 31.6066
+        },
+        "begin_ms": {
+          "mean": 0.09606114166666667,
+          "median": 0.0731,
+          "max": 18.6343
+        },
+        "build_ms": {
+          "mean": 0.2615191666666667,
+          "median": 0.2532,
+          "max": 5.2883
+        },
+        "end_ms": {
+          "mean": 0.5322709833333333,
+          "median": 0.4086,
+          "max": 7.684
+        },
+        "present_ms": {
+          "mean": 0.5024808666666667,
+          "median": 0.3851,
+          "max": 7.5691
+        },
+        "slot_wait_ms": {
+          "mean": 0.037478275,
+          "median": 0.0239,
+          "max": 5.389
+        }
+      },
+      "completed_gpu_ms": 7063.51968,
+      "gpu_samples": 12000.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 12000.0,
+      "peaks": [
+        0,
+        3,
+        14,
+        62,
+        212,
+        74,
+        112,
+        239,
+        946,
+        226
+      ]
+    },
+    {
+      "name": "spiral-sdf-after-3",
+      "side": "after",
+      "scenario": "spiral-sdf",
+      "repeat": 3,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--sdf",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 724.812499996915,
+      "process_kernel_ms": 406.25,
+      "process_user_ms": 421.875,
+      "process_cpu_ms": 828.125,
+      "process_cycles": 3783215180,
+      "frame_window_cpu_ms": 578.125,
+      "frame_window_cycles": 2795818970,
+      "frame_window_main_cpu_ms": 390.625,
+      "frame_window_main_cycles": 1795004260,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.2683544444444443,
+          "median": 1.8817,
+          "max": 38.5139
+        },
+        "begin_ms": {
+          "mean": 0.15291222222222223,
+          "median": 0.0409,
+          "max": 17.4121
+        },
+        "build_ms": {
+          "mean": 1.73831,
+          "median": 1.585,
+          "max": 8.2893
+        },
+        "end_ms": {
+          "mean": 0.3771322222222222,
+          "median": 0.19655,
+          "max": 12.8125
+        },
+        "present_ms": {
+          "mean": 0.3101422222222222,
+          "median": 0.13545000000000001,
+          "max": 12.7391
+        },
+        "slot_wait_ms": {
+          "mean": 0.011132777777777778,
+          "median": 0.00455,
+          "max": 0.13
+        }
+      },
+      "completed_gpu_ms": 91.04632,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        1,
+        129,
+        127,
+        128,
+        126,
+        130,
+        125,
+        78,
+        32
+      ]
+    },
+    {
+      "name": "spiral-sdf-before-3",
+      "side": "before",
+      "scenario": "spiral-sdf",
+      "repeat": 3,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--sdf",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 720.0320999982068,
+      "process_kernel_ms": 265.625,
+      "process_user_ms": 578.125,
+      "process_cpu_ms": 843.75,
+      "process_cycles": 3825584740,
+      "frame_window_cpu_ms": 640.625,
+      "frame_window_cycles": 2809796770,
+      "frame_window_main_cpu_ms": 390.625,
+      "frame_window_main_cycles": 1768634440,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.2225,
+          "median": 1.87885,
+          "max": 31.4764
+        },
+        "begin_ms": {
+          "mean": 0.14121555555555557,
+          "median": 0.0399,
+          "max": 16.3941
+        },
+        "build_ms": {
+          "mean": 1.7573022222222223,
+          "median": 1.5890499999999999,
+          "max": 8.383
+        },
+        "end_ms": {
+          "mean": 0.3239822222222222,
+          "median": 0.1929,
+          "max": 6.6993
+        },
+        "present_ms": {
+          "mean": 0.2633372222222222,
+          "median": 0.1358,
+          "max": 6.6248
+        },
+        "slot_wait_ms": {
+          "mean": 0.010423888888888889,
+          "median": 0.00475,
+          "max": 0.1233
+        }
+      },
+      "completed_gpu_ms": 87.10536,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        129,
+        130,
+        127,
+        126,
+        128,
+        125,
+        89,
+        131,
+        34
+      ]
+    },
+    {
+      "name": "spiral-compute-after-3",
+      "side": "after",
+      "scenario": "spiral-compute",
+      "repeat": 3,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--compute",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 777.2007000021404,
+      "process_kernel_ms": 265.625,
+      "process_user_ms": 437.5,
+      "process_cpu_ms": 703.125,
+      "process_cycles": 3475408890,
+      "frame_window_cpu_ms": 468.75,
+      "frame_window_cycles": 2410020410,
+      "frame_window_main_cpu_ms": 421.875,
+      "frame_window_main_cycles": 1989995980,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.437327777777778,
+          "median": 1.9503,
+          "max": 31.8176
+        },
+        "begin_ms": {
+          "mean": 0.13775222222222222,
+          "median": 0.02985,
+          "max": 16.1702
+        },
+        "build_ms": {
+          "mean": 1.8913005555555555,
+          "median": 1.7052,
+          "max": 8.713
+        },
+        "end_ms": {
+          "mean": 0.408275,
+          "median": 0.188,
+          "max": 6.9344
+        },
+        "present_ms": {
+          "mean": 0.3595055555555556,
+          "median": 0.137,
+          "max": 6.8612
+        },
+        "slot_wait_ms": {
+          "mean": 0.01719277777777778,
+          "median": 0.0045,
+          "max": 1.3505
+        }
+      },
+      "completed_gpu_ms": 244.44352,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        130,
+        98,
+        127,
+        126,
+        128,
+        129,
+        125,
+        157,
+        170
+      ]
+    },
+    {
+      "name": "spiral-compute-before-3",
+      "side": "before",
+      "scenario": "spiral-compute",
+      "repeat": 3,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--compute",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 771.1635000014212,
+      "process_kernel_ms": 265.625,
+      "process_user_ms": 406.25,
+      "process_cpu_ms": 671.875,
+      "process_cycles": 3457205320,
+      "frame_window_cpu_ms": 453.125,
+      "frame_window_cycles": 2424001500,
+      "frame_window_main_cpu_ms": 406.25,
+      "frame_window_main_cycles": 1990300070,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.444227777777778,
+          "median": 1.9757,
+          "max": 30.3444
+        },
+        "begin_ms": {
+          "mean": 0.13215388888888888,
+          "median": 0.0307,
+          "max": 14.6943
+        },
+        "build_ms": {
+          "mean": 1.9094566666666666,
+          "median": 1.7382499999999999,
+          "max": 8.7915
+        },
+        "end_ms": {
+          "mean": 0.40261722222222224,
+          "median": 0.1876,
+          "max": 6.8586
+        },
+        "present_ms": {
+          "mean": 0.3519466666666667,
+          "median": 0.13815,
+          "max": 6.7835
+        },
+        "slot_wait_ms": {
+          "mean": 0.018525,
+          "median": 0.0046,
+          "max": 1.0601
+        }
+      },
+      "completed_gpu_ms": 244.71488,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        129,
+        127,
+        161,
+        128,
+        126,
+        130,
+        97,
+        133,
+        125
+      ]
+    },
+    {
+      "name": "spiral-cache-after-3",
+      "side": "after",
+      "scenario": "spiral-cache",
+      "repeat": 3,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\after.exe",
+        "--compute",
+        "--cache",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 787.5776000000769,
+      "process_kernel_ms": 250.0,
+      "process_user_ms": 453.125,
+      "process_cpu_ms": 703.125,
+      "process_cycles": 3434119860,
+      "frame_window_cpu_ms": 500.0,
+      "frame_window_cycles": 2364984070,
+      "frame_window_main_cpu_ms": 437.5,
+      "frame_window_main_cycles": 2019279800,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.457577222222222,
+          "median": 1.9506999999999999,
+          "max": 31.9073
+        },
+        "begin_ms": {
+          "mean": 0.12647944444444445,
+          "median": 0.0291,
+          "max": 15.6322
+        },
+        "build_ms": {
+          "mean": 1.880773888888889,
+          "median": 1.70785,
+          "max": 8.7392
+        },
+        "end_ms": {
+          "mean": 0.4503238888888889,
+          "median": 0.1893,
+          "max": 7.5359
+        },
+        "present_ms": {
+          "mean": 0.39941166666666666,
+          "median": 0.13474999999999998,
+          "max": 7.4632
+        },
+        "slot_wait_ms": {
+          "mean": 0.009913333333333333,
+          "median": 0.0044,
+          "max": 0.1217
+        }
+      },
+      "completed_gpu_ms": 261.80844,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        99,
+        158,
+        127,
+        131,
+        126,
+        128,
+        129,
+        130,
+        136
+      ]
+    },
+    {
+      "name": "spiral-cache-before-3",
+      "side": "before",
+      "scenario": "spiral-cache",
+      "repeat": 3,
+      "command": [
+        "D:\\myimgui\\build-vulkan-integrated\\acquire-stage\\before.exe",
+        "--compute",
+        "--cache",
+        "--vector-text"
+      ],
+      "frames": 180,
+      "elapsed_ms": 787.2121000036714,
+      "process_kernel_ms": 265.625,
+      "process_user_ms": 453.125,
+      "process_cpu_ms": 718.75,
+      "process_cycles": 3444194310,
+      "frame_window_cpu_ms": 484.375,
+      "frame_window_cycles": 2380339910,
+      "frame_window_main_cpu_ms": 437.5,
+      "frame_window_main_cycles": 2028923730,
+      "metrics": {
+        "total_ms": {
+          "mean": 2.4710994444444445,
+          "median": 1.9813,
+          "max": 32.0809
+        },
+        "begin_ms": {
+          "mean": 0.1279511111111111,
+          "median": 0.03095,
+          "max": 15.2019
+        },
+        "build_ms": {
+          "mean": 1.895296111111111,
+          "median": 1.72535,
+          "max": 9.1701
+        },
+        "end_ms": {
+          "mean": 0.4478522222222222,
+          "median": 0.19285000000000002,
+          "max": 7.7089
+        },
+        "present_ms": {
+          "mean": 0.39982388888888887,
+          "median": 0.1415,
+          "max": 7.6359
+        },
+        "slot_wait_ms": {
+          "mean": 0.010503888888888889,
+          "median": 0.0045,
+          "max": 0.1185
+        }
+      },
+      "completed_gpu_ms": 263.4972,
+      "gpu_samples": 180.0,
+      "draw_memory_allocations": 0.0,
+      "draw_resource_creations": 0.0,
+      "focused": 0.0,
+      "visible": 0.0,
+      "peaks": [
+        0,
+        128,
+        127,
+        100,
+        157,
+        131,
+        126,
+        135,
+        129,
+        130
+      ]
+    }
+  ],
+  "summary": {
+    "masonry-live": {
+      "before": {
+        "elapsed_ms": 11276.921200002107,
+        "process_cpu_ms": 10859.375,
+        "process_cycles": 50782440855.0,
+        "frame_window_cpu_ms": 10656.25,
+        "frame_window_cycles": 49885271955.0,
+        "frame_window_main_cycles": 49347197155.0,
+        "completed_gpu_ms": 6972.94974,
+        "gpu_samples": 12000.0,
+        "mean_ms": 0.8909133041666666,
+        "present_mean_ms": 0.3242282166666667,
+        "max_ms": 29.7595
+      },
+      "after": {
+        "elapsed_ms": 11395.70454999921,
+        "process_cpu_ms": 10960.9375,
+        "process_cycles": 51254604030.0,
+        "frame_window_cpu_ms": 10734.375,
+        "frame_window_cycles": 50353451645.0,
+        "frame_window_main_cycles": 49808485940.0,
+        "completed_gpu_ms": 7034.44902,
+        "gpu_samples": 12000.0,
+        "mean_ms": 0.9006268625,
+        "present_mean_ms": 0.3330919583333333,
+        "max_ms": 29.27055
+      }
+    },
+    "spiral-cache": {
+      "before": {
+        "elapsed_ms": 784.3173000001116,
+        "process_cpu_ms": 710.9375,
+        "process_cycles": 3435803400.0,
+        "frame_window_cpu_ms": 500.0,
+        "frame_window_cycles": 2348852730.0,
+        "frame_window_main_cycles": 2002878680.0,
+        "completed_gpu_ms": 262.43078,
+        "gpu_samples": 180.0,
+        "mean_ms": 2.4386883333333333,
+        "present_mean_ms": 0.38787777777777777,
+        "max_ms": 31.00835
+      },
+      "after": {
+        "elapsed_ms": 777.5634999998147,
+        "process_cpu_ms": 734.375,
+        "process_cycles": 3426869170.0,
+        "frame_window_cpu_ms": 507.8125,
+        "frame_window_cycles": 2365896105.0,
+        "frame_window_main_cycles": 2021371535.0,
+        "completed_gpu_ms": 261.7219,
+        "gpu_samples": 180.0,
+        "mean_ms": 2.454576111111111,
+        "present_mean_ms": 0.39682277777777775,
+        "max_ms": 30.3212
+      }
+    },
+    "spiral-compute": {
+      "before": {
+        "elapsed_ms": 775.0158500020916,
+        "process_cpu_ms": 703.125,
+        "process_cycles": 3474158690.0,
+        "frame_window_cpu_ms": 515.625,
+        "frame_window_cycles": 2413264350.0,
+        "frame_window_main_cycles": 1989604000.0,
+        "completed_gpu_ms": 244.32502,
+        "gpu_samples": 180.0,
+        "mean_ms": 2.433018333333333,
+        "present_mean_ms": 0.3624852777777778,
+        "max_ms": 30.75095
+      },
+      "after": {
+        "elapsed_ms": 766.9336500002828,
+        "process_cpu_ms": 695.3125,
+        "process_cycles": 3457746055.0,
+        "frame_window_cpu_ms": 492.1875,
+        "frame_window_cycles": 2405879240.0,
+        "frame_window_main_cycles": 1986739115.0,
+        "completed_gpu_ms": 244.81022000000002,
+        "gpu_samples": 180.0,
+        "mean_ms": 2.4265919444444446,
+        "present_mean_ms": 0.3636827777777778,
+        "max_ms": 29.8086
+      }
+    },
+    "spiral-sdf": {
+      "before": {
+        "elapsed_ms": 720.0640499977453,
+        "process_cpu_ms": 828.125,
+        "process_cycles": 3742198515.0,
+        "frame_window_cpu_ms": 617.1875,
+        "frame_window_cycles": 2735108130.0,
+        "frame_window_main_cycles": 1747607345.0,
+        "completed_gpu_ms": 92.56183999999999,
+        "gpu_samples": 180.0,
+        "mean_ms": 2.199465833333333,
+        "present_mean_ms": 0.26355055555555557,
+        "max_ms": 32.2421
+      },
+      "after": {
+        "elapsed_ms": 711.1683000002813,
+        "process_cpu_ms": 820.3125,
+        "process_cycles": 3759909055.0,
+        "frame_window_cpu_ms": 562.5,
+        "frame_window_cycles": 2758396395.0,
+        "frame_window_main_cycles": 1741478075.0,
+        "completed_gpu_ms": 87.24518,
+        "gpu_samples": 180.0,
+        "mean_ms": 2.196784722222222,
+        "present_mean_ms": 0.25914305555555556,
+        "max_ms": 32.9812
+      }
+    },
+    "tour-live": {
+      "before": {
+        "elapsed_ms": 11187.746399999014,
+        "process_cpu_ms": 10687.5,
+        "process_cycles": 49959937800.0,
+        "frame_window_cpu_ms": 10515.625,
+        "frame_window_cycles": 49055624195.0,
+        "frame_window_main_cycles": 48440920125.0,
+        "completed_gpu_ms": 7000.587460000001,
+        "gpu_samples": 12000.0,
+        "mean_ms": 0.8827354416666666,
+        "present_mean_ms": 0.4912481,
+        "max_ms": 29.66655
+      },
+      "after": {
+        "elapsed_ms": 11060.165750001033,
+        "process_cpu_ms": 10554.6875,
+        "process_cycles": 49341670190.0,
+        "frame_window_cpu_ms": 10367.1875,
+        "frame_window_cycles": 48423929390.0,
+        "frame_window_main_cycles": 47841816060.0,
+        "completed_gpu_ms": 6896.64556,
+        "gpu_samples": 12000.0,
+        "mean_ms": 0.8716329333333332,
+        "present_mean_ms": 0.47996820416666663,
+        "max_ms": 29.633699999999997
+      }
+    }
+  },
+  "frame_count": 196320,
+  "qualification": "All SDL focus counts zero: NOT foreground acceptance.",
+  "frames_csv_sha256": "90c04bd74663154814687b5b43be625dd3e6822ef80b5c45bf4befe4df32617b",
+  "frames_gzip_sha256": "db6f30dc05ffbcf0484248479ce0c4eafcb590e1dfd189b94c4d6f4d89605efe"
+}

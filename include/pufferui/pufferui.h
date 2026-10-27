@@ -1830,7 +1830,8 @@ enum class vulkan_painter_mode : u8
     REFERENCE,
     COMMAND_SHADOW,
     SDF_RASTER,
-    COMPUTE_SDF
+    COMPUTE_SDF,
+    INTEGRATED
 };
 enum class vulkan_blur_mode : u8
 {
@@ -1843,6 +1844,7 @@ struct vulkan_device_opts
     const vulkan_native_device *native = nullptr; // borrowed; copied during creation
     bool validation = false;
     bool tile_cache = false;
+    bool whole_program_cache = false; // exact native program reuse; requires two frame slots
     vulkan_painter_mode painter = vulkan_painter_mode::REFERENCE;
     bool vector_text = false; // HarfBuzz shaping + GPU Slug outlines (optional build dependency)
     bool adaptive_compute = false; // conservative eligibility + completed coverage feedback
@@ -3770,6 +3772,7 @@ i32 violation_count(context *c);
 #include <limits>
 #include <string>
 #include <unordered_map>
+#include <memory_resource>
 #include <fstream>
 #include <chrono>
 #include <algorithm>
@@ -3795,6 +3798,7 @@ i32 violation_count(context *c);
 namespace pui
 {
 // The implementation, in order (one namespace; slices are plain text cuts).
+#include "impl/core_pool.inl"
 #include "impl/core_state.inl"
 #if defined(PUFFERUI_ENABLE_VULKAN)
 #include "impl/paint_commands.inl"
@@ -3830,9 +3834,15 @@ namespace pui
 #include "impl/vulkan_commands.inl"
 #include "impl/vulkan_binning.inl"
 #include "impl/vulkan_blend_lut.inl"
+#include "impl/vulkan_function_cache.inl"
 #include "impl/vulkan_compute.inl"
 #include "impl/vulkan_sdf.inl"
 #include "impl/vulkan_preparation.inl"
+#include "impl/vulkan_glyph_source.inl"
+#include "impl/vulkan_groups.inl"
+#include "impl/vulkan_alpha.inl"
+#include "impl/vulkan_program_cache.inl"
+#include "impl/vulkan_program_probe.inl"
 #include "impl/vulkan_kawase.inl"
 #endif
 #include "impl/sdl3.inl"
