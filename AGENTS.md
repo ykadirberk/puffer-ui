@@ -117,6 +117,12 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   5000-Spiral frames against native SDF: GPU work on frame zero and each change,
   Slug uploads, whole-image reuse on idle frames, direct/staged paths, and no
   draw allocations. Legacy observation fixtures explicitly pin their policy.
+- `pui_vulkan_example_font_tests` checks the actual bootstrap from the project
+  root, an empty working directory and an explicit root (12 exact RGBA frames).
+  `pui_vulkan_painter_work_tests` adds 192 direct/staged native-oracle frames
+  across odd target widths, glyph residency churn and oversized Slug glyphs.
+  Integrated compute reads exact resident alpha; uncached glyphs retain native
+  Slug replay without a duplicate curve evaluator in the interpreter kernel.
 - `pui_vulkan_command_tests`, `pui_vulkan_binning_tests`,
   `pui_vulkan_compute_tests`, `pui_vulkan_sdf_tests` and
   `pui_vulkan_sdf_cache_tests` cover command ABI/order, actual GPU lists,

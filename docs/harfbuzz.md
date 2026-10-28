@@ -67,10 +67,25 @@ font metrics, DPI or gamma.
 The Vulkan adapter fetches packed RGBA16I texels from a storage buffer and
 supplies the known pixel-to-font-unit scale. The curve coverage algorithm is
 upstream Slug code. `shape_common.glsl` shares the coverage entry between the
-raster and compute programs. The shader generator records source/include and
+raster and compute source-alpha fills. The integrated pixel interpreter reads
+those exact cached alpha bits. If residency, generation, tint or extent does not
+match, that pixel stays on the existing native Slug replay until a later opaque
+source can establish compute ownership again. It does not trace the same
+uncached curves a second time inside the compute interpreter. Large glyphs and
+cache pressure retain native Slug rendering, including its metrics and gamma.
+The shader generator records source/include and
 SPIR-V hashes as well as per-shader command flags. The complete permission
 notice is also retained in the generated/amalgamated shader header and installed
 as `share/pufferui/licenses/harfbuzz-slug.txt`.
+
+The examples pass their target's `PUFFERUI_ASSET_DIR` through
+`sdl3_app::asset_dir`, including when linked to a prebuilt library. A Visual
+Studio launch from the executable directory therefore uses the same bundled
+DejaVu fonts as a launch from the project root. HarfBuzz/Slug selection and font
+selection are independent: a smaller system font is not evidence of bitmap
+rendering. When bundled fonts are unavailable, the bootstrap tries the standard
+Windows Segoe UI/Arial paths, or Linux DejaVu and Liberation paths under
+`/usr/share/fonts` and `/usr/local/share/fonts`. This lookup happens at startup.
 
 Current qualification includes actual GPU rendering of the DejaVuSans `ffi`
 ligature, an Arabic joining run, a combining-mark cluster, repeated frame-slot

@@ -1,7 +1,9 @@
 // Shared SDF / HarfBuzz Slug coverage. Raster and compute use identical inputs.
+#ifndef PUI_CACHED_GLYPHS_ONLY
 #define PUI_SLUG_SSBO
 vec2 pui_slug_ems_per_pixel;
 #include "harfbuzz_slug.glsl"
+#endif
 struct Shape { vec4 bounds; vec4 radii; vec4 params; uvec4 corners; };
 #ifndef PUI_EXTERNAL_SHAPES
 layout(std430,set=1,binding=0) readonly buffer Shapes { Shape values[]; } shapes;
@@ -20,6 +22,10 @@ float pui_distance(Shape s, vec2 point) {
     vec2 q=abs(p)-s.bounds.zw*0.5+vec2(r);
     return min(max(q.x,q.y),0.0)+length(max(q,vec2(0.0)))-r;
 }
+float pui_shape_coverage(Shape s,vec2 point) {
+    return clamp(0.5-pui_distance(s,point)/s.params.x,0.0,1.0);
+}
+#ifndef PUI_CACHED_GLYPHS_ONLY
 float pui_coverage(Shape s, vec2 point) {
     if(s.params.y==1.0) {
         vec2 coord=(point-s.radii.xy)/s.radii.z;
@@ -28,5 +34,6 @@ float pui_coverage(Shape s, vec2 point) {
         float coverage=_hb_gpu_slug(coord,vec2(s.radii.z),floatBitsToUint(s.radii.w));
         return pow(clamp(coverage,0.0,1.0),1.0/max(0.1,s.params.z));
     }
-    return clamp(0.5-pui_distance(s,point)/s.params.x,0.0,1.0);
+    return pui_shape_coverage(s,point);
 }
+#endif

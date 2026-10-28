@@ -149,7 +149,10 @@ struct example_frame_diagnostics
 struct example_app
 {
     const char *name = "example";
-    sdl3_app boot; // the library bootstrap; the handles below are its, for short access
+    // The prebuilt library does not inherit this executable's asset macro.
+    // Pass it across the bootstrap boundary so the working directory cannot
+    // silently select a different system font.
+    sdl3_app boot{.asset_dir = PUFFERUI_ASSET_DIR};
     SDL_Window *sdl_window = nullptr;
     SDL_Renderer *renderer = nullptr;
     render_device *device = nullptr;

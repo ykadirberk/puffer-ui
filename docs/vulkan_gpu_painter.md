@@ -18,6 +18,15 @@ function atlas, slot arenas and histories are prepared before UI drawing.
 only that opt-in defers fine resources until a failed LOAD certificate.
 Group, alpha and producer handling belongs to the same renderer in both policies.
 
+For vector text, the integrated interpreter consumes the glyph source-alpha
+cache instead of tracing uncached Slug curves inside both compute and graphics.
+Missing, oversized, stale or tint-mismatched glyph entries retain the complete
+native Slug result. A later opaque source can still restore compute ownership.
+This removes duplicate curve work and the Slug evaluator from that interpreter
+kernel; GPU glyph fills and native replay still use the unchanged upstream
+coverage code. Cache capacity, image budgets and draw-path allocations do not
+increase. This policy does not switch the default back to native observation.
+
 The sections below describe the independent `SDF_RASTER`/`COMPUTE_SDF` paths.
 
 The [compute locality review](perf_vulkan_compute_locality.md) distinguishes this

@@ -222,6 +222,8 @@ if(PUFFERUI_WITH_VULKAN)
     pui_add_vulkan_test(pui_vulkan_compute_default_tests
         SOURCES tests/test_vulkan_compute_defaults.cpp
         RUNS "--staged" "--idle" "--idle --staged")
+    pui_add_vulkan_test(pui_vulkan_painter_work_tests
+        SOURCES tests/test_vulkan_painter_work.cpp RUNS "--staged")
     pui_add_vulkan_test(pui_harfbuzz_interaction_tests FULL_ONLY SOURCES tests/test_harfbuzz_interaction.cpp RUNS "--staged")
   endif()
   if(PUFFERUI_WITH_SDL3)
@@ -243,6 +245,7 @@ if(PUFFERUI_WITH_VULKAN)
     pui_add_vulkan_test(pui_vulkan_showcase_tests SOURCES tests/test_vulkan_showcase.cpp)
     pui_add_vulkan_test(pui_vulkan_unified_showcase_tests SOURCES tests/test_vulkan_unified_showcase.cpp)
     pui_add_vulkan_test(pui_vulkan_example_validation_tests SOURCES tests/test_vulkan_example_validation.cpp)
+    pui_add_vulkan_test(pui_vulkan_example_font_tests SOURCES tests/test_vulkan_example_font.cpp)
     pui_add_vulkan_test(pui_vulkan_spiral_tests FULL_ONLY SOURCES tests/test_vulkan_spiral.cpp
         RUNS "--tiles 5000" "--tiles 1150 --upload-reference" "--tiles 5000 --upload-reference"
              "--tiles 1150 --staged" "--tiles 5000 --staged")

@@ -3,6 +3,7 @@
 #define PUI_SDF_PROGRAM
 #define PUI_NATIVE_PAYLOAD
 #include "bin_common.glsl"
+#define PUI_CACHED_GLYPHS_ONLY
 #include "shape_common.glsl"
 #include "sdf_history.glsl"
 #include "source_alpha.glsl"
@@ -71,8 +72,16 @@ void main() {
                         full_coverage=false;
                     } else {
                         float original_alpha=source.a;
-                        bool source_cached;
-                        source.a=pui_source_alpha(s,point,original_alpha,source_cached);
+                        bool source_cached=false;
+                        if(is_glyph) {
+                            float value;
+                            source_cached=pui_cached_source_alpha(s,point,original_alpha,value);
+                            // Native replay already evaluates uncached Slug.
+                            // Do not trace the same curves again in compute;
+                            // a later opaque interior can still requalify.
+                            if(!source_cached) { qualified=false;continue; }
+                            source.a=value;
+                        } else source.a=original_alpha*pui_shape_coverage(s,point);
                         source_hits+=uint(source_cached);
                         full_coverage=source.a==original_alpha;
                     }

@@ -2014,7 +2014,9 @@ link SDL3 yourself.
   `fonts/` (no trailing separator: the code appends `/fonts/DejaVuSans.ttf`). It
   is where the bootstrap (and your `load_font` calls) find the bundled DejaVu
   fonts; `sdl3_app::asset_dir` overrides it at run time. System fonts are the
-  fallback, so text works even without it.
+  fallback, so text works even without it. A target linked to a prebuilt library
+  passes its asset root through `sdl3_app::asset_dir`; the examples do this
+  explicitly so Visual Studio's working directory cannot change the font.
 
 ### The recommended path
 

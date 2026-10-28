@@ -114,4 +114,5 @@
 
 #if defined(PUFFERUI_VULKAN_LOCALITY_TESTS)
 #include "../tests/test_vulkan_locality.inl"
+#include "../tests/test_vulkan_painter_kernel.inl"
 #endif
