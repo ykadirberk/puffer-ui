@@ -1851,7 +1851,8 @@ struct vulkan_device_opts
 #else
     bool vector_text = false;
 #endif
-    bool adaptive_compute = false; // conservative eligibility + completed coverage feedback
+    bool adaptive_compute = false;   // conservative eligibility + completed coverage feedback
+    bool native_observation = false; // optional native-first policy; INTEGRATED computes by default
     vulkan_blur_mode blur = vulkan_blur_mode::LEGACY;
     u64 command_budget_bytes = 128ull * 1024 * 1024; // diagnostic tape, only allocated on request
     u64 gpu_command_budget_bytes = 64ull * 1024 * 1024;

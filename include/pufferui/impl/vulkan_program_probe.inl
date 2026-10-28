@@ -155,8 +155,7 @@ bool device::retained_confirmed(surface &s)
             else
             {
                 resources.partial_reuse = true;
-                if (options.painter == vulkan_painter_mode::INTEGRATED &&
-                    options.whole_program_cache && !s.sdf_compute_requested)
+                if (observes_native_programs() && !s.sdf_compute_requested)
                 {
                     s.sdf_compute_requested = true;
                     s.program_compute_preparation_pending = true;

@@ -89,9 +89,11 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   run the shader compiler. INTEGRATED is the Vulkan device default. SDF_RASTER
   and COMPUTE_SDF modes use analytic shapes; compute performs ordered GPU tile
   binning and qualified RGBA8 suffix painting, with complete raster replay for
-  other pixels. Exact caches default on; adaptive compute remains opt-in. See
+  other pixels. Exact caches and compute painting default on; native observation
+  and adaptive compute remain explicit opt-ins. See
   `docs/vulkan_gpu_painter.md` for the exact eligibility and lifetime contract.
-- `PUFFERUI_WITH_HARFBUZZ=ON` adds pinned HarfBuzz shaping and upstream Slug GPU
+- Fresh Vulkan configurations default `PUFFERUI_WITH_HARFBUZZ=ON`; explicit OFF
+  remains supported. This adds pinned HarfBuzz shaping and upstream Slug GPU
   outline rendering to the Vulkan variant only. `vector_text` requires an SDF
   painter. Core/SDL and existing bitmap goldens remain independent. See
   `docs/harfbuzz.md`; paragraph bidi and cluster-aware editing are not implied.
@@ -99,9 +101,10 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   producer dependencies, shape groups and a guarded common-opacity scope. The
   Vulkan library, SDL Vulkan factory and showcase select it by default, with
   vector text when HarfBuzz is built. Explicit `--vulkan-painter` overrides select independent diagnostic
-  configurations. Native observation and GPU whole-image certificates avoid
-  duplicate tile work; failed LOAD certificates prepare fine reuse at the next
-  frame boundary. `pui_vulkan_identity_tests` covers cold admission, glyph-tag
+  configurations. Changed frames run GPU binning/SDF/Slug immediately; certified
+  unchanged frames skip the painter. `native_observation=true` selects the old
+  native-first policy and its deferred fine preparation. `pui_vulkan_identity_tests`
+  covers that diagnostic policy's cold admission, glyph-tag
   churn and that automatic transition in direct/staged configurations.
   `pui_vulkan_unified_showcase_tests` covers the actual default and six overrides.
   Group/alpha/producer/LOAD/glyph-source tests retain independent native oracles.
@@ -110,6 +113,10 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   select `tests/vulkan_test_options.h`; their assertions and golden bytes stay fixed.
   `examples/tutorial/vulkan_manual.cpp` and tutorial chapter 10 show explicit SDL/
   Vulkan host/device/surface/context ownership without an example bootstrap.
+- `pui_vulkan_compute_default_tests` proves the actual default on all 180
+  5000-Spiral frames against native SDF: GPU work on frame zero and each change,
+  Slug uploads, whole-image reuse on idle frames, direct/staged paths, and no
+  draw allocations. Legacy observation fixtures explicitly pin their policy.
 - `pui_vulkan_command_tests`, `pui_vulkan_binning_tests`,
   `pui_vulkan_compute_tests`, `pui_vulkan_sdf_tests` and
   `pui_vulkan_sdf_cache_tests` cover command ABI/order, actual GPU lists,

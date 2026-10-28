@@ -25,8 +25,9 @@ cmake --build out/build/x64-release --target pui_tut_vulkan_manual
 ```
 
 `PUFFERUI_WITH_HARFBUZZ=ON` builds the pinned HarfBuzz shaping and upstream Slug
-GPU outline renderer. Omit that option for bitmap text with the same integrated
-shape painter. Ordinary application runs need neither Python nor command-line
+GPU outline renderer. Fresh Vulkan configurations enable it by default;
+use `-DPUFFERUI_WITH_HARFBUZZ=OFF` explicitly for bitmap text with the same
+integrated shape painter. Ordinary application runs need neither Python nor command-line
 painter flags. For a driver discovery problem, see the
 [Windows loader instructions](../vulkan.md); an explicit
 `VK_DRIVER_FILES` override is a per-process diagnostic, not an application dependency.
@@ -136,15 +137,15 @@ The actual defaults are sufficient. No application-level preset is involved:
 ```
 
 `vulkan_device_opts{}` selects `INTEGRATED`, `tile_cache=true` and
-`whole_program_cache=true`. It selects `vector_text=true` when the Vulkan
+`whole_program_cache=true`, with `native_observation=false`. It selects `vector_text=true` when the Vulkan
 library was built with HarfBuzz, and `false` otherwise. Direct uploads, two
 frame slots and legacy blur retain their existing defaults. Kawase blur remains
 an explicit choice through `options.blur = vulkan_blur_mode::KAWASE`.
 
-The integrated painter records native operands, observes changing programs,
-reuses certified identical output and prepares finer compute reuse when needed.
-It does not force every primitive through compute. Ordered GPU tile lists,
-exact output/function/glyph reuse and the native path belong to the renderer;
+The integrated painter records GPU commands and runs tile binning and SDF/Slug
+compute painting from the first changed frame. Certified identical output skips
+the painter. Exact output/function/glyph reuse and the native replay needed for
+pixels outside compute eligibility belong to the renderer;
 application code continues to submit UI operations. See the
 [integrated architecture](../vulkan_integrated_painter.md) for eligibility,
 budgets and native replay rules.

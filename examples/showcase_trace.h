@@ -61,6 +61,9 @@
     X(draws);                                                                                      \
     X(upload_bytes);                                                                               \
     X(glyph_upload_bytes);                                                                         \
+    X(glyph_resident_batches);                                                                     \
+    X(gpu_sdf_batches);                                                                            \
+    X(gpu_sdf_pixels);                                                                             \
     X(whole_program_hits);                                                                         \
     X(whole_program_probes);                                                                       \
     X(gpu_samples);                                                                                \

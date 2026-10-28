@@ -1,6 +1,7 @@
 # Optional shaping and analytic GPU outlines. Pin the upstream implementation;
-# legacy consumers neither download nor link this dependency.
-option(PUFFERUI_WITH_HARFBUZZ "Build HarfBuzz shaping and Slug GPU text support" OFF)
+# Vulkan defaults include shaping/Slug. Core/SDL and an explicit OFF remain
+# independent and neither download nor link this dependency.
+option(PUFFERUI_WITH_HARFBUZZ "Build HarfBuzz shaping and Slug GPU text support" ${PUFFERUI_WITH_VULKAN})
 if(PUFFERUI_WITH_HARFBUZZ)
   include(FetchContent)
   set(HB_BUILD_UTILS OFF CACHE BOOL "" FORCE)

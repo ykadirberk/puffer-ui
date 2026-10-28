@@ -1533,8 +1533,9 @@ passes a ready semaphore and waits for the release timeline before freeing the
 producer's resources. Ownership stays explicit in both directions.
 
 The backend includes targets, the existing blur pyramid, readback and exact
-output caches. Its device default is `INTEGRATED`, with whole-program/tile reuse
-and HarfBuzz/Slug text when built. SDL remains the default backend for non-Vulkan
+output caches. Its device default is `INTEGRATED`: GPU tile binning and SDF/Slug
+compute painting with whole-program/tile reuse. Fresh Vulkan builds enable
+HarfBuzz/Slug unless explicitly disabled. SDL remains the default backend for non-Vulkan
 applications. See [Vulkan setup and native integration](docs/vulkan.md)
 for feature requirements, queue/lifetime rules, validation and build commands.
 Full source: `examples/atomic/vulkan.cpp`. `pui_showcase_vulkan` runs the actual
@@ -1554,18 +1555,19 @@ without a manually entered path or system configuration changes.
 
 Run: `pui_ex_vulkan_painter` (configure with `-DPUFFERUI_WITH_VULKAN=ON`).
 
-This atomic starts with the analytic SDF raster painter. Add
-`-DPUFFERUI_WITH_HARFBUZZ=ON` when configuring to enable HarfBuzz shaping and the
+This atomic starts with the analytic SDF raster painter. Fresh Vulkan builds
+enable `PUFFERUI_WITH_HARFBUZZ=ON` for HarfBuzz shaping and the
 upstream Slug GPU outline renderer. It draws rounded gradients and shaped text;
 the default core and SDL renderers retain their bitmap text and existing pixels.
 
-All Vulkan device factories, including `pui_showcase_vulkan`, start the integrated painter: native command operands,
-whole-program and tile reuse, and HarfBuzz/Slug text when that build option is
-enabled. Run the executable directly from the project; Python is optional.
-The renderer observes changing programs natively, skips certified unchanged
-outputs, and prepares fine-grained compute reuse when GPU feedback requires it.
+All Vulkan device factories, including `pui_showcase_vulkan`, start the integrated
+compute painter: ordered GPU command/tile lists, SDF/Slug painting and exact
+whole-program/tile reuse. Run the executable directly from the project; Python
+is optional. Changed frames compute immediately; certified unchanged outputs
+skip the painter. The old native-first observation policy requires an explicit
+`native_observation=true` device option.
 `--vulkan-painter sdf --vector-text` selects the independent raster reference.
-`--vulkan-painter compute` forces GPU binning/painting;
+`--vulkan-painter compute` selects the independent finite-domain compute diagnostic;
 `--vulkan-painter adaptive` enables conservative eligibility and completed
 coverage feedback. Forced compute is diagnostic: moving Spiral scenes can be
 faster on the native path. Cache/compute results must match that independent raster

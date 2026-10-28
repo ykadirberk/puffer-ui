@@ -26,6 +26,7 @@ option(PUFFERUI_BUILD_TESTS "Build tests and benchmarks" ${PUFFERUI_TOP_LEVEL})
 option(PUFFERUI_BUILD_EXAMPLES "Build examples and tutorials" ${PUFFERUI_TOP_LEVEL})
 option(PUFFERUI_WITH_SDL3 "Build the SDL3 backend" ON)
 option(PUFFERUI_USE_SYSTEM_SDL3 "Use find_package(SDL3) instead of vendored SDL" OFF)
+option(PUFFERUI_WITH_VULKAN "Build the optional Vulkan 1.3 renderer" OFF)
 
 # Link-time optimization for release builds. No /fp:fast: the golden-image
 # tests compare rendered pixels across compilers, and fast-math changes
@@ -218,6 +219,9 @@ if(PUFFERUI_WITH_VULKAN)
   pui_add_vulkan_test(pui_vulkan_sdf_interaction_tests FULL_ONLY SOURCES tests/test_vulkan_sdf_interaction.cpp RUNS "--staged")
   if(PUFFERUI_WITH_HARFBUZZ)
     pui_add_vulkan_test(pui_harfbuzz_tests SOURCES tests/test_harfbuzz.cpp)
+    pui_add_vulkan_test(pui_vulkan_compute_default_tests
+        SOURCES tests/test_vulkan_compute_defaults.cpp
+        RUNS "--staged" "--idle" "--idle --staged")
     pui_add_vulkan_test(pui_harfbuzz_interaction_tests FULL_ONLY SOURCES tests/test_harfbuzz_interaction.cpp RUNS "--staged")
   endif()
   if(PUFFERUI_WITH_SDL3)

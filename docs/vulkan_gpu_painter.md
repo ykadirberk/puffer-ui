@@ -6,15 +6,17 @@ dependencies, shape unions and a common-opacity scope. All Vulkan device factori
 and the Vulkan showcase select it by default. HarfBuzz/Slug is enabled when built;
 without HarfBuzz, integrated shapes use bitmap text. Explicit diagnostic modes
 retain independent configurations. See [the integrated design](vulkan_integrated_painter.md)
-and [the measurement and visual validation report](perf_vulkan_integrated.md).
+and [the compute-default validation](perf_vulkan_compute_default.md). The
+[earlier measurement report](perf_vulkan_integrated.md) retains the previous policy's evidence.
 
-With whole-program caching enabled, unchanged native operands are observed
-without also encoding/running the tile painter. A GPU fixed-point certificate
-covers every LOAD-dependent output before replay may skip the complete program.
-Failed certificates select fine-grained reuse; its kernels, function atlas,
-arenas and histories are prepared at the next completed frame boundary. Forced
-tile mode remains available for numerical and coverage regressions. Group,
-alpha and producer handling belongs to the same renderer in both paths.
+The default records drawing commands and runs GPU coarse/fine binning, dirty-tile
+selection and integrated SDF/Slug compute painting from the first changed frame.
+Exact whole-program reuse can skip the painter entirely on unchanged frames;
+LOAD-dependent output still needs its GPU fixed-point certificate. Kernels,
+function atlas, slot arenas and histories are prepared before UI drawing.
+`native_observation=true` explicitly selects the previous native-first policy;
+only that opt-in defers fine resources until a failed LOAD certificate.
+Group, alpha and producer handling belongs to the same renderer in both policies.
 
 The sections below describe the independent `SDF_RASTER`/`COMPUTE_SDF` paths.
 
@@ -23,7 +25,7 @@ implementation from the Blick article. In particular, common opacity retains a
 prepared native RGBA8 scratch image; it is not a pixel-local alpha accumulator.
 The integrated painter preserves forward intermediate RGBA8 quantization.
 Neither a universally allocation-free startup nor maximum cache locality is
-claimed. Cold observation does not reserve an unused CPU tile tape; an actual
+claimed. Explicit native observation does not reserve an unused CPU tile tape; an actual
 fine-path transition prepares it at a completed frame boundary.
 
 The diagnostic `REFERENCE` painter retains the established triangle and bitmap

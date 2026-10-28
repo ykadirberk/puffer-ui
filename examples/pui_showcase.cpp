@@ -4269,6 +4269,10 @@ int main(int argc, char **argv)
             std::printf("device=%s\nvendor=%u\ndevice_id=%u\ntype=%u\n", properties.deviceName,
                         properties.vendorID, properties.deviceID,
                         static_cast<u32>(properties.deviceType));
+            const vulkan_device_opts defaults;
+            std::printf("default_execution=%s\ndefault_vector_text=%d\n",
+                        defaults.native_observation ? "native-observation" : "compute",
+                        defaults.vector_text);
             const bool okay = vulkan_wait_idle(device);
             destroy_vulkan_device(device);
             return okay ? 0 : 1;

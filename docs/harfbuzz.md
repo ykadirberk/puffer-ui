@@ -10,7 +10,8 @@ The dependency is HarfBuzz **15.0.0**, pinned to commit
 library or claim to implement HarfBuzz's coverage algorithm independently.
 
 Build with `PUFFERUI_WITH_VULKAN=ON` and `PUFFERUI_WITH_HARFBUZZ=ON`. The latter
-is optional and defaults off. FetchContent checks out the pinned official
+defaults on for a fresh Vulkan configuration and off for core/SDL-only builds.
+An explicit OFF remains supported. FetchContent checks out the pinned official
 source. An offline build may set
 `FETCHCONTENT_SOURCE_DIR_PUFFERUI_HARFBUZZ` to an existing checkout of that
 commit. Installed Vulkan packages built with this feature find the installed

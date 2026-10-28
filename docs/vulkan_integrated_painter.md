@@ -6,28 +6,36 @@ tile/whole-program reuse ve derleme açıksa HarfBuzz/Slug aynı yapılandırmad
 Python launcher isteğe bağlıdır. HarfBuzz kapalı derlemede bitmap yazılar kullanılır. Açıkça
 verilen `--vulkan-painter` seçenekleri kendi bağımsız ayarlarıyla başlar.
 Son ölçümler, ham kareler, test kayıtları ve sınırlamalar
-[teslim raporunda](perf_vulkan_integrated.md) tutulur. Example shorthand olmadan
+[compute varsayılanı raporunda](perf_vulkan_compute_default.md) tutulur. Example shorthand olmadan
 kurulum için [çalışan tutorial](tutorial/10-vulkan-without-shorthand.md) bulunur.
 
-Normal yolun seçim sırası şöyledir:
+28 Ekim düzeltmesi: normal `INTEGRATED`, `native_observation=false` ile gerçek
+compute painter'dır. Değişen ilk kare GPU komut/binning/SDF/Slug yoluna gider;
+whole-program ve tile cache birlikte açıktır. Yeni Vulkan yapılandırmalarında
+HarfBuzz varsayılan açık, açıkça verilen OFF ise korunur.
 
-1. Renderer semantik çağrıları kendi prepared native girdilerine dönüştürür.
-   Değişen programı gözlemlemek için ikinci bir GPU tape çalıştırmaz.
+Normal yolun sırası şöyledir:
+
+1. Renderer semantik çağrıları GPU komutlarına dönüştürür. Önceden hazırlanmış
+   coarse/fine binning, dirty seçimi ve compute SDF/Slug painter çalışır.
 2. Kesin CPU program kimliği eşleşince GPU, LOAD bağımlı bütün çıktıların sabit
-   noktasını doğrular. Sertifika gelene kadar native yürütme devam eder. Başarılı
+   noktasını doğrular. Sertifika gelene kadar compute yürütme devam eder. Başarılı
    sertifikada bütün program atlanır; yalnız sunum kaydı kalır.
-3. Aynı komutlar değişen LOAD içeriği üretiyorsa GPU sertifikası bunu bildirir.
-   Sonraki tamamlanmış frame sınırında fine-cache kernel'ları, blend atlası,
-   bounded metadata ve tile history hazırlanır. Sıralı binning/compute/native
-   replay aynı renderer içinde çalışır. Eksik kaynak veya kapsamda tam native
-   sonuç korunur. Kullanıcının ayrı özellik anahtarları birleştirmesi gerekmez.
+3. Değişen LOAD çıktısı veya yerel değişiklikte tile reuse ve compute sürer.
+   Kapsam dışındaki pikselde tam native replay görsel eşitliği korur.
+   Kullanıcının ayrı özellik anahtarları birleştirmesi gerekmez.
+
+Önceki native-first politika yalnız `native_observation=true` ile seçilir.
+Bu seçenek kernelsiz gözlem yapıp başarısız LOAD sertifikasından sonra compute
+hazırlayabilir; normal varsayılan değildir. Eski tanılama fixture'ları bu seçimi
+açıkça sabitler; assertion ve golden byte'ları korunur.
 
 Glif hücre nesilleri görüntü kimliği değildir. Bounds, outline, scale, gamma ve
 vertex tint kesin karşılaştırılır; değişen/eskimiş hücre etiketi aynı Slug
 hesabına döner. CPU tape ve GPU tile karşılaştırmaları aynı ayrımı uygular.
 Soğuk upload ve ilk geçerli program, sürekli animasyon gibi sayılıp 120 kare
 cache'i kapatmaz. Gözlemde kullanılmayan encoder stack, glyph admission ve
-compute hazırlığı native karede atlanır.
+compute hazırlığı yalnız açıkça seçilmiş native-observation karelerinde atlanır.
 
 Native operand 24 bayttır; CPU RGBA8 kanallarını dört float'a genişletmez. Shader
 önceki CPU byte/255 bitlerini aynı tabloyla açar. Topoloji ve primitive sırası

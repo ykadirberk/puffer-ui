@@ -309,6 +309,11 @@ struct device : render_device, dispatch
     sdf_gpu_job *program_producers[64]{};
     bool live_producer(texture *) const;
     u32 producer_role(texture *) const;
+    bool observes_native_programs() const
+    {
+        return options.painter == vulkan_painter_mode::INTEGRATED && options.whole_program_cache &&
+               options.native_observation;
+    }
     bool native_only_program() const
     {
         // Observe a program with native operands first. Re-encoding and running
@@ -316,8 +321,7 @@ struct device : render_device, dispatch
         // duplicate work. Use fine-grained reuse when an actual GPU comparison
         // proves that unchanged commands still have changing LOAD dependencies.
         // The certificate path itself uses independent native-output snapshots.
-        return options.painter == vulkan_painter_mode::INTEGRATED && options.whole_program_cache &&
-               current_surface &&
+        return observes_native_programs() && current_surface &&
                (!current_surface->program_cache || !current_surface->program_cache->partial_reuse ||
                 current_surface->program_compute_preparation_pending || !retaining ||
                 retained_deferred);

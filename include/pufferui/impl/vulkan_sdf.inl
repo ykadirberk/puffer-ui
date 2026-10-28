@@ -235,8 +235,7 @@ bool device::initialize_sdf_compute()
     if (!(format.optimalTilingFeatures & VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) ||
         properties.limits.maxPerStageDescriptorStorageBuffers < 16)
         return fail("compute SDF needs RGBA8 storage and sixteen storage-buffer bindings");
-    if (options.painter == vulkan_painter_mode::INTEGRATED && options.whole_program_cache)
-        return true;
+    if (observes_native_programs()) return true;
     return initialize_sdf_compute_kernels();
 }
 bool device::initialize_sdf_compute_kernels()

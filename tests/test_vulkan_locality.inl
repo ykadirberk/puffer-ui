@@ -17,6 +17,9 @@ struct locality_scene
     u64 initial_cache_images = 0;
     explicit locality_scene(vulkan_device_opts options)
     {
+        // Preserve the observation-specific fixture; defaults have a separate
+        // compute/Slug policy regression. Assertions and pixel oracles stay fixed.
+        options.native_observation = true;
         options.validation = true;
         options.vector_text = false;
         options.upload_mode =

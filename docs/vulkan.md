@@ -16,8 +16,10 @@ and [boundary validation report](perf_renderer_boundary.md).
 
 ## Prepared painter resources
 
-The Vulkan device's default `INTEGRATED` configuration combines whole-program/tile
-reuse and optional HarfBuzz/Slug text. Run `pui_showcase_vulkan.exe` directly;
+The Vulkan device's default `INTEGRATED` configuration runs GPU command binning,
+dirty-tile selection and SDF/Slug compute painting with whole-program/tile reuse.
+Fresh Vulkan builds enable HarfBuzz/Slug unless explicitly disabled.
+Run `pui_showcase_vulkan.exe` directly;
 `--vulkan-painter sdf --vector-text` remains an independent raster control.
 This is also the default of `create_vulkan_device()`, `create_sdl3_vulkan_device()`
 and the Vulkan bootstrap. A HarfBuzz-disabled build retains bitmap text with the
@@ -25,14 +27,15 @@ integrated shape painter. Core/SDL renderer selection is unchanged. The explicit
 [Vulkan integration tutorial](tutorial/10-vulkan-without-shorthand.md) builds a
 native application without `example_common.h` or an application bootstrap.
 
-Integrated whole-program observation uses native operands. It does not create
-or execute fine-cache kernels merely to learn whether a page is static. A
-completed GPU comparison that finds changing LOAD content requests fine reuse;
-the next frame boundary prepares its shared kernels, native function atlas,
-metadata arenas and image histories. Glyph cache generations are acceleration
+The default `native_observation=false` prepares compute kernels, the native
+blend-function atlas, metadata arenas and histories before drawing. Changed
+frames execute the GPU tile painter immediately. Certified unchanged programs
+skip the GPU painter; native replay preserves pixels outside compute eligibility.
+The previous native-first observation policy remains an explicit
+`native_observation=true` option. Glyph cache generations are acceleration
 state; exact bounds, outline, scale, gamma and tint remain image identity.
 See [the integrated contract](vulkan_integrated_painter.md) and
-[the retained validation evidence](perf_vulkan_integrated.md).
+[the compute-default validation evidence](perf_vulkan_compute_default.md).
 
 SDF surfaces prepare upload pages, graphics descriptor sets and (for compute)
 bounded metadata arenas before recording UI draws. Compute kernels and their
@@ -133,7 +136,8 @@ exhaustion. Preparing them only after a repeated LOAD program was observed moved
 a compiler/allocation spike into a later frame in testing; that candidate was
 rejected. Cache preparation remains outside the drawing loop.
 
-A certified clear/raster program defers equal operations before upload, vertex
+A certified clear/raster program in the optional native-observation policy
+defers equal operations before upload, vertex
 conversion, descriptors and GPU command recording. On a changed operation,
 shortened tape or resource side effect, the renderer first replays the deferred
 prefix in order with complete raster output, then executes the changed suffix.
@@ -505,5 +509,6 @@ painting are described in [the GPU painter contract](vulkan_gpu_painter.md).
 INTEGRATED is the Vulkan default. The independent SDF raster path is the visual
 reference for compute/cache; existing bitmap goldens are unchanged. The original
 [detailed architecture](vulkan_compute_architecture.md) retains the design and
-qualification protocol. Integrated selects native observation and qualified reuse;
-forced compute remains a diagnostic mode and is not assumed faster than raster.
+qualification protocol. Integrated uses compute painting and qualified exact
+reuse by default. Native observation is opt-in. Compute is not assumed faster
+than raster; before/after timings retain that architectural tradeoff.

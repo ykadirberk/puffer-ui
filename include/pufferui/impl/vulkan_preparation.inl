@@ -99,8 +99,7 @@ bool device::prepare_sdf_surface(surface &s)
     if (!paint_detail::compute_painter(options.painter)) return true;
     // Adaptive routing may use raster for the entire scene. Do not reserve
     // history images and arenas until an actual eligible program requests them.
-    const bool observed_compute =
-        options.painter == vulkan_painter_mode::INTEGRATED && options.whole_program_cache;
+    const bool observed_compute = observes_native_programs();
     if ((options.adaptive_compute || observed_compute) && !s.sdf_compute_requested) return true;
     if (!initialize_sdf_compute_kernels()) return false;
     if (options.painter == vulkan_painter_mode::INTEGRATED &&

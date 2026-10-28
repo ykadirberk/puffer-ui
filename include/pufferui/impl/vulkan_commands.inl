@@ -18,9 +18,7 @@ void primitive_recorder::reset()
 {
     // Device construction has no surface yet. Integrated observation needs no
     // CPU tile tape until a completed frame boundary requests the fine path.
-    const bool cold_observation = !owner->current_surface &&
-                                  owner->options.painter == vulkan_painter_mode::INTEGRATED &&
-                                  owner->options.whole_program_cache;
+    const bool cold_observation = !owner->current_surface && owner->observes_native_programs();
     raster_only = owner->options.painter == vulkan_painter_mode::SDF_RASTER ||
                   owner->native_only_program() || cold_observation;
     depth = 0;

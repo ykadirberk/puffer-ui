@@ -62,7 +62,9 @@ void device::retained_begin(surface &s)
                              image.image->revision == image.final_revision;
     }
     retained_probe_begin(s);
-    retained_deferred = retained_equal && retained_confirmed(s);
+    retained_deferred =
+        (options.painter != vulkan_painter_mode::INTEGRATED || options.native_observation) &&
+        retained_equal && retained_confirmed(s);
     // Native effect kernels keep the general record/discard route. The cheap
     // prefix replay below supports complete clear and raster operations only.
     for (usize i = 0; retained_deferred && i < previous.draw_count; ++i)

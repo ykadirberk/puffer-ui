@@ -65,6 +65,7 @@ int main(int argc, char **argv)
         else if (arg == "--integrated")
         {
             options.painter = vulkan_painter_mode::INTEGRATED;
+            test_detail::select_native_observation(options, false);
             options.tile_cache = true;
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
             options.vector_text = true;

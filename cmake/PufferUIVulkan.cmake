@@ -1,5 +1,4 @@
 # Optional native renderer, independent of SDL_Renderer's Vulkan implementation.
-option(PUFFERUI_WITH_VULKAN "Build the optional Vulkan 1.3 renderer" OFF)
 if(PUFFERUI_WITH_VULKAN)
   find_package(Vulkan 1.3 REQUIRED)
   if(PUFFERUI_WITH_SDL3)
