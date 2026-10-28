@@ -6,7 +6,7 @@
 # The scripted programs (the finished todo app) are captured after enough frames
 # for the typed tasks, the ticked checkbox and the hovered row to show; the scene
 # drifts with the clock, so two runs differ slightly in background position.
-param([string]$BinDir = 'out/build/x64-release/Release')
+param([string]$BinDir = 'out/build/x64-release/Release', [string[]]$Only = @())
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
@@ -28,7 +28,11 @@ $shots = @(
     @('glass-group', 'pui_tut_todo', 40, '', '10,180,500,112'),   # a crop: x,y,w,h
     @('button-states', 'pui_tut_button_states', 3, '')
 )
+if (Test-Path (Join-Path $bin 'pui_tut_vulkan_manual.exe')) {
+    $shots += ,@('vulkan-manual', 'pui_tut_vulkan_manual', 8, '')
+}
 foreach ($s in $shots) {
+    if ($Only.Count -gt 0 -and $Only -notcontains $s[0]) { continue }
     $exe = Join-Path $bin ($s[1] + '.exe')
     if (-not (Test-Path $exe)) { throw "missing $exe (build the pui_tut_* targets first)" }
     $bmp = Join-Path ([System.IO.Path]::GetTempPath()) ('tut_' + $s[0] + '.bmp')

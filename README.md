@@ -886,8 +886,9 @@ i32 problems = violation_count(c);
 clip imbalance, duplicate ids, …) through `report_violation`; the default prints
 to stderr, `set_violation_handler` routes them to your log or test.
 
-A backend implements two interfaces — `render_device` (textures, clear, clip,
-`draw`) and `render_surface` (target, size, present) — plus `backend_caps`
+A backend implements `render_device` (resources and painter creation),
+`render_painter` (all semantic drawing operations and preparation), and
+`render_surface` (target, size, present) — plus `backend_caps`
 (`SCISSOR`, `RENDER_TARGETS`, `STREAMING_TEXTURES`, `SHARED_DEVICE`). The
 `pui_ex_renderer` example is a complete CPU rasterizer that writes a PPM; read it
 together with [`docs/porting_a_backend.md`](docs/porting_a_backend.md).
@@ -1518,6 +1519,16 @@ owns windows, input, clipboard, native chrome and accessibility. Link
 call. The installed package exposes it through `find_package(pufferui CONFIG
 REQUIRED COMPONENTS vulkan)`. Ordinary core/SDL consumers do not need the SDK.
 
+The default Vulkan factory on this branch uses native triangle shapes and
+HarfBuzz/Slug text. Fresh Vulkan configurations enable
+`PUFFERUI_WITH_HARFBUZZ=ON`; explicit OFF or `vector_text=false` keeps bitmap
+text. Shape SDFs and the compute/tile painter are absent. Run
+`pui_showcase_vulkan.exe` directly with no painter flags. See
+[HarfBuzz](docs/harfbuzz.md) and the
+[tutorial without an example bootstrap](docs/tutorial/10-vulkan-without-shorthand.md).
+The [native performance report](docs/perf_vulkan_native_harfbuzz.md) separates
+HarfBuzz CPU shaping, Slug GPU drawing and geometry upload costs.
+
 An engine can lend its instance, physical device, logical device, graphics queue
 and loader through `vulkan_native_device`. It can also lend a sampled `VkImage`
 and view through `import_vulkan_image`; `ui::image` accepts the resulting
@@ -1801,7 +1812,7 @@ button_override)`.
 | `set_global_mouse(ctx, x, y)` | Set the shared pointer position (same space as `window::client`). |
 | `set_clipboard(ctx, clipboard*)` | Install the app clipboard. |
 | `key`, `KEY_COUNT`, `pointer_button` | Input enums. |
-| `render_device`, `render_surface`, `geometry_capacity`, `backend_caps`, `has_cap`, `create_sdl3_device`, `destroy_sdl3_device`, `null_device`, `null_surface` | Backend contract and optional geometry storage preparation. |
+| `render_device`, `render_painter`, `render_surface`, `create_mesh_painter`, `geometry_capacity`, `backend_caps`, `has_cap`, `create_sdl3_device`, `destroy_sdl3_device`, `null_device`, `null_surface` | Required semantic painter contract and explicit renderer-owned mesh preparation. |
 | `PUFFERUI_CHECK`, `set_violation_handler`, `violation_handler`, `violation_count`, `violation_last`, `draw_violation_overlay`, `report_violation`, `set_current_context` | Diagnostics; the overlay draws count + last message for development. |
 
 #### Limits

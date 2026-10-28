@@ -1341,11 +1341,142 @@ struct geometry_capacity
     usize indices = 0;
 };
 
-// One device shared by all windows. Owns textures/targets; the core keeps the
-// draw list and only submits geometry here.
+// Semantic painting is mandatory for every backend. Inputs are logical units;
+// the painter owns preparation, representation, batching and execution choices.
+// Calls borrow their inputs only until they return (deferred painters copy them).
+struct draw_list;
+struct blur_store;
+struct paint_mesh
+{
+    texture_handle texture = nullptr;
+    const vertex *vertices = nullptr;
+    i32 vertex_count = 0;
+    const i32 *indices = nullptr;
+    i32 index_count = 0;
+};
+struct paint_rect
+{
+    rect area{};
+    color tint{};
+};
+struct paint_line
+{
+    vec2 from{}, to{};
+    color tint{};
+    f32 thickness = 1;
+};
+struct paint_rounded_rect
+{
+    rect area{};
+    color tint{};
+    corner_radii radii{};
+};
+struct paint_image
+{
+    skin_image image{};
+    rect area{};
+};
+struct paint_fitted_image;
+struct paint_polygon
+{
+    std::span<const vec2> points;
+    color tint{};
+};
+struct paint_sector
+{
+    vec2 center{};
+    f32 inner_radius = 0, outer_radius = 0, start_angle = 0, end_angle = 0;
+    color tint{};
+};
+struct paint_arc
+{
+    vec2 center{};
+    f32 radius = 0, thickness = 1, start_angle = 0, end_angle = 0;
+    color tint{};
+};
+struct paint_blur
+{
+    rect area{};
+    f32 radius = 0;
+    corner_radii radii{};
+    f32 alpha = 1;
+};
+struct paint_text
+{
+    rect area{};
+    std::string_view text;
+    color tint{};
+    align alignment = ALIGN_LEFT;
+};
+struct paint_glyph_metric
+{
+    font_handle font = FONT_INVALID;
+    f32 size = 0;
+    u32 codepoint = 0;
+};
+struct paint_ring
+{
+    rect area{};
+    color tint{};
+    corner_radii radii{};
+    f32 thickness = 1;
+};
+struct paint_gradient
+{
+    rect area{};
+    color tl{}, tr{}, br{}, bl{};
+};
+struct paint_rounded_gradient
+{
+    rect area{};
+    f32 radius = 0;
+    color top_left{}, top_right{}, bottom_right{}, bottom_left{};
+};
+struct render_painter
+{
+    virtual ~render_painter() = default;
+    virtual void begin() = 0;
+    virtual void end() = 0;
+    virtual void invalidate() = 0;
+    virtual void flush() = 0;
+    virtual bool prepare(const geometry_capacity &) = 0;
+    // Optional introspection data, borrowed from the painter; nullptr is valid
+    // for a renderer that does not use a CPU mesh. Core never owns this storage.
+    virtual draw_list *geometry() = 0;
+    virtual bool vector_text() const = 0;
+    virtual f32 measure_text_width(std::string_view) = 0;
+    virtual f32 glyph_advance(const paint_glyph_metric &) = 0;
+    virtual void release_effects(blur_store *&) = 0;
+    virtual void release_text() = 0;
+    virtual void mesh(const paint_mesh &) = 0;
+    virtual void rectangle(const paint_rect &) = 0;
+    virtual void line(const paint_line &) = 0;
+    virtual void rounded_rectangle(const paint_rounded_rect &) = 0;
+    virtual void image(const paint_image &) = 0;
+    virtual rect fitted_image(const paint_fitted_image &) = 0;
+    virtual void nine_slice(const paint_image &) = 0;
+    virtual void polygon(const paint_polygon &) = 0;
+    virtual void sector(const paint_sector &) = 0;
+    virtual void arc(const paint_arc &) = 0;
+    virtual void blur(const paint_blur &) = 0;
+    virtual void text(const paint_text &) = 0;
+    virtual void text_ellipsis(const paint_text &) = 0;
+    virtual void text_wrapped(const paint_text &) = 0;
+    virtual void ring(const paint_ring &) = 0;
+    virtual void stroke(const paint_line &) = 0;
+    virtual void gradient(const paint_gradient &) = 0;
+    virtual void rounded_gradient(const paint_rounded_gradient &) = 0;
+};
+// Explicit complete mesh implementation for backends that choose tessellation.
+// There is no automatic fallback for an absent backend handler.
+render_painter *create_mesh_painter(context &);
+
+// One device shared by all windows. Owns textures/targets and supplies a complete
+// painter per context. The context releases it before the device is destroyed.
 struct render_device
 {
     virtual ~render_device() = default;
+    virtual render_painter *create_painter(context &) = 0;
     virtual backend_caps caps() const { return backend_caps::SCISSOR; }
 
     virtual void begin_frame() {}
@@ -1453,6 +1584,7 @@ struct null_surface : render_surface
 // `shared = false` to model a single-window backend in gating tests.
 struct null_device : render_device
 {
+    render_painter *create_painter(context &c) override { return create_mesh_painter(c); }
     // `readable`: read_pixels answers with `pixel` (tests of sampling code).
     bool readable = false;
     color pixel{0, 0, 0, 0};
@@ -1558,6 +1690,13 @@ struct image_opts
     image_fit fit = FIT_CONTAIN;
     color tint = {255, 255, 255, 255};
     f32 radius = 0.0f; // rounded corners (clips the picture)
+};
+
+struct paint_fitted_image
+{
+    rect area{};
+    image_handle image{};
+    image_opts options{};
 };
 
 // Where an `img_w x img_h` image lands inside `area` for `fit`, and which part
@@ -1692,6 +1831,7 @@ struct vulkan_device_opts
     const vulkan_native_device *native = nullptr; // borrowed; copied during creation
     bool validation = false;
     bool tile_cache = false;
+    bool vector_text = true; // HarfBuzz shaping + native graphics Slug; ignored without HarfBuzz
     vulkan_upload_mode upload_mode = vulkan_upload_mode::DIRECT;
     u32 physical_device_index = 0xffffffffu; // automatic: prefer a compatible discrete GPU
     u32 frames_in_flight = 2;
@@ -2119,6 +2259,7 @@ struct text_drag_payload
 // window's copies, so `c->key_pressed[...]` / `c->focus` read as plain fields.
 struct context : interaction_state, window_input
 {
+    render_painter *painter = nullptr; // owned; draw-list storage belongs to it
     render_device *device = nullptr;
     render_surface *surface = nullptr;
     draw_list *dl = nullptr;
@@ -2672,12 +2813,14 @@ struct ui
     // primitives
     // Prepare core vertex/index storage without drawing or flushing. Call during
     // scene setup (or before a large batch); preparation time is real CPU work.
-    // Backend scratch is separate: device->prepare_geometry(capacity).
+    // The active painter owns geometry storage; backend upload scratch remains
+    // separately preparable through device->prepare_geometry(capacity).
     // Invalid counts (> i32 draw limits) return false without changing storage.
     bool prepare_geometry(const geometry_capacity &capacity);
     void draw_triangles(texture_handle tex, const vertex *vertices, i32 vertex_count,
                         const i32 *indices, i32 index_count);
     void draw_rect(rect r, color c);
+    void draw_rounded_gradient(const paint_rounded_gradient &);
     void draw_line(f32 x0, f32 y0, f32 x1, f32 y1, color c, f32 thickness = 1.0f);
     void draw_rounded_rect(rect r, color c, f32 radius = 0.0f);
     // The same with a radius per corner (0 = square): `corner_radii::top(12)`.
@@ -3474,6 +3617,9 @@ void set_text_shaper(context *c, text_shaper *shaper);
 // is never recycled, so the budget may be exceeded briefly rather than drop text.
 void set_text_atlas_budget(context *c, i32 pages);
 i32 text_atlas_pages(const context *c);
+// Borrowed source bytes for a renderer-owned font representation. Valid until
+// context destruction; an invalid handle returns an empty span.
+std::span<const u8> font_bytes(const context *c, font_handle font);
 // Copied into the context. Primary font wins; fallbacks are tried in order.
 bool set_font_fallbacks(context *c, std::span<const font_handle> fonts);
 
@@ -3606,11 +3752,18 @@ i32 violation_count(context *c);
 #include <limits>
 #include <string>
 #include <unordered_map>
+#include <memory_resource>
 #include <fstream>
 #include <chrono>
+#include <algorithm>
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+#include <hb.h>
+#include <hb-ot.h>
+#include <hb-gpu.h>
+#endif
 
 #if defined(PUFFERUI_ENABLE_SDL3)
 #include <SDL3/SDL.h>
@@ -3625,9 +3778,14 @@ i32 violation_count(context *c);
 namespace pui
 {
 // The implementation, in order (one namespace; slices are plain text cuts).
+#include "impl/core_pool.inl"
 #include "impl/core_state.inl"
+#include "impl/harfbuzz_text.inl"
+#include "impl/renderer_mesh_state.inl"
+#include "impl/renderer_overlay_state.inl"
 #include "impl/draw_context.inl"
 #include "impl/input_interact.inl"
+#include "impl/renderer_text_state.inl"
 #include "impl/layout_text.inl"
 #include "impl/dock_style.inl"
 #include "impl/widgets.inl"
@@ -3635,6 +3793,10 @@ namespace pui
 #include "impl/chrome_scroll.inl"
 #include "impl/typed_inputs.inl"
 #include "impl/draw_primitives.inl"
+#include "impl/renderer_primitives.inl"
+#include "impl/renderer_text.inl"
+#include "impl/renderer_widgets.inl"
+#include "impl/renderer_gradient.inl"
 #if defined(PUFFERUI_ENABLE_VULKAN)
 #include "impl/vulkan_shaders.inl"
 #endif
@@ -3645,6 +3807,8 @@ namespace pui
 #include "impl/vulkan_draw.inl"
 #include "impl/vulkan_surface.inl"
 #include "impl/vulkan_cache.inl"
+#include "impl/vulkan_preparation.inl"
+#include "impl/vulkan_text.inl"
 #include "impl/sdl3.inl"
 #include "impl/sdl3_vulkan_host.inl"
 } // namespace pui

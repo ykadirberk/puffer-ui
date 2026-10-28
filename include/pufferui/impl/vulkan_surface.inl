@@ -173,6 +173,14 @@ void surface::make_current(render_device &)
     if (dev->frame && dev->frame->recording) dev->submit();
     slot = (slot + 1) % static_cast<u32>(slots.size());
     if (!dev->begin(slots[slot])) return;
+    slots[slot].geometry_frame_bytes = 0;
+    if (geometry_peak)
+    {
+        const VkDeviceSize bytes = dev->geometry_reservation(
+            geometry_peak, static_cast<VkDeviceSize>(extent.width) * extent.height);
+        if (bytes && !dev->prepare_slot_geometry(slots[slot], bytes) && dev->result != VK_SUCCESS)
+            return;
+    }
     acquired = false;
     if (native)
     {
@@ -201,7 +209,9 @@ void surface::make_current(render_device &)
 void surface::present()
 {
     if (presented || !scene || dev->result != VK_SUCCESS) return;
+    dev->flush_text();
     if (dev->cache_active) dev->cache_flush(true);
+    geometry_peak = std::max(geometry_peak, slots[slot].geometry_frame_bytes);
     presented = true;
     if (!native)
     {
@@ -312,6 +322,23 @@ render_surface *device::make_surface(void *window, i32 width, i32 height)
         if (s->native) vkDestroySurfaceKHR(native.instance, s->native, nullptr);
         delete s;
         return nullptr;
+    }
+    for (auto &slot : s->slots)
+    {
+        slot.pages.reserve(8);
+        slot.waits.reserve(8);
+        // Keep tiny-budget/fault configurations on their existing exact growth
+        // path. Ordinary surfaces prepare their first native page before drawing.
+        if (options.upload_budget_bytes >= options.frames_in_flight * 4ull * 1024 * 1024 &&
+            !prepare_slot_geometry(slot, 1024 * 1024))
+        {
+            for (auto &f : s->slots) destroy_slot(f);
+            s->release_swapchain();
+            if (s->scene) destroy_texture(s->scene);
+            if (s->native) vkDestroySurfaceKHR(native.instance, s->native, nullptr);
+            delete s;
+            return nullptr;
+        }
     }
     surfaces.push_back(s);
     return s;

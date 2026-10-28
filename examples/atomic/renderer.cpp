@@ -1,7 +1,7 @@
 // renderer — implementing the backend contract: a CPU framebuffer device.
 //
-// Shows: `render_device` / `render_surface` (the only two interfaces a backend
-// must implement), the `vertex` format, texture upload/destroy, scissor clipping,
+// Shows: `render_device` / `render_surface`, explicitly choosing a complete
+// `render_painter`, the vertex format, texture upload/destroy, scissor clipping,
 // triangle rasterization, and a PPM dump you can open in any image viewer.
 //
 //   pui_ex_renderer     (no SDL; writes pui_renderer_example.ppm)
@@ -45,6 +45,7 @@ inline u8 to_u8(f32 v)
 
 struct cpu_device : render_device
 {
+    render_painter *create_painter(context &c) override { return create_mesh_painter(c); }
     cpu_surface surf;
     cpu_texture *fb = nullptr;
     std::vector<cpu_texture *> textures;

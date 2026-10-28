@@ -26,6 +26,7 @@ option(PUFFERUI_BUILD_TESTS "Build tests and benchmarks" ${PUFFERUI_TOP_LEVEL})
 option(PUFFERUI_BUILD_EXAMPLES "Build examples and tutorials" ${PUFFERUI_TOP_LEVEL})
 option(PUFFERUI_WITH_SDL3 "Build the SDL3 backend" ON)
 option(PUFFERUI_USE_SYSTEM_SDL3 "Use find_package(SDL3) instead of vendored SDL" OFF)
+option(PUFFERUI_WITH_VULKAN "Build the optional Vulkan 1.3 renderer" OFF)
 
 # Link-time optimization for release builds. No /fp:fast: the golden-image
 # tests compare rendered pixels across compilers, and fast-math changes
@@ -109,6 +110,7 @@ if(PUFFERUI_WITH_SDL3)
 endif()
 
 # pui_add_exe(<name> SOURCES <files...> [SDL3] [DEFS <defines...>])
+include(cmake/PufferUIHarfBuzz.cmake)
 include(cmake/PufferUIVulkan.cmake)
 # One executable on the prebuilt library (SDL3 variant with SDL3), warnings
 # on, and PUFFERUI_ASSET_DIR set so it can load the bundled fonts.
@@ -175,12 +177,26 @@ if(PUFFERUI_WITH_VULKAN)
     endforeach()
   endfunction()
   pui_add_vulkan_test(pui_vulkan_tests SOURCES tests/test_vulkan.cpp)
+  if(PUFFERUI_WITH_HARFBUZZ)
+    pui_add_vulkan_test(pui_harfbuzz_tests SOURCES tests/test_harfbuzz.cpp)
+    pui_add_vulkan_test(pui_vulkan_native_text_tests SOURCES tests/test_vulkan_native_text.cpp RUNS "--staged")
+    target_include_directories(pui_vulkan_native_text_tests PRIVATE vendored/stb)
+    pui_add_vulkan_test(pui_harfbuzz_interaction_tests FULL_ONLY SOURCES tests/test_harfbuzz_interaction.cpp RUNS "--staged")
+    target_include_directories(pui_harfbuzz_interaction_tests PRIVATE vendored/stb)
+  endif()
   pui_add_vulkan_test(pui_vulkan_external_tests SOURCES tests/test_vulkan_external.cpp)
   pui_add_vulkan_test(pui_vulkan_cache_tests SOURCES tests/test_vulkan_cache.cpp)
   pui_add_vulkan_test(pui_vulkan_interaction_tests SOURCES tests/test_vulkan_interaction.cpp RUNS "--staged")
   pui_add_vulkan_test(pui_vulkan_fault_tests SOURCES tests/test_vulkan_faults.cpp)
   pui_add_vulkan_test(pui_vulkan_internal_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VULKAN_INTERNAL_TESTS)
   if(PUFFERUI_WITH_SDL3)
+    pui_add_vulkan_test(pui_vulkan_native_spiral_tests FULL_ONLY
+        SOURCES tests/test_vulkan_native_spiral.cpp DEFS PUFFERUI_NATIVE_TELEMETRY
+        RUNS "--staged" "--bitmap" "--bitmap --staged")
+    pui_add_vulkan_test(pui_vulkan_example_font_tests SOURCES tests/test_vulkan_example_font.cpp)
+    pui_add_vulkan_test(pui_vulkan_example_validation_tests SOURCES tests/test_vulkan_example_validation.cpp)
+    set_property(GLOBAL APPEND PROPERTY PUFFERUI_VULKAN_TARGETS pui_tut_vulkan_manual)
+    pui_vulkan_case(pui_tut_vulkan_manual false --selftest --frames 8 --resize 760x520)
     pui_add_vulkan_test(pui_vulkan_wsi_tests SOURCES tests/test_vulkan_wsi.cpp)
     pui_add_vulkan_test(pui_vulkan_showcase_tests SOURCES tests/test_vulkan_showcase.cpp)
     pui_add_vulkan_test(pui_vulkan_spiral_tests FULL_ONLY SOURCES tests/test_vulkan_spiral.cpp
@@ -204,6 +220,7 @@ pui_add_exe(pui_core_tests SOURCES
     tests/test_widgets.cpp
     tests/test_dock.cpp
     tests/test_render.cpp
+    tests/test_renderer_boundary.cpp
     tests/test_components.cpp
     tests/test_ergonomics.cpp
     tests/test_platform.cpp
@@ -273,6 +290,7 @@ pui_add_selftest_exe(pui_showcase SDL3 SOURCES examples/pui_showcase.cpp)
 if(PUFFERUI_WITH_VULKAN)
 pui_add_selftest_exe(pui_showcase_vulkan VULKAN SOURCES examples/pui_showcase.cpp)
 pui_add_selftest_exe(pui_ex_vulkan VULKAN SOURCES examples/atomic/vulkan.cpp)
+pui_add_selftest_exe(pui_tut_vulkan_manual VULKAN SOURCES examples/tutorial/vulkan_manual.cpp)
 endif()
 
 # ---------------------------------------------------------------------------

@@ -792,14 +792,7 @@ namespace
 // Vertex-colored quad: c0..c3 at the corners TL, TR, BR, BL.
 void gradient_quad(ui &u, rect r, color c0, color c1, color c2, color c3)
 {
-    vertex v[4] = {
-        {r.x, r.y, 0, 0, c0},
-        {r.right(), r.y, 0, 0, c1},
-        {r.right(), r.bottom(), 0, 0, c2},
-        {r.x, r.bottom(), 0, 0, c3},
-    };
-    const i32 idx[6] = {0, 1, 2, 0, 2, 3};
-    u.draw_triangles(nullptr, v, 4, idx, 6);
+    u.ctx->painter->gradient({r, c0, c1, c2, c3});
 }
 
 void checker(ui &u, rect r, f32 cell)
@@ -1351,14 +1344,7 @@ namespace detail
 {
 inline void thick_line(ui &u, vec2 a, vec2 b, f32 thickness, color c)
 {
-    vec2 d{b.x - a.x, b.y - a.y};
-    const f32 l = max2(std::sqrt(d.x * d.x + d.y * d.y), 0.001f);
-    const vec2 n{-d.y / l * thickness * 0.5f, d.x / l * thickness * 0.5f};
-    const vec2 pts[4] = {{a.x + n.x, a.y + n.y},
-                         {b.x + n.x, b.y + n.y},
-                         {b.x - n.x, b.y - n.y},
-                         {a.x - n.x, a.y - n.y}};
-    u.draw_polygon(std::span<const vec2>(pts, 4), c);
+    u.ctx->painter->stroke({a, b, c, thickness});
 }
 } // namespace detail
 

@@ -1,5 +1,4 @@
 # Optional native renderer, independent of SDL_Renderer's Vulkan implementation.
-option(PUFFERUI_WITH_VULKAN "Build the optional Vulkan 1.3 renderer" OFF)
 if(PUFFERUI_WITH_VULKAN)
   find_package(Vulkan 1.3 REQUIRED)
   if(PUFFERUI_WITH_SDL3)
@@ -9,6 +8,13 @@ if(PUFFERUI_WITH_VULKAN)
   endif()
   target_compile_definitions(pufferui_vulkan PUBLIC PUFFERUI_ENABLE_VULKAN)
   target_link_libraries(pufferui_vulkan PUBLIC Vulkan::Vulkan)
+  if(PUFFERUI_WITH_HARFBUZZ)
+    target_compile_definitions(pufferui_vulkan PUBLIC PUFFERUI_ENABLE_HARFBUZZ)
+    target_link_libraries(pufferui_vulkan PUBLIC
+      $<BUILD_INTERFACE:harfbuzz-gpu> $<INSTALL_INTERFACE:harfbuzz::harfbuzz-gpu>)
+    install(FILES "docs/licenses/harfbuzz-slug.txt"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/pufferui/licenses")
+  endif()
   set_target_properties(pufferui_vulkan PROPERTIES EXPORT_NAME vulkan)
   add_library(pufferui::vulkan ALIAS pufferui_vulkan)
   install(TARGETS pufferui_vulkan EXPORT pufferuiVulkanTargets)

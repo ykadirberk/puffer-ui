@@ -41,7 +41,17 @@ struct page
     VkDeviceSize capacity = 0, allocation = 0, used = 0;
     bool coherent = false;
     bool staged = false;
+    bool geometry = false;
     VkDeviceSize device_allocation = 0;
+};
+struct graphics_binding
+{
+    VkPipeline pipeline = VK_NULL_HANDLE;
+    VkPipelineLayout layout = VK_NULL_HANDLE;
+    VkExtent2D extent{};
+    VkRect2D scissor{};
+    VkDescriptorSet descriptors[2]{};
+    bool scissor_known = false;
 };
 struct frame_slot
 {
@@ -52,8 +62,11 @@ struct frame_slot
     u64 query_serial = 0;
     u64 serial = 0;
     bool recording = false;
+    VkDeviceSize geometry_chunk_bytes = 0;
+    VkDeviceSize geometry_frame_bytes = 0;
     std::vector<page> pages;
     std::vector<VkSemaphoreSubmitInfo> waits;
+    graphics_binding graphics{};
 };
 struct cache_event
 {
@@ -90,6 +103,7 @@ struct surface : render_surface, dispatch
     bool history_valid = false;
     u32 cache_full_misses = 0, cache_cooldown = 0;
     u64 history_bytes = 0;
+    VkDeviceSize geometry_peak = 0;
     std::vector<cache_record> history;
     void make_current(render_device &) override;
     texture_handle default_target() override { return scene; }
@@ -104,7 +118,35 @@ struct pipeline_pair
 {
     VkFormat format = VK_FORMAT_UNDEFINED;
     VkPipeline blend = VK_NULL_HANDLE, copy = VK_NULL_HANDLE;
+    VkPipeline text = VK_NULL_HANDLE;
 };
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+struct glyph_instance
+{
+    f32 left, top, right, bottom;
+    f32 baseline_x, baseline_y, scale, gamma;
+    f32 red, green, blue, alpha;
+    u32 location, reserved[3]{};
+};
+static_assert(sizeof(glyph_instance) == 64);
+struct glyph_chunk
+{
+    page storage;
+    VkDescriptorSet descriptor = VK_NULL_HANDLE;
+};
+struct native_text
+{
+    VkDescriptorSetLayout descriptor_layout = VK_NULL_HANDLE;
+    VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
+    VkDescriptorPool pool = VK_NULL_HANDLE;
+    VkShaderModule vertex = VK_NULL_HANDLE, fragment = VK_NULL_HANDLE;
+    std::vector<glyph_chunk> chunks;
+    std::vector<glyph_instance> pending;
+    u32 pending_chunk = 0;
+    usize batch_limit = 2048;
+    u64 bytes = 0;
+};
+#endif
 struct device : render_device, dispatch
 {
     vulkan_device_opts options{};
@@ -132,8 +174,19 @@ struct device : render_device, dispatch
     bool has_clip = false;
     rect clip{};
     u64 next_serial = 1, generation = 1;
+    u64 known_completed = 0;
+    u32 paint_depth = 0;
+    bool text_flushing = false;
     u32 timestamp_bits = 0;
     vulkan_stats stats{};
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    native_text *text = nullptr;
+    bool initialize_text();
+    bool text_chunk(VkDeviceSize required);
+    bool glyph(context *, font_handle, u32, vec2, f32, color);
+    void release_text();
+#endif
+    void flush_text();
     bool cache_active = false, replay_clipped = false;
     rect replay_clip{};
     u64 cache_bytes = 0;
@@ -176,8 +229,14 @@ struct device : render_device, dispatch
     bool valid(texture *t) const;
     bool commands();
     void transition(texture *t, VkImageLayout layout);
-    VkPipeline pipeline(VkFormat format, bool blend);
-    void paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32 ic, bool blend);
+    VkPipeline pipeline(VkFormat format, bool blend, bool glyphs = false);
+    void paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32 ic, bool blend,
+               i32 index_base = 0);
+    bool prepare_geometry(const geometry_capacity &) override;
+    bool prepare_slot_geometry(frame_slot &, VkDeviceSize bytes);
+    VkDeviceSize geometry_reservation(VkDeviceSize requested, VkDeviceSize pixels) const;
+    void bind_graphics(VkPipeline, VkPipelineLayout, VkExtent2D, VkRect2D, VkDescriptorSet, u32);
+    render_painter *create_painter(context &c) override;
     backend_caps caps() const override
     {
         return backend_caps::SCISSOR | backend_caps::RENDER_TARGETS |
@@ -205,6 +264,7 @@ struct device : render_device, dispatch
     void clear(color c) override;
     void set_clip(const rect *r) override
     {
+        flush_text();
         has_clip = r != nullptr;
         if (r) clip = *r;
         if (target)
@@ -220,6 +280,12 @@ struct device : render_device, dispatch
     void draw(texture_handle tex, const vertex *v, i32 vc, const i32 *idx, i32 ic) override;
     void blit(texture_handle src, const rect *sr, texture_handle dst, const rect *dr) override;
     bool read_pixels(texture_handle t, i32 x, i32 y, i32 w, i32 h, u8 *rgba) override;
+};
+struct paint_guard
+{
+    device &owner;
+    explicit paint_guard(device &d) : owner(d) { ++owner.paint_depth; }
+    ~paint_guard() { --owner.paint_depth; }
 };
 bool device::check(VkResult r, const char *operation)
 {
@@ -454,6 +520,9 @@ bool device::initialize(const vulkan_device_opts &opts)
     }
     const u8 pixel[4] = {255, 255, 255, 255};
     white = make_texture(1, 1, false, pixel);
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    if (options.vector_text && !initialize_text()) return false;
+#endif
     return white && pipeline(VK_FORMAT_R8G8B8A8_UNORM, true) &&
            pipeline(VK_FORMAT_R8G8B8A8_UNORM, false);
 }
@@ -487,7 +556,11 @@ device::~device()
         {
             vkDestroyPipeline(native.device, p.blend, nullptr);
             vkDestroyPipeline(native.device, p.copy, nullptr);
+            if (p.text) vkDestroyPipeline(native.device, p.text, nullptr);
         }
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+        release_text();
+#endif
         for (auto pool : descriptor_pools) vkDestroyDescriptorPool(native.device, pool, nullptr);
         if (vertex_shader) vkDestroyShaderModule(native.device, vertex_shader, nullptr);
         if (fragment_shader) vkDestroyShaderModule(native.device, fragment_shader, nullptr);

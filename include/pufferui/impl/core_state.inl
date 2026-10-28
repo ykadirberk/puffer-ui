@@ -219,11 +219,46 @@ struct glyph
     u32 gen = 0;   // that page's generation when packed (stale once it is recycled)
 };
 
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+struct harfbuzz_font_data
+{
+    retained_pool_resource outline_pool{8192};
+    struct outline
+    {
+        hb_glyph_extents_t extents{};
+        std::pmr::vector<u8> data;
+        u32 location = 0;
+        u32 chunk = 0;
+        bool uploaded = false;
+        explicit outline(std::pmr::memory_resource *source = std::pmr::get_default_resource())
+            : data(source)
+        {
+        }
+    };
+    hb_font_t *shaping = nullptr;
+    hb_gpu_draw_t *encoder = nullptr;
+    std::pmr::unordered_map<u32, outline> outlines{&outline_pool};
+    ~harfbuzz_font_data()
+    {
+        hb_font_destroy(shaping);
+        hb_gpu_draw_destroy(encoder);
+    }
+};
+#endif
 struct font_data
 {
     std::vector<u8> buffer;
     stbtt_fontinfo info{};
     bool ok = false;
+    font_data() = default;
+    font_data(const font_data &) = delete;
+    font_data &operator=(const font_data &) = delete;
+    font_data(font_data &&) noexcept = default;
+    font_data &operator=(font_data &&) noexcept = default;
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    using outline = harfbuzz_font_data::outline;
+    harfbuzz_font_data *harfbuzz = nullptr; // owned by text_store; stable across font-vector growth
+#endif
 };
 
 template <class V> struct flat_map
@@ -353,8 +388,58 @@ struct kerning_memo
     }
 };
 
+// Renderer cache vectors transfer their allocator together with their storage.
+// Empty/default vectors keep the established standard-allocation path; vector
+// text opts into a context-owned pool. Propagating moves avoid a hidden deep
+// copy when a freshly shaped run enters the direct cache or its victim slot.
+template <class T> struct renderer_pool_allocator
+{
+    using value_type = T;
+    using propagate_on_container_move_assignment = std::true_type;
+    std::pmr::memory_resource *source = nullptr;
+    renderer_pool_allocator() = default;
+    explicit renderer_pool_allocator(std::pmr::memory_resource *value) : source(value) {}
+    template <class U>
+    renderer_pool_allocator(const renderer_pool_allocator<U> &other) : source(other.source)
+    {
+    }
+    T *allocate(usize count)
+    {
+        if (!source) return std::allocator<T>{}.allocate(count);
+        if (count > std::numeric_limits<usize>::max() / sizeof(T))
+            throw std::bad_array_new_length();
+        return static_cast<T *>(source->allocate(count * sizeof(T), alignof(T)));
+    }
+    void deallocate(T *pointer, usize count)
+    {
+        if (source)
+            source->deallocate(pointer, count * sizeof(T), alignof(T));
+        else
+            std::allocator<T>{}.deallocate(pointer, count);
+    }
+    template <class U> bool operator==(const renderer_pool_allocator<U> &other) const noexcept
+    {
+        return source == other.source;
+    }
+};
+
 struct text_store
 {
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    // Declared first so every cached run dies before its backing pool. Large
+    // unbounded paragraphs pass through upstream; labels reuse size classes.
+    retained_pool_resource run_pool{65536};
+    hb_buffer_t *shaping_buffer = nullptr;
+    bool vector_enabled = false;
+    ~text_store()
+    {
+        hb_buffer_destroy(shaping_buffer);
+        for (auto &font : fonts)
+        {
+            delete font.harfbuzz;
+        }
+    }
+#endif
     std::vector<font_data> fonts;
     std::vector<font_handle> fallbacks;
     text_shaper *shaper = nullptr; // set_text_shaper; nullptr = built-in
@@ -371,6 +456,9 @@ struct text_store
         i32 sub;
         i32 density_q;
         i32 gamma_q; // theme::text_gamma, hundredths
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+        bool glyph_index = false;
+#endif
         bool operator==(const glyph_key &) const = default;
     };
     struct glyph_key_hash
@@ -383,6 +471,9 @@ struct text_store
             h = h * 0x9E3779B97F4A7C15ull + static_cast<u64>(k.sub);
             h = h * 0x9E3779B97F4A7C15ull + static_cast<u64>(k.density_q);
             h = h * 0x9E3779B97F4A7C15ull + static_cast<u64>(k.gamma_q);
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+            if (k.glyph_index) h ^= 0x4842474c595048ull;
+#endif
             h ^= h >> 33;
             h *= 0xff51afd7ed558ccdull;
             h ^= h >> 33;
@@ -398,6 +489,11 @@ struct text_store
     // from the run — one cache, no decode and no glyph-map lookups on hit.
     struct cached_glyph
     {
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+        u32 glyph_index = 0, cluster = 0;
+        vec2 offset{};
+        bool vector = false;
+#endif
         f32 kern_in = 0.0f; // kerning between the previous glyph and this one
         u32 cp = 0;
         glyph g{};      // subpixel bin 0 (also the advance)
@@ -418,7 +514,12 @@ struct text_store
         // has been recycled since, the draw loop needs no per-glyph checks.
         i32 epoch = -1;
         i32 build_epoch = -1; // immutable: width was summed before any later recycling
-        std::vector<cached_glyph> gs;
+        std::vector<cached_glyph, renderer_pool_allocator<cached_glyph>> gs;
+        text_layout() = default;
+        explicit text_layout(std::pmr::memory_resource *source)
+            : gs(renderer_pool_allocator<cached_glyph>(source))
+        {
+        }
         f32 built_size = 0.0f;
         bool builtin = false;
         // Last ellipsis cut, in UTF-8 bytes. Exact size matters: layout keys
@@ -573,6 +674,28 @@ struct sweep_clock
     bool valid = false;
 };
 
+// Stable nodes are allocated in chunks and returned to their context's pool.
+// Keep unordered-map hashing, traversal, reference stability and TTL semantics;
+// only the node allocator changes. Declare ownership before the map base so
+// the map releases every element before its pool is destroyed.
+struct state_node_pool
+{
+    retained_pool_resource resource;
+    explicit state_node_pool(std::pmr::memory_resource *upstream) : resource(256, upstream) {}
+};
+template <class Value>
+struct pooled_state_map : private state_node_pool, std::pmr::unordered_map<uiid, Value>
+{
+    using table = std::pmr::unordered_map<uiid, Value>;
+    explicit pooled_state_map(
+        std::pmr::memory_resource *upstream = std::pmr::get_default_resource())
+        : state_node_pool(upstream), table(&resource)
+    {
+    }
+    pooled_state_map(const pooled_state_map &) = delete;
+    pooled_state_map &operator=(const pooled_state_map &) = delete;
+};
+
 struct anim_store
 {
     struct entry
@@ -589,7 +712,7 @@ struct anim_store
         bool initialized = false;
         bool settled = true;
     };
-    std::unordered_map<uiid, entry> map;
+    pooled_state_map<entry> map;
     sweep_clock gc;
 };
 
@@ -607,7 +730,7 @@ struct rect_store
         u64 stepped_frame = ~0ull; // the frame it was last stepped (double-step guard)
         bool settled = true;
     };
-    std::unordered_map<uiid, entry> map;
+    pooled_state_map<entry> map;
     sweep_clock gc;
 };
 
@@ -626,109 +749,6 @@ struct scroll_store
     };
     std::unordered_map<uiid, entry> map;
     sweep_clock gc;
-};
-
-// Records what a popup draws while it lives in a host overlay window: draws and
-// clips are kept - shifted into the overlay's pixels as they arrive (`ox`, `oy`:
-// the overlay's origin in the parent's framebuffer) - and replayed as they are
-// onto the overlay's surface at end_frame; texture work (the glyph atlas may
-// grow mid-popup) goes straight to the real device. Render-target effects
-// (blur) are skipped inside overlays.
-struct overlay_recorder : render_device
-{
-    render_device *real = nullptr;
-    struct cmd
-    {
-        bool is_clip = false;
-        bool clip_on = false;
-        rect clip{};
-        texture_handle tex = nullptr;
-        i32 v0 = 0, vn = 0, i0 = 0, in = 0;
-    };
-    std::vector<cmd> cmds;
-    std::vector<vertex> verts;
-    std::vector<i32> idx;
-    f32 ox = 0.0f, oy = 0.0f;
-
-    void reset(f32 origin_x, f32 origin_y)
-    {
-        cmds.clear();
-        verts.clear();
-        idx.clear();
-        ox = origin_x;
-        oy = origin_y;
-    }
-    backend_caps caps() const override { return real ? real->caps() : backend_caps::SCISSOR; }
-    texture_handle create_texture(i32 w, i32 h, const u8 *rgba) override
-    {
-        return real ? real->create_texture(w, h, rgba) : nullptr;
-    }
-    void update_texture(texture_handle t, i32 x, i32 y, i32 w, i32 h, const u8 *rgba) override
-    {
-        if (real) real->update_texture(t, x, y, w, h, rgba);
-    }
-    void destroy_texture(texture_handle t) override
-    {
-        if (real) real->destroy_texture(t);
-    }
-    void set_texture_filter(texture_handle t, bool linear) override
-    {
-        if (real) real->set_texture_filter(t, linear);
-    }
-    void set_cursor(cursor c) override
-    {
-        if (real) real->set_cursor(c);
-    }
-    void set_clip(const rect *clip) override
-    {
-        cmd c;
-        c.is_clip = true;
-        c.clip_on = clip != nullptr;
-        if (clip) c.clip = rect{clip->x - ox, clip->y - oy, clip->w, clip->h};
-        cmds.push_back(c);
-    }
-    void draw(texture_handle tex, const vertex *v, i32 vn, const i32 *ix, i32 in) override
-    {
-        cmd c;
-        c.tex = tex;
-        c.v0 = static_cast<i32>(verts.size());
-        c.vn = vn;
-        c.i0 = static_cast<i32>(idx.size());
-        c.in = in;
-        verts.insert(verts.end(), v, v + vn);
-        for (vertex *p = verts.data() + c.v0, *end = p + vn; p != end; ++p)
-        {
-            p->x -= ox;
-            p->y -= oy;
-        }
-        idx.insert(idx.end(), ix, ix + in);
-        cmds.push_back(c);
-    }
-    // Onto the overlay, as recorded (already in its pixels): no copies.
-    void replay(render_device &dev) const
-    {
-        for (const cmd &c : cmds)
-        {
-            if (c.is_clip)
-                dev.set_clip(c.clip_on ? &c.clip : nullptr);
-            else
-                dev.draw(c.tex, verts.data() + c.v0, c.vn, idx.data() + c.i0, c.in);
-        }
-        dev.set_clip(nullptr);
-    }
-};
-
-// A popup hosted in an OS overlay window (window_host::open_overlay).
-struct overlay_entry
-{
-    window *parent = nullptr;
-    uiid id = 0;
-    window_host::overlay_handle h{};
-    rect area{};         // local logical, the popup's rect
-    rect placed{};       // where the host window currently is (local logical)
-    bool used = false;   // drawn this frame (unused overlays close at end_frame)
-    bool failed = false; // the host could not open it: the popup draws in-window
-    overlay_recorder rec;
 };
 
 struct a11y_tree
@@ -770,12 +790,14 @@ struct text_area_scratch
     ~text_area_scratch() { delete nested; }
 };
 
+struct overlay_entry;
 struct ctx_stores
 {
     // Popup overlays; heap-allocated so a recorder's address stays put while
     // it stands in for the device.
     std::vector<overlay_entry *> overlays;
-    render_device *overlay_real = nullptr; // the device while a recorder stands in
+    render_device *overlay_real = nullptr;     // the device while a recorder stands in
+    render_painter *overlay_painter = nullptr; // borrowed while its overlay paints
     edit_store edits;
     anim_store anim;
     rect_store rects; // u.animate_rect
@@ -793,6 +815,7 @@ struct ctx_stores
     };
     std::vector<caption_rect> caption_drags;
     std::vector<caption_rect> caption_hits;
+    usize caption_candidates = 0; // includes clipped/blocked/non-focusable submissions
     // Finished file dialogs waiting for take_file_dialog (few at a time).
     struct dialog_entry
     {

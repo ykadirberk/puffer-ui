@@ -6,6 +6,13 @@ accessibility and popup overlays. Vulkan records and presents the graphics;
 this route does not create an `SDL_Renderer`. The existing SDL renderer remains
 the default. Core-only and SDL-only applications need no Vulkan SDK.
 
+This branch starts from the first native Vulkan renderer (`8c62fc4`). Shapes use
+its triangle geometry and blur pyramid. With HarfBuzz built, the default factory
+shapes text with HarfBuzz and draws upstream Slug outlines through a separate
+instanced graphics pipeline. There is no SDF shape painter or compute/tile
+interpreter. See [HarfBuzz text](harfbuzz.md) and the
+[explicit ownership tutorial](tutorial/10-vulkan-without-shorthand.md).
+
 ## Build and run
 
 Install a Vulkan SDK for compilation and a Vulkan-capable driver for execution.
@@ -46,17 +53,19 @@ It requires the SDK's `glslangValidator`. Validation mode additionally requires
 
 The backend prefers a compatible discrete physical device, or uses the explicit
 `vulkan_device_opts::physical_device_index`. This cannot expose a device whose
-driver manifest is missing from the system loader's discovery. On this machine,
-the RX 9070 XT registry entry points to a nonexistent manifest. Qualification
-uses an existing AMD package only in the child process environment:
+driver manifest is missing from the system loader's discovery. An earlier
+qualification required a machine-specific child-process manifest override:
 
 ```powershell
 $env:VK_DRIVER_FILES = 'C:\Windows\System32\DriverStore\FileRepository\amdvlk.inf_amd64_865a9c4fff871fca\amd-vulkan64.json'
 out/build/x64-release/Release/pui_showcase_vulkan.exe
 ```
 
-This path is a machine-specific qualification receipt, not a library setting or
-a portable driver location. The backend never modifies driver registration.
+This historical path is not a portable driver location. The current native
+qualification selects the RX 9070 XT without a manifest override. Ordinary
+launches use the executable directly, including from Visual Studio; Python is
+optional. `tools/run_vulkan_showcase.py --dry-run` can diagnose stale discovery
+and verify a child-process workaround. The backend never modifies registration.
 `VK_DRIVER_FILES` is the loader's documented process-level driver selection
 mechanism ([Khronos driver discovery](https://github.com/KhronosGroup/Vulkan-Loader/blob/main/docs/LoaderDriverInterface.md)).
 For measured runs, `tools/compare_vulkan.py --require-device "AMD Radeon RX 9070 XT"`
@@ -212,7 +221,9 @@ example with explicit destruction before backend shutdown.
 `upload_budget_bytes` defaults to 256 MiB and bounds actual Vulkan allocation
 requirements for upload pages, optional local geometry and temporary readback.
 Completed slots are reclaimed first; backpressure waits for necessary work
-instead of growing without limit. One original draw remains contiguous. Large
+instead of growing without limit. Large indexed draws can be split into ordered
+triangle spans to reuse a prepared page; vertex arithmetic and primitive order
+remain unchanged. Large
 geometry pages do not replace the small upload pages. Non-coherent mappings are
 flushed and readbacks invalidated explicitly. Images use dedicated allocations
 and submission-based retirement; they are counted separately by `image_bytes` /

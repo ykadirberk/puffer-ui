@@ -5,10 +5,19 @@
 #if defined(PUFFERUI_ENABLE_VULKAN)
 namespace vk_detail
 {
-VkPipeline device::pipeline(VkFormat format, bool blend)
+struct byte_channel_table
+{
+    f32 values[256]{};
+    constexpr byte_channel_table()
+    {
+        for (u32 i = 0; i < 256; ++i) values[i] = static_cast<f32>(i) / 255.0f;
+    }
+};
+static constexpr byte_channel_table BYTE_CHANNELS{};
+VkPipeline device::pipeline(VkFormat format, bool blend, bool glyphs)
 {
     for (auto &p : pipelines)
-        if (p.format == format) return blend ? p.blend : p.copy;
+        if (p.format == format) return glyphs ? p.text : (blend ? p.blend : p.copy);
     if (!vertex_shader)
     {
         VkShaderModuleCreateInfo sc{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
@@ -102,11 +111,38 @@ VkPipeline device::pipeline(VkFormat format, bool blend)
         vkDestroyPipeline(native.device, pair.blend, nullptr);
         return VK_NULL_HANDLE;
     }
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    if (text)
+    {
+        stages[0].module = text->vertex;
+        stages[1].module = text->fragment;
+        binding.stride = sizeof(glyph_instance);
+        binding.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+        const VkVertexInputAttributeDescription text_attributes[] = {
+            {0, 0, VK_FORMAT_R32G32B32A32_SFLOAT, 0},
+            {1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, 16},
+            {2, 0, VK_FORMAT_R32G32B32A32_SFLOAT, 32},
+            {3, 0, VK_FORMAT_R32_UINT, 48}};
+        vi.vertexAttributeDescriptionCount = 4;
+        vi.pVertexAttributeDescriptions = text_attributes;
+        pc.layout = text->pipeline_layout;
+        attachment.blendEnable = VK_TRUE;
+        if (!check(vkCreateGraphicsPipelines(native.device, VK_NULL_HANDLE, 1, &pc, nullptr,
+                                             &pair.text),
+                   "vkCreateGraphicsPipelines(Slug)"))
+        {
+            vkDestroyPipeline(native.device, pair.blend, nullptr);
+            vkDestroyPipeline(native.device, pair.copy, nullptr);
+            return VK_NULL_HANDLE;
+        }
+    }
+#endif
     pipelines.push_back(pair);
     return blend ? pair.blend : pair.copy;
 }
 void device::set_target(texture_handle handle)
 {
+    flush_text();
     auto *t = static_cast<texture *>(handle);
     if (!t && current_surface) t = current_surface->scene;
     if (t && (!valid(t) || !t->target))
@@ -124,6 +160,7 @@ void device::set_target(texture_handle handle)
 }
 void device::clear(color c)
 {
+    flush_text();
     if (!target && current_surface) target = current_surface->scene;
     if (current_surface && current_surface->suspended && target == current_surface->scene) return;
     if (cache_active && cache_add(cache_event::CLEAR, nullptr, nullptr, 0, nullptr, 0, c)) return;
@@ -139,8 +176,10 @@ void device::clear(color c)
     vkCmdClearColorImage(frame->command, target->image, target->layout, &value, 1, &range);
     ++target->revision;
 }
-void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32 ic, bool blend)
+void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32 ic, bool blend,
+                   i32 index_base)
 {
+    paint_guard drawing(*this);
     if (current_surface && current_surface->suspended && target == current_surface->scene) return;
     if (!valid(target) || !sample || !v || !idx || vc <= 0 || ic <= 0 || ic % 3) return;
     if (!valid(sample))
@@ -154,11 +193,59 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
         return;
     }
     for (i32 i = 0; i < ic; ++i)
-        if (idx[i] < 0 || idx[i] >= vc)
+        if (idx[i] < index_base || static_cast<i64>(idx[i]) - index_base >= vc)
         {
             fail("Vulkan index out of bounds");
             return;
         }
+    if (!commands()) return;
+    const VkDeviceSize chunk =
+        frame->geometry_chunk_bytes
+            ? frame->geometry_chunk_bytes
+            : std::min<VkDeviceSize>(
+                  1024 * 1024, options.upload_budget_bytes /
+                                   (options.upload_mode == vulkan_upload_mode::STAGED ? 2 : 1));
+    if (static_cast<VkDeviceSize>(vc) * 32 + static_cast<VkDeviceSize>(ic) * 4 > chunk &&
+        chunk >= 108)
+    {
+        // Preserve triangle order and each original vertex's float arithmetic.
+        // Dense index spans share their contiguous source vertices. A sparse
+        // triangle uses three stack copies rather than a huge unused interval.
+        for (i32 start = 0; start < ic;)
+        {
+            i32 end = start, low = 0x7fffffff, high = 0;
+            while (end < ic)
+            {
+                const i32 lo =
+                    std::min(low, std::min(idx[end], std::min(idx[end + 1], idx[end + 2])));
+                const i32 hi =
+                    std::max(high, std::max(idx[end], std::max(idx[end + 1], idx[end + 2])));
+                if ((static_cast<VkDeviceSize>(hi) - lo + 1) * 32 +
+                        static_cast<VkDeviceSize>(end - start + 3) * 4 >
+                    chunk)
+                    break;
+                low = lo;
+                high = hi;
+                end += 3;
+            }
+            if (end == start)
+            {
+                const vertex triangle[] = {v[idx[start] - index_base],
+                                           v[idx[start + 1] - index_base],
+                                           v[idx[start + 2] - index_base]};
+                const i32 local[] = {0, 1, 2};
+                paint(sample, triangle, 3, local, 3, blend);
+                start += 3;
+            }
+            else
+            {
+                paint(sample, v + low - index_base, high - low + 1, idx + start, end - start, blend,
+                      low);
+                start = end;
+            }
+        }
+        return;
+    }
     double left = 0, top = 0, right = target->width, bottom = target->height;
     if (has_clip)
     {
@@ -198,11 +285,17 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
                        v[i].y,
                        v[i].u,
                        v[i].v,
-                       v[i].c.r / 255.0f,
-                       v[i].c.g / 255.0f,
-                       v[i].c.b / 255.0f,
-                       v[i].c.a / 255.0f};
-    std::memcpy(p->mapped + offset + vertex_bytes, idx, static_cast<usize>(index_bytes));
+                       BYTE_CHANNELS.values[v[i].c.r],
+                       BYTE_CHANNELS.values[v[i].c.g],
+                       BYTE_CHANNELS.values[v[i].c.b],
+                       BYTE_CHANNELS.values[v[i].c.a]};
+    if (!index_base)
+        std::memcpy(p->mapped + offset + vertex_bytes, idx, static_cast<usize>(index_bytes));
+    else
+    {
+        auto *out = reinterpret_cast<i32 *>(p->mapped + offset + vertex_bytes);
+        for (i32 i = 0; i < ic; ++i) out[i] = idx[i] - index_base;
+    }
     const VkBuffer geometry_buffer = p->staged ? p->device_buffer : p->buffer;
     if (p->staged)
     {
@@ -246,22 +339,15 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
     if (!start_rendering(target)) return;
     const VkPipeline pipe = pipeline(target->format, blend);
     if (!pipe) return;
-    vkCmdBindPipeline(frame->command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipe);
-    VkViewport viewport{0, 0, static_cast<float>(target->width), static_cast<float>(target->height),
-                        0, 1};
     VkRect2D scissor{{static_cast<i32>(left), static_cast<i32>(top)},
                      {static_cast<u32>(right - left), static_cast<u32>(bottom - top)}};
-    vkCmdSetViewport(frame->command, 0, 1, &viewport);
-    vkCmdSetScissor(frame->command, 0, 1, &scissor);
-    const float extent[2] = {static_cast<float>(target->width), static_cast<float>(target->height)};
-    vkCmdPushConstants(frame->command, pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0,
-                       sizeof(extent), extent);
     vkCmdBindVertexBuffers(frame->command, 0, 1, &geometry_buffer, &offset);
     vkCmdBindIndexBuffer(frame->command, geometry_buffer, offset + vertex_bytes,
                          VK_INDEX_TYPE_UINT32);
     const VkDescriptorSet descriptor = sample->descriptors[!blend || sample->linear ? 1 : 0];
-    vkCmdBindDescriptorSets(frame->command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout, 0, 1,
-                            &descriptor, 0, nullptr);
+    bind_graphics(pipe, pipeline_layout,
+                  {static_cast<u32>(target->width), static_cast<u32>(target->height)}, scissor,
+                  descriptor, 0);
     vkCmdDrawIndexed(frame->command, static_cast<u32>(ic), 1, 0, 0, 0);
     target->last_use = sample->last_use = next_serial;
     ++target->revision;
@@ -271,6 +357,7 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
 }
 void device::draw(texture_handle tex, const vertex *v, i32 vc, const i32 *idx, i32 ic)
 {
+    flush_text();
     ++stats.requested_draws;
     if (vc > 0) stats.requested_vertices += static_cast<u64>(vc);
     if (ic > 0) stats.requested_indices += static_cast<u64>(ic);

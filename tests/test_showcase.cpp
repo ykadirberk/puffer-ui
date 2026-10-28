@@ -209,6 +209,7 @@ PUI_TEST(showcase_reuses_layout_slots)
 // Counts the application's actual draw stream without inserting timers in tile loops.
 struct measured_device : render_device
 {
+    render_painter *create_painter(context &c) override { return real.create_painter(c); }
     render_device &real;
     i32 calls = 0;
     i64 vertices = 0, indices = 0;

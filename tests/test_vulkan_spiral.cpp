@@ -123,6 +123,7 @@ int main(int argc, char **argv)
     g_start_page = PAGE_LAYOUT;
     g_no_hud = true;
     vulkan_device_opts opts;
+    opts.vector_text = false; // This original oracle exercises the bitmap mesh stream.
     opts.validation = validation;
     opts.error_callback = diagnostic;
     opts.tile_cache = cache;

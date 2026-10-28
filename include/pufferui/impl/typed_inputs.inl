@@ -972,7 +972,7 @@ struct prefix_meter
             if (memo.cp[slot] != cp)
             {
                 memo.cp[slot] = cp;
-                memo.advance[slot] = get_glyph(c, fh, size, cp).advance;
+                memo.advance[slot] = c->painter->glyph_advance({fh, size, cp});
             }
             return memo.advance[slot];
         };

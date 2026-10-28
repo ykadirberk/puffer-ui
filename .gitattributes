@@ -1,0 +1,5 @@
+# Shader receipts hash the exact compiler input bytes, including line endings.
+# Preserve those bytes across Windows and Unix checkouts.
+src/shaders/vulkan/*.vert -text
+src/shaders/vulkan/*.frag -text
+src/shaders/vulkan/*.glsl -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

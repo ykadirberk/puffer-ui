@@ -83,6 +83,7 @@ namespace vk_detail
     X(CmdSetViewport)                                                                              \
     X(CmdSetScissor)                                                                               \
     X(CmdDrawIndexed)                                                                              \
+    X(CmdDraw)                                                                                     \
     X(CreateSwapchainKHR)                                                                          \
     X(DestroySwapchainKHR)                                                                         \
     X(GetSwapchainImagesKHR)                                                                       \

@@ -159,6 +159,7 @@ void device::free_texture(texture *t)
 }
 void device::destroy_texture(texture_handle handle)
 {
+    flush_text();
     if (cache_active) cache_flush(false);
     auto *t = static_cast<texture *>(handle);
     if (!valid(t)) return;
@@ -269,6 +270,7 @@ void device::update_texture(texture_handle handle, i32 x, i32 y, i32 w, i32 h, c
 }
 bool device::read_pixels(texture_handle handle, i32 x, i32 y, i32 w, i32 h, u8 *rgba)
 {
+    flush_text();
     const f64 start = wall_ms();
     if (cache_active) cache_flush(false);
     auto *t = static_cast<texture *>(handle);

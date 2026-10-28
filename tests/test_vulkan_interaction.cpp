@@ -70,6 +70,7 @@ int main(int argc, char **argv)
             return 1;
     }
     vulkan_device_opts opts;
+    opts.vector_text = false; // Keep the original atlas-eviction oracle independent.
     opts.validation = !bench;
     opts.error_callback = diagnostic;
     opts.upload_mode = staged ? vulkan_upload_mode::STAGED : vulkan_upload_mode::DIRECT;

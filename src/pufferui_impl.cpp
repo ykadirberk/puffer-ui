@@ -6,6 +6,7 @@
 #include "../tests/test_performance.inl"
 #include "../tests/test_geometry_performance.inl"
 #include "../tests/test_core_performance.inl"
+#include "../tests/test_state_pool.inl"
 #endif
 
 #if defined(PUFFERUI_MEMORY_TESTS)

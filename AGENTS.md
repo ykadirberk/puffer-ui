@@ -87,6 +87,16 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
 - GLSL lives in `src/shaders/vulkan/`; `tools/compile_vulkan_shaders.py` generates
   checked-in SPIR-V plus a compiler/source manifest. Ordinary consumers do not
   run the shader compiler. Cache is opt-in; GPU binning is not implemented.
+- This native branch preserves the first Vulkan triangle/blur paths. Fresh
+  Vulkan configurations enable pinned HarfBuzz and upstream Slug text; explicit
+  OFF remains supported. Text uses an independent instanced graphics pipeline,
+  append-only outline chunks and retained CPU batches. No SDF shape or compute
+  painter is included. See `docs/harfbuzz.md` and tutorial chapter 10.
+- Native preparation lives in `impl/vulkan_preparation.inl`; native text lives
+  in `impl/vulkan_text.inl`. `pui_vulkan_native_text_tests` compares 96 scalar/
+  instanced frames in direct/staged modes. `pui_vulkan_native_spiral_tests`
+  compares all 180 actual 5000-item frames, with immutable `--capture` and
+  `--reference` modes. Keep bitmap fixture assertions and golden bytes fixed.
 - `pui_ex_vulkan` is the external VkImage atomic; `pui_showcase_vulkan` uses the
   actual showcase helpers. Both support the normal example selftest interface.
 - Register a native test once with `pui_add_vulkan_test` in `CMakeLists.txt`;
@@ -233,6 +243,12 @@ programs live in `examples/tutorial/` (`pui_tut_*` targets, built and
   its chapter in the same revision.
 
 ## Code conventions
+
+- Drawing uses the required `render_painter` contract. Every backend implements
+  every operation; shared tessellation is an explicit `create_mesh_painter`
+  choice. Rendering lives in `impl/renderer_*.inl`; UI methods submit semantic
+  operations. The renderer owns storage; `context::dl` is borrowed introspection.
+  Keep text measurement on the selected painter and popup recorders isolated.
 
 - Naming: types/functions/variables `lower_snake_case`; macros and
   constants/enumerators `UPPER_SNAKE_CASE` (e.g. `backend_caps::RENDER_TARGETS`,

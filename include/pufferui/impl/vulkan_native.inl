@@ -68,6 +68,9 @@ VkResult vulkan_last_result(render_device *device);
 const char *vulkan_last_error(render_device *device);
 struct vulkan_stats
 {
+    u64 glyph_upload_bytes = 0, glyph_instances = 0, glyph_draws = 0;
+    u64 buffer_allocations = 0, draw_buffer_allocations = 0;
+    u64 pipeline_binds = 0, viewport_sets = 0, scissor_sets = 0, descriptor_binds = 0;
     u64 submissions = 0, draws = 0, vertices = 0, indices = 0;
     u64 upload_bytes = 0, upload_allocated_bytes = 0, budget_waits = 0;
     u64 cache_hits = 0, cache_misses = 0, cache_fallbacks = 0;

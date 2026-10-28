@@ -49,6 +49,7 @@ struct sdl3_surface : render_surface
 
 struct sdl3_device : render_device
 {
+    render_painter *create_painter(context &c) override { return create_mesh_painter(c); }
     struct slot
     {
         SDL_Window *window = nullptr;
@@ -1153,8 +1154,20 @@ bool sdl3_app_init(sdl3_app &a, const char *title, i32 w, i32 h, int argc, char 
         a.font = load_font(a.ctx, PUFFERUI_ASSET_DIR "/fonts/DejaVuSans.ttf");
 #endif
     if (a.font == FONT_INVALID) a.font = load_font(a.ctx, "assets/fonts/DejaVuSans.ttf");
+#if defined(__linux__)
+    constexpr const char *system_fonts[] = {
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/TTF/DejaVuSans.ttf",
+        "/usr/local/share/fonts/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"};
+    for (const char *path : system_fonts)
+        if (a.font == FONT_INVALID) a.font = load_font(a.ctx, path);
+#elif defined(_WIN32)
     if (a.font == FONT_INVALID) a.font = load_font(a.ctx, "C:/Windows/Fonts/segoeui.ttf");
     if (a.font == FONT_INVALID) a.font = load_font(a.ctx, "C:/Windows/Fonts/arial.ttf");
+#endif
     theme base = default_dark();
     base.font = a.font;
     base.text_size = 15.0f;

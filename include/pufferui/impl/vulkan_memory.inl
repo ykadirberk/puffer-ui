@@ -23,15 +23,17 @@ u32 device::memory_type(u32 bits, VkMemoryPropertyFlags required, VkMemoryProper
 }
 u64 device::completed()
 {
+    if (known_completed >= next_serial - 1) return known_completed;
     u64 value = 0;
     if (timeline)
         check(vkGetSemaphoreCounterValue(native.device, timeline, &value),
               "vkGetSemaphoreCounterValue");
-    return value;
+    known_completed = std::max(known_completed, value);
+    return known_completed;
 }
 bool device::wait(u64 value)
 {
-    if (!value) return true;
+    if (value <= known_completed) return true;
     if (value >= next_serial) return false; // only values already submitted by this backend
     const f64 start = wall_ms();
     VkSemaphoreWaitInfo wi{VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO};
@@ -40,6 +42,7 @@ bool device::wait(u64 value)
     wi.pValues = &value;
     const bool okay = check(vkWaitSemaphores(native.device, &wi, UINT64_MAX), "vkWaitSemaphores");
     stats.slot_wait_ms += wall_ms() - start;
+    if (okay) known_completed = std::max(known_completed, value);
     return okay;
 }
 bool device::begin(frame_slot &slot)
@@ -75,6 +78,7 @@ bool device::begin(frame_slot &slot)
     VkCommandBufferBeginInfo bi{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     bi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     if (!check(vkBeginCommandBuffer(slot.command, &bi), "vkBeginCommandBuffer")) return false;
+    slot.graphics = {};
     if (stats.timestamps_supported)
     {
         if (!slot.queries)
@@ -114,6 +118,7 @@ bool device::flush_page(page &p)
 }
 u64 device::submit(VkSemaphore acquired, VkSemaphore finished)
 {
+    flush_text();
     if (!frame || !frame->recording || result != VK_SUCCESS) return 0;
     end_rendering();
     if (frame->queries)
@@ -206,6 +211,8 @@ bool device::allocate_buffer(page &p, VkDeviceSize bytes, VkBufferUsageFlags usa
         return false;
     }
     p.capacity = bytes;
+    ++stats.buffer_allocations;
+    if (paint_depth) ++stats.draw_buffer_allocations;
     p.allocation = req.size;
     p.coherent = (memory_properties.memoryTypes[type].propertyFlags &
                   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) != 0;
@@ -239,6 +246,7 @@ bool device::reserve_mapped(VkDeviceSize bytes)
             if (!wait(slot.serial)) return;
             for (auto &p : slot.pages) free_page(p);
             slot.pages.clear();
+            slot.geometry_chunk_bytes = 0;
         };
         trim(utility);
         for (surface *s : surfaces)
@@ -251,6 +259,7 @@ bool device::reserve_mapped(VkDeviceSize bytes)
         if (!wait(frame->serial)) return false;
         for (auto &p : frame->pages) free_page(p);
         frame->pages.clear();
+        frame->geometry_chunk_bytes = 0;
         if (!begin(*frame)) return false;
     }
     return stats.upload_allocated_bytes <= options.upload_budget_bytes - bytes ||
@@ -281,8 +290,14 @@ bool device::allocate_device_buffer(page &p)
     stats.device_upload_allocated_bytes += req.size;
     if (stats.upload_allocated_bytes > stats.peak_upload_allocated_bytes)
         stats.peak_upload_allocated_bytes = stats.upload_allocated_bytes;
-    return check(vkBindBufferMemory(native.device, p.device_buffer, p.device_memory, 0),
-                 "vkBindBufferMemory(device geometry)");
+    const bool okay = check(vkBindBufferMemory(native.device, p.device_buffer, p.device_memory, 0),
+                            "vkBindBufferMemory(device geometry)");
+    if (okay)
+    {
+        ++stats.buffer_allocations;
+        if (paint_depth) ++stats.draw_buffer_allocations;
+    }
+    return okay;
 }
 page *device::upload(VkDeviceSize bytes, VkDeviceSize &offset, bool geometry)
 {
@@ -294,17 +309,34 @@ page *device::upload(VkDeviceSize bytes, VkDeviceSize &offset, bool geometry)
     }
     for (auto &p : frame->pages)
     {
-        if (p.staged != staged) continue;
+        if (p.staged != staged || p.geometry != geometry) continue;
         const VkDeviceSize at = (p.used + 31) & ~VkDeviceSize(31);
         if (at <= p.capacity && bytes <= p.capacity - at)
         {
             offset = at;
             p.used = at + bytes;
             stats.upload_bytes += bytes;
+            if (geometry) frame->geometry_frame_bytes += (bytes + 31) & ~VkDeviceSize(31);
             return &p;
         }
     }
-    VkDeviceSize capacity = bytes > 1024 * 1024 ? bytes : 1024 * 1024;
+    const bool prepared =
+        geometry && frame->geometry_chunk_bytes >= bytes &&
+        std::any_of(frame->pages.begin(), frame->pages.end(), [&](const page &p)
+                    { return p.geometry && p.staged == staged && p.capacity >= bytes; });
+    if (prepared)
+    {
+        // The prepared arena is full. Its commands reference only the scene,
+        // not the acquired swapchain image. Complete this ordered prefix and
+        // reuse the same slot before the eventual present/blit submission.
+        frame_slot *slot = frame;
+        const u64 serial = submit();
+        if (!serial || !wait(serial) || !begin(*slot)) return nullptr;
+        return upload(bytes, offset, geometry);
+    }
+    VkDeviceSize capacity = 1024 * 1024;
+    while (capacity < bytes && capacity <= options.upload_budget_bytes / 2) capacity *= 2;
+    if (capacity < bytes) capacity = bytes;
     if (capacity > options.upload_budget_bytes) capacity = bytes;
     if (staged && capacity > options.upload_budget_bytes / 2) capacity = bytes;
     page fresh;
@@ -313,7 +345,9 @@ page *device::upload(VkDeviceSize bytes, VkDeviceSize &offset, bool geometry)
                              VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT))
         return nullptr;
     stats.upload_bytes += bytes;
+    if (geometry) frame->geometry_frame_bytes += (bytes + 31) & ~VkDeviceSize(31);
     fresh.staged = staged;
+    fresh.geometry = geometry;
     if (staged && !allocate_device_buffer(fresh))
     {
         free_page(fresh);

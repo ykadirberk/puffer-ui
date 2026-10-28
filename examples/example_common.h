@@ -122,7 +122,7 @@ struct example_window
 struct example_app
 {
     const char *name = "example";
-    sdl3_app boot; // the library bootstrap; the handles below are its, for short access
+    sdl3_app boot{.asset_dir = PUFFERUI_ASSET_DIR}; // owns the handles below
     SDL_Window *sdl_window = nullptr;
     SDL_Renderer *renderer = nullptr;
     render_device *device = nullptr;
@@ -237,6 +237,13 @@ inline example_page example_begin_page(ui &u, example_app &app, const char *titl
     return page;
 }
 
+inline bool example_environment_flag(const char *value)
+{
+    return value && value[0] && SDL_strcasecmp(value, "0") != 0 &&
+           SDL_strcasecmp(value, "false") != 0 && SDL_strcasecmp(value, "off") != 0 &&
+           SDL_strcasecmp(value, "no") != 0;
+}
+
 inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int argc, char **argv)
 {
     app.name = title;
@@ -317,7 +324,7 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
     boot.renderer_name = app.selftest ? "software" : nullptr;
 #if defined(PUFFERUI_ENABLE_VULKAN)
     boot.use_vulkan = true;
-    boot.vulkan.validation = std::getenv("PUFFERUI_VULKAN_VALIDATION") != nullptr;
+    boot.vulkan.validation = example_environment_flag(std::getenv("PUFFERUI_VULKAN_VALIDATION"));
 #endif
     if (!sdl3_app_init(boot, title, app.width, app.height, 0, nullptr))
     {
@@ -562,7 +569,13 @@ template <typename FrameFn>
 int example_run(const char *title, i32 w, i32 h, int argc, char **argv, FrameFn &&frame)
 {
     example_app app;
-    if (!example_init(app, title, w, h, argc, argv)) return example_shutdown(app);
+    if (!example_init(app, title, w, h, argc, argv))
+    {
+        const bool help = app.help;
+        app.selftest = false; // initialization/help did not run a selftest
+        (void)example_shutdown(app);
+        return help ? 0 : 1;
+    }
 
     example_clock clock;
     while (app.running)
