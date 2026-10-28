@@ -3,47 +3,95 @@
 #include "function_common.glsl"
 #include "workgroup_scan.glsl"
 layout(local_size_x=64) in;
+shared uvec4 request_keys[64];
+shared uvec2 request_masks[64];
+uvec4 load_request(uint index) {
+    uint at=function_request_base()+index*8u;
+    return uvec4(functions.words[at],functions.words[at+1u],functions.words[at+2u],functions.words[at+3u]);
+}
+bool admit_request(uint index,uvec4 key,uint set,uint epoch) {
+    uint request=function_request_base()+index*8u,chosen=0xffffffffu,age=0u;
+    bool present=false;
+    for(uint way=0u;way<PUI_FUNCTION_WAYS;++way) {
+        uint row=set*PUI_FUNCTION_WAYS+way,at=function_row(row);
+        uint ready=functions.words[at+5u],stamp=functions.words[at+4u];
+        if(ready!=0u && function_key(at,key)) { present=true; break; }
+        if(ready==0u) { chosen=row; age=0xffffffffu; }
+        else if(stamp!=epoch && (chosen==0xffffffffu || epoch-stamp>age)) {
+            chosen=row;age=epoch-stamp;
+        }
+    }
+    functions.words[request+5u]=0u;
+    if(present || chosen==0xffffffffu) return false;
+    uint at=function_row(chosen);
+    for(uint c=0u;c<4u;++c) functions.words[at+c]=key[c];
+    functions.words[at+4u]=epoch;
+    functions.words[at+5u]=2u;
+    functions.words[request+4u]=chosen;
+    functions.words[request+5u]=1u;
+    return true;
+}
+// Each request is fetched and hashed by one lane. Owners consume their masks
+// in increasing request order, preserving FIFO/duplicate/eviction decisions.
+// This uses portable workgroup memory, without a subgroup-size requirement.
+void distribute_requests(uint first,uint count,uint sets,bool selected_only) {
+    uint lane=gl_LocalInvocationIndex,index=first+lane;
+    request_masks[lane]=uvec2(0u);
+    barrier();
+    if(index<count && (!selected_only || functions.words[function_request_base()+index*8u+5u]!=0u)) {
+        uvec4 key=load_request(index);
+        request_keys[lane]=key;
+        uint owner=(function_hash(key)&(sets-1u))&63u;
+        atomicOr(request_masks[owner][lane>>5u],1u<<(lane&31u));
+    }
+    barrier();
+}
 void main() {
-    uint lane=gl_LocalInvocationIndex, count=min(functions.words[0],function_requests());
+    uint lane=gl_LocalInvocationIndex,count=min(functions.words[0],function_requests());
+    if(count==0u) {
+        if(lane==0u) functions.words[5]=functions.words[17]=functions.words[21]=0u;
+        return;
+    }
     uint sets=function_rows()/PUI_FUNCTION_WAYS,epoch=functions.words[4],created=0u;
-    // Exactly one lane owns each set. No locks, scene-sized serial list, or
-    // workgroup-dependent forward-progress assumption is required.
-    for(uint index=0u;index<count;++index) {
-        uint request=function_request_base()+index*8u;
-        uvec4 key=uvec4(functions.words[request],functions.words[request+1u],
-            functions.words[request+2u],functions.words[request+3u]);
-        uint set=function_hash(key)&(sets-1u);
-        if((set&63u)!=lane) continue;
-        uint chosen=0xffffffffu,age=0u;
-        bool present=false;
-        for(uint way=0u;way<PUI_FUNCTION_WAYS;++way) {
-            uint row=set*PUI_FUNCTION_WAYS+way,at=function_row(row);
-            uint ready=functions.words[at+5u],stamp=functions.words[at+4u];
-            if(ready!=0u && function_key(at,key)) { present=true; break; }
-            if(ready==0u) { chosen=row; age=0xffffffffu; }
-            else if(stamp!=epoch && (chosen==0xffffffffu || epoch-stamp>age)) {
-                chosen=row;age=epoch-stamp;
+    if(count<=32u) {
+        for(uint index=0u;index<count;++index) {
+            uvec4 key=load_request(index);
+            uint set=function_hash(key)&(sets-1u);
+            if((set&63u)==lane) created+=uint(admit_request(index,key,set,epoch));
+        }
+    } else for(uint first=0u;first<count;first+=64u) {
+        distribute_requests(first,count,sets,false);
+        for(uint word=0u;word<2u;++word) {
+            uint bits=request_masks[lane][word];
+            while(bits!=0u) {
+                uint bit=uint(findLSB(bits)),offset=word*32u+bit;
+                bits&=bits-1u;
+                uvec4 key=request_keys[offset];
+                uint set=function_hash(key)&(sets-1u);
+                created+=uint(admit_request(first+offset,key,set,epoch));
             }
         }
-        functions.words[request+5u]=0u;
-        if(present || chosen==0xffffffffu) continue;
-        uint at=function_row(chosen);
-        for(uint c=0u;c<4u;++c) functions.words[at+c]=key[c];
-        functions.words[at+4u]=epoch;
-        functions.words[at+5u]=2u; // reserved until the calibration write completes
-        functions.words[request+4u]=chosen;
-        functions.words[request+5u]=1u;
-        ++created;
+        barrier(); // no owner may overwrite keys while another still reads them
     }
     memoryBarrierBuffer();
     uint out_index=scan_partitions(uvec2(created,0u),function_requests()).x;
-    for(uint index=0u;index<count;++index) {
-        uint request=function_request_base()+index*8u;
-        if(functions.words[request+5u]==0u) continue;
-        uvec4 key=uvec4(functions.words[request],functions.words[request+1u],
-            functions.words[request+2u],functions.words[request+3u]);
-        if(((function_hash(key)&(sets-1u))&63u)==lane)
-            functions.words[function_list_base()+out_index++]=functions.words[request+4u];
+    if(count<=32u) {
+        for(uint index=0u;index<count;++index) {
+            uint request=function_request_base()+index*8u;
+            if(functions.words[request+5u]!=0u && ((function_hash(load_request(index))&(sets-1u))&63u)==lane)
+                functions.words[function_list_base()+out_index++]=functions.words[request+4u];
+        }
+    } else for(uint first=0u;first<count;first+=64u) {
+        distribute_requests(first,count,sets,true);
+        for(uint word=0u;word<2u;++word) {
+            uint bits=request_masks[lane][word];
+            while(bits!=0u) {
+                uint bit=uint(findLSB(bits)),index=first+word*32u+bit;
+                bits&=bits-1u;
+                functions.words[function_list_base()+out_index++]=functions.words[function_request_base()+index*8u+4u];
+            }
+        }
+        barrier();
     }
     if(lane==0u) {
         uint total=partition_prefix[63].x;

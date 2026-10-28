@@ -103,6 +103,7 @@ struct sdf_slot_resources
     static constexpr u32 MAX_JOBS = 32;
     device *dev = nullptr;
     page banks[2], inputs[2], readable[2], metadata;
+    sdf_gpu_job *job_storage = nullptr; // one contiguous owned block; jobs are stable views
     std::vector<sdf_gpu_job *> jobs;
     VkDescriptorPool descriptors = VK_NULL_HANDLE;
     u32 bank = 0, width = 0, height = 0;

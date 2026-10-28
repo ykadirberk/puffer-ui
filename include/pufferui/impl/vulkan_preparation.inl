@@ -8,7 +8,7 @@ namespace vk_detail
 sdf_slot_resources::~sdf_slot_resources()
 {
     if (!dev) return;
-    for (auto *job : jobs) delete job;
+    delete[] job_storage;
     if (descriptors) dev->vkDestroyDescriptorPool(dev->native.device, descriptors, nullptr);
     gpu_bin_job owner;
     owner.dev = dev;
@@ -134,9 +134,10 @@ bool device::prepare_sdf_surface(surface &s)
         resources->cache_requested = options.tile_cache;
         resources->jobs.reserve(jobs);
         slot.sdf_jobs.reserve(jobs);
+        resources->job_storage = new sdf_gpu_job[jobs]();
         for (u32 i = 0; i < jobs; ++i)
         {
-            auto *job = new sdf_gpu_job();
+            auto *job = &resources->job_storage[i];
             job->bin.dev = this;
             job->bin.descriptor_layout = bin_descriptor_layout;
             job->bin.layout = bin_pipeline_layout;

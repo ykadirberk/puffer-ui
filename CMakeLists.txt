@@ -177,6 +177,8 @@ if(PUFFERUI_WITH_VULKAN)
   endfunction()
   pui_add_vulkan_test(pui_vulkan_tests SOURCES tests/test_vulkan.cpp)
   pui_add_vulkan_test(pui_vulkan_default_tests SOURCES tests/test_vulkan_defaults.cpp RUNS "--staged")
+  pui_add_vulkan_test(pui_vulkan_locality_tests SOURCES src/pufferui_impl.cpp
+      DEFS PUFFERUI_VULKAN_LOCALITY_TESTS RUNS "--staged")
   pui_add_vulkan_test(pui_vulkan_external_tests SOURCES tests/test_vulkan_external.cpp)
   pui_add_vulkan_test(pui_vulkan_cache_tests SOURCES tests/test_vulkan_cache.cpp)
   pui_add_vulkan_test(pui_vulkan_interaction_tests SOURCES tests/test_vulkan_interaction.cpp RUNS "--staged")

@@ -21,6 +21,7 @@ struct allocation
 static allocation allocations[200000];
 static unsigned allocation_count = 0, allocation_dropped = 0;
 static thread_local bool watch = false, nesting = false;
+static bool trace_startup = false;
 static int current_frame = -1;
 void allocated(size_t bytes, const char *kind = "new");
 void *raw_malloc(size_t);
@@ -169,9 +170,15 @@ static PFN_vkCmdDispatch dispatch_fn;
 static PFN_vkCmdDispatchIndirect indirect_fn;
 static PFN_vkCmdDrawIndexed draw_fn;
 static PFN_vkCmdBindPipeline bind_fn;
-static const char *names[] = {"coarse",  "count",  "scan",          "emit",
-                              "paint",   "args",   "compare",       "compact",
-                              "restore", "commit", "other_compute", "graphics"};
+static const char *names[] = {"coarse",         "count",
+                              "scan",           "emit",
+                              "paint",          "args",
+                              "compare",        "compact",
+                              "restore",        "commit",
+                              "other_compute",  "graphics",
+                              "function_begin", "function_prepare",
+                              "function_reset", "function_ready"};
+static constexpr unsigned stage_count = sizeof(names) / sizeof(names[0]);
 unsigned start(VkCommandBuffer command, unsigned which)
 {
     if (sample_count == max_samples) std::abort();
@@ -212,6 +219,12 @@ VKAPI_ATTR void VKAPI_CALL bind(VkCommandBuffer c, VkPipelineBindPoint p, VkPipe
             if (pipeline == owner->bin_pipelines[i]) stage = i;
         for (unsigned i = 0; i < 6; ++i)
             if (pipeline == owner->sdf_pipelines[i]) stage = i + 4;
+        if (auto *cache = owner->sdf_functions)
+        {
+            const VkPipeline kernels[] = {cache->begin, cache->prepare, cache->reset, cache->ready};
+            for (unsigned i = 0; i < 4; ++i)
+                if (pipeline == kernels[i]) stage = i + 12;
+        }
     }
     bind_fn(c, p, pipeline);
 }
@@ -269,6 +282,7 @@ vulkan_stats statistics(render_device *device)
                 owner->slug_storage.capacity, owner->surfaces.size());
     }
     // First call is the benchmark's calibration report; then before/after each frame.
+    if (stats_calls == 0 && trace_startup) watch = true;
     if (stats_calls >= 1 && stats_calls % 2 == 1)
     {
         current_frame = static_cast<int>((stats_calls - 1) / 2);
@@ -292,8 +306,8 @@ void shutdown(sdl3_app &app)
                  sample_count, stats_calls, result, allocation_count, allocation_dropped);
     FILE *gpu = std::fopen("gpu-stages.csv", "w");
     std::fprintf(gpu, "sample,frame,stage,nanoseconds\n");
-    double totals[12]{};
-    unsigned counts[12]{};
+    double totals[stage_count]{};
+    unsigned counts[stage_count]{};
     const uint64_t mask =
         owner->timestamp_bits == 64 ? ~uint64_t(0) : (uint64_t(1) << owner->timestamp_bits) - 1;
     for (unsigned i = 0; i < sample_count; ++i)
@@ -305,7 +319,7 @@ void shutdown(sdl3_app &app)
         std::fprintf(gpu, "%u,%d,%s,%.3f\n", i, samples[i].frame, names[samples[i].stage], ns);
     }
     std::fclose(gpu);
-    for (unsigned i = 0; i < 12; ++i)
+    for (unsigned i = 0; i < stage_count; ++i)
         std::fprintf(stderr, "STAGE %s count=%u ms=%.6f\n", names[i], counts[i], totals[i] / 1e6);
     owner->vkCmdDispatch = dispatch_fn;
     owner->vkCmdDispatchIndirect = indirect_fn;
@@ -385,6 +399,9 @@ int main(int argc, char **argv)
         std::puts("heap trace selftest passed");
         return 0;
     }
+    const char *startup = std::getenv("PUI_PROFILE_STARTUP");
+    probe::trace_startup = startup && std::strcmp(startup, "1") == 0;
+    probe::watch = probe::trace_startup;
     int result = original_benchmark_main(argc, argv);
     probe::heap_report();
     return result;

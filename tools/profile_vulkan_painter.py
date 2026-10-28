@@ -18,6 +18,14 @@ import sys
 from run_tests import import_msvc_env
 
 
+def validate_workload(program, heap_only, integrated, mode):
+    if program and not heap_only and mode not in ("integrated_tiles", "integrated_tiles_staged"):
+        raise ValueError("--program requires --heap-only unless fine tiles are explicitly forced: "
+                         "discarded command queries never execute")
+    if integrated and not program:
+        raise ValueError("--integrated requires --program")
+
+
 def main():
     root = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description=__doc__)
@@ -26,20 +34,23 @@ def main():
     parser.add_argument("--build-dir", type=Path, default=root / "out/build/x64-release")
     parser.add_argument("--heap-only", action="store_true",
                         help="do not instrument GPU queries (safe with discarded program tapes)")
+    parser.add_argument("--startup", action="store_true",
+                        help="also capture module heap allocations before the first frame")
     parser.add_argument("--program", action="store_true",
                         help="trace the actual settled/local whole-program workloads")
     parser.add_argument("--integrated", action="store_true",
-                        help="trace only the four integrated program workloads")
+                        help="trace only integrated program workloads")
     parser.add_argument("--mode", choices=["sdf", "compute", "cache", "idle", "local", "staged",
-                                         "integrated", "integrated_idle", "integrated_local", "integrated_staged"],
+                                         "integrated", "integrated_idle", "integrated_local", "integrated_staged",
+                                         "integrated_tiles", "integrated_tiles_staged"],
                         help="run only this diagnostic workload")
     args = parser.parse_args()
     if os.name != "nt":
         parser.error("this stack/symbol collector requires Windows and MSVC")
-    if args.program and not args.heap_only:
-        parser.error("--program requires --heap-only: discarded command queries never execute")
-    if args.integrated and not args.program:
-        parser.error("--integrated requires --program")
+    try:
+        validate_workload(args.program, args.heap_only, args.integrated, args.mode)
+    except ValueError as error:
+        parser.error(str(error))
     output = args.output.resolve()
     implementation = args.implementation_root.resolve()
     build = args.build_dir.resolve()
@@ -72,7 +83,7 @@ def main():
                 "/DPUFFERUI_ENABLE_SDL3", "/DPUFFERUI_ENABLE_HARFBUZZ",
                 f'/DPUFFERUI_ASSET_DIR="{root.as_posix()}/assets"',
                 f'/DPUI_PROFILE_BENCHMARK="{fixture.as_posix()}"']
-    compiler += ["/I" + str(p) for p in (implementation / "include", root / "vendored/stb",
+    compiler += ["/I" + str(p) for p in (implementation / "include", root / "tests", root / "vendored/stb",
                  root / "vendored/SDL/include", build / "vendored/SDL/include-revision",
                  Path(hb) / "src", sdk / "Include")]
     compiler += ["/c", str(source), "/Fo" + str(obj)]
@@ -100,7 +111,9 @@ def main():
         modes += [("integrated", ["--integrated"]),
                   ("integrated_idle", ["--idle", "--integrated"]),
                   ("integrated_local", ["--local-change", "--integrated"]),
-                  ("integrated_staged", ["--staged", "--integrated"])]
+                  ("integrated_staged", ["--staged", "--integrated"]),
+                  ("integrated_tiles", ["--integrated", "--no-program-cache"]),
+                  ("integrated_tiles_staged", ["--integrated", "--no-program-cache", "--staged"])]
     if args.mode:
         modes = [(name, flags) for name, flags in modes if name == args.mode]
         if not modes:
@@ -111,15 +124,16 @@ def main():
         directory = output / mode
         directory.mkdir()
         with (directory / "frames.csv").open("w") as frames, (directory / "run.log").open("w") as log:
+            environment = dict(os.environ, PUI_PROFILE_STARTUP="1" if args.startup else "0")
             result = subprocess.run([str(executable), *flags], cwd=directory, stdout=frames,
-                                    stderr=log, timeout=180)
+                                    stderr=log, timeout=180, env=environment)
         runs.append(dict(mode=mode, arguments=flags, exit_code=result.returncode))
         if result.returncode:
             raise RuntimeError(f"diagnostic failed: {mode}; inspect {directory}")
     (output / "receipt.json").write_text(json.dumps(dict(
         protocol="diagnostic only; ordinary/aligned C++ and module C heap stacks; "
                  "not acceptance timings; actual 180-frame 5000-item showcase",
-        heap_only=args.heap_only, program_workloads=args.program,
+        heap_only=args.heap_only, startup_traced=args.startup, program_workloads=args.program,
         implementation_root=str(implementation), compiler=compiler, linker=linker,
         binary_sha256=hashlib.sha256(executable.read_bytes()).hexdigest(),
         source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),

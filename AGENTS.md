@@ -128,6 +128,12 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   adaptive allocation checks, history/readback lifetime, runtime cache transitions,
   budget rejection, copy/telemetry oracles and exhaustion fallback regressions.
   `tools/compare_vulkan_preparation.py` freezes binaries and retains every frame.
+- `pui_vulkan_locality_tests` adds cold observation tape, contiguous fine-job
+  ownership/rebuild/budget regressions and actual GPU function-admission checks
+  against the original scalar reference. `tools/compare_vulkan_locality.py`
+  alternates identical production/fine configurations, retaining cold/peak frames
+  in 5000-item moving/idle/local direct/staged scenarios. See
+  `docs/perf_vulkan_compute_locality.md` for allocation and locality boundaries.
 - `vulkan_blur_mode::KAWASE` is opt-in and native-only; LEGACY remains the default.
   Implementation is `impl/vulkan_kawase.inl` + `src/shaders/vulkan/kawase.comp`.
   `pui_ex_vulkan_blur` and `--vulkan-blur kawase` exercise it. Separate Kawase

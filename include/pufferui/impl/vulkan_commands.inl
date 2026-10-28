@@ -16,15 +16,20 @@ void primitive_recorder::invalidate()
 }
 void primitive_recorder::reset()
 {
-    raster_only =
-        owner->options.painter == vulkan_painter_mode::SDF_RASTER || owner->native_only_program();
+    // Device construction has no surface yet. Integrated observation needs no
+    // CPU tile tape until a completed frame boundary requests the fine path.
+    const bool cold_observation = !owner->current_surface &&
+                                  owner->options.painter == vulkan_painter_mode::INTEGRATED &&
+                                  owner->options.whole_program_cache;
+    raster_only = owner->options.painter == vulkan_painter_mode::SDF_RASTER ||
+                  owner->native_only_program() || cold_observation;
     depth = 0;
     reported_overflow = false;
     pending_shape = 0xffffffffu;
     std::fill(std::begin(owner->program_producers), std::end(owner->program_producers), nullptr);
     if (paint_detail::compute_painter(owner->options.painter))
     {
-        if (owner->native_only_program())
+        if (raster_only)
         {
             owner->sdf_tape.commands.clear();
             owner->sdf_tape.payload.clear();

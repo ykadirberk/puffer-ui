@@ -18,6 +18,14 @@ alpha and producer handling belongs to the same renderer in both paths.
 
 The sections below describe the independent `SDF_RASTER`/`COMPUTE_SDF` paths.
 
+The [compute locality review](perf_vulkan_compute_locality.md) distinguishes this
+implementation from the Blick article. In particular, common opacity retains a
+prepared native RGBA8 scratch image; it is not a pixel-local alpha accumulator.
+The integrated painter preserves forward intermediate RGBA8 quantization.
+Neither a universally allocation-free startup nor maximum cache locality is
+claimed. Cold observation does not reserve an unused CPU tile tape; an actual
+fine-path transition prepares it at a completed frame boundary.
+
 The diagnostic `REFERENCE` painter retains the established triangle and bitmap
 renderer. `COMMAND_SHADOW` captures a private command tape while retaining that
 renderer. `SDF_RASTER` replaces rounded fill fans with analytic quads and is the
@@ -149,6 +157,13 @@ bounded workgroup scans, with separate overflow propagation. Two-dimensional
 dispatches respect both advertised workgroup count limits. None of these paths
 adds a GPU allocation or relies on an optional subgroup size/feature.
 
+Native function-cache admission also distributes 64-request chunks through
+workgroup memory. One lane fetches/hashes each request; each set owner consumes
+its selected indices in original order. FIFO, duplicate and eviction decisions,
+row emission order and calibration remain unchanged. Lists of at most 32
+requests use the scalar path to avoid extra workgroup barriers. Per-slot fine
+jobs occupy one contiguous owning array; existing job pointers remain stable.
+
 The suffix painter retains forward ordered blending with calibrated finite
 RGBA8 rounding. A reverse opaque-source search followed by forward suffix
 replay was tested separately and rejected: this scene's translucent layers
@@ -167,6 +182,11 @@ capture affect timing; use the separate ordinary benchmark for acceptance.
 Use `--heap-only --program` for whole-program cache workloads. These can discard
 an unsubmitted command buffer, so per-command timestamp queries would never
 execute; the heap-only mode deliberately installs no such queries.
+`--startup` additionally traces allocations before the first statistics call as
+frame `-1`. GPU stage tracing of a program workload requires explicitly forced
+`--mode integrated_tiles` or `integrated_tiles_staged`; whole-program-discardable
+workloads reject it. The generated benchmark keeps the normal tests include
+path, so relocating it does not lose the pinned diagnostic option header.
 
 `pui_vulkan_program_bench` adds settled and local-change variants of that actual
 showcase. `--idle` freezes time and disables Adds; `--local-change` changes the

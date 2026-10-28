@@ -111,3 +111,7 @@
 #if defined(PUFFERUI_VULKAN_MEMORY_ROLE_TESTS)
 #include "../tests/test_vulkan_memory_roles.inl"
 #endif
+
+#if defined(PUFFERUI_VULKAN_LOCALITY_TESTS)
+#include "../tests/test_vulkan_locality.inl"
+#endif
