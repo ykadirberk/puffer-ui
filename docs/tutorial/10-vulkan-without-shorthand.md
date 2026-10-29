@@ -38,6 +38,12 @@ from a fragment shader. There is no compute queue, storage-image painter or
 tile-list requirement. See the [native backend contract](../vulkan.md) before
 lending an engine's device.
 
+The defaults also reuse exact R32 Slug coverage and upload compact native shape
+vertices. These preserve the original pixels and primitive order. For isolated
+diagnostics, `glyph_coverage_budget_bytes=0` disables coverage reuse and
+`compact_vertices=false` selects the original float-color upload. The
+[native text contract](../harfbuzz.md) describes their bounds and lifetime.
+
 ## Link from your own project
 
 This is an ordinary consumer CMake file, without the repository's example macros.

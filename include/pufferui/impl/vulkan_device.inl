@@ -31,6 +31,17 @@ struct texture
     u64 last_use = 0, generation = 0, revision = 0;
     u64 allocation = 0;
 };
+struct texture_creation
+{
+    VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+    bool render_target = false, internal = false;
+    const u8 *rgba = nullptr;
+};
+struct legacy_vertex
+{
+    f32 x, y, u, v, red, green, blue, alpha;
+};
+static_assert(sizeof(legacy_vertex) == 32);
 struct page
 {
     VkBuffer buffer = VK_NULL_HANDLE;
@@ -134,6 +145,41 @@ struct glyph_chunk
     page storage;
     VkDescriptorSet descriptor = VK_NULL_HANDLE;
 };
+struct glyph_coverage
+{
+    static constexpr u32 ENTRIES = 8192, WAYS = 4;
+    static constexpr u32 CACHED = 0x80000000u;
+    struct key
+    {
+        u32 words[10]{};
+        bool operator==(const key &other) const
+        {
+            return std::memcmp(words, other.words, sizeof(words)) == 0;
+        }
+    };
+    struct entry
+    {
+        key identity{};
+        u64 tag = 0, seen = 0;
+        u64 generation = 0;
+        u32 atlas = 0, page = 0;
+        bool resident = false;
+    };
+    struct region
+    {
+        u32 x = 0, y = 0, height = 0;
+        u64 generation = 1;
+        u64 last_use = 0, seen = 0;
+        bool retiring = false;
+    };
+    entry entries[ENTRIES]{};
+    region regions[4]{};
+    texture *atlas = nullptr; // internal scratch, not a public texture handle
+    std::vector<glyph_instance> fills;
+    u64 epoch = 0;
+    i32 extent = 0;
+    bool requested = false, pressure = false;
+};
 struct native_text
 {
     VkDescriptorSetLayout descriptor_layout = VK_NULL_HANDLE;
@@ -145,6 +191,7 @@ struct native_text
     u32 pending_chunk = 0;
     usize batch_limit = 2048;
     u64 bytes = 0;
+    glyph_coverage *coverage = nullptr;
 };
 #endif
 struct device : render_device, dispatch
@@ -184,6 +231,11 @@ struct device : render_device, dispatch
     bool initialize_text();
     bool text_chunk(VkDeviceSize required);
     bool glyph(context *, font_handle, u32, vec2, f32, color);
+    bool initialize_coverage();
+    bool prepare_coverage();
+    bool cache_glyph(glyph_instance &);
+    bool paint_coverage();
+    bool upload_glyphs(const glyph_instance *, usize, VkBuffer &, VkDeviceSize &);
     void release_text();
 #endif
     void flush_text();
@@ -224,6 +276,7 @@ struct device : render_device, dispatch
     page *upload(VkDeviceSize bytes, VkDeviceSize &offset, bool geometry = false);
     u32 memory_type(u32 bits, VkMemoryPropertyFlags required, VkMemoryPropertyFlags preferred);
     texture *make_texture(i32 w, i32 h, bool render_target, const u8 *rgba);
+    texture *allocate_texture(i32 w, i32 h, const texture_creation &);
     void free_texture(texture *t);
     bool descriptors(texture *t);
     bool valid(texture *t) const;
@@ -235,6 +288,10 @@ struct device : render_device, dispatch
     bool prepare_geometry(const geometry_capacity &) override;
     bool prepare_slot_geometry(frame_slot &, VkDeviceSize bytes);
     VkDeviceSize geometry_reservation(VkDeviceSize requested, VkDeviceSize pixels) const;
+    VkDeviceSize vertex_stride() const
+    {
+        return options.compact_vertices ? sizeof(vertex) : sizeof(legacy_vertex);
+    }
     void bind_graphics(VkPipeline, VkPipelineLayout, VkExtent2D, VkRect2D, VkDescriptorSet, u32);
     render_painter *create_painter(context &c) override;
     backend_caps caps() const override

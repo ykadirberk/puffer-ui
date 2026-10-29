@@ -62,7 +62,7 @@ bool device::prepare_geometry(const geometry_capacity &capacity)
     if (paint_depth || !frame || !frame->recording || !target || capacity.vertices > limit ||
         capacity.indices > limit)
         return false;
-    const VkDeviceSize requested = static_cast<VkDeviceSize>(capacity.vertices) * 32 +
+    const VkDeviceSize requested = static_cast<VkDeviceSize>(capacity.vertices) * vertex_stride() +
                                    static_cast<VkDeviceSize>(capacity.indices) * 4;
     if (!requested) return true;
     const VkDeviceSize bytes =

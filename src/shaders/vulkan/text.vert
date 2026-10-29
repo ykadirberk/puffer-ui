@@ -2,11 +2,11 @@
 layout(location=0) in vec4 bounds;
 layout(location=1) in vec4 parameters;
 layout(location=2) in vec4 color;
-layout(location=3) in uint glyph;
+layout(location=3) in uvec4 glyph;
 layout(push_constant) uniform Projection { vec2 extent; } projection;
 layout(location=0) flat out vec4 baseline_scale_gamma;
 layout(location=1) out vec4 tint;
-layout(location=2) flat out uint location;
+layout(location=2) flat out uvec4 location;
 void main() {
     const ivec2 corners[6]=ivec2[](ivec2(0,0),ivec2(1,0),ivec2(1,1),
                                 ivec2(0,0),ivec2(1,1),ivec2(0,1));

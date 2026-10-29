@@ -269,7 +269,13 @@ font_handle load_font(context *c, const char *path)
 
     fd.ok = true;
     ts->fonts.push_back(std::move(fd));
-    return static_cast<font_handle>(ts->fonts.size() - 1);
+    const auto handle = static_cast<font_handle>(ts->fonts.size() - 1);
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    // Font-owned shaping metadata and its bounded table are prepared at load,
+    // rather than at the first visible text call. Outlines remain glyph-lazy.
+    if (ts->vector_enabled) (void)detail::harfbuzz_font(c, handle);
+#endif
+    return handle;
 }
 
 void set_text_shaper(context *c, text_shaper *shaper)

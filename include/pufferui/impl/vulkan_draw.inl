@@ -14,6 +14,9 @@ struct byte_channel_table
     }
 };
 static constexpr byte_channel_table BYTE_CHANNELS{};
+static_assert(sizeof(vertex) == 20 && offsetof(vertex, c) == 16);
+static_assert(sizeof(color) == 4 && offsetof(color, r) == 0 && offsetof(color, g) == 1 &&
+              offsetof(color, b) == 2 && offsetof(color, a) == 3);
 VkPipeline device::pipeline(VkFormat format, bool blend, bool glyphs)
 {
     for (auto &p : pipelines)
@@ -42,12 +45,19 @@ VkPipeline device::pipeline(VkFormat format, bool blend, bool glyphs)
     }
     stages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
     stages[0].module = vertex_shader;
+    const VkBool32 compact = options.compact_vertices;
+    const VkSpecializationMapEntry vertex_entry{0, 0, sizeof(compact)};
+    const VkSpecializationInfo vertex_specialization{1, &vertex_entry, sizeof(compact), &compact};
+    stages[0].pSpecializationInfo = &vertex_specialization;
     stages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
     stages[1].module = fragment_shader;
-    VkVertexInputBindingDescription binding{0, 32, VK_VERTEX_INPUT_RATE_VERTEX};
-    VkVertexInputAttributeDescription attributes[] = {{0, 0, VK_FORMAT_R32G32_SFLOAT, 0},
-                                                      {1, 0, VK_FORMAT_R32G32_SFLOAT, 8},
-                                                      {2, 0, VK_FORMAT_R32G32B32A32_SFLOAT, 16}};
+    VkVertexInputBindingDescription binding{0, static_cast<u32>(vertex_stride()),
+                                            VK_VERTEX_INPUT_RATE_VERTEX};
+    VkVertexInputAttributeDescription attributes[] = {
+        {0, 0, VK_FORMAT_R32G32_SFLOAT, 0},
+        {1, 0, VK_FORMAT_R32G32_SFLOAT, 8},
+        {2, 0, options.compact_vertices ? VK_FORMAT_R8G8B8A8_UINT : VK_FORMAT_R32G32B32A32_UINT,
+         16}};
     VkPipelineVertexInputStateCreateInfo vi{
         VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO};
     vi.vertexBindingDescriptionCount = 1;
@@ -115,6 +125,7 @@ VkPipeline device::pipeline(VkFormat format, bool blend, bool glyphs)
     if (text)
     {
         stages[0].module = text->vertex;
+        stages[0].pSpecializationInfo = nullptr;
         stages[1].module = text->fragment;
         binding.stride = sizeof(glyph_instance);
         binding.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
@@ -122,11 +133,16 @@ VkPipeline device::pipeline(VkFormat format, bool blend, bool glyphs)
             {0, 0, VK_FORMAT_R32G32B32A32_SFLOAT, 0},
             {1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, 16},
             {2, 0, VK_FORMAT_R32G32B32A32_SFLOAT, 32},
-            {3, 0, VK_FORMAT_R32_UINT, 48}};
+            {3, 0, VK_FORMAT_R32G32B32A32_UINT, 48}};
         vi.vertexAttributeDescriptionCount = 4;
         vi.pVertexAttributeDescriptions = text_attributes;
         pc.layout = text->pipeline_layout;
-        attachment.blendEnable = VK_TRUE;
+        const VkBool32 coverage = format == VK_FORMAT_R32_SFLOAT;
+        const VkSpecializationMapEntry entry{0, 0, sizeof(coverage)};
+        const VkSpecializationInfo specialization{1, &entry, sizeof(coverage), &coverage};
+        stages[1].pSpecializationInfo = &specialization;
+        attachment.blendEnable = !coverage;
+        if (coverage) attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT;
         if (!check(vkCreateGraphicsPipelines(native.device, VK_NULL_HANDLE, 1, &pc, nullptr,
                                              &pair.text),
                    "vkCreateGraphicsPipelines(Slug)"))
@@ -138,7 +154,7 @@ VkPipeline device::pipeline(VkFormat format, bool blend, bool glyphs)
     }
 #endif
     pipelines.push_back(pair);
-    return blend ? pair.blend : pair.copy;
+    return glyphs ? pair.text : (blend ? pair.blend : pair.copy);
 }
 void device::set_target(texture_handle handle)
 {
@@ -205,8 +221,9 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
             : std::min<VkDeviceSize>(
                   1024 * 1024, options.upload_budget_bytes /
                                    (options.upload_mode == vulkan_upload_mode::STAGED ? 2 : 1));
-    if (static_cast<VkDeviceSize>(vc) * 32 + static_cast<VkDeviceSize>(ic) * 4 > chunk &&
-        chunk >= 108)
+    const VkDeviceSize stride = vertex_stride();
+    if (static_cast<VkDeviceSize>(vc) * stride + static_cast<VkDeviceSize>(ic) * 4 > chunk &&
+        chunk >= 3 * (stride + sizeof(i32)))
     {
         // Preserve triangle order and each original vertex's float arithmetic.
         // Dense index spans share their contiguous source vertices. A sparse
@@ -220,7 +237,7 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
                     std::min(low, std::min(idx[end], std::min(idx[end + 1], idx[end + 2])));
                 const i32 hi =
                     std::max(high, std::max(idx[end], std::max(idx[end + 1], idx[end + 2])));
-                if ((static_cast<VkDeviceSize>(hi) - lo + 1) * 32 +
+                if ((static_cast<VkDeviceSize>(hi) - lo + 1) * stride +
                         static_cast<VkDeviceSize>(end - start + 3) * 4 >
                     chunk)
                     break;
@@ -270,25 +287,28 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
         if (replay_clip.bottom() < bottom) bottom = replay_clip.bottom();
         if (right <= left || bottom <= top) return;
     }
-    const VkDeviceSize vertex_bytes = static_cast<VkDeviceSize>(vc) * 32;
+    const VkDeviceSize vertex_bytes = static_cast<VkDeviceSize>(vc) * stride;
     const VkDeviceSize index_bytes = static_cast<VkDeviceSize>(ic) * 4;
     VkDeviceSize offset = 0;
     page *p = upload(vertex_bytes + index_bytes, offset, true);
     if (!p) return;
-    struct gpu_vertex
+    // Integer byte attributes are expanded to the original exact float bits in
+    // ui.vert. Positions/UVs and all four color bytes can be copied verbatim.
+    if (options.compact_vertices)
+        std::memcpy(p->mapped + offset, v, static_cast<usize>(vertex_bytes));
+    else
     {
-        float x, y, u, v, r, g, b, a;
-    };
-    auto *vertices = reinterpret_cast<gpu_vertex *>(p->mapped + offset);
-    for (i32 i = 0; i < vc; ++i)
-        vertices[i] = {v[i].x,
-                       v[i].y,
-                       v[i].u,
-                       v[i].v,
-                       BYTE_CHANNELS.values[v[i].c.r],
-                       BYTE_CHANNELS.values[v[i].c.g],
-                       BYTE_CHANNELS.values[v[i].c.b],
-                       BYTE_CHANNELS.values[v[i].c.a]};
+        auto *vertices = reinterpret_cast<legacy_vertex *>(p->mapped + offset);
+        for (i32 i = 0; i < vc; ++i)
+            vertices[i] = {v[i].x,
+                           v[i].y,
+                           v[i].u,
+                           v[i].v,
+                           BYTE_CHANNELS.values[v[i].c.r],
+                           BYTE_CHANNELS.values[v[i].c.g],
+                           BYTE_CHANNELS.values[v[i].c.b],
+                           BYTE_CHANNELS.values[v[i].c.a]};
+    }
     if (!index_base)
         std::memcpy(p->mapped + offset + vertex_bytes, idx, static_cast<usize>(index_bytes));
     else

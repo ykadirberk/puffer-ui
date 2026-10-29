@@ -12,6 +12,7 @@ inline hb_font_t *harfbuzz_font(context *c, font_handle font)
     if (!f.ok || f.buffer.size() > 0xffffffffu) return nullptr;
     if (!f.harfbuzz) f.harfbuzz = new harfbuzz_font_data();
     auto &state = *f.harfbuzz;
+    if (!state.runs) state.runs = new harfbuzz_shape_cache();
     if (!state.shaping)
     {
         auto *blob = hb_blob_create(reinterpret_cast<const char *>(f.buffer.data()),
@@ -67,34 +68,70 @@ inline bool harfbuzz_layout(context *c, font_handle font, f32 size, std::string_
     auto *native = harfbuzz_font(c, font);
     if (!native) return false;
     auto &ts = *c->ts;
-    if (!ts.shaping_buffer) ts.shaping_buffer = hb_buffer_create();
-    hb_buffer_reset(ts.shaping_buffer);
-    hb_buffer_add_utf8(ts.shaping_buffer, text.data(), static_cast<int>(text.size()), 0,
-                       static_cast<int>(text.size()));
-    hb_buffer_guess_segment_properties(ts.shaping_buffer);
-    hb_shape(native, ts.shaping_buffer, nullptr, 0);
-    if (!hb_buffer_allocation_successful(ts.shaping_buffer)) return false;
+    auto &state = *ts.fonts[static_cast<usize>(font)].harfbuzz;
+    auto &cache = *state.runs;
+    const bool cacheable = text.size() <= 256;
+    const u64 key = hash(text);
+    auto *run =
+        cacheable ? cache.cache.find(key, [&](const auto &r) { return r.matches(text); }) : nullptr;
     unsigned count = 0;
-    const auto *info = hb_buffer_get_glyph_infos(ts.shaping_buffer, &count);
-    const auto *pos = hb_buffer_get_glyph_positions(ts.shaping_buffer, nullptr);
+    const hb_glyph_info_t *info = nullptr;
+    const hb_glyph_position_t *pos = nullptr;
+    if (!run)
+    {
+        if (!ts.shaping_buffer) ts.shaping_buffer = hb_buffer_create();
+        hb_buffer_reset(ts.shaping_buffer);
+        hb_buffer_add_utf8(ts.shaping_buffer, text.data(), static_cast<int>(text.size()), 0,
+                           static_cast<int>(text.size()));
+        hb_buffer_guess_segment_properties(ts.shaping_buffer);
+        ++state.shape_calls;
+        hb_shape(native, ts.shaping_buffer, nullptr, 0);
+        if (!hb_buffer_allocation_successful(ts.shaping_buffer)) return false;
+        info = hb_buffer_get_glyph_infos(ts.shaping_buffer, &count);
+        pos = hb_buffer_get_glyph_positions(ts.shaping_buffer, nullptr);
+        if (cacheable && count <= 128)
+        {
+            harfbuzz_shape_cache::run built(&cache.pool);
+            built.text.assign(text.begin(), text.end());
+            built.glyphs.reserve(count);
+            for (unsigned i = 0; i < count; ++i)
+            {
+                built.missing |= !info[i].codepoint;
+                built.glyphs.push_back({info[i].codepoint, info[i].cluster, pos[i].x_advance,
+                                        pos[i].x_offset, pos[i].y_offset});
+            }
+            run = cache.cache.put(key, std::move(built), 4 * 1024 * 1024);
+        }
+    }
+    if (run)
+    {
+        if (run->missing) return false;
+        count = static_cast<unsigned>(run->glyphs.size());
+    }
     // A missing primary glyph uses the established fallback-font path for this
     // run. Do not manufacture a .notdef outline or silently lose the text.
-    for (unsigned i = 0; i < count; ++i)
-        if (!info[i].codepoint) return false;
+    if (!run)
+        for (unsigned i = 0; i < count; ++i)
+            if (!info[i].codepoint) return false;
     const auto &f = ts.fonts[static_cast<usize>(font)];
     const f32 scale = stbtt_ScaleForPixelHeight(&f.info, size);
     text_store::text_layout built(&ts.run_pool);
     built.gs.reserve(count);
     for (unsigned i = 0; i < count; ++i)
     {
-        auto *outline = harfbuzz_outline(c, font, info[i].codepoint);
+        const harfbuzz_shape_cache::unit_glyph unit =
+            run ? run->glyphs[i]
+                : harfbuzz_shape_cache::unit_glyph{info[i].codepoint, info[i].cluster,
+                                                   pos[i].x_advance, pos[i].x_offset,
+                                                   pos[i].y_offset};
+        auto *outline = harfbuzz_outline(c, font, unit.index);
         if (!outline) return false;
         text_store::cached_glyph value;
         value.vector = true;
-        value.glyph_index = info[i].codepoint;
-        value.cluster = info[i].cluster;
-        value.offset = {pos[i].x_offset * scale, pos[i].y_offset * scale};
-        value.g.advance = pos[i].x_advance * scale;
+        value.glyph_index = unit.index;
+        value.cluster = unit.cluster;
+        value.offset = {unit.x * scale, unit.y * scale};
+        value.g.advance = unit.advance * scale;
         value.g.xoff = outline->extents.x_bearing * scale + value.offset.x;
         value.g.yoff = -outline->extents.y_bearing * scale - value.offset.y;
         value.g.w = outline->extents.width * scale;

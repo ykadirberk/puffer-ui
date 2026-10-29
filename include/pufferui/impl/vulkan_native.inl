@@ -69,6 +69,8 @@ const char *vulkan_last_error(render_device *device);
 struct vulkan_stats
 {
     u64 glyph_upload_bytes = 0, glyph_instances = 0, glyph_draws = 0;
+    u64 glyph_coverage_hits = 0, glyph_coverage_misses = 0, glyph_coverage_fills = 0;
+    u64 glyph_coverage_draws = 0, glyph_coverage_bytes = 0, glyph_coverage_evictions = 0;
     u64 buffer_allocations = 0, draw_buffer_allocations = 0;
     u64 pipeline_binds = 0, viewport_sets = 0, scissor_sets = 0, descriptor_binds = 0;
     u64 submissions = 0, draws = 0, vertices = 0, indices = 0;

@@ -181,6 +181,9 @@ if(PUFFERUI_WITH_VULKAN)
     pui_add_vulkan_test(pui_harfbuzz_tests SOURCES tests/test_harfbuzz.cpp)
     pui_add_vulkan_test(pui_vulkan_native_text_tests SOURCES tests/test_vulkan_native_text.cpp RUNS "--staged")
     target_include_directories(pui_vulkan_native_text_tests PRIVATE vendored/stb)
+    pui_add_vulkan_test(pui_vulkan_native_optimization_tests
+        SOURCES tests/test_vulkan_native_optimizations.cpp RUNS "--staged")
+    target_include_directories(pui_vulkan_native_optimization_tests PRIVATE vendored/stb)
     pui_add_vulkan_test(pui_harfbuzz_interaction_tests FULL_ONLY SOURCES tests/test_harfbuzz_interaction.cpp RUNS "--staged")
     target_include_directories(pui_harfbuzz_interaction_tests PRIVATE vendored/stb)
   endif()
@@ -193,6 +196,8 @@ if(PUFFERUI_WITH_VULKAN)
     pui_add_vulkan_test(pui_vulkan_native_spiral_tests FULL_ONLY
         SOURCES tests/test_vulkan_native_spiral.cpp DEFS PUFFERUI_NATIVE_TELEMETRY
         RUNS "--staged" "--bitmap" "--bitmap --staged")
+    pui_add_exe(pui_vulkan_native_opt3_bench VULKAN
+        SOURCES tests/bench_vulkan_native_optimizations.cpp DEFS PUFFERUI_NATIVE_TELEMETRY)
     pui_add_vulkan_test(pui_vulkan_example_font_tests SOURCES tests/test_vulkan_example_font.cpp)
     pui_add_vulkan_test(pui_vulkan_example_validation_tests SOURCES tests/test_vulkan_example_validation.cpp)
     set_property(GLOBAL APPEND PROPERTY PUFFERUI_VULKAN_TARGETS pui_tut_vulkan_manual)

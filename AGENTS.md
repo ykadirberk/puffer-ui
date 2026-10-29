@@ -86,7 +86,8 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   equality must remain exact. Never use `--update` to hide a backend difference.
 - GLSL lives in `src/shaders/vulkan/`; `tools/compile_vulkan_shaders.py` generates
   checked-in SPIR-V plus a compiler/source manifest. Ordinary consumers do not
-  run the shader compiler. Cache is opt-in; GPU binning is not implemented.
+  run the shader compiler. Frame mesh caching is opt-in; native Slug coverage
+  caching defaults to a bounded 4 MiB image. GPU binning is not implemented.
 - This native branch preserves the first Vulkan triangle/blur paths. Fresh
   Vulkan configurations enable pinned HarfBuzz and upstream Slug text; explicit
   OFF remains supported. Text uses an independent instanced graphics pipeline,
@@ -97,6 +98,17 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   instanced frames in direct/staged modes. `pui_vulkan_native_spiral_tests`
   compares all 180 actual 5000-item frames, with immutable `--capture` and
   `--reference` modes. Keep bitmap fixture assertions and golden bytes fixed.
+- Native glyph coverage uses exact R32 samples and full operand identities in
+  `impl/vulkan_text_coverage.inl`; preparation/region retirement happens at frame
+  boundaries. Shape vertices default to exact 20-byte integer-color inputs;
+  `compact_vertices=false` retains the 32-byte float oracle. Zero
+  `glyph_coverage_budget_bytes` retains uncached Slug. The independent
+  `pui_vulkan_native_optimization_tests` covers 192 pipelined cache/reference
+  frames, byte colors, retirement and 5000-label size reuse in both upload modes.
+  `pui_vulkan_native_opt3_bench` reuses the unchanged actual showcase harness;
+  `tools/compare_vulkan_native_optimizations.py` preserves cold/outlier frames and
+  compares every frame against immutable captures.
+  Evidence and measured tradeoffs: `docs/perf_vulkan_native_optimizations.md`.
 - `pui_ex_vulkan` is the external VkImage atomic; `pui_showcase_vulkan` uses the
   actual showcase helpers. Both support the normal example selftest interface.
 - Register a native test once with `pui_add_vulkan_test` in `CMakeLists.txt`;

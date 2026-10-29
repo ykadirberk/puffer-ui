@@ -69,7 +69,7 @@ bool device::initialize_text()
     sc.pCode = vulkan_text_frag;
     return check(vkCreateShaderModule(native.device, &sc, nullptr, &text->fragment),
                  "vkCreateShaderModule(Slug fragment)") &&
-           text_chunk(1);
+           text_chunk(1) && initialize_coverage();
 }
 bool device::text_chunk(VkDeviceSize required)
 {
@@ -168,6 +168,12 @@ bool device::glyph(context *c, font_handle font, u32 index, vec2 baseline, f32 s
 void device::release_text()
 {
     if (!text) return;
+    if (text->coverage)
+    {
+        free_texture(text->coverage->atlas);
+        delete text->coverage;
+        stats.glyph_coverage_bytes = 0;
+    }
     for (auto &chunk : text->chunks) free_page(chunk.storage);
     if (text->pool) vkDestroyDescriptorPool(native.device, text->pool, nullptr);
     if (text->vertex) vkDestroyShaderModule(native.device, text->vertex, nullptr);
@@ -178,6 +184,41 @@ void device::release_text()
         vkDestroyDescriptorSetLayout(native.device, text->descriptor_layout, nullptr);
     delete text;
     text = nullptr;
+}
+bool device::upload_glyphs(const glyph_instance *instances, usize count, VkBuffer &buffer,
+                           VkDeviceSize &offset)
+{
+    const VkDeviceSize bytes = count * sizeof(glyph_instance);
+    page *p = upload(bytes, offset, true);
+    if (!p) return false;
+    std::memcpy(p->mapped + offset, instances, static_cast<usize>(bytes));
+    buffer = p->staged ? p->device_buffer : p->buffer;
+    if (p->staged)
+    {
+        end_rendering();
+        VkBufferMemoryBarrier2 barrier{VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2};
+        barrier.srcStageMask = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
+        barrier.srcAccessMask = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_2_INDEX_READ_BIT;
+        barrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+        barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.buffer = buffer;
+        barrier.size = VK_WHOLE_SIZE;
+        VkDependencyInfo dep{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+        dep.bufferMemoryBarrierCount = 1;
+        dep.pBufferMemoryBarriers = &barrier;
+        vkCmdPipelineBarrier2(frame->command, &dep);
+        VkBufferCopy copy{offset, offset, bytes};
+        vkCmdCopyBuffer(frame->command, p->buffer, p->device_buffer, 1, &copy);
+        barrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+        barrier.dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
+        barrier.dstAccessMask = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT;
+        barrier.offset = offset;
+        barrier.size = bytes;
+        vkCmdPipelineBarrier2(frame->command, &dep);
+    }
+    return true;
 }
 #endif
 void device::flush_text()
@@ -218,41 +259,33 @@ void device::flush_text()
         text->pending.clear();
         return;
     }
+    u32 coverage_regions = 0;
+    if (text->coverage)
+    {
+        auto &cache = *text->coverage;
+        for (auto &instance : text->pending)
+            if (cache_glyph(instance))
+            {
+                const u32 side = static_cast<u32>(cache.extent / 2);
+                const u32 region = ((instance.reserved[0] & 65535u) / side) +
+                                   ((instance.reserved[0] >> 16) / side) * 2;
+                coverage_regions |= 1u << region;
+            }
+        if (!paint_coverage())
+        {
+            text->pending.clear();
+            return;
+        }
+        if (coverage_regions) transition(cache.atlas, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
     VkDeviceSize offset = 0;
-    const VkDeviceSize bytes = text->pending.size() * sizeof(glyph_instance);
-    page *p = upload(bytes, offset, true);
-    if (!p)
+    VkBuffer buffer = VK_NULL_HANDLE;
+    if (!upload_glyphs(text->pending.data(), text->pending.size(), buffer, offset))
     {
         text->pending.clear();
         return;
     }
-    std::memcpy(p->mapped + offset, text->pending.data(), static_cast<usize>(bytes));
-    const VkBuffer buffer = p->staged ? p->device_buffer : p->buffer;
-    if (p->staged)
-    {
-        end_rendering();
-        VkBufferMemoryBarrier2 barrier{VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2};
-        barrier.srcStageMask = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
-        barrier.srcAccessMask = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_2_INDEX_READ_BIT;
-        barrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-        barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
-        barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.buffer = buffer;
-        barrier.size = VK_WHOLE_SIZE;
-        VkDependencyInfo dep{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
-        dep.bufferMemoryBarrierCount = 1;
-        dep.pBufferMemoryBarriers = &barrier;
-        vkCmdPipelineBarrier2(frame->command, &dep);
-        VkBufferCopy copy{offset, offset, bytes};
-        vkCmdCopyBuffer(frame->command, p->buffer, p->device_buffer, 1, &copy);
-        barrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-        barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
-        barrier.dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
-        barrier.dstAccessMask = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT;
-        barrier.offset = offset;
-        barrier.size = bytes;
-        vkCmdPipelineBarrier2(frame->command, &dep);
-    }
+    if (!coverage_regions) transition(white, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     if (!start_rendering(target))
     {
         text->pending.clear();
@@ -267,6 +300,10 @@ void device::flush_text()
     VkRect2D scissor{{static_cast<i32>(left), static_cast<i32>(top)},
                      {static_cast<u32>(right - left), static_cast<u32>(bottom - top)}};
     vkCmdBindVertexBuffers(frame->command, 0, 1, &buffer, &offset);
+    const auto sample = coverage_regions ? text->coverage->atlas : white;
+    bind_graphics(pipe, text->pipeline_layout,
+                  {static_cast<u32>(target->width), static_cast<u32>(target->height)}, scissor,
+                  sample->descriptors[0], 0);
     const auto descriptor = text->chunks[text->pending_chunk].descriptor;
     bind_graphics(pipe, text->pipeline_layout,
                   {static_cast<u32>(target->width), static_cast<u32>(target->height)}, scissor,
@@ -276,6 +313,9 @@ void device::flush_text()
     ++stats.glyph_draws;
     ++target->revision;
     target->last_use = next_serial;
+    if (coverage_regions)
+        for (u32 i = 0; i < 4; ++i)
+            if (coverage_regions & (1u << i)) text->coverage->regions[i].last_use = next_serial;
     text->pending.clear();
 #endif
 }

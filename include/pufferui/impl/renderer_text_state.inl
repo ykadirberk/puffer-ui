@@ -323,8 +323,27 @@ inline text_store::text_layout *get_layout(context *c, font_handle fh, f32 size,
 {
     text_store &ts = *c->ts;
     const u64 key = layout_key(c, fh, size, s);
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    if (ts.vector_enabled && !ts.shaper && s.size() <= 256)
+    {
+        if (auto *cached = ts.vector_layouts.find(key, [&](const auto &value)
+                                                  { return value.matches(fh, size, s); }))
+            return &cached->layout;
+        if (auto *lay = ts.layout_cache.find(key)) return lay;
+        text_store::vector_layout built(&ts.run_pool);
+        if (harfbuzz_layout(c, fh, size, s, built.layout))
+        {
+            built.font = fh;
+            built.size = size;
+            built.text.assign(s.begin(), s.end());
+            if (auto *cached = ts.vector_layouts.put(key, std::move(built), 32 * 1024 * 1024))
+                return &cached->layout;
+        }
+        // Missing-primary fallback retains the original bitmap cache history.
+        // Oversized/budget-rejected runs use the established bounded path.
+    }
+#endif
     if (auto *lay = ts.layout_cache.find(key)) return lay;
-
     // A normal associative cache would change primary hit/miss history. Since
     // the legacy key quantizes size but kerning uses the raw size, that can
     // change pixels. Retain the original primary slot, and only replace a

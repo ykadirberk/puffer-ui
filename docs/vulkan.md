@@ -218,6 +218,13 @@ example with explicit destruction before backend shutdown.
   buffer, with explicit transfer/input synchronization. It doubles the geometry
   storage requirement and is an explicit device/workload measurement choice.
 
+Native shape vertices default to 20-byte position/UV/integer-byte-color inputs.
+The shader reconstructs the original exact float channel bits. Set
+`compact_vertices=false` for the retained 32-byte float-color reference. Native
+Slug also has a bounded exact R32 coverage cache; use
+`glyph_coverage_budget_bytes=0` for direct curve evaluation. See
+[the native text contract](harfbuzz.md) for identities, budgets and retirement.
+
 `upload_budget_bytes` defaults to 256 MiB and bounds actual Vulkan allocation
 requirements for upload pages, optional local geometry and temporary readback.
 Completed slots are reclaimed first; backpressure waits for necessary work

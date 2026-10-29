@@ -173,11 +173,18 @@ void surface::make_current(render_device &)
     if (dev->frame && dev->frame->recording) dev->submit();
     slot = (slot + 1) % static_cast<u32>(slots.size());
     if (!dev->begin(slots[slot])) return;
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    if (!dev->prepare_coverage()) return;
+#endif
     slots[slot].geometry_frame_bytes = 0;
     if (geometry_peak)
     {
         const VkDeviceSize bytes = dev->geometry_reservation(
-            geometry_peak, static_cast<VkDeviceSize>(extent.width) * extent.height);
+            // Leave growth headroom before recording the next frame. Compact
+            // input starts small; an expanding raw stream must not reallocate
+            // at every slightly higher observed byte count.
+            geometry_peak <= UINT64_MAX / 2 ? geometry_peak * 2 : geometry_peak,
+            static_cast<VkDeviceSize>(extent.width) * extent.height);
         if (bytes && !dev->prepare_slot_geometry(slots[slot], bytes) && dev->result != VK_SUCCESS)
             return;
     }
@@ -330,7 +337,7 @@ render_surface *device::make_surface(void *window, i32 width, i32 height)
         // Keep tiny-budget/fault configurations on their existing exact growth
         // path. Ordinary surfaces prepare their first native page before drawing.
         if (options.upload_budget_bytes >= options.frames_in_flight * 4ull * 1024 * 1024 &&
-            !prepare_slot_geometry(slot, 1024 * 1024))
+            !prepare_slot_geometry(slot, 512 * 1024))
         {
             for (auto &f : s->slots) destroy_slot(f);
             s->release_swapchain();

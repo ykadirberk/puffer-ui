@@ -1832,11 +1832,13 @@ struct vulkan_device_opts
     bool validation = false;
     bool tile_cache = false;
     bool vector_text = true; // HarfBuzz shaping + native graphics Slug; ignored without HarfBuzz
+    bool compact_vertices = true; // exact integer-byte colors; false retains the 32-byte oracle
     vulkan_upload_mode upload_mode = vulkan_upload_mode::DIRECT;
     u32 physical_device_index = 0xffffffffu; // automatic: prefer a compatible discrete GPU
     u32 frames_in_flight = 2;
     u64 upload_budget_bytes = 256ull * 1024 * 1024;
     u64 cache_budget_bytes = 64ull * 1024 * 1024;
+    u64 glyph_coverage_budget_bytes = 4ull * 1024 * 1024; // exact Slug R32 cache; 0 disables
     void (*error_callback)(i32 result, const char *operation, void *user) = nullptr;
     void *user = nullptr;
 };
@@ -3808,6 +3810,7 @@ namespace pui
 #include "impl/vulkan_surface.inl"
 #include "impl/vulkan_cache.inl"
 #include "impl/vulkan_preparation.inl"
+#include "impl/vulkan_text_coverage.inl"
 #include "impl/vulkan_text.inl"
 #include "impl/sdl3.inl"
 #include "impl/sdl3_vulkan_host.inl"

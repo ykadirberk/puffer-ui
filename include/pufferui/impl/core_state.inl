@@ -220,6 +220,7 @@ struct glyph
 };
 
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
+struct harfbuzz_shape_cache;
 struct harfbuzz_font_data
 {
     retained_pool_resource outline_pool{8192};
@@ -237,12 +238,10 @@ struct harfbuzz_font_data
     };
     hb_font_t *shaping = nullptr;
     hb_gpu_draw_t *encoder = nullptr;
+    harfbuzz_shape_cache *runs = nullptr;
+    u64 shape_calls = 0;
     std::pmr::unordered_map<u32, outline> outlines{&outline_pool};
-    ~harfbuzz_font_data()
-    {
-        hb_font_destroy(shaping);
-        hb_gpu_draw_destroy(encoder);
-    }
+    ~harfbuzz_font_data();
 };
 #endif
 struct font_data
@@ -423,6 +422,104 @@ template <class T> struct renderer_pool_allocator
     }
 };
 
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+// A bounded, allocation-free lookup with double-hashed probe windows. Full
+// identities are checked by the caller; hash collisions can only cause misses.
+// Unlike the bitmap direct cache, vector runs have no quantized-size history.
+template <class V, usize N> struct vector_run_cache
+{
+    static_assert(N && !(N & (N - 1)));
+    struct slot
+    {
+        u64 tag = 0, used = 0;
+        V value{};
+    };
+    slot slots[N]{};
+    u64 clock = 0;
+    usize bytes = 0;
+    static constexpr usize PROBES = N < 64 ? N : 64;
+    template <class Match> V *find(u64 key, Match &&match)
+    {
+        const u64 tag = direct_cache<V, N>::mix(key);
+        const usize step = static_cast<usize>(tag >> 32) | 1;
+        usize index = static_cast<usize>(tag) & (N - 1);
+        for (usize probe = 0; probe < PROBES; ++probe, index = (index + step) & (N - 1))
+        {
+            auto &entry = slots[index];
+            if (!entry.tag) return nullptr;
+            if (entry.tag == tag && match(entry.value))
+            {
+                entry.used = ++clock;
+                return &entry.value;
+            }
+        }
+        return nullptr;
+    }
+    V *put(u64 key, V &&value, usize budget)
+    {
+        const u64 tag = direct_cache<V, N>::mix(key);
+        const usize step = static_cast<usize>(tag >> 32) | 1;
+        usize index = static_cast<usize>(tag) & (N - 1);
+        slot *oldest = &slots[index];
+        for (usize probe = 0; probe < PROBES; ++probe, index = (index + step) & (N - 1))
+        {
+            auto &entry = slots[index];
+            if (!entry.tag || entry.tag == tag)
+            {
+                oldest = &entry;
+                break;
+            }
+            if (entry.used < oldest->used) oldest = &entry;
+        }
+        const usize retained = bytes - oldest->value.payload_bytes();
+        if (value.payload_bytes() > budget || retained > budget - value.payload_bytes())
+            return nullptr;
+        bytes = retained + value.payload_bytes();
+        oldest->value = std::move(value);
+        oldest->tag = tag;
+        oldest->used = ++clock;
+        return &oldest->value;
+    }
+    void clear()
+    {
+        for (auto &entry : slots) entry.tag = 0;
+    }
+};
+struct harfbuzz_shape_cache
+{
+    retained_pool_resource pool{65536};
+    struct unit_glyph
+    {
+        u32 index = 0, cluster = 0;
+        i32 advance = 0, x = 0, y = 0;
+    };
+    struct run
+    {
+        std::vector<char, renderer_pool_allocator<char>> text;
+        std::vector<unit_glyph, renderer_pool_allocator<unit_glyph>> glyphs;
+        bool missing = false;
+        explicit run(std::pmr::memory_resource *source = nullptr)
+            : text(renderer_pool_allocator<char>(source)),
+              glyphs(renderer_pool_allocator<unit_glyph>(source))
+        {
+        }
+        usize payload_bytes() const { return text.size() + glyphs.size() * sizeof(unit_glyph); }
+        bool matches(std::string_view value) const
+        {
+            return text.size() == value.size() &&
+                   (value.empty() || std::memcmp(text.data(), value.data(), value.size()) == 0);
+        }
+    };
+    vector_run_cache<run, 8192> cache;
+};
+inline harfbuzz_font_data::~harfbuzz_font_data()
+{
+    delete runs;
+    hb_font_destroy(shaping);
+    hb_gpu_draw_destroy(encoder);
+}
+#endif
+
 struct text_store
 {
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
@@ -531,10 +628,36 @@ struct text_store
     };
     direct_cache<text_layout, 4096> layout_cache;
     direct_cache<text_layout, 64> layout_victims;
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    struct vector_layout
+    {
+        std::vector<char, renderer_pool_allocator<char>> text;
+        text_layout layout;
+        font_handle font = FONT_INVALID;
+        f32 size = 0;
+        explicit vector_layout(std::pmr::memory_resource *source = nullptr)
+            : text(renderer_pool_allocator<char>(source)), layout(source)
+        {
+        }
+        usize payload_bytes() const
+        {
+            return text.size() + layout.gs.size() * sizeof(cached_glyph);
+        }
+        bool matches(font_handle fh, f32 raw_size, std::string_view value) const
+        {
+            return font == fh && size == raw_size && text.size() == value.size() &&
+                   (value.empty() || std::memcmp(text.data(), value.data(), value.size()) == 0);
+        }
+    };
+    vector_run_cache<vector_layout, 8192> vector_layouts;
+#endif
     void clear_layouts()
     {
         for (auto &s : layout_cache.slots) s.tag = 0;
         for (auto &s : layout_victims.slots) s.tag = 0;
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+        vector_layouts.clear();
+#endif
     }
 
     f32 coverage_gamma = 0.0f;

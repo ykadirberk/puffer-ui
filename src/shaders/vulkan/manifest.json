@@ -7,20 +7,20 @@
   ],
   "shaders": {
     "ui.vert": {
-      "source_sha256": "bcf9c2f2bffb823fe84e9d27b86110ec67375aa669dbe589429f4db333239eb1",
-      "spirv_sha256": "4b57d6ba57a0ec0778b9fb2d767d4a291b4f8036a7affd86f60a6224f83b7c65"
+      "source_sha256": "e805a100dbab4253f3fa46346a02de33ea0a2618b5176b4c9ceda8def0e120cf",
+      "spirv_sha256": "3b3a05bc0d73312df42b79e5276cf1f22106f7b8c94a7515877f3f9c5d1a2c3f"
     },
     "ui.frag": {
       "source_sha256": "fcd4245a4d741301ced56f1df47a4f571a8935167d194904d27147250e525361",
       "spirv_sha256": "07bc0debcfbfb667f0a36c6cf64c6405dcf0903d51b57d6212609d025c079429"
     },
     "text.vert": {
-      "source_sha256": "bb76bf709159fbcaafb1f84e9153952303eafb67684ee6cc70a89cd5206cd488",
-      "spirv_sha256": "bef961acc91f91faefe82462a5e5854e9412b5d16eb6f732033b4a978e5f3005"
+      "source_sha256": "d4aba9bc8d5484b7fb6d262d0f15957b62a59e0eebe6acb67de9899c8d6a3e95",
+      "spirv_sha256": "58d60d361dfcf4144003361fd33d6e23201fe3efce506998765d53baf4afe1f7"
     },
     "text.frag": {
-      "source_sha256": "07f9e8728214ca57f7f0f5bca08abef5097e2eb999d9fe5200b6af150bb61f40",
-      "spirv_sha256": "ace7806f65a082bc3779add1df6a8423a87c9d8bdfe676541b8d57c3c4d1196c"
+      "source_sha256": "dd42e3ea90253b37c0528810c8980246aaba0d9834b24b6531e3fa18beec57e3",
+      "spirv_sha256": "8eb2d7ad4ebe6fa093b1a4e2f4c522b4515a5a3799406bc64bb56be300747455"
     }
   },
   "includes": {

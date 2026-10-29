@@ -7,6 +7,9 @@ namespace vk_detail
 {
 bool device::valid(texture *t) const
 {
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    if (t && text && text->coverage && t == text->coverage->atlas) return !t->dead;
+#endif
     for (auto *live : textures)
         if (live == t) return !live->dead;
     return false;
@@ -58,7 +61,11 @@ bool device::descriptors(texture *t)
 }
 texture *device::make_texture(i32 w, i32 h, bool render_target, const u8 *rgba)
 {
-    if (cache_active) cache_flush(false);
+    return allocate_texture(w, h, {.render_target = render_target, .rgba = rgba});
+}
+texture *device::allocate_texture(i32 w, i32 h, const texture_creation &creation)
+{
+    if (!creation.internal && cache_active) cache_flush(false);
     if (w <= 0 || h <= 0 || static_cast<u32>(w) > properties.limits.maxImageDimension2D ||
         static_cast<u32>(h) > properties.limits.maxImageDimension2D || result != VK_SUCCESS)
         return nullptr;
@@ -67,8 +74,9 @@ texture *device::make_texture(i32 w, i32 h, bool render_target, const u8 *rgba)
     t->width = w;
     t->height = h;
     t->generation = new_generation();
-    t->target = render_target;
-    t->linear = render_target;
+    t->target = creation.render_target;
+    t->linear = creation.render_target;
+    t->format = creation.format;
     VkImageCreateInfo ic{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
     ic.imageType = VK_IMAGE_TYPE_2D;
     ic.format = t->format;
@@ -78,7 +86,7 @@ texture *device::make_texture(i32 w, i32 h, bool render_target, const u8 *rgba)
     ic.tiling = VK_IMAGE_TILING_OPTIMAL;
     ic.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
                VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-    if (render_target) ic.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    if (creation.render_target) ic.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     if (!check(vkCreateImage(native.device, &ic, nullptr, &t->image), "vkCreateImage"))
     {
         free_texture(t);
@@ -120,6 +128,9 @@ texture *device::make_texture(i32 w, i32 h, bool render_target, const u8 *rgba)
         free_texture(t);
         return nullptr;
     }
+    // Internal glyph coverage is renderer scratch, not a caller-visible texture
+    // handle. Its allocation is still fully included in image_bytes.
+    if (creation.internal) return t;
     textures.push_back(t);
     ++stats.live_textures;
     if (!commands())
@@ -134,7 +145,7 @@ texture *device::make_texture(i32 w, i32 h, bool render_target, const u8 *rgba)
     vkCmdClearColorImage(frame->command, t->image, t->layout, &zero, 1, &range);
     t->last_use = next_serial;
     ++t->revision;
-    if (rgba) update_texture(t, 0, 0, w, h, rgba);
+    if (creation.rgba) update_texture(t, 0, 0, w, h, creation.rgba);
     if (result != VK_SUCCESS)
     {
         destroy_texture(t);
