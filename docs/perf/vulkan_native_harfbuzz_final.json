@@ -12495,11 +12495,31 @@
     "launch_arguments": [],
     "launch_succeeded": true,
     "returned_window_title": "showcase",
-    "foreground_inspection_completed": false,
-    "status": "pending_user_unlock",
-    "observation": "Activation failed. Refreshed returned showcase window capture showed the Windows lock screen. No app input was issued after observing the lock screen.",
+    "foreground_inspection_completed": true,
+    "status": "passed",
+    "observation": "After the desktop became available, the standard executable opened without flags. Native Vulkan label, default text, Overview, Spiral controls, scrolling, Effects and VSync transitions were inspected in the real window.",
+    "previous_attempt": "The earlier attempt stopped at the Windows lock screen and issued no further app input.",
+    "showcase_checks": [
+      "Standard executable launched directly without Python or painter/vector-text flags",
+      "Sidebar displayed vulkan showcase; expected bundled-font text was visible",
+      "Default HUD reported VSYNC ON and settled near 180 FPS on this display",
+      "Layout lab selected Spiral, tile size 64 px, and a real Add changed 14 tiles to 15",
+      "Overview scrolled down and back up; Effects and Overview transitions rendered correctly after their animations settled",
+      "VSync toggled OFF, then ON; after re-enabling, the HUD settled at 179-180 FPS",
+      "Showcase closed normally through its own window"
+    ],
+    "demo_checks": [
+      "Release pui_demo.exe launched and both SDL windows were visually inspected",
+      "Main demo and second shared-device window rendered their controls and text",
+      "Demo closed normally; no showcase/demo window remained in the final inventory"
+    ],
     "automated_checks": "Default native text, font-root identity, WSI lifecycle and startup VSync agreement passed in Release and Debug.",
-    "foreground_fps_certified": false
+    "foreground_fps_certified": false,
+    "source_commit": "6bb87b7dc49e0ed3ebd4fdcb6664f6371032e0e9",
+    "binary_sha256": {
+      "out\\build\\x64-release\\Release\\pui_showcase_vulkan.exe": "f97cf3b37db78cb6e708950a94998f750f1bb5b384b24fe270aadbad05e843e3",
+      "out\\build\\x64-release\\Release\\pui_demo.exe": "ea95e8d2a3c319de583d4ead6bf8d7e76f0a0b80076c45e243117770c4978de2"
+    }
   },
   "preserved_unrelated": {
     "docs/perf/r115_remaining_review.json": "f64c0a59e91be7f6d0a1126cace4ebdc90c5ada74a11255f25189b7051651b1b",
@@ -12514,7 +12534,7 @@
   },
   "artifact_hashes": {
     "vulkan_native_harfbuzz_frames.csv.gz": "2643a888aef7cef4a06218a2093aef830d6be0033ab083f86b9486c757fcd8db",
-    "vulkan_native_harfbuzz_raw.zip": "8638def785c384bfdb2708fed5d16161e0b1775eaa6658b811badf12915497e8"
+    "vulkan_native_harfbuzz_raw.zip": "af5733cfca6b4b1f041d20a3f457d6e928f11b8c5bb2befcae286ebece65d7b9"
   },
   "local_reference_directories": [
     "build-vulkan-native/first-native-rgba",

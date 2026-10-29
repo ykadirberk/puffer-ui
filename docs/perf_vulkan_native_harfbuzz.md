@@ -241,12 +241,16 @@ they are a separate measure from exact upload arena allocation capacities.
   The Vulkan README pictures and explicit tutorial picture were regenerated
   from Release executables and visually inspected.
 
-The standard executable launched without arguments and exposed its `showcase`
-window. Foreground inspection is pending: activation failed and a refreshed
-capture showed the Windows lock screen. No further app input was issued after
-that observation; the user has been asked to unlock. Automated rendering
-results do not substitute for a successful foreground inspection. The final
-receipt records this boundary explicitly.
+Foreground inspection passed after the desktop became available. The standard
+Release executable launched directly without arguments; its `vulkan showcase`
+label, default text and VSync-on HUD were visible. Layout lab selected Spiral
+at 64 px and a real Add changed 14 tiles to 15. Overview scrolling, Effects and
+returning to Overview rendered correctly after transition animations settled.
+VSync toggled off and back on; the re-enabled HUD settled at 179-180 FPS on this
+display. Both Release SDL demo windows were also inspected. All windows opened
+for these checks closed normally. These are functional and visual observations,
+not a new benchmark cohort or foreground throughput qualification. The earlier
+locked-desktop attempt remains recorded as history in the final receipt.
 
 ## Evidence and use
 
