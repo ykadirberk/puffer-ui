@@ -101,11 +101,20 @@ Both `python tools/run_tests.py --vulkan --format --release` and `python tools/r
 
 The initial new aligned-position regression exposed a real retirement starvation bug. Its failed log is preserved; after the fix both complete suites pass. All 77 original files and the nine unrelated draft hashes remain unchanged. The SDL submodule is preserved.
 
-**Live status.** The standard no-argument native executable was launched, but Windows was locked during capture. Desktop input stopped and an unlock was requested. No live appearance or foreground performance claim is made.
+**Live verification — 2026-10-30, code `126afac`.** The foreground native showcase and both SDL demo windows were inspected after desktop unlock. The standard `pui_showcase_vulkan.exe` was launched without arguments. Its `vulkan showcase` label, default text, geometry and blending were visible. Startup VSync showed ON at about 180 FPS; OFF exceeded 1000 FPS in several HUD snapshots, and ON settled back near 180. The receipt also retains the immediate transition readings and the lower Effects-page sample. These observations verify the control transition; they are not a matched foreground performance benchmark.
+
+In Layout lab, Spiral was selected, size was reduced from 112 to 64, and three actual mouse clicks increased the model from 14 to 17 tiles. Effects' liquid lens was moved over the colored shapes; blur and overlaid text updated. Overview scrolling and the return to its top position were observed. No persistent glyph, clipping or geometry corruption was seen in these inspected states. The 5000-item performance and pixel results remain the separate automated cohort above.
+
+Both demo windows rendered. The main button increased the shared counter from 0 to 1; `Add score` in window 2 increased the main counter from 1 to 2. The Amount slider changed from 3.50 to 6.90, matching the floating Inspector. A physical `a` key changed `PufferUI` to `aPufferUI`, and Backspace restored it. Log scrolling advanced the visible lines from 1–6 to 6–11. Closing window 2 left the main window usable, and all opened project windows were then closed normally.
+
+The automation's bulk `type_text` method did not produce the requested string, and direct `set_value` was unsupported. Bulk Unicode/paste input is therefore not certified by this follow-up. One accessibility click in window 2 reported invalid coordinates; the screenshot-coordinate route succeeded. Initial window-binding attempts required recovery; no matching application error event (IDs 1000/1001) was found in the bounded 60-minute query. The [live receipt](perf/vulkan_native_optimizations_live.json) records the exact scope, binary hashes and these tool limits.
+
+This follow-up changes documentation and evidence only. All 192 measured source hashes, 77 original test/oracle hashes, nine unrelated draft hashes, timed/golden data and original raw archive payloads are preserved. The previous locked-desktop receipt remains in the archive as `live-20261029-locked.json`; `live.json` contains the completed inspection. The full implementation suites were not rerun for this documentation-only update.
 
 **Evidence and reproduction.**
 
 - [Complete machine-readable receipt](perf/vulkan_native_optimizations_final.json)
+- [Foreground live-check receipt](perf/vulkan_native_optimizations_live.json)
 - [Every timed frame](perf/vulkan_native_optimizations_frames.csv.gz)
 - [Raw runs, golden logs, full-suite logs and protocol sources](perf/vulkan_native_optimizations_raw.zip)
 

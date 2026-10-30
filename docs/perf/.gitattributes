@@ -1,0 +1,2 @@
+# Keep the live receipt's SHA256 stable across Windows and Unix checkouts.
+vulkan_native_optimizations_live.json -text

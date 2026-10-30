@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-30",
+  "code_commit": "126afac678535f7b2e85b615383be7acc0dd182b",
+  "status": "passed",
+  "scope": "Foreground appearance and bounded functional smoke checks; no new performance cohort or foreground FPS certification.",
+  "standard_no_argument_launch": true,
+  "foreground_inspected": true,
+  "demo_foreground_inspected": true,
+  "foreground_fps_certified": false,
+  "all_opened_project_windows_closed": true,
+  "executables": {
+    "pui_showcase_vulkan.exe": {
+      "path": "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_showcase_vulkan.exe",
+      "sha256": "5d5783ddcc959f8cc66a7d407a735c51f5e91c5615ae5e8f260c80bf21462a18",
+      "args": []
+    },
+    "pui_demo.exe": {
+      "path": "D:\\myimgui\\out\\build\\x64-release\\Release\\pui_demo.exe",
+      "sha256": "25a09c3f99953807b10e8636aad485117d6397cd91c756e1fefd5db498ff34bc",
+      "args": []
+    }
+  },
+  "showcase": {
+    "label": "vulkan showcase",
+    "startup_vsync": "ON",
+    "startup_hud_fps_approx": 180,
+    "vsync_sequence": [
+      "ON",
+      "OFF",
+      "ON"
+    ],
+    "off_transition_hud_fps": 182,
+    "off_hud_observed_snapshots_fps": [
+      1038,
+      1142,
+      1079,
+      1143,
+      955,
+      1132,
+      1148,
+      1067,
+      1020
+    ],
+    "restored_on_transition_hud_fps": 922,
+    "restored_on_hud_fps_approx": 180,
+    "layout": {
+      "mode": "Spiral",
+      "tile_size": 64,
+      "initial_items": 14,
+      "final_items": 17,
+      "actual_mouse_add_clicks": 3
+    },
+    "pages_observed": [
+      "Overview",
+      "Layout lab",
+      "Effects",
+      "Overview"
+    ],
+    "scrolling": "Overview down/up observed; top position restored after settling.",
+    "effects": "Liquid lens moved over colored shapes; blur and overlaid text updated.",
+    "appearance": "No persistent glyph, blending, clipping or geometry corruption observed in the inspected states.",
+    "closed_normally": true
+  },
+  "demo": {
+    "windows": [
+      "PufferUI (next) - window 1",
+      "PufferUI (next) - window 2"
+    ],
+    "main_button_clicks": [
+      0,
+      1
+    ],
+    "second_window_add_score_main_counter": [
+      1,
+      2
+    ],
+    "amount_slider": [
+      3.5,
+      6.9
+    ],
+    "inspector_amount": 6.9,
+    "physical_keyboard_values": [
+      "PufferUI",
+      "aPufferUI",
+      "PufferUI"
+    ],
+    "physical_keyboard_actions": [
+      "a",
+      "BackSpace"
+    ],
+    "log_scroll_visible_lines_before": [
+      1,
+      6
+    ],
+    "log_scroll_visible_lines_after": [
+      6,
+      11
+    ],
+    "lifecycle": [
+      "two windows inspected",
+      "close window 2 from main control",
+      "main remains alive and shows Open window 2",
+      "close main with Alt+F4",
+      "no showcase/demo windows remain"
+    ],
+    "appearance": "Both windows, shared model updates, text, cards, floating Inspector and log clipping inspected.",
+    "bulk_text_or_paste_verified": false
+  },
+  "automation_notes": [
+    "Initial activation attempts reported user input / missing foreground PID; fresh window selection and capture recovered. The initial disappeared windows were not classified as application crashes.",
+    "One window-2 accessibility click produced out-of-bounds coordinates; the observed screenshot coordinate route succeeded.",
+    "Bulk type_text attempts did not produce the requested string; direct set_value reported that the field is not settable. These methods are not certified. A physical a key and Backspace were observed in both screenshot and accessibility value.",
+    "Assertions about pixel equality and performance remain the previous deterministic golden/timing results; these live checks add functional evidence only."
+  ],
+  "application_event_check": {
+    "event_ids": [
+      1000,
+      1001
+    ],
+    "lookback_minutes": 60,
+    "filter_executables": [
+      "pui_showcase_vulkan.exe",
+      "pui_demo.exe"
+    ],
+    "matching_events": 0,
+    "limitation": "No matching event was found in this bounded query; no universal crash-free guarantee."
+  }
+}
