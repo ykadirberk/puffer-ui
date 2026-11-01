@@ -112,7 +112,7 @@ bool device::cache_add(cache_event::kind kind, texture *sample, const vertex *v,
     const u64 written_capacity = cache_written.size() == cache_written.capacity()
                                      ? (cache_written.capacity() ? cache_written.capacity() * 2 : 8)
                                      : 0;
-    const u64 header = kind == cache_event::FILTER ? 192 : 128;
+    const u64 header = kind == cache_event::FILTER ? 128 + sizeof(blur_filter) : 128;
     const u64 needed = payload * 2 + header + event_capacity * sizeof(cache_event) +
                        record_capacity * sizeof(cache_record) +
                        written_capacity * sizeof(texture *);

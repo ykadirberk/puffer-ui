@@ -172,11 +172,24 @@ void surface::make_current(render_device &)
     if (!extent.width || !extent.height || !scene) return;
     if (dev->frame && dev->frame->recording) dev->submit();
     slot = (slot + 1) % static_cast<u32>(slots.size());
-    if (!dev->begin(slots[slot])) return;
+    auto &owner = slots[slot];
+    if (!dev->wait(owner.group_serial)) return;
+    // Acquire semaphores belong to logical frames; command pools and upload
+    // arenas need only their own last use. A continuation may have finished in
+    // the next logical slot, so choose an older compatible arena before waiting.
+    frame_slot *arena = &owner;
+    for (auto &candidate : slots)
+        if (!candidate.recording && candidate.geometry_chunk_bytes == owner.geometry_chunk_bytes &&
+            candidate.serial < arena->serial)
+            arena = &candidate;
+    if (!dev->begin(*arena)) return;
+    owner.geometry_owner = nullptr;
+    owner.group_serial = 0;
+    arena->geometry_owner = arena == &owner ? nullptr : &owner;
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
     if (!dev->prepare_coverage()) return;
 #endif
-    slots[slot].geometry_frame_bytes = 0;
+    owner.geometry_frame_bytes = 0;
     if (geometry_peak)
     {
         const VkDeviceSize bytes = dev->geometry_reservation(
@@ -185,7 +198,7 @@ void surface::make_current(render_device &)
             // at every slightly higher observed byte count.
             geometry_peak <= UINT64_MAX / 2 ? geometry_peak * 2 : geometry_peak,
             static_cast<VkDeviceSize>(extent.width) * extent.height);
-        if (bytes && !dev->prepare_slot_geometry(slots[slot], bytes) && dev->result != VK_SUCCESS)
+        if (bytes && !dev->prepare_slot_geometry(*arena, bytes) && dev->result != VK_SUCCESS)
             return;
     }
     acquired = false;

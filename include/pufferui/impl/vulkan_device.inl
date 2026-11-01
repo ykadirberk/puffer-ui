@@ -72,6 +72,8 @@ struct frame_slot
     VkQueryPool queries = VK_NULL_HANDLE;
     u64 query_serial = 0;
     u64 serial = 0;
+    u64 group_serial = 0; // final use of this logical frame's acquire semaphore
+    frame_slot *geometry_owner = nullptr;
     bool recording = false;
     VkDeviceSize geometry_chunk_bytes = 0;
     VkDeviceSize geometry_frame_bytes = 0;
@@ -85,18 +87,41 @@ enum class blur_kernel : u32
     KAWASE_DOWN = 2,
     KAWASE_UP = 3
 };
-static constexpr i32 GAUSSIAN_RADIUS_LIMIT = 15;
-static constexpr i32 GAUSSIAN_PAIR_COUNT = (GAUSSIAN_RADIUS_LIMIT + 1) / 2;
+static constexpr i32 GAUSSIAN_RADIUS_LIMIT = 8;
+static constexpr i32 GAUSSIAN_SUPPORT_LIMIT = GAUSSIAN_RADIUS_LIMIT * 3;
+static constexpr i32 GAUSSIAN_PAIR_COUNT = (GAUSSIAN_SUPPORT_LIMIT + 1) / 2;
 struct blur_filter
 {
     f32 step[2]{}, low[2]{}, high[2]{};
     f32 weights[GAUSSIAN_PAIR_COUNT + 1]{}, offsets[GAUSSIAN_PAIR_COUNT]{};
 };
-static_assert(sizeof(blur_filter) == 92);
+static_assert(sizeof(blur_filter) == 124);
+struct blur_constants
+{
+    f32 low[2]{}, high[2]{}, step = 0;
+    f32 weights[GAUSSIAN_PAIR_COUNT + 1]{}, offsets[GAUSSIAN_PAIR_COUNT]{};
+};
+static_assert(sizeof(blur_constants) == 120 && 8 + sizeof(blur_constants) == 128);
 struct blur_pass
 {
     blur_kernel kernel = blur_kernel::GAUSSIAN;
     blur_filter parameters{};
+    bool clipped = false;
+    rect clip{};
+};
+struct indexed_geometry
+{
+    const vertex *vertices;
+    i32 vertex_count;
+    const i32 *indices;
+    i32 index_count;
+    i32 index_base;
+};
+struct paint_style
+{
+    bool blend;
+    const blur_filter *filter;
+    u32 kernel;
 };
 struct cache_event
 {
@@ -242,6 +267,7 @@ struct device : render_device, dispatch
     frame_slot *frame = nullptr;
     surface *current_surface = nullptr;
     texture *target = nullptr, *white = nullptr, *rendering_target = nullptr;
+    texture *discard_target = nullptr; // first rendering scope of an overwrite-only filter
     bool has_clip = false;
     rect clip{};
     u64 next_serial = 1, generation = 1;
@@ -310,8 +336,11 @@ struct device : render_device, dispatch
     VkPipeline pipeline(VkFormat format, bool blend, bool glyphs = false, u32 filter = 0);
     void paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32 ic, bool blend,
                i32 index_base = 0, const blur_filter *filter = nullptr, u32 kernel = 0);
+    void paint_validated(texture *, const indexed_geometry &, const paint_style &);
     void filter(texture *source, rect source_area, texture *destination, rect destination_area,
                 blur_kernel, blur_filter, rect valid_source);
+    void filter(texture *source, rect source_area, texture *destination, rect destination_area,
+                blur_pass pass, rect valid_source);
     void paint_filter(texture *, rect source_area, texture *, rect destination_area,
                       const blur_pass &);
     bool prepare_geometry(const geometry_capacity &) override;
@@ -583,8 +612,9 @@ bool device::initialize(const vulkan_device_opts &opts)
     if (!check(vkCreateDescriptorSetLayout(native.device, &dl, nullptr, &descriptor_layout),
                "vkCreateDescriptorSetLayout"))
         return false;
-    const VkPushConstantRange ranges[] = {{VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(float) * 2},
-                                          {VK_SHADER_STAGE_FRAGMENT_BIT, 16, sizeof(blur_filter)}};
+    const VkPushConstantRange ranges[] = {
+        {VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(float) * 2},
+        {VK_SHADER_STAGE_FRAGMENT_BIT, 8, sizeof(blur_constants)}};
     VkPipelineLayoutCreateInfo pl{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
     pl.setLayoutCount = 1;
     pl.pSetLayouts = &descriptor_layout;

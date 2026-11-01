@@ -19,9 +19,10 @@ inline blur_plan plan_blur(f32 radius)
     if (plan.gaussian)
     {
         // Pair adjacent symmetric taps so the sampler performs their weighted
-        // interpolation. At radius fifteen each axis needs 17 fetches, not 31.
-        const f32 sigma = std::max(0.5f, radius / 3.0f);
-        const i32 support = static_cast<i32>(std::ceil(radius));
+        // interpolation. CSS radius is sigma; truncate at three sigma. The
+        // 49-tap maximum takes 25 fetches per axis without reducing precision.
+        const f32 sigma = radius;
+        const i32 support = static_cast<i32>(std::ceil(radius * 3));
         f32 weights[GAUSSIAN_PAIR_COUNT * 2 + 1]{1};
         f32 sum = 1;
         for (i32 i = 1; i <= support; ++i)
@@ -52,21 +53,40 @@ inline blur_plan plan_blur(f32 radius)
 void device::filter(texture *source, rect source_area, texture *destination, rect destination_area,
                     blur_kernel kernel, blur_filter parameters, rect valid_source)
 {
+    filter(source, source_area, destination, destination_area, {kernel, parameters}, valid_source);
+}
+void device::filter(texture *source, rect source_area, texture *destination, rect destination_area,
+                    blur_pass pass, rect valid_source)
+{
     if (!valid(source) || !valid(destination) || source == destination) return;
+    auto &parameters = pass.parameters;
     parameters.low[0] = (valid_source.x + 0.5f) / source->width;
     parameters.low[1] = (valid_source.y + 0.5f) / source->height;
     parameters.high[0] = (valid_source.right() - 0.5f) / source->width;
     parameters.high[1] = (valid_source.bottom() - 0.5f) / source->height;
-    paint_filter(source, source_area, destination, destination_area, {kernel, parameters});
+    paint_filter(source, source_area, destination, destination_area, pass);
 }
 void device::paint_filter(texture *source, rect source_area, texture *destination,
                           rect destination_area, const blur_pass &pass)
 {
     set_target(destination);
-    set_clip(nullptr);
+    set_clip(pass.clipped ? &pass.clip : nullptr);
     if (cache_active && cache_add(cache_event::FILTER, source, nullptr, 0, nullptr, 0, {},
                                   &source_area, &destination_area, &pass))
         return;
+    // Every consumed scratch texel is overwritten. Discard only at the first
+    // rendering scope: a streamed/split quad must LOAD its earlier triangles.
+    struct discard_scope
+    {
+        device &dev;
+        texture *previous;
+        discard_scope(device &d, texture *t) : dev(d), previous(d.discard_target)
+        {
+            dev.end_rendering();
+            dev.discard_target = t;
+        }
+        ~discard_scope() { dev.discard_target = previous; }
+    } discard{*this, destination};
     const f32 left = source_area.x / source->width, top = source_area.y / source->height;
     const f32 right = source_area.right() / source->width,
               bottom = source_area.bottom() / source->height;
@@ -102,16 +122,20 @@ struct native_painter : renderer_detail::mesh_painter
             scratch = {};
         }
     }
-    bool prepare_blur(i32 width, i32 height, i32 output_width, i32 output_height, bool gaussian)
+    struct blur_extent
+    {
+        i32 width, height, a_width, a_height;
+    };
+    bool prepare_images(const blur_extent &extent)
     {
         auto &scratch = *ctx->blur;
-        // First use/growth is lazy. Later calls overwrite their entire valid
-        // region and clamp every sample to it; no clears or stale-edge reads.
-        width = std::max(scratch.w, std::min(output_width, (width + 31) / 32 * 32));
-        height = std::max(scratch.h, std::min(output_height, (height + 31) / 32 * 32));
+        const i32 width = std::max(scratch.w, extent.width);
+        const i32 height = std::max(scratch.h, extent.height);
         auto *old_a = static_cast<texture *>(scratch.half);
-        const i32 aw = gaussian ? width : (width + 1) / 2;
-        const i32 ah = gaussian ? height : (height + 1) / 2;
+        // A's requirements are independent of the retained full-resolution B.
+        // A small Gaussian must not promote a previous wide Kawase's entire A.
+        const i32 aw = std::max(old_a ? old_a->width : 0, extent.a_width);
+        const i32 ah = std::max(old_a ? old_a->height : 0, extent.a_height);
         const bool grow_a = !old_a || old_a->width < aw || old_a->height < ah;
         const bool grow_b = !scratch.quarter || scratch.w < width || scratch.h < height;
         texture_handle a = grow_a ? dev->create_target(aw, ah) : scratch.half;
@@ -128,6 +152,41 @@ struct native_painter : renderer_detail::mesh_painter
         scratch.w = width;
         scratch.h = height;
         return true;
+    }
+    bool prepare_blur(i32 width, i32 height, i32 output_width, i32 output_height, bool gaussian)
+    {
+        width = std::min(output_width, (width + 31) / 32 * 32);
+        height = std::min(output_height, (height + 31) / 32 * 32);
+        return prepare_images({width, height, gaussian ? width : (width + 1) / 2,
+                               gaussian ? height : (height + 1) / 2});
+    }
+    bool prepare(const vulkan_blur_capacity &capacity)
+    {
+        if (!ctx->blur || ctx->overlay_depth || !capacity.gaussian_area.is_valid()) return false;
+        render_surface *surface = ctx->current_window ? ctx->current_window->surface : ctx->surface;
+        auto *scene = surface ? static_cast<texture *>(surface->scene_target()) : nullptr;
+        const f32 density = ctx->render_scale;
+        if (!scene || scene->width <= 2 || scene->height <= 2 || !std::isfinite(density) ||
+            density <= 0)
+            return false;
+        const i32 width = scene->width, height = scene->height;
+        i32 aw = (width + 1) / 2, ah = (height + 1) / 2;
+        if (capacity.gaussian_area.w > 0 && capacity.gaussian_area.h > 0)
+        {
+            const auto reserve = [&](f32 logical, i32 limit)
+            {
+                // Rounded masks can add one logical AA pixel across both edges.
+                const f64 pixels = std::min(static_cast<f64>(limit),
+                                            std::ceil((static_cast<f64>(logical) + 1) * density) +
+                                                2 * GAUSSIAN_SUPPORT_LIMIT);
+                return std::min(limit, (static_cast<i32>(pixels) + 31) / 32 * 32);
+            };
+            aw = std::max(aw, reserve(capacity.gaussian_area.w, width));
+            ah = std::max(ah, reserve(capacity.gaussian_area.h, height));
+        }
+        // Coalesce known requirements before drawing. Callers without a hint
+        // retain lazy growth instead of paying for unused scene storage.
+        return prepare_images({width, height, aw, ah});
     }
     void blur(const paint_blur &p) override
     {
@@ -158,7 +217,7 @@ struct native_painter : renderer_detail::mesh_painter
         else
             plan = plan_blur(radius);
         const f32 margin = std::min(static_cast<f32>(std::max(ow, oh)),
-                                    std::ceil(plan.gaussian ? radius : radius * 2 + 2));
+                                    std::ceil(plan.gaussian ? radius * 3 : radius * 2 + 2));
         const corner_radii radii = detail::clamp_radii(p.area, p.radii);
         rect paint_bounds;
         const bool bounded = detail::paint_bounds(ctx, paint_bounds);
@@ -211,6 +270,24 @@ struct native_painter : renderer_detail::mesh_painter
         const rect source{static_cast<f32>(rx), static_cast<f32>(ry), static_cast<f32>(width),
                           static_cast<f32>(height)};
         const rect destination{0, 0, source.w, source.h};
+        // Earlier passes need padding for neighbourhood samples. Only the final
+        // pass can crop it. Preserve quad/UV arithmetic and retain the AA edge
+        // plus one texel for the final bilinear composite.
+        const f64 clip_left =
+            std::clamp(std::floor((static_cast<f64>(p.area.x) - 0.5) * density) - rx - 1, 0.0,
+                       static_cast<f64>(width));
+        const f64 clip_top =
+            std::clamp(std::floor((static_cast<f64>(p.area.y) - 0.5) * density) - ry - 1, 0.0,
+                       static_cast<f64>(height));
+        const f64 clip_right =
+            std::clamp(std::ceil((static_cast<f64>(p.area.right()) + 0.5) * density) - rx + 1,
+                       clip_left, static_cast<f64>(width));
+        const f64 clip_bottom =
+            std::clamp(std::ceil((static_cast<f64>(p.area.bottom()) + 0.5) * density) - ry + 1,
+                       clip_top, static_cast<f64>(height));
+        const rect final_clip{static_cast<f32>(clip_left), static_cast<f32>(clip_top),
+                              static_cast<f32>(clip_right - clip_left),
+                              static_cast<f32>(clip_bottom - clip_top)};
         if (plan.gaussian)
         {
             auto parameters = plan.taps;
@@ -219,8 +296,8 @@ struct native_painter : renderer_detail::mesh_painter
                         {0, 0, static_cast<f32>(ow), static_cast<f32>(oh)});
             parameters.step[0] = 0;
             parameters.step[1] = 1.0f / images[0]->height;
-            dev->filter(images[0], destination, images[1], destination, blur_kernel::GAUSSIAN,
-                        parameters, destination);
+            dev->filter(images[0], destination, images[1], destination,
+                        {blur_kernel::GAUSSIAN, parameters, true, final_clip}, destination);
         }
         else
         {
@@ -248,7 +325,8 @@ struct native_painter : renderer_detail::mesh_painter
                 parameters.step[0] = plan.offset * 0.5f / sample->width;
                 parameters.step[1] = plan.offset * 0.5f / sample->height;
                 dev->filter(sample, levels[level], images[next], levels[level - 1],
-                            blur_kernel::KAWASE_UP, parameters, levels[level]);
+                            {blur_kernel::KAWASE_UP, parameters, level == 1, final_clip},
+                            levels[level]);
                 sample = images[next];
                 next ^= 1;
             }
@@ -301,4 +379,9 @@ struct native_painter : renderer_detail::mesh_painter
     }
 };
 } // namespace vk_detail
+bool vulkan_prepare_blur(context *ctx, const vulkan_blur_capacity &capacity)
+{
+    auto *painter = ctx ? dynamic_cast<vk_detail::native_painter *>(ctx->painter) : nullptr;
+    return painter && painter->prepare(capacity);
+}
 #endif

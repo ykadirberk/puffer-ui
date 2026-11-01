@@ -158,6 +158,8 @@ u64 device::submit(VkSemaphore acquired, VkSemaphore finished)
     stats.submit_ms += wall_ms() - start;
     if (!submitted) return 0;
     frame->serial = next_serial++;
+    frame_slot *owner = frame->geometry_owner ? frame->geometry_owner : frame;
+    owner->group_serial = frame->serial;
     frame->query_serial = frame->serial;
     ++stats.submissions;
     return frame->serial;
@@ -316,7 +318,11 @@ page *device::upload(VkDeviceSize bytes, VkDeviceSize &offset, bool geometry)
             offset = at;
             p.used = at + bytes;
             stats.upload_bytes += bytes;
-            if (geometry) frame->geometry_frame_bytes += (bytes + 31) & ~VkDeviceSize(31);
+            if (geometry)
+            {
+                frame_slot *owner = frame->geometry_owner ? frame->geometry_owner : frame;
+                owner->geometry_frame_bytes += (bytes + 31) & ~VkDeviceSize(31);
+            }
             return &p;
         }
     }
@@ -326,12 +332,32 @@ page *device::upload(VkDeviceSize bytes, VkDeviceSize &offset, bool geometry)
                     { return p.geometry && p.staged == staged && p.capacity >= bytes; });
     if (prepared)
     {
-        // The prepared arena is full. Its commands reference only the scene,
-        // not the acquired swapchain image. Complete this ordered prefix and
-        // reuse the same slot before the eventual present/blit submission.
+        // Prefixes touch the scene, never the acquired image. Reuse another
+        // prepared slot while this prefix executes; only wait when every
+        // suitable arena is still in flight. No new buffer is allocated here.
         frame_slot *slot = frame;
+        frame_slot *owner = slot->geometry_owner ? slot->geometry_owner : slot;
         const u64 serial = submit();
-        if (!serial || !wait(serial) || !begin(*slot)) return nullptr;
+        if (!serial) return nullptr;
+        frame_slot *next = slot;
+        if (current_surface)
+            for (auto &candidate : current_surface->slots)
+            {
+                // Preserve the caller's prepared chunk bound. A differently
+                // sized arena must not silently alter forced streaming policy.
+                if (&candidate == slot || candidate.recording ||
+                    candidate.geometry_chunk_bytes != slot->geometry_chunk_bytes ||
+                    candidate.serial >= next->serial)
+                    continue;
+                for (const auto &p : candidate.pages)
+                    if (p.geometry && p.staged == staged && p.capacity >= bytes)
+                    {
+                        next = &candidate;
+                        break;
+                    }
+            }
+        if (!begin(*next)) return nullptr;
+        next->geometry_owner = next == owner ? nullptr : owner;
         return upload(bytes, offset, geometry);
     }
     VkDeviceSize capacity = 1024 * 1024;
@@ -345,7 +371,11 @@ page *device::upload(VkDeviceSize bytes, VkDeviceSize &offset, bool geometry)
                              VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT))
         return nullptr;
     stats.upload_bytes += bytes;
-    if (geometry) frame->geometry_frame_bytes += (bytes + 31) & ~VkDeviceSize(31);
+    if (geometry)
+    {
+        frame_slot *owner = frame->geometry_owner ? frame->geometry_owner : frame;
+        owner->geometry_frame_bytes += (bytes + 31) & ~VkDeviceSize(31);
+    }
     fresh.staged = staged;
     fresh.geometry = geometry;
     if (staged && !allocate_device_buffer(fresh))

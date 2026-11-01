@@ -273,3 +273,13 @@ actual 5000-item Spiral frames, including three Adds, between direct/staged and
 cache policies. Its `--capture NEW_DIRECTORY` and `--reference DIRECTORY` modes
 keep old captures immutable. The original bitmap tests keep their assertions
 and golden bytes. See [HarfBuzz text](../harfbuzz.md) for the native text contract.
+
+For backdrop effects, the native painter uses CSS-strength Gaussian through
+8 framebuffer pixels and Dual Kawase above that boundary. The logical argument
+to `u.blur` is multiplied by the window scale; for Gaussian it is the standard
+deviation. If the application knows its largest Gaussian mask, call
+`pui::vulkan_prepare_blur(app.ctx, {.gaussian_area = {0, 0, 160, 100}})` just
+after `begin_frame` and before submitting shapes. This optional hint reserves
+scratch storage before drawing. Unknown regions retain lazy preparation. See
+[the blur contract](../vulkan.md#backdrop-blur) for sampling, lifetime and
+all-frame validation details.

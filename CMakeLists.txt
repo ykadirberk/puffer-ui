@@ -179,6 +179,8 @@ if(PUFFERUI_WITH_VULKAN)
   pui_add_vulkan_test(pui_vulkan_tests SOURCES tests/test_vulkan.cpp)
   pui_add_vulkan_test(pui_vulkan_blur_tests SOURCES tests/test_vulkan_blur.cpp RUNS "--staged")
   pui_add_vulkan_test(pui_vulkan_gaussian_tests SOURCES tests/test_vulkan_gaussian.cpp RUNS "--staged")
+  pui_add_vulkan_test(pui_vulkan_blur_optimization_tests
+    SOURCES tests/test_vulkan_blur_optimization.cpp RUNS "--staged")
   if(PUFFERUI_WITH_HARFBUZZ)
     pui_add_vulkan_test(pui_harfbuzz_tests SOURCES tests/test_harfbuzz.cpp)
     pui_add_vulkan_test(pui_vulkan_native_text_tests SOURCES tests/test_vulkan_native_text.cpp RUNS "--staged")

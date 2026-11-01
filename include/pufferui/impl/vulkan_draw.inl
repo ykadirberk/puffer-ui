@@ -236,6 +236,13 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
             fail("Vulkan index out of bounds");
             return;
         }
+    paint_validated(sample, {v, vc, idx, ic, index_base}, {blend, filter, kernel});
+}
+void device::paint_validated(texture *sample, const indexed_geometry &geometry,
+                             const paint_style &style)
+{
+    const auto &[v, vc, idx, ic, index_base] = geometry;
+    const auto &[blend, filter, kernel] = style;
     if (!commands()) return;
     const VkDeviceSize chunk =
         frame->geometry_chunk_bytes
@@ -273,13 +280,14 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
                                            v[idx[start + 1] - index_base],
                                            v[idx[start + 2] - index_base]};
                 const i32 local[] = {0, 1, 2};
-                paint(sample, triangle, 3, local, 3, blend, 0, filter, kernel);
+                paint_validated(sample, {triangle, 3, local, 3, 0}, style);
                 start += 3;
             }
             else
             {
-                paint(sample, v + low - index_base, high - low + 1, idx + start, end - start, blend,
-                      low, filter, kernel);
+                paint_validated(
+                    sample, {v + low - index_base, high - low + 1, idx + start, end - start, low},
+                    style);
                 start = end;
             }
         }
@@ -391,8 +399,25 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
                   {static_cast<u32>(target->width), static_cast<u32>(target->height)}, scissor,
                   descriptor, 0);
     if (filter)
-        vkCmdPushConstants(frame->command, pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, 16,
-                           sizeof(*filter), filter);
+    {
+        // Preserve every binary32 coefficient inside Vulkan's minimum 128-byte
+        // push budget. Gaussian needs one signed axis step; Kawase reuses the
+        // otherwise unused center-weight word for its second axis step.
+        blur_constants constants;
+        std::copy_n(filter->low, 2, constants.low);
+        std::copy_n(filter->high, 2, constants.high);
+        std::copy_n(filter->weights, GAUSSIAN_PAIR_COUNT + 1, constants.weights);
+        std::copy_n(filter->offsets, GAUSSIAN_PAIR_COUNT, constants.offsets);
+        constants.step = filter->step[0];
+        if (kernel == static_cast<u32>(blur_kernel::GAUSSIAN))
+        {
+            if (constants.step == 0) constants.step = -filter->step[1];
+        }
+        else
+            constants.weights[0] = filter->step[1];
+        vkCmdPushConstants(frame->command, pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, 8,
+                           sizeof(constants), &constants);
+    }
     vkCmdDrawIndexed(frame->command, static_cast<u32>(ic), 1, 0, 0, 0);
     target->last_use = sample->last_use = next_serial;
     ++target->revision;
@@ -420,7 +445,8 @@ bool device::start_rendering(texture *t)
     VkRenderingAttachmentInfo attachment{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
     attachment.imageView = t->view;
     attachment.imageLayout = t->layout;
-    attachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+    attachment.loadOp =
+        discard_target == t ? VK_ATTACHMENT_LOAD_OP_DONT_CARE : VK_ATTACHMENT_LOAD_OP_LOAD;
     attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     VkRenderingInfo ri{VK_STRUCTURE_TYPE_RENDERING_INFO};
     ri.renderArea.extent = {static_cast<u32>(t->width), static_cast<u32>(t->height)};
@@ -428,6 +454,7 @@ bool device::start_rendering(texture *t)
     ri.colorAttachmentCount = 1;
     ri.pColorAttachments = &attachment;
     vkCmdBeginRendering(frame->command, &ri);
+    if (discard_target == t) discard_target = nullptr;
     rendering_target = t;
     return true;
 }

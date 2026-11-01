@@ -89,13 +89,13 @@ bool equal(const std::vector<u8> &actual, const std::vector<u8> &expected, i32 c
 }
 bool coefficients()
 {
-    for (f32 radius : {0.5f, 1.0f, 2.5f, 8.0f, 8.01f, 14.999f, 15.0f})
+    for (f32 radius : {0.5f, 1.0f, 2.5f, 3.0f, 7.999f, 8.0f})
     {
         const auto plan = vk_detail::plan_blur(radius);
         CHECK(plan.gaussian);
-        const f64 sigma = std::max(0.5, static_cast<f64>(radius) / 3);
-        const i32 support = static_cast<i32>(std::ceil(radius));
-        f64 weights[17]{1};
+        const f64 sigma = radius;
+        const i32 support = static_cast<i32>(std::ceil(radius * 3));
+        f64 weights[25]{1};
         f64 sum = 1;
         for (i32 i = 1; i <= support; ++i)
         {
@@ -112,7 +112,7 @@ bool coefficients()
                   0.000001);
         }
     }
-    CHECK(!vk_detail::plan_blur(std::nextafter(15.0f, 16.0f)).gaussian);
+    CHECK(!vk_detail::plan_blur(std::nextafter(8.0f, 9.0f)).gaussian);
     return true;
 }
 void post_draw(context *ctx, texture_handle texture)
@@ -231,8 +231,8 @@ bool run(vk_detail::device &d, const options &args)
     for (f32 scale : {1.0f, 1.25f, 1.5f, 2.0f, 3.0f, 4.0f})
     {
         cases.push_back({scale, 0.5f, 1, false, {10, 8, 30, 24}});
-        cases.push_back({scale, 15 / scale, 1, false, {6, 5, 26, 20}});
-        for (f32 radius : {8.0f, 15.0f})
+        cases.push_back({scale, 8 / scale, 1, false, {6, 5, 26, 20}});
+        for (f32 radius : {3.0f, 8.0f})
             for (f32 opacity : {1.0f, 0.625f})
                 cases.push_back(
                     {scale, radius / scale, opacity, true, {0, 0, WIDTH / scale, HEIGHT / scale}});
@@ -244,7 +244,8 @@ bool run(vk_detail::device &d, const options &args)
     {
         const auto &f = cases[id];
         const f32 radius = f.radius * f.scale;
-        const i32 cut = static_cast<i32>(std::ceil(f.area.bottom() * f.scale) + std::ceil(radius));
+        const i32 cut =
+            static_cast<i32>(std::ceil(f.area.bottom() * f.scale) + std::ceil(radius * 3));
         for (i32 y = 0; y < HEIGHT; ++y)
             for (i32 x = 0; x < WIDTH; ++x)
             {
@@ -338,9 +339,9 @@ bool run(vk_detail::device &d, const options &args)
     d.destroy_target(a);
     d.destroy_target(b);
     d.destroy_texture(post);
-    std::printf(
-        "Gaussian fixes: cases=%zu exact_pairs=%d idle_hits=%llu DPI=1,1.25,1.5,2,3,4 limit=15\n",
-        cases.size(), pairs, static_cast<unsigned long long>(hits));
+    std::printf("CSS Gaussian fixes: cases=%zu exact_pairs=%d idle_hits=%llu DPI=1,1.25,1.5,2,3,4 "
+                "limit=8\n",
+                cases.size(), pairs, static_cast<unsigned long long>(hits));
     return true;
 }
 } // namespace gaussian_test

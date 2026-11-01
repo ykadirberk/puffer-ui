@@ -11,8 +11,8 @@
       "spirv_sha256": "3b3a05bc0d73312df42b79e5276cf1f22106f7b8c94a7515877f3f9c5d1a2c3f"
     },
     "ui.frag": {
-      "source_sha256": "dfb08d309c31c648d9b95da3b31e1c3806809361819635a83687d4119af29639",
-      "spirv_sha256": "0c13d08d95028ec41ee943b84bc9b1e4878f98e2cdcf9299bb5f4568d3c9b0b8"
+      "source_sha256": "ad7ca02655046dc54898fb409b9d0719eeaa909ee9bba57ea479191c261714f9",
+      "spirv_sha256": "680837273066d78028bdbfc92936c9b9345c53061abf6b44fbea576ff63765f6"
     },
     "text.vert": {
       "source_sha256": "d4aba9bc8d5484b7fb6d262d0f15957b62a59e0eebe6acb67de9899c8d6a3e95",

@@ -63,6 +63,13 @@ u64 release_vulkan_image(render_device *device, texture_handle image,
 VkSemaphore vulkan_completion_semaphore(render_device *device);
 bool vulkan_wait(render_device *device, u64 value);
 bool vulkan_wait_idle(render_device *device);
+// Reserve a window's backdrop scratch before painting; the optional logical
+// area bounds its largest Gaussian mask. Unsupported callers return false.
+struct vulkan_blur_capacity
+{
+    rect gaussian_area{};
+};
+bool vulkan_prepare_blur(context *ctx, const vulkan_blur_capacity &capacity = {});
 vulkan_native_device vulkan_handles(render_device *device);
 VkResult vulkan_last_result(render_device *device);
 const char *vulkan_last_error(render_device *device);

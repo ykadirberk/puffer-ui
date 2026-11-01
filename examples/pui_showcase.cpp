@@ -4018,6 +4018,14 @@ static void showcase_frame(ui &u, example_app &app)
         selftest_script(s, app, now); // --page pins one page
     if (g_fuzz != 0) fuzz_input(s, app);
 
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    if (is_vulkan_device(app.device))
+        (void)vulkan_prepare_blur(u.ctx,
+                                  {.gaussian_area = s.page == PAGE_EFFECTS && s.lens_blur <= 8
+                                                        ? rect{0, 0, 160, 100}
+                                                        : rect{}});
+#endif
+
     if (s.page == PAGE_LAYOUT && s.lab_mode == 4)
     {
         const geometry_capacity capacity = lab_geometry_capacity(s.tiles.size());

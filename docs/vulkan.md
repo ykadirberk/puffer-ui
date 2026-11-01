@@ -60,26 +60,48 @@ framebuffer pixels:
 
 | Pixel radius | Vulkan filter |
 | --- | --- |
-| Up to and including 15 px | Separable Gaussian, horizontal then vertical |
-| Greater than 15 px | Dual Kawase downsample and upsample chain |
+| Up to and including 8 px | Separable Gaussian, horizontal then vertical |
+| Greater than 8 px | Dual Kawase downsample and upsample chain |
 
-For example, `u.blur(area, 8)` uses Gaussian at scale 1 and 1.5, and Dual Kawase
-at scale 2. The existing no-effect rules for a logical radius below 0.5, zero alpha,
+For example, `u.blur(area, 8)` uses Gaussian at scale 1 and Dual Kawase at scale
+1.5 or 2. The existing no-effect rules for a logical radius below 0.5, zero alpha,
 empty clips and host overlays still apply.
 
-Gaussian uses `sigma = max(radius / 3, 0.5)` and a support of `ceil(radius)`.
-Adjacent taps share bilinear fetches: the 31-tap maximum becomes 17 fetches
-per axis. Weights are retained when the radius is unchanged. Dual Kawase uses
+Gaussian uses the [CSS blur strength convention](https://drafts.csswg.org/filter-effects/#funcdef-filter-blur):
+the logical radius is the standard deviation, so framebuffer `sigma` is
+`radius * render_scale`. The discrete kernel is normalized and truncated at
+`ceil(3 * sigma)` on each side. This matches CSS strength units; it does not
+promise pixel identity with a browser's color space, edge policy or approximation.
+Adjacent taps share bilinear fetches: the 49-tap maximum becomes 25 fetches
+per axis. All coefficients keep binary32 precision; the fragment constants fit
+the Vulkan minimum 128-byte push-constant budget. Weights are retained when the
+radius is unchanged. Dual Kawase keeps its existing spacing and uses
 five-fetch reduction and eight-fetch reconstruction kernels, with two to six
 pyramid levels and radius-dependent sample spacing. Its kernel follows the
 [Arm dual-filter presentation](https://community.arm.com/cfs-file/__key/communityserver-blogs-components-weblogfiles/00-00-00-20-66/siggraph2015_2D00_mmg_2D00_marius_2D00_notes.pdf).
 Kawase approximates a Gaussian; crossing the filter threshold is not promised
-to be pixel-identical between the two algorithms.
+to be pixel-identical between the two algorithms. Its earlier `radius / 3`
+variance target remains unchanged to preserve existing wide-blur images. Only
+Gaussian adopts CSS sigma units in this revision, so strength is not continuous
+across the 8 px algorithm boundary.
 
 Each window retains two RGBA8 scratch targets for the affected region, including
 the sampling margin. They grow lazily in 32-pixel steps and are reused across
-blur calls and frames. The first target can remain half-size when only Kawase
-is used. A viewport shrink retires oversized targets at a frame boundary, using
+blur calls and frames. The first target's capacity is tracked independently:
+a small Gaussian after a large Kawase does not promote it to the full size of
+the retained second target. Applications that know their blur needs can prepare
+both images once, before their first draw in a window's frame:
+
+```cpp
+// Include <pufferui/vulkan.h>; call after begin_frame and before painting.
+// The default covers any Kawase region; this hint also bounds Gaussian masks.
+pui::vulkan_prepare_blur(ctx, {.gaussian_area = {0, 0, 160, 100}});
+```
+
+The hint reserves at most scene-sized images, coalesces growth and preserves
+ordinary lazy fallback for unknown regions. The native showcase calls it before
+painting. The first target can remain half-size when the hinted Gaussian fits
+that capacity. A viewport shrink retires oversized targets at a frame boundary, using
 the normal GPU completion lifetime. Every filter pass clamps reads to the
 written source region, so odd extents and smaller subsequent blurs cannot sample
 old padding. Gaussian bounds include pixel centers in the rounded mask's outer
@@ -88,23 +110,39 @@ Its final composite converts filtered associated RGB to straight RGB before the
 normal alpha blend; fractional source alpha is applied once. Opaque samples,
 ordinary primitives and the Kawase composite keep their existing arithmetic.
 Alpha, per-corner masks, scene clipping and draw order remain part of the
-composite. Filter kernels, Gaussian composite mode and all normalized operands are part of
+composite. Only the final filter pass crops its scissor to the consumer mask plus
+the AA/bilinear apron; intermediate passes retain their full sampling padding.
+Quad extents, UV arithmetic and source clamps stay unchanged.
+The first rendering scope of each overwrite-only filter uses `DONT_CARE` for
+its previous scratch contents. If a quad spans upload submissions, subsequent
+scopes use `LOAD` to preserve earlier triangles. Scene/glyph rendering keeps
+its ordinary load behavior. Effect tapes always replay their full prefix, so
+this discard cannot erase pixels required by partial scene replay.
+Filter kernels, final-pass clips, Gaussian composite mode and all normalized operands are part of
 the retained command identity. Unchanged chains reuse final pixels; changed
 chains replay their scene prefix and filter passes in full order.
 
 Filtering is Vulkan-specific; SDL and explicitly selected mesh painters retain
 their existing blur. The shader specializations are compiled at device setup;
 the four checked-in graphics stages remain the only shader binaries.
-`pui_vulkan_blur_tests` checks independent CPU kernels, the exact 15 px boundary,
+`pui_vulkan_blur_tests` checks independent CPU kernels, the exact 8 px boundary,
 DPI selection, target reuse and 108 complete cached/reference frames in each
 upload mode. `pui_vulkan_gaussian_tests` adds 36 independent full-image/mask
 oracles at scales 1, 1.25, 1.5, 2, 3 and 4, comparing 288 complete cached/uncached
 frames and 72 idle cache hits in each upload mode. Its immutable capture and
 comparison options also verify corrected goldens and pre-fix compatibility
 images. Existing golden files remain unchanged.
-The [Gaussian correction receipt](perf/vulkan_gaussian_validation.json) and
+`pui_vulkan_blur_optimization_tests` adds dense/sparse chunk equality, rejection
+of a late invalid index before uploading any prefix, bounded frame-slot
+continuation, scratch allocation/preparation and final-pass work checks in both
+upload modes, both vertex representations and one/two frame-slot configurations.
+It also forces a filter quad across rendering scopes and checks both exact
+pixels and the first-discard/subsequent-load contract.
+See the [blur optimization report](perf_vulkan_blur_optimizations.md) for current
+before/after results, immutable all-frame Spiral comparisons and CSS goldens.
+The earlier [Gaussian correction receipt](perf/vulkan_gaussian_validation.json) and
 [correction validation logs and goldens](perf/vulkan_gaussian_validation_raw.zip)
-record the new boundary and both fixes. The earlier
+record the former 15 px policy and the alpha/DPI fixes. The earlier
 [2026-11-01 validation receipt](perf/vulkan_blur_validation.json) and
 [complete validation logs](perf/vulkan_blur_validation_raw.zip) record the
 initial 8 px policy's Release/Debug suites and remain historical evidence.
@@ -290,8 +328,17 @@ requirements for upload pages, optional local geometry and temporary readback.
 Completed slots are reclaimed first; backpressure waits for necessary work
 instead of growing without limit. Large indexed draws can be split into ordered
 triangle spans to reuse a prepared page; vertex arithmetic and primitive order
-remain unchanged. Large
-geometry pages do not replace the small upload pages. Non-coherent mappings are
+remain unchanged. The complete indexed input is validated before recording any
+prefix; proven subspans skip the duplicate bounds scan. A full prepared arena
+can continue in another existing arena of the same capacity. Single-slot and
+differently sized configurations keep the bounded wait/reuse fallback.
+
+Acquire semaphores remain owned by logical frames and wait for their final
+submission. Command pools/upload arenas track their own last submission;
+the next logical frame can choose an older compatible pool instead of waiting
+for the previous frame's final pool. This preserves the configured memory budget
+and acquire lifetime while retaining pipelining after a streamed frame.
+Large geometry pages do not replace the small upload pages. Non-coherent mappings are
 flushed and readbacks invalidated explicitly. Images use dedicated allocations
 and submission-based retirement; they are counted separately by `image_bytes` /
 `retired_bytes` and are not included in the upload budget. This implementation
