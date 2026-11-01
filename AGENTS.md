@@ -109,6 +109,12 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   20/32-byte and one/two-slot configurations. The planner allocates no storage.
   See `docs/perf_vulkan_indexed_optimizations.md` for unchanged all-frame Spiral
   goldens and alternating measurements; existing test/oracle files remain fixed.
+  `pui_vulkan_integer_tests` pins scalar/SIMD validation and split tuples,
+  guarded unaligned tails, bounded vector work and pre-prefix GPU rejection.
+  SSE2 preparation is selected only when the compilation target guarantees it;
+  other targets retain the original scalar algorithms. It introduces no heap
+  scratch or global floating-point/architecture flags. See
+  `docs/perf_vulkan_integer_optimizations.md` for all-frame evidence.
   The shared mesh/SDL blur remains independent. Fresh
   Vulkan configurations enable pinned HarfBuzz and upstream Slug text; explicit
   OFF remains supported. Text uses an independent instanced graphics pipeline,

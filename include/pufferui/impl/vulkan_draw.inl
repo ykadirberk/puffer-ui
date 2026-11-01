@@ -214,6 +214,52 @@ void device::clear(color c)
     vkCmdClearColorImage(frame->command, target->image, target->layout, &value, 1, &range);
     ++target->revision;
 }
+inline constexpr bool INTEGER_SIMD = PUI_VK_INTEGER_SIMD != 0;
+#if defined(PUFFERUI_VULKAN_INTEGER_TESTS)
+struct integer_work
+{
+    u64 validation_vectors = 0, validation_scalars = 0, planning_vectors = 0, planning_scalars = 0;
+};
+inline thread_local integer_work index_work;
+#endif
+template <bool Simd = INTEGER_SIMD>
+inline bool valid_geometry_indices(const i32 *indices, i32 count, i32 base, i32 vertices)
+{
+    i32 at = 0;
+#if PUI_VK_INTEGER_SIMD
+    if constexpr (Simd)
+    {
+        // Clamp once in 64 bits. An interval crossing INT_MAX admits no wrapped
+        // negative values; comparisons stay signed even for an INT_MIN base.
+        const i64 upper = std::min<i64>(0x7fffffff, static_cast<i64>(base) + vertices - 1);
+        const __m128i lower4 = _mm_set1_epi32(base);
+        const __m128i upper4 = _mm_set1_epi32(static_cast<i32>(upper));
+        for (; count - at >= 16; at += 16)
+        {
+            __m128i invalid = _mm_setzero_si128();
+            for (i32 j = 0; j < 16; j += 4)
+            {
+                const __m128i value =
+                    _mm_loadu_si128(reinterpret_cast<const __m128i *>(indices + at + j));
+                invalid = _mm_or_si128(invalid, _mm_or_si128(_mm_cmpgt_epi32(lower4, value),
+                                                             _mm_cmpgt_epi32(value, upper4)));
+#if defined(PUFFERUI_VULKAN_INTEGER_TESTS)
+                ++index_work.validation_vectors;
+#endif
+            }
+            if (_mm_movemask_epi8(invalid)) return false;
+        }
+    }
+#endif
+    for (; at < count; ++at)
+    {
+#if defined(PUFFERUI_VULKAN_INTEGER_TESTS)
+        ++index_work.validation_scalars;
+#endif
+        if (indices[at] < base || static_cast<i64>(indices[at]) - base >= vertices) return false;
+    }
+    return true;
+}
 void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32 ic, bool blend,
                    i32 index_base, const blur_filter *filter, u32 kernel)
 {
@@ -230,12 +276,11 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
         fail("Vulkan render target cannot sample itself");
         return;
     }
-    for (i32 i = 0; i < ic; ++i)
-        if (idx[i] < index_base || static_cast<i64>(idx[i]) - index_base >= vc)
-        {
-            fail("Vulkan index out of bounds");
-            return;
-        }
+    if (!valid_geometry_indices(idx, ic, index_base, vc))
+    {
+        fail("Vulkan index out of bounds");
+        return;
+    }
     paint_validated(sample, {v, vc, idx, ic, index_base}, {blend, filter, kernel});
 }
 struct geometry_span
@@ -249,6 +294,7 @@ struct geometry_span_work
 };
 inline thread_local geometry_span_work span_work;
 #endif
+template <bool Simd = INTEGER_SIMD>
 inline geometry_span plan_geometry_span(const i32 *indices, i32 start, i32 count,
                                         VkDeviceSize stride, VkDeviceSize capacity)
 {
@@ -266,31 +312,68 @@ inline geometry_span plan_geometry_span(const i32 *indices, i32 start, i32 count
         if ((static_cast<VkDeviceSize>(high) - low + 1) * stride + 3 * sizeof(i32) > capacity)
             return span;
     }
+    constexpr i32 block = Simd && INTEGER_SIMD ? 192 : 24;
     while (span.end < count)
     {
         // A fitting block proves that every prefix fits: its vertex interval
         // and index bytes can only grow. Refine a boundary with the original
         // triangle rule so uploads, sparse fallback and draw order stay exact.
-        if (count - span.end >= 24)
+        if (count - span.end >= block)
         {
 #if defined(PUFFERUI_VULKAN_INDEXED_TESTS)
             ++span_work.blocks;
 #endif
             i32 low = 0x7fffffff, high = 0;
-            for (i32 i = 0; i < 24; ++i)
+#if PUI_VK_INTEGER_SIMD
+            if constexpr (Simd)
             {
-                low = std::min(low, indices[span.end + i]);
-                high = std::max(high, indices[span.end + i]);
+                __m128i lower4 = _mm_set1_epi32(low), upper4 = _mm_setzero_si128();
+                const auto minimum = [](__m128i a, __m128i b)
+                {
+                    const auto cmp = _mm_cmpgt_epi32(a, b);
+                    return _mm_or_si128(_mm_and_si128(cmp, b), _mm_andnot_si128(cmp, a));
+                };
+                const auto maximum = [](__m128i a, __m128i b)
+                {
+                    const auto cmp = _mm_cmpgt_epi32(a, b);
+                    return _mm_or_si128(_mm_and_si128(cmp, a), _mm_andnot_si128(cmp, b));
+                };
+                for (i32 i = 0; i < block; i += 4)
+                {
+                    const __m128i value =
+                        _mm_loadu_si128(reinterpret_cast<const __m128i *>(indices + span.end + i));
+                    lower4 = minimum(lower4, value);
+                    upper4 = maximum(upper4, value);
+#if defined(PUFFERUI_VULKAN_INTEGER_TESTS)
+                    ++index_work.planning_vectors;
+#endif
+                }
+                lower4 = minimum(lower4, _mm_shuffle_epi32(lower4, 0x4e));
+                lower4 = minimum(lower4, _mm_shuffle_epi32(lower4, 0xb1));
+                upper4 = maximum(upper4, _mm_shuffle_epi32(upper4, 0x4e));
+                upper4 = maximum(upper4, _mm_shuffle_epi32(upper4, 0xb1));
+                low = _mm_cvtsi128_si32(lower4);
+                high = _mm_cvtsi128_si32(upper4);
             }
+            else
+#endif
+                for (i32 i = 0; i < block; ++i)
+                {
+                    low = std::min(low, indices[span.end + i]);
+                    high = std::max(high, indices[span.end + i]);
+#if defined(PUFFERUI_VULKAN_INTEGER_TESTS)
+                    ++index_work.planning_scalars;
+#endif
+                }
             low = std::min(span.low, low);
             high = std::max(span.high, high);
             if ((static_cast<VkDeviceSize>(high) - low + 1) * stride +
-                    static_cast<VkDeviceSize>(span.end - start + 24) * 4 <=
+                    static_cast<VkDeviceSize>(span.end - start + block) * 4 <=
                 capacity)
             {
                 span.low = low;
                 span.high = high;
-                span.end += 24;
+                span.end += block;
                 continue;
             }
         }

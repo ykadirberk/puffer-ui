@@ -3772,6 +3772,13 @@ i32 violation_count(context *c);
 #endif
 #if defined(PUFFERUI_ENABLE_VULKAN)
 #include "impl/vulkan_native.inl"
+#if defined(__SSE2__) || (defined(_M_X64) && !defined(_M_ARM64EC)) ||                              \
+    (defined(_M_IX86_FP) && _M_IX86_FP >= 2)
+#include <emmintrin.h>
+#define PUI_VK_INTEGER_SIMD 1
+#else
+#define PUI_VK_INTEGER_SIMD 0
+#endif
 #if defined(PUFFERUI_ENABLE_SDL3)
 #include <SDL3/SDL_vulkan.h>
 #endif
@@ -3816,6 +3823,7 @@ namespace pui
 #include "impl/sdl3.inl"
 #include "impl/sdl3_vulkan_host.inl"
 } // namespace pui
+#undef PUI_VK_INTEGER_SIMD
 
 // The Windows UI Automation adapter comes last: the Windows headers' macros
 // (near, far, min, max, ...) must not reach any code above.

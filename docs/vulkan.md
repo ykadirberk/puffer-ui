@@ -392,6 +392,18 @@ bases, both vertex representations and one/two frame slots in direct/staged
 mode. See the [indexed upload report](perf_vulkan_indexed_optimizations.md) for
 alternating production timings and immutable all-frame Spiral comparisons.
 
+Native index validation and large-span min/max preparation use SSE2 when the
+compilation target guarantees it. Other targets retain scalar validation and
+the original block planner. Complete input validation still precedes every GPU
+prefix; signed-limit bases, unaligned buffers, tails, sparse fallback and exact
+greedy split boundaries are preserved. No floating-point flags, shader, arena
+count or upload budget changes are involved. `pui_vulkan_integer_tests` checks
+independent scalar oracles, protected-page tails, bounded work, pre-prefix
+rejection and translucent dense/sparse pixels in direct/staged, 20/32-byte and
+one/two-slot configurations. See the
+[integer preparation report](perf_vulkan_integer_optimizations.md) for unchanged
+all-frame Spiral goldens and alternating production measurements.
+
 ## Support and verification
 
 The initial API targets Vulkan 1.3 on Windows/Linux with dynamic rendering,
