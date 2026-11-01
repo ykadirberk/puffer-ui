@@ -1,0 +1,302 @@
+{
+  "date": "2026-11-01",
+  "source_base": "ab060b971c47e173ecad219034dcc52118c4eaf5",
+  "branch": "codex/vulkan-native-harfbuzz",
+  "device": {
+    "name": "AMD Radeon RX 9070 XT",
+    "vendor_id": 4098,
+    "device_id": 30032,
+    "driver_version": 8389024
+  },
+  "policy": {
+    "gaussian_max_inclusive_framebuffer_px": 15,
+    "selection": "logical radius * render_scale",
+    "above_limit": "Dual Kawase",
+    "max_gaussian_taps": 31,
+    "max_bilinear_fetches_per_axis": 17,
+    "fragment_push_bytes": 92,
+    "last_push_byte_exclusive": 108
+  },
+  "fixes": [
+    "Gaussian associated RGB is unassociated only for the final normal alpha blend",
+    "Gaussian ROI includes rounded AA pixel centers before kernel support at high DPI"
+  ],
+  "audits": {
+    "direct": {
+      "before": {
+        "rounded_cases": 28,
+        "rounded_max_channel_error": 7,
+        "rounded_cases_with_error_gt2": 5,
+        "alpha_witnesses": [
+          {
+            "radius": 1.0,
+            "x": 32,
+            "y": 24,
+            "channel": 2,
+            "actual": 3,
+            "reference": 27,
+            "absolute_error": 24
+          },
+          {
+            "radius": 2.5,
+            "x": 32,
+            "y": 24,
+            "channel": 2,
+            "actual": 17,
+            "reference": 66,
+            "absolute_error": 49
+          },
+          {
+            "radius": 8.0,
+            "x": 32,
+            "y": 24,
+            "channel": 2,
+            "actual": 46,
+            "reference": 108,
+            "absolute_error": 62
+          }
+        ],
+        "csv_sha256": "1f7c959500a0b4a4e2cc7842072298728bdbdcae2d3fde3f2004c206bd6bde32"
+      },
+      "after": {
+        "rounded_cases": 28,
+        "rounded_max_channel_error": 0,
+        "rounded_cases_with_error_gt2": 0,
+        "alpha_witnesses": [
+          {
+            "radius": 1.0,
+            "x": 32,
+            "y": 24,
+            "channel": 2,
+            "actual": 27,
+            "reference": 27,
+            "absolute_error": 0
+          },
+          {
+            "radius": 2.5,
+            "x": 32,
+            "y": 24,
+            "channel": 2,
+            "actual": 66,
+            "reference": 66,
+            "absolute_error": 0
+          },
+          {
+            "radius": 8.0,
+            "x": 32,
+            "y": 24,
+            "channel": 2,
+            "actual": 108,
+            "reference": 108,
+            "absolute_error": 0
+          }
+        ],
+        "csv_sha256": "18b596aaaa1e6aa5654815be008615cada0c5490c14a857690fcdc1575fe62a4"
+      }
+    },
+    "staged": {
+      "before": {
+        "rounded_cases": 28,
+        "rounded_max_channel_error": 7,
+        "rounded_cases_with_error_gt2": 5,
+        "alpha_witnesses": [
+          {
+            "radius": 1.0,
+            "x": 32,
+            "y": 24,
+            "channel": 2,
+            "actual": 3,
+            "reference": 27,
+            "absolute_error": 24
+          },
+          {
+            "radius": 2.5,
+            "x": 32,
+            "y": 24,
+            "channel": 2,
+            "actual": 17,
+            "reference": 66,
+            "absolute_error": 49
+          },
+          {
+            "radius": 8.0,
+            "x": 32,
+            "y": 24,
+            "channel": 2,
+            "actual": 46,
+            "reference": 108,
+            "absolute_error": 62
+          }
+        ],
+        "csv_sha256": "1f7c959500a0b4a4e2cc7842072298728bdbdcae2d3fde3f2004c206bd6bde32"
+      },
+      "after": {
+        "rounded_cases": 28,
+        "rounded_max_channel_error": 0,
+        "rounded_cases_with_error_gt2": 0,
+        "alpha_witnesses": [
+          {
+            "radius": 1.0,
+            "x": 32,
+            "y": 24,
+            "channel": 2,
+            "actual": 27,
+            "reference": 27,
+            "absolute_error": 0
+          },
+          {
+            "radius": 2.5,
+            "x": 32,
+            "y": 24,
+            "channel": 2,
+            "actual": 66,
+            "reference": 66,
+            "absolute_error": 0
+          },
+          {
+            "radius": 8.0,
+            "x": 32,
+            "y": 24,
+            "channel": 2,
+            "actual": 108,
+            "reference": 108,
+            "absolute_error": 0
+          }
+        ],
+        "csv_sha256": "c9c45af5737bc9519d0bc120770e76305264b6e230baa9b60950c5053fcdf3af"
+      }
+    }
+  },
+  "golden_qualification": {
+    "correct_reference_cases": 36,
+    "reference_origin": "independent full-image filtering and ordinary mask composite, frozen before either bug fix using the 15px policy",
+    "scales": [
+      1,
+      1.25,
+      1.5,
+      2,
+      3,
+      4
+    ],
+    "upload_modes": [
+      "direct",
+      "staged"
+    ],
+    "exact_corrected_frame_comparisons": 576,
+    "idle_cache_hits": 144,
+    "pre_fix_compatibility_images": 8,
+    "pre_fix_exact_frame_comparisons": 64,
+    "pre_fix_compatibility_origin": "ab060b971c47e173ecad219034dcc52118c4eaf5",
+    "spiral": {
+      "items": "5000 -> 5003",
+      "frames_per_run": 180,
+      "exact_full_frame_comparisons": 720,
+      "width": 1360,
+      "height": 860,
+      "channels": "RGBA8",
+      "variants": [
+        "direct",
+        "direct cache",
+        "staged",
+        "staged cache"
+      ],
+      "reference_origin": "15px policy before either bug fix; 8-15px policy changes are intentional",
+      "raw_capture_files_retained": 360,
+      "raw_bytes": 1684224000,
+      "raw_capture_location": "build-vulkan-gaussian-fix/spiral-{direct,staged}",
+      "archive_manifest": "spiral-frame-sha256.csv"
+    }
+  },
+  "gates": {
+    "release": "python tools/run_tests.py --vulkan --format --release: passed",
+    "debug": "python tools/run_tests.py --vulkan --format: passed",
+    "native_cases_per_configuration": 33,
+    "sdl_golden_scenes_per_configuration": 22,
+    "harfbuzz_off_sdl_off": "both blur and Gaussian tests passed in direct/staged",
+    "new_test_format": "clang-format 22.1.3 --dry-run --Werror passed",
+    "live": {
+      "date": "2026-11-01",
+      "method": "computer-use @oai/sky; current standard Release binaries",
+      "showcase": {
+        "command": "out/build/x64-release/Release/pui_showcase_vulkan.exe",
+        "no_extra_arguments": true,
+        "observed": [
+          "Overview",
+          "vulkan showcase label",
+          "VSync ON left unchanged",
+          "Effects",
+          "blur radius 18 then 12",
+          "Layout lab"
+        ],
+        "closed_normally": true
+      },
+      "demo": {
+        "command": "out/build/x64-release/Release/pui_demo.exe",
+        "observed": [
+          "window 1",
+          "Click me: 0 to 1",
+          "window 2",
+          "window 2 closed and dock leaf returned to main window",
+          "main window normal close"
+        ],
+        "closed_normally": true
+      },
+      "final_window_inventory": [],
+      "readme_image": "docs/img/readme/vulkan-showcase.png regenerated using tools/readme_shots.ps1 -Names vulkan-showcase and visually reviewed",
+      "limits": "Functional inspection only. Background builds were active; no foreground FPS or performance claim. No independent human art approval."
+    }
+  },
+  "preservation": {
+    "old_test_oracle_files_byte_unchanged": 80,
+    "exception": "tests/test_vulkan_blur.cpp: only 15px policy boundary cases, pair count, max-radius CPU case and status text; no tolerance weakening",
+    "old_golden_references_changed": false,
+    "unrelated_drafts_unchanged_and_untracked": [
+      "docs/perf/r115_remaining_review.json",
+      "docs/perf/r115_remaining_review_frames.csv",
+      "docs/perf/r116_native_recheck_20261023.json",
+      "docs/perf/r116_native_recheck_20261023_frames.csv",
+      "docs/perf/r116_native_spike_review.json",
+      "docs/perf/r116_native_spike_review_frames.csv",
+      "docs/perf_native_spike_recheck.md",
+      "docs/perf_native_spike_review.md",
+      "docs/perf_remaining_review.md"
+    ],
+    "no_performance_claim": "Functional and pixel qualification; background builds were active during live inspection"
+  },
+  "source_hash_kind": "working-tree bytes at validation time",
+  "candidate_sources_sha256": {
+    "AGENTS.md": "b33af56f94b67ae8ec7761afe77e4967285a9c3722a52b475480a0f776db3ee2",
+    "CMakeLists.txt": "12894f9d1b97ba311ca6c23b0025ec555f2fcb2a59966da534869ce208735621",
+    "docs/img/readme/vulkan-showcase.png": "6e7604a635ffb4957f8c6d48960315045a0f6ff78605363e13acb58c371a9c29",
+    "docs/vulkan.md": "5bc4a9f6e8398ce7ac2f346dcc6fcfb6b69657b0beb39f29c1ec78136d14e4b1",
+    "include/pufferui/impl/vulkan_blur.inl": "df993802caef3f6ecf00411184a61ef5592c2c9ad33da3655677b1d059eea692",
+    "include/pufferui/impl/vulkan_cache.inl": "5c034ee3b7d87d8041e3c3e314eb57e858f3116f716206d49bff385c26fb9806",
+    "include/pufferui/impl/vulkan_device.inl": "b6ef9652c8bd2980b7518980b8ea6d59a95ff68a9b6023ce5a5e13e540733092",
+    "include/pufferui/impl/vulkan_draw.inl": "36f68b36a8212a51348a6e99449aba52d8cd27ef373bc0f52b297c38f5622ca6",
+    "include/pufferui/impl/vulkan_shaders.inl": "da0cafab3193ce638f80b6c4f63f71ce6104be986396477eb330d6ce47d5f387",
+    "src/shaders/vulkan/manifest.json": "79c384076c26c9f9fdfc07d0feef266c00e2b33d73f3fb5e9b985057ebcaffbb",
+    "src/shaders/vulkan/ui.frag": "dfb08d309c31c648d9b95da3b31e1c3806809361819635a83687d4119af29639",
+    "tests/test_vulkan_blur.cpp": "19525dc2bd0339d711b24c308f3cccce2879b6a75ebc803ae5260d6b04bdc005",
+    "tests/test_vulkan_gaussian.cpp": "e3f8135cb6369c9928e0a5172d33f034651966b257bbdafe607cefc7b6142614"
+  },
+  "binary_sha256": {
+    "out/build/x64-release/Release/pui_vulkan_gaussian_tests.exe": "8a9cd348e8bc3d4e9728159d8c3cbf87b3667d95cd240f120fac3b4b712291cc",
+    "out/build/x64-release/Release/pui_vulkan_blur_tests.exe": "8a874f9ac311da221d3c60165c01fa4fedb06ca97681c36e68af0f3ce40adc28",
+    "out/build/x64-release/Release/pui_vulkan_native_spiral_tests.exe": "3bf9687347ec7fc1660659048c06534bcf6b6b2d9efc2d249489c640c1654949",
+    "out/build/x64-debug/Debug/pui_vulkan_gaussian_tests.exe": "6e444685fc897872d17095a17b90f274c6bf24f1b2e540e8a5115dfea3f0e2c1",
+    "out/build/x64-debug/Debug/pui_vulkan_blur_tests.exe": "16e4a80554a9f596611839644b44842604573b490baf1e7baba4df3f6e7196ed",
+    "out/build/x64-debug/Debug/pui_vulkan_native_spiral_tests.exe": "1b9474cc950ac866bad834f6c34364df89ffa49b79aecb5de4206196399da447",
+    "out/build/x64-release/Release/pui_showcase_vulkan.exe": "63875c8e32ac813a2cfc1eb5ee62d5dce033e34abe62ee923b0ff64044e1823f",
+    "out/build/x64-release/Release/pui_demo.exe": "3e301b0eb7e3df9e3a603c8cf133ec53c8d999068c278f364911f88ac1f4e71e"
+  },
+  "baseline_binary_sha256": {
+    "before/gaussian-controls.exe": "465e3d0aaeb1b9d6d330b2ea03191b5bd739670cc61c7a400f4e002c2f52d9e4",
+    "policy15/reference.exe": "ee19c1ae7bc55f95574026d4b6ef6047f204932b83560bf4a0fae592fc04660b",
+    "policy15/spiral.exe": "b783511e17fd9db7051966eef6e095707daa3e2f05a6f7620cd336f3848ebf4c"
+  },
+  "archive": {
+    "path": "docs/perf/vulkan_gaussian_validation_raw.zip",
+    "bytes": 454084,
+    "sha256": "ba163ecf72469de01defedf6086f1bb139695ff727ac1325d41daef8ca2899dd"
+  }
+}

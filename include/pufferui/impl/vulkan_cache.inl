@@ -97,7 +97,7 @@ bool device::cache_add(cache_event::kind kind, texture *sample, const vertex *v,
             if (elapsed > 0) stats.cache_prepare_ms += elapsed;
         }
     } timer{stats};
-    const bool draw = kind == cache_event::DRAW;
+    const bool draw = kind == cache_event::DRAW || kind == cache_event::GAUSSIAN_COMPOSITE;
     if ((sample && !valid(sample)) || (draw && (!v || !idx || vc <= 0 || ic <= 0 || ic % 3)))
     {
         cache_flush(false);
@@ -389,9 +389,10 @@ void device::cache_flush(bool final)
             clip = e.clip;
             if (e.type == cache_event::CLEAR)
                 clear(e.clear_color);
-            else if (e.type == cache_event::DRAW)
+            else if (e.type == cache_event::DRAW || e.type == cache_event::GAUSSIAN_COMPOSITE)
                 paint(e.sample, e.vertices.data(), static_cast<i32>(e.vertices.size()),
-                      e.indices.data(), static_cast<i32>(e.indices.size()), true);
+                      e.indices.data(), static_cast<i32>(e.indices.size()), true, 0, nullptr,
+                      e.type == cache_event::GAUSSIAN_COMPOSITE ? 4 : 0);
             else if (e.type == cache_event::FILTER)
                 paint_filter(e.sample, e.source_rect, e.target, e.destination_rect, e.filter);
             else

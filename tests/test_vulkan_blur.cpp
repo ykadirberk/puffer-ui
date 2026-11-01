@@ -27,11 +27,11 @@ void diagnostic(i32 code, const char *text, void *)
     } while (false)
 bool plans()
 {
-    for (f32 radius : {0.5f, 1.0f, 2.5f, 7.999f, 8.0f, std::nextafter(8.0f, 9.0f), 9.0f, 16.0f,
-                       32.0f, 64.0f, 512.0f})
+    for (f32 radius : {0.5f, 1.0f, 2.5f, 7.999f, 8.0f, 14.999f, 15.0f, std::nextafter(15.0f, 16.0f),
+                       16.0f, 32.0f, 64.0f, 512.0f})
     {
         const auto plan = vk_detail::plan_blur(radius);
-        CHECK(plan.gaussian == (radius <= 8));
+        CHECK(plan.gaussian == (radius <= 15));
         if (plan.gaussian)
         {
             f32 sum = plan.taps.weights[0];
@@ -40,7 +40,7 @@ bool plans()
             for (i32 i = 1; i <= static_cast<i32>(std::ceil(radius)); ++i)
                 reference_sum += 2 * std::exp(-i * i / (2 * sigma * sigma));
             CHECK(std::abs(plan.taps.weights[0] - 1 / reference_sum) < 0.000001);
-            for (i32 i = 0; i < 4; ++i)
+            for (i32 i = 0; i < vk_detail::GAUSSIAN_PAIR_COUNT; ++i)
             {
                 sum += 2 * plan.taps.weights[i + 1];
                 if (plan.taps.weights[i + 1] > 0)
@@ -143,7 +143,7 @@ bool cpu_oracles(vk_detail::device &d)
     auto *a = static_cast<vk_detail::texture *>(d.create_target(80, 64));
     auto *b = static_cast<vk_detail::texture *>(d.create_target(80, 64));
     CHECK(a && b);
-    for (f32 radius : {0.5f, 2.5f, 8.0f, 8.01f, 17.0f, 48.0f})
+    for (f32 radius : {0.5f, 2.5f, 8.0f, 8.01f, 15.0f, 17.0f, 48.0f})
     {
         const auto plan = vk_detail::plan_blur(radius);
         cpu_image expected = input;
@@ -276,7 +276,7 @@ bool painter(vk_detail::device &d)
 {
     view views[2];
     CHECK(views[0].initialize(&d) && views[1].initialize(&d));
-    const f32 radii[] = {0.75f, 4, 7.999f, 8, std::nextafter(8.0f, 9.0f), 8.01f, 16, 25, 64};
+    const f32 radii[] = {0.75f, 4, 14.999f, 15, std::nextafter(15.0f, 16.0f), 15.01f, 16, 25, 64};
     std::vector<u8> pixels[2];
     for (auto &image : pixels) image.resize(129 * 97 * 4);
     for (i32 frame = 0; frame < 96; ++frame)
@@ -373,7 +373,7 @@ bool static_cache(vk_detail::device &d)
                 u.draw_rect({63, 0, 66, 97}, {13, 117, 239, 255});
                 // A parameter/kernel change must invalidate the cached image;
                 // both stable Gaussian and stable Kawase must then hit again.
-                u.blur({0, 0, 129, 97}, frame < 6 ? 8.0f : 8.01f);
+                u.blur({0, 0, 129, 97}, frame < 6 ? 15.0f : 15.01f);
                 u.draw_rect({9, 7, 14, 11}, {29, 247, 113, 191});
             }
             end_frame(v.ctx);
@@ -407,7 +407,7 @@ int main(int argc, char **argv)
     destroy_vulkan_device(d);
     if (!passed || errors) return 1;
     std::puts(
-        "Vulkan blur: Gaussian <=8px, Dual Kawase >8px, CPU kernels, 108 exact cached/reference "
+        "Vulkan blur: Gaussian <=15px, Dual Kawase >15px, CPU kernels, 108 exact cached/reference "
         "frames, DPI, clips, target reuse and idle cache hits passed");
     return 0;
 }

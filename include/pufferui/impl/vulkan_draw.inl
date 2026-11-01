@@ -123,8 +123,9 @@ VkPipeline device::pipeline(VkFormat format, bool blend, bool glyphs, u32 filter
         return VK_NULL_HANDLE;
     }
     const VkSpecializationMapEntry filter_entry{0, 0, sizeof(u32)};
-    for (u32 mode = 1; format == VK_FORMAT_R8G8B8A8_UNORM && mode <= 3; ++mode)
+    for (u32 mode = 1; format == VK_FORMAT_R8G8B8A8_UNORM && mode <= 4; ++mode)
     {
+        attachment.blendEnable = mode == 4 ? VK_TRUE : VK_FALSE;
         const VkSpecializationInfo specialization{1, &filter_entry, sizeof(mode), &mode};
         stages[1].pSpecializationInfo = &specialization;
         if (!check(vkCreateGraphicsPipelines(native.device, VK_NULL_HANDLE, 1, &pc, nullptr,
@@ -406,8 +407,9 @@ void device::draw(texture_handle tex, const vertex *v, i32 vc, const i32 *idx, i
     if (vc > 0) stats.requested_vertices += static_cast<u64>(vc);
     if (ic > 0) stats.requested_indices += static_cast<u64>(ic);
     auto *sample = tex ? static_cast<texture *>(tex) : white;
-    if (cache_active && cache_add(cache_event::DRAW, sample, v, vc, idx, ic)) return;
-    paint(sample, v, vc, idx, ic, true);
+    const auto kind = gaussian_compositing ? cache_event::GAUSSIAN_COMPOSITE : cache_event::DRAW;
+    if (cache_active && cache_add(kind, sample, v, vc, idx, ic)) return;
+    paint(sample, v, vc, idx, ic, true, 0, nullptr, gaussian_compositing ? 4 : 0);
 }
 bool device::start_rendering(texture *t)
 {

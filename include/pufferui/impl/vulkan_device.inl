@@ -85,12 +85,14 @@ enum class blur_kernel : u32
     KAWASE_DOWN = 2,
     KAWASE_UP = 3
 };
+static constexpr i32 GAUSSIAN_RADIUS_LIMIT = 15;
+static constexpr i32 GAUSSIAN_PAIR_COUNT = (GAUSSIAN_RADIUS_LIMIT + 1) / 2;
 struct blur_filter
 {
     f32 step[2]{}, low[2]{}, high[2]{};
-    f32 weights[5]{}, offsets[4]{};
+    f32 weights[GAUSSIAN_PAIR_COUNT + 1]{}, offsets[GAUSSIAN_PAIR_COUNT]{};
 };
-static_assert(sizeof(blur_filter) == 60);
+static_assert(sizeof(blur_filter) == 92);
 struct blur_pass
 {
     blur_kernel kernel = blur_kernel::GAUSSIAN;
@@ -103,7 +105,8 @@ struct cache_event
         CLEAR,
         DRAW,
         COPY,
-        FILTER
+        FILTER,
+        GAUSSIAN_COMPOSITE
     } type = CLEAR;
     texture *target = nullptr, *sample = nullptr;
     color clear_color{};
@@ -149,7 +152,7 @@ struct pipeline_pair
     VkFormat format = VK_FORMAT_UNDEFINED;
     VkPipeline blend = VK_NULL_HANDLE, copy = VK_NULL_HANDLE;
     VkPipeline text = VK_NULL_HANDLE;
-    VkPipeline filters[3]{};
+    VkPipeline filters[4]{};
 };
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
 struct glyph_instance
@@ -216,6 +219,7 @@ struct native_text
 #endif
 struct device : render_device, dispatch
 {
+    bool gaussian_compositing = false;
     vulkan_device_opts options{};
     vulkan_host *owned_host = nullptr;
     vulkan_native_device native{};

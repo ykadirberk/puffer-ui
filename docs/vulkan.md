@@ -60,15 +60,15 @@ framebuffer pixels:
 
 | Pixel radius | Vulkan filter |
 | --- | --- |
-| Up to and including 8 px | Separable Gaussian, horizontal then vertical |
-| Greater than 8 px | Dual Kawase downsample and upsample chain |
+| Up to and including 15 px | Separable Gaussian, horizontal then vertical |
+| Greater than 15 px | Dual Kawase downsample and upsample chain |
 
-For example, `u.blur(area, 8)` uses Gaussian at scale 1 and Dual Kawase at scale
-1.5. The existing no-effect rules for a logical radius below 0.5, zero alpha,
+For example, `u.blur(area, 8)` uses Gaussian at scale 1 and 1.5, and Dual Kawase
+at scale 2. The existing no-effect rules for a logical radius below 0.5, zero alpha,
 empty clips and host overlays still apply.
 
 Gaussian uses `sigma = max(radius / 3, 0.5)` and a support of `ceil(radius)`.
-Adjacent taps share bilinear fetches: the 17-tap maximum becomes nine fetches
+Adjacent taps share bilinear fetches: the 31-tap maximum becomes 17 fetches
 per axis. Weights are retained when the radius is unchanged. Dual Kawase uses
 five-fetch reduction and eight-fetch reconstruction kernels, with two to six
 pyramid levels and radius-dependent sample spacing. Its kernel follows the
@@ -82,20 +82,32 @@ blur calls and frames. The first target can remain half-size when only Kawase
 is used. A viewport shrink retires oversized targets at a frame boundary, using
 the normal GPU completion lifetime. Every filter pass clamps reads to the
 written source region, so odd extents and smaller subsequent blurs cannot sample
-old padding. Alpha, per-corner masks, scene clipping and draw order remain part
-of the normal composite. Filter kernels and all normalized operands are part of
+old padding. Gaussian bounds include pixel centers in the rounded mask's outer
+half-logical-pixel AA fringe before adding kernel support, including high DPI.
+Its final composite converts filtered associated RGB to straight RGB before the
+normal alpha blend; fractional source alpha is applied once. Opaque samples,
+ordinary primitives and the Kawase composite keep their existing arithmetic.
+Alpha, per-corner masks, scene clipping and draw order remain part of the
+composite. Filter kernels, Gaussian composite mode and all normalized operands are part of
 the retained command identity. Unchanged chains reuse final pixels; changed
 chains replay their scene prefix and filter passes in full order.
 
 Filtering is Vulkan-specific; SDL and explicitly selected mesh painters retain
 their existing blur. The shader specializations are compiled at device setup;
 the four checked-in graphics stages remain the only shader binaries.
-`pui_vulkan_blur_tests` checks independent CPU kernels, the exact 8 px boundary,
+`pui_vulkan_blur_tests` checks independent CPU kernels, the exact 15 px boundary,
 DPI selection, target reuse and 108 complete cached/reference frames in each
-upload mode. Existing assertions and golden files are independent.
-The [2026-11-01 validation receipt](perf/vulkan_blur_validation.json) and
+upload mode. `pui_vulkan_gaussian_tests` adds 36 independent full-image/mask
+oracles at scales 1, 1.25, 1.5, 2, 3 and 4, comparing 288 complete cached/uncached
+frames and 72 idle cache hits in each upload mode. Its immutable capture and
+comparison options also verify corrected goldens and pre-fix compatibility
+images. Existing golden files remain unchanged.
+The [Gaussian correction receipt](perf/vulkan_gaussian_validation.json) and
+[correction validation logs and goldens](perf/vulkan_gaussian_validation_raw.zip)
+record the new boundary and both fixes. The earlier
+[2026-11-01 validation receipt](perf/vulkan_blur_validation.json) and
 [complete validation logs](perf/vulkan_blur_validation_raw.zip) record the
-Release/Debug suites, optional-dependency checks and live showcase inspection.
+initial 8 px policy's Release/Debug suites and remain historical evidence.
 
 ## Device selection
 

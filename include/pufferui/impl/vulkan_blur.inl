@@ -15,14 +15,14 @@ struct blur_plan
 inline blur_plan plan_blur(f32 radius)
 {
     blur_plan plan;
-    plan.gaussian = radius <= 8.0f;
+    plan.gaussian = radius <= GAUSSIAN_RADIUS_LIMIT;
     if (plan.gaussian)
     {
         // Pair adjacent symmetric taps so the sampler performs their weighted
-        // interpolation. At radius eight each axis needs nine fetches, not 17.
+        // interpolation. At radius fifteen each axis needs 17 fetches, not 31.
         const f32 sigma = std::max(0.5f, radius / 3.0f);
         const i32 support = static_cast<i32>(std::ceil(radius));
-        f32 weights[9]{1};
+        f32 weights[GAUSSIAN_PAIR_COUNT * 2 + 1]{1};
         f32 sum = 1;
         for (i32 i = 1; i <= support; ++i)
         {
@@ -30,7 +30,7 @@ inline blur_plan plan_blur(f32 radius)
             sum += 2 * weights[i];
         }
         plan.taps.weights[0] = 1 / sum;
-        for (i32 pair = 0; pair < 4; ++pair)
+        for (i32 pair = 0; pair < GAUSSIAN_PAIR_COUNT; ++pair)
         {
             const i32 first = pair * 2 + 1;
             const f32 weight = weights[first] + weights[first + 1];
@@ -146,7 +146,7 @@ struct native_painter : renderer_detail::mesh_painter
         const f32 radius = static_cast<f32>(
             std::min(static_cast<double>(p.radius) * density, 2.0 * std::max(ow, oh) + 8));
         blur_plan plan;
-        if (radius <= 8)
+        if (radius <= GAUSSIAN_RADIUS_LIMIT)
         {
             if (gaussian_radius != radius)
             {
@@ -159,20 +159,44 @@ struct native_painter : renderer_detail::mesh_painter
             plan = plan_blur(radius);
         const f32 margin = std::min(static_cast<f32>(std::max(ow, oh)),
                                     std::ceil(plan.gaussian ? radius : radius * 2 + 2));
+        const corner_radii radii = detail::clamp_radii(p.area, p.radii);
         rect paint_bounds;
-        const rect visible = detail::paint_bounds(ctx, paint_bounds)
-                                 ? rect::intersect(p.area, paint_bounds)
-                                 : p.area;
-        const i32 rx = static_cast<i32>(
-            std::max(0.0, std::floor(static_cast<double>(visible.x) * density) - margin));
-        const i32 ry = static_cast<i32>(
-            std::max(0.0, std::floor(static_cast<double>(visible.y) * density) - margin));
-        const i32 right = static_cast<i32>(
-            std::min(static_cast<double>(ow),
-                     std::ceil(static_cast<double>(visible.right()) * density) + margin));
-        const i32 bottom = static_cast<i32>(
-            std::min(static_cast<double>(oh),
-                     std::ceil(static_cast<double>(visible.bottom()) * density) + margin));
+        const bool bounded = detail::paint_bounds(ctx, paint_bounds);
+        const rect visible = bounded ? rect::intersect(p.area, paint_bounds) : p.area;
+        f64 left_pixel = std::floor(static_cast<f64>(visible.x) * density);
+        f64 top_pixel = std::floor(static_cast<f64>(visible.y) * density);
+        f64 right_pixel = std::ceil(static_cast<f64>(visible.right()) * density);
+        f64 bottom_pixel = std::ceil(static_cast<f64>(visible.bottom()) * density);
+        if (plan.gaussian && (radii.tl > 0 || radii.tr > 0 || radii.br > 0 || radii.bl > 0))
+        {
+            // The rounded fan's outer AA edge is half a logical pixel wider.
+            // Include every pixel center strictly inside it before adding the
+            // kernel support. At 1x these are the original nominal bounds.
+            left_pixel = std::min(
+                left_pixel, std::floor((static_cast<f64>(p.area.x) - 0.5) * density - 0.5) + 1);
+            top_pixel = std::min(
+                top_pixel, std::floor((static_cast<f64>(p.area.y) - 0.5) * density - 0.5) + 1);
+            right_pixel = std::max(
+                right_pixel, std::ceil((static_cast<f64>(p.area.right()) + 0.5) * density - 0.5));
+            bottom_pixel = std::max(
+                bottom_pixel, std::ceil((static_cast<f64>(p.area.bottom()) + 0.5) * density - 0.5));
+            if (bounded)
+            {
+                left_pixel =
+                    std::max(left_pixel, std::floor(static_cast<f64>(paint_bounds.x) * density));
+                top_pixel =
+                    std::max(top_pixel, std::floor(static_cast<f64>(paint_bounds.y) * density));
+                right_pixel = std::min(right_pixel,
+                                       std::ceil(static_cast<f64>(paint_bounds.right()) * density));
+                bottom_pixel = std::min(
+                    bottom_pixel, std::ceil(static_cast<f64>(paint_bounds.bottom()) * density));
+            }
+        }
+        const i32 rx = static_cast<i32>(std::max(0.0, left_pixel - margin));
+        const i32 ry = static_cast<i32>(std::max(0.0, top_pixel - margin));
+        const i32 right = static_cast<i32>(std::min(static_cast<double>(ow), right_pixel + margin));
+        const i32 bottom =
+            static_cast<i32>(std::min(static_cast<double>(oh), bottom_pixel + margin));
         const i32 width = right - rx, height = bottom - ry;
         if (width <= 0 || height <= 0) return;
         detail::dl_flush(ctx);
@@ -235,7 +259,6 @@ struct native_painter : renderer_detail::mesh_painter
         const f32 du = density / scratch.w, dv = density / scratch.h;
         const f32 ox = static_cast<f32>(rx) / density, oy = static_cast<f32>(ry) / density;
         const color tint{255, 255, 255, static_cast<u8>(clampf(p.alpha * 255, 0, 255))};
-        const corner_radii radii = detail::clamp_radii(p.area, p.radii);
         const rect r = p.area;
         if (radii.tl == 0 && radii.tr == 0 && radii.br == 0 && radii.bl == 0)
         {
@@ -264,6 +287,16 @@ struct native_painter : renderer_detail::mesh_painter
             detail::dl_add(ctx, vertices.data(), static_cast<i32>(vertices.size()), indices.data(),
                            static_cast<i32>(indices.size()));
         }
+        struct composite_scope
+        {
+            device &dev;
+            bool previous;
+            composite_scope(device &d, bool gaussian) : dev(d), previous(d.gaussian_compositing)
+            {
+                dev.gaussian_compositing = gaussian;
+            }
+            ~composite_scope() { dev.gaussian_compositing = previous; }
+        } composite{*dev, plan.gaussian};
         detail::dl_flush(ctx);
     }
 };
