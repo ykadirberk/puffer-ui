@@ -7,7 +7,7 @@ namespace vk_detail
 {
 render_painter *device::create_painter(context &c)
 {
-    auto *p = new renderer_detail::mesh_painter(c);
+    auto *p = new native_painter(c, *this);
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
     p->vectors = options.vector_text;
     p->native_device = this;

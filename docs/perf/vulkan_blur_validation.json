@@ -1,0 +1,196 @@
+{
+  "date": "2026-11-01",
+  "base_commit": "0ec8de404ebb9d5bc88198291ce640255dbaeefb",
+  "selection": {
+    "units": "framebuffer pixels after render_scale",
+    "gaussian_inclusive_max": 8,
+    "wide_filter": "Dual Kawase"
+  },
+  "scope": "Vulkan native painter; existing mesh/SDL blur stays independent.",
+  "visual_contract": "Blur output changes from the previous resampling pyramid. Existing test sources and SDL golden bytes are unchanged. Native cache/reference equality is exact.",
+  "gates": {
+    "release": {
+      "command": "python tools/run_tests.py --vulkan --format --release",
+      "all_steps_passed": true,
+      "vulkan_cases_passed": 31,
+      "log_sha256": "d24a852019e68c224e310954957491e38cff1105723b6300a339f13435c59948"
+    },
+    "debug": {
+      "command": "python tools/run_tests.py --vulkan --format",
+      "all_steps_passed": true,
+      "vulkan_cases_passed": 31,
+      "log_sha256": "8231fbcec7bef68b3466aefa5fccea11727670d119f14e07a2666f8cc2a34ef0"
+    }
+  },
+  "new_regressions": {
+    "target": "pui_vulkan_blur_tests",
+    "upload_modes": [
+      "DIRECT",
+      "STAGED"
+    ],
+    "exact_full_frame_pairs_per_mode_per_configuration": 108,
+    "cpu_convolution_max_channel_error": 2,
+    "coverage": [
+      "8px and nextafter(8px) selection",
+      "Gaussian and Kawase CPU kernels",
+      "public Gaussian output and exact outside-clip preservation",
+      "odd extents and stale scratch padding",
+      "DPI and rounded alpha clips",
+      "empty/outside clips and zero/NaN/infinite radii",
+      "retained target reuse",
+      "idle Gaussian/Kawase cache hits without GPU draws",
+      "filter kernel/operand invalidation"
+    ],
+    "optional_off": {
+      "harfbuzz": false,
+      "sdl3": false,
+      "both_upload_modes_passed": true
+    }
+  },
+  "original_test_oracle_files_unchanged": 80,
+  "unrelated_draft_files_unchanged": 9,
+  "preserved_files_sha256": {
+    "tests/bench.cpp": "ecbfd2a0215adf47abb6398960def43c2ea3dd1838ea0d3557a660572104ed7a",
+    "tests/bench_core_performance.inl": "761ef98e7d753a32beff581eb9f7eaa2d994f991eaf9c88896ff151ce2bd25c3",
+    "tests/bench_vulkan_native_optimizations.cpp": "d4ecf99478098ad33db6b771fab3cb159b532943c35d230a283d5c637d9e1849",
+    "tests/consumer/CMakeLists.txt": "5c636609cd8528cc96cfef5c19eabd07fdde8accf82212d4c81d3654fe29bb28",
+    "tests/consumer/main.cpp": "3c94e847a0b0a6fd4db623766cd15e6ec93af7f2af0f93205f56d428ebf8388f",
+    "tests/consumer_vulkan/CMakeLists.txt": "0f3a76df95901842d51db3b86f0ccd856078630a48ceaa3ab32d4be3801ea703",
+    "tests/consumer_vulkan/main.cpp": "e2cbcd6a526012429b794a513c4845c9f2db1eba8c647eb2891fb510768d3c34",
+    "tests/golden/anim_f0.bmp": "60474fd1fb6911fab7ecf2689bc966b3b7ffb1a1cc5d8b27052d4b08279f88a1",
+    "tests/golden/anim_f1.bmp": "62ad8a33c8a5557ad6d99e522a7641a3c68be67da5ae3b97714e991f9fcce647",
+    "tests/golden/anim_f2.bmp": "239db2805a9cf82560207a6444172221f430ba2e1e2b407259aceaa7d0d27fac",
+    "tests/golden/blur_edge_f1.bmp": "738635d4b1fad0d7f546de606b9dd61f21ff59a8a1774c694e122ee0cc0cb42f",
+    "tests/golden/blur_f1.bmp": "8a7d8d0077ea2ad0c84e0d4b2ccc8b2c5b2ee5e66692e2e4ce470d6fecde6701",
+    "tests/golden/dpi_1x.bmp": "7e518180937aa36cff21b78513d0bb6fb17a0f8c3a26413e4327a20812e32586",
+    "tests/golden/dpi_2x.bmp": "7907d02ee9d2981754f994cb1d50876d8eef516364d5c90c9075d39d4ae90cbf",
+    "tests/golden/hashes.txt": "1a980f2b8ae53ee806ae0b1309d259fc372504e2cb6067d5651721949d14fe5c",
+    "tests/golden/inputs_f3.bmp": "81ad96206b1312650dd70b9365bcfef91015184d6fa497c6cb1c2085eef84df3",
+    "tests/golden/layers_f1.bmp": "8e1370787bdd4753d1f9e1dc2971e8c5af5f1164493d290461068d349da2ea61",
+    "tests/golden/layout_f2.bmp": "b373e74a5f7e9fcc62107616041b99f132bd463eade8559db33492054a074fb7",
+    "tests/golden/menus_f2.bmp": "5891bb5cb4a5384306e78fc66ba1f943809ea75040b5970884c16bb078b1e79b",
+    "tests/golden/menus_f3.bmp": "b607a19e804abc037dc93ebc95a47bee1b6daa74bd930eae0a7160f8a209873e",
+    "tests/golden/menus_f4.bmp": "a93b464d815f43a79fa5250810ac25e6e750aa04223476dd9ac2f59dd6a9dca8",
+    "tests/golden/menus_f5.bmp": "cc09fd70161f22f7b79c19a1b22efbba8a8b53b1cf5b3dbf3f225a9715d46520",
+    "tests/golden/relayout_f7.bmp": "fa87ce9f5162050be2f3e9ed2673c02999e646a527c69189d01e9f291979b46b",
+    "tests/golden/relayout_f8.bmp": "2bead2dc75a08bf3ce52573a396e357bb98a9fa39ea93eb88f8681c27195df00",
+    "tests/golden/shapes.bmp": "1a5d2172a49dd7284b0fe27c9a2e060099c3a3310573f82041d0ff38375e2e36",
+    "tests/golden/test_golden.cpp": "6d64ca62ae43957bf8fd82720433f74e5a7792772b6dd174366fe5fde3aea337",
+    "tests/golden/text.bmp": "343e6c21929909fd75236769ba18ea006c501792a8065456cd34147c274d8c35",
+    "tests/golden/widgets_f3.bmp": "56dc655225bc47c8900fea26075584fc657e78b447ae87619696dbad7a9aa5db",
+    "tests/golden/widgets_f4.bmp": "5f6dd4aa380b985448533eced1e989483421f7d3efc9ad80aaabb22e703aa784",
+    "tests/golden/windows_a.bmp": "df39764dd2226ebd66683494255dda8f81e4326ae6b5f72168c53e43915eb5ad",
+    "tests/golden/windows_b.bmp": "9ee6c48f4a19721a8eb8f0b64804a4cee0919e2f892b1dbc9be0d13113469667",
+    "tests/test_components.cpp": "83375b64524607e5c5381525287ca1c5a6473a5c76aaa543af068bae97bc5bbd",
+    "tests/test_core.cpp": "79067c12d17205eea213c87824d270553918cca42d941149ef0a7f3fa70aa45b",
+    "tests/test_core_perf_pixels.cpp": "3f3cc582418fcf0fd6bbbf7e6b3f3eb94c5a1c9f8f1e7e30fd55fa9eeef46eee",
+    "tests/test_core_performance.inl": "3dfbaddd55f760aecae73ea49ca3b929d05ece27dadc250af5c2b9d51a0b8e32",
+    "tests/test_dock.cpp": "4181b165f4b6634a3638eacc35a60e1af6e98e47a52a3bfd9a8f433eb5204811",
+    "tests/test_ergonomics.cpp": "94da126e932c4d3a4ba6dd0d7a652c5fce40d5490f457982f16cbb898e5644fd",
+    "tests/test_geometry_performance.inl": "fcbef413e14d63226d5ccfc4d59089edc91c074b6aec79f18f5b7614fd51b81e",
+    "tests/test_geometry_preparation.inl": "a9121fac2068d55cd0bc877dd2d04afb2071d40a960e2c261d2fc3f6e7de808b",
+    "tests/test_harfbuzz.cpp": "1ee07ea285b622b7da28296a82d550e9c400662726b149bd066b14e04fdfa720",
+    "tests/test_harfbuzz_interaction.cpp": "71cf3dd9a9a193af93ce217a90aaede0734f0742175236fea35969e813f7afb7",
+    "tests/test_input.cpp": "58bb610900e95d49a5ff52bba7c6495fd097b8eab5b4b3f83fc26b062fa50e5c",
+    "tests/test_layout.cpp": "7ae5dcd1b5a6ecfae3f1549622d308239e00a0b442e322b10d1cc8d3e6d0067f",
+    "tests/test_memory_performance.inl": "e1b0e64f890f0bb7c13afe6e0574c995a52852bfb44f41d68ce3a112f726d364",
+    "tests/test_memory_upload.cpp": "38606400b442095704eb86e8f2863b201053f5177ccbe4df9a3d27743b1e6294",
+    "tests/test_motion.cpp": "60dddffd37c3afcd215acf46c70b3750cb493f629b369a48efdf30ef417bdc6a",
+    "tests/test_native_optimization_tools.py": "6e37699dde764e0f42bbb6b4a56ac6fb48f79ab64ae0acecc557d76ffa043209",
+    "tests/test_native_vulkan_tools.py": "bc8065947360ba12fa9e8a903050fc2165ac15e87e2ca72e1113855504040d7c",
+    "tests/test_perf_pixels.cpp": "973afcdf39317dbcb39ba795bc78c410c87bcb2f9dae0b3f93fbec1aacadef97",
+    "tests/test_performance.inl": "bc97cc9b748f5fceeb8fef7576d06109a2ddcf3a39bd4b3ac661e6c1c9f7c92a",
+    "tests/test_platform.cpp": "b89c748a35e7d0d480e78ba7fcb4f1b13d0cd75dfa93bea7b801e4f1d9c7a1de",
+    "tests/test_pump.cpp": "1d5509bdcb7ad7cc6015c0e5f1a88dda09be43799bfc4b13d616e9bdee0e7dcc",
+    "tests/test_render.cpp": "80de5d1469d17f4b5d2e0657eb2f16f6ec7c649eba7ed315d6a9fdabef729dfb",
+    "tests/test_renderer_boundary.cpp": "555561060b087950fce18f53f2739836b0e8629574b3548bca378f3b6b21e1ac",
+    "tests/test_sdl_capacity.cpp": "47f6087c476107b36fbc7ef1f662191e69b21c5d2e5c99cb21e6104bd3d30a93",
+    "tests/test_sdl_geometry.cpp": "d221ee0443b862d5e3488fce6e3bcf5d3a9fd617dee42c97a2eec79a0bd1935a",
+    "tests/test_sdl_upload.cpp": "e32f95aca5a017aa1e33f63434af58e444a4e43593d54211b206f3c14dde89ae",
+    "tests/test_showcase.cpp": "729379eb8f6e17e9ba8712852f6616e4d8a145c69dfeefb1457bba4bdb954cca",
+    "tests/test_showcase_paint.inl": "f655a80789477de0704df92ae745731626985b85bd31aedebf227d1513cd264a",
+    "tests/test_state_pool.inl": "c94f9851cf587ebad36f61714b132a40f0a962ad6ee7c3f1faf4b9ccc69093f6",
+    "tests/test_text.cpp": "95b5d2d673e9cb895dbb23a75d1bba08ab7802d2413e0b240ec12ee5ca8439f1",
+    "tests/test_textarea.cpp": "1d6f40f13521857565941aed679af0ddbfe2e15fb016c9c40153000b7a294a25",
+    "tests/test_util.h": "98d309de8744cdde6a1e4dfaec64d6e0ad3bd8f8cd1fab2273290ba4b8f78619",
+    "tests/test_vulkan.cpp": "39ef946bc59ee2e500c71c78a3b6158880ad4cf5cfab13462441ee61c6459b1f",
+    "tests/test_vulkan_cache.cpp": "e329c5669caf466de3f03f1f8099c57d3c8996dc4886d50de121f105d2a49bea",
+    "tests/test_vulkan_example_font.cpp": "35cecd1ddc52781c37edf2fce4d7e2d844dafb213a8ffb8683eeff5770262729",
+    "tests/test_vulkan_example_validation.cpp": "262dc7dd843069ddb12e6c5ab309342319e9c8649b2ca5a1be435113184680d6",
+    "tests/test_vulkan_external.cpp": "532f4c2012d32f2fd5230206f11bda2e371f34e4a61dc98468d832a6d268b433",
+    "tests/test_vulkan_faults.cpp": "c5db748d0fdedf9b7895ca74a8bdc37abfe0996164059bd5cf839b7e52a187cd",
+    "tests/test_vulkan_interaction.cpp": "eeb22055261354e7e9dda6c6cd1aa44bed016f6f23440ca4a99de9e014aa7bc5",
+    "tests/test_vulkan_internal.inl": "53330256ae2a9c382c517002dd0c66a9c78d36c893179e3e078fc74fc133a5fd",
+    "tests/test_vulkan_native_optimizations.cpp": "9b87c22f8845f8c81de659cc3bed84f7f05cdba711b4f3364d767bfccdbaa4d0",
+    "tests/test_vulkan_native_spiral.cpp": "56066abc68f1bf431ea6abce128db37559e125c247a2321bb3c730ec04a59e60",
+    "tests/test_vulkan_native_stream.inl": "5f5cfe60833da633e983b994a4bb638a1452fece40dda7521f28edbc57f627b9",
+    "tests/test_vulkan_native_text.cpp": "434fae70dc4f375ad42a2561b57b3e1bfbd715383c8f54d6ce2aee6d7340a122",
+    "tests/test_vulkan_showcase.cpp": "b1d50d1fa2d4e3994693e88cdf9477d23eddf63383190eced31a974e7231f1c7",
+    "tests/test_vulkan_spiral.cpp": "0e47c781d13feb9f10022e5d5bf9a54c8bcbef241f71ff83426a418fff8e7f96",
+    "tests/test_vulkan_tools.py": "d43a9f01c369dfb8a15190eeeb9da708ae8309eaa3a427ed6af4a80c48a39cd3",
+    "tests/test_vulkan_wsi.cpp": "233ae034277e04d476e66a54d75332b5902ee2de9e58f0327986af5380a064f6",
+    "tests/test_widgets.cpp": "88498ac9a68e976b8469b8e8ff9da9511b2a0e2d96f69ea0a20794a734d9a000",
+    "docs/perf/r115_remaining_review.json": "f64c0a59e91be7f6d0a1126cace4ebdc90c5ada74a11255f25189b7051651b1b",
+    "docs/perf/r115_remaining_review_frames.csv": "e0149e608753cf4e2973e34a840e66b30d29d73180429632049674883828cb91",
+    "docs/perf/r116_native_recheck_20261023.json": "c2352efef20c9eff6ee31ca6e8226c7accba601f5434d6749435263534c32ecf",
+    "docs/perf/r116_native_recheck_20261023_frames.csv": "aecbbd97ffbd151e0c845826bd31873168ef88cdbaa7932423c55145b91f12d5",
+    "docs/perf/r116_native_spike_review.json": "21c3d80f754366a8813445c4ddcf2a787add59de3147525212d2390c3cc4255d",
+    "docs/perf/r116_native_spike_review_frames.csv": "18d3fc5201454a024e2ea35121ec0909825bbe56826742642c9e007f08a8acb7",
+    "docs/perf_native_spike_recheck.md": "85da64851f08507a54ed04d94c7079113d317e08de259b8aaa0858329b8cae45",
+    "docs/perf_native_spike_review.md": "c80068c045855a5916a7526bb8f5df9a8e582707a4a1552a9997124cc785684a",
+    "docs/perf_remaining_review.md": "ad57edd67c363cae35acea58c7b272d27444d7d6ee0930b9f5fe77e0b6a9c1a3"
+  },
+  "source_sha256": {
+    "CMakeLists.txt": "24cc631c69d6ef8d2bcd4264e1a37bef9d6736513fefa186ecda4d651099a1a2",
+    "include/pufferui/impl/vulkan_cache.inl": "980d6c56cb187eaa0db6114d4e7201f95265500f92ebc36575cd28c74417d05e",
+    "include/pufferui/impl/vulkan_device.inl": "8403a50cebc982f1b020e6ab52fccfac47b86bffd69e3ac5f62c2ccc438d9ace",
+    "include/pufferui/impl/vulkan_draw.inl": "c372baa9fb199ada28e398346d53a7b681c4692d56058ee07014c1cc8885b4b1",
+    "include/pufferui/impl/vulkan_shaders.inl": "edabfb836c2af2dd0eeb756a9a545f918bf31cc8f3f7d563b49baae899dc39b6",
+    "include/pufferui/impl/vulkan_text.inl": "0616e0733ad6d9e88e4effb74b34070854403411d7482b4d314ca420cb3b1953",
+    "include/pufferui/pufferui.h": "29ca3d7a9c76b99c1156de9742ad67385a83e53a69e99702edfd99aec2b0928f",
+    "src/shaders/vulkan/manifest.json": "f6bfa0687ee957dc50432aafb4d5222f3fa9430111883b1ce32140a6612a54ee",
+    "src/shaders/vulkan/ui.frag": "2f943cd616d6e821c89fc0adb1ae9f07313b9c69bed7f4fc1460f05b316913c0",
+    "include/pufferui/impl/vulkan_blur.inl": "67f76f269091a2ba7bad1554c690e792dd5b6af2522cd2e8b0a1bd69756187f9",
+    "tests/test_vulkan_blur.cpp": "32eec418a3f9d5bff75f96243385de4db8bb3435263682e8822430e25f4c9f89"
+  },
+  "vendored_sdl_clean": true,
+  "live": {
+    "date": "2026-11-01",
+    "showcase": {
+      "executable": "out/build/x64-release/Release/pui_showcase_vulkan.exe",
+      "arguments": [],
+      "observed": [
+        "vulkan showcase label",
+        "startup VSync ON",
+        "Overview to Effects",
+        "Blur radius display 3 (Gaussian)",
+        "Blur radius display 27 (Dual Kawase)",
+        "normal close"
+      ],
+      "limits": [
+        "A lens drag was requested; displacement was not observed and is not certified."
+      ]
+    },
+    "demo": {
+      "executable": "out/build/x64-release/Release/pui_demo.exe",
+      "observed": [
+        "both windows",
+        "Click me: 0 to 1",
+        "normal secondary close",
+        "main window remains visible with Open window 2",
+        "normal main close"
+      ],
+      "tool_recovery": "Indexed click reported element 5 unavailable in cached app state. Fresh window/screenshot selection and a coordinate click succeeded."
+    },
+    "task_windows_remaining": 0,
+    "scope": "Functional observations; no matched before/after FPS benchmark."
+  },
+  "reviewed_image": {
+    "path": "docs/img/readme/vulkan-showcase.png",
+    "sha256": "8c0731825edd1c7424d34c8232182459de3a3ec052f40959acc458601e1aa108"
+  },
+  "raw": {
+    "path": "docs/perf/vulkan_blur_validation_raw.zip",
+    "sha256": "d7ba1e640fe1cd6b017faf0060abcff8c6fc3ef082e07ca39a5e3646da8c868c"
+  }
+}

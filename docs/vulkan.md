@@ -7,7 +7,8 @@ this route does not create an `SDL_Renderer`. The existing SDL renderer remains
 the default. Core-only and SDL-only applications need no Vulkan SDK.
 
 This branch starts from the first native Vulkan renderer (`8c62fc4`). Shapes use
-its triangle geometry and blur pyramid. With HarfBuzz built, the default factory
+triangle geometry; backdrop filtering uses Gaussian or Dual Kawase according to
+the pixel radius. With HarfBuzz built, the default factory
 shapes text with HarfBuzz and draws upstream Slug outlines through a separate
 instanced graphics pipeline. There is no SDF shape painter or compute/tile
 interpreter. See [HarfBuzz text](harfbuzz.md) and the
@@ -50,6 +51,53 @@ python tools/compile_vulkan_shaders.py
 The generator records compiler identity, flags and source/SPIR-V SHA-256 hashes.
 It requires the SDK's `glslangValidator`. Validation mode additionally requires
 `VK_LAYER_KHRONOS_validation`; it is intentionally separate from timed runs.
+
+## Backdrop blur
+
+The native painter selects the filter automatically for `ui::blur`. The existing
+radius argument is in logical units; selection uses `radius * render_scale` in
+framebuffer pixels:
+
+| Pixel radius | Vulkan filter |
+| --- | --- |
+| Up to and including 8 px | Separable Gaussian, horizontal then vertical |
+| Greater than 8 px | Dual Kawase downsample and upsample chain |
+
+For example, `u.blur(area, 8)` uses Gaussian at scale 1 and Dual Kawase at scale
+1.5. The existing no-effect rules for a logical radius below 0.5, zero alpha,
+empty clips and host overlays still apply.
+
+Gaussian uses `sigma = max(radius / 3, 0.5)` and a support of `ceil(radius)`.
+Adjacent taps share bilinear fetches: the 17-tap maximum becomes nine fetches
+per axis. Weights are retained when the radius is unchanged. Dual Kawase uses
+five-fetch reduction and eight-fetch reconstruction kernels, with two to six
+pyramid levels and radius-dependent sample spacing. Its kernel follows the
+[Arm dual-filter presentation](https://community.arm.com/cfs-file/__key/communityserver-blogs-components-weblogfiles/00-00-00-20-66/siggraph2015_2D00_mmg_2D00_marius_2D00_notes.pdf).
+Kawase approximates a Gaussian; crossing the filter threshold is not promised
+to be pixel-identical between the two algorithms.
+
+Each window retains two RGBA8 scratch targets for the affected region, including
+the sampling margin. They grow lazily in 32-pixel steps and are reused across
+blur calls and frames. The first target can remain half-size when only Kawase
+is used. A viewport shrink retires oversized targets at a frame boundary, using
+the normal GPU completion lifetime. Every filter pass clamps reads to the
+written source region, so odd extents and smaller subsequent blurs cannot sample
+old padding. Alpha, per-corner masks, scene clipping and draw order remain part
+of the normal composite. Filter kernels and all normalized operands are part of
+the retained command identity. Unchanged chains reuse final pixels; changed
+chains replay their scene prefix and filter passes in full order.
+
+Filtering is Vulkan-specific; SDL and explicitly selected mesh painters retain
+their existing blur. The shader specializations are compiled at device setup;
+the four checked-in graphics stages remain the only shader binaries.
+`pui_vulkan_blur_tests` checks independent CPU kernels, the exact 8 px boundary,
+DPI selection, target reuse and 108 complete cached/reference frames in each
+upload mode. Existing assertions and golden files are independent.
+The [2026-11-01 validation receipt](perf/vulkan_blur_validation.json) and
+[complete validation logs](perf/vulkan_blur_validation_raw.zip) record the
+Release/Debug suites, optional-dependency checks and live showcase inspection.
+
+## Device selection
 
 The backend prefers a compatible discrete physical device, or uses the explicit
 `vulkan_device_opts::physical_device_index`. This cannot expose a device whose

@@ -88,7 +88,12 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   checked-in SPIR-V plus a compiler/source manifest. Ordinary consumers do not
   run the shader compiler. Frame mesh caching is opt-in; native Slug coverage
   caching defaults to a bounded 4 MiB image. GPU binning is not implemented.
-- This native branch preserves the first Vulkan triangle/blur paths. Fresh
+- This native branch preserves Vulkan triangle shapes. Native backdrop blur
+  uses Gaussian through 8 framebuffer pixels and Dual Kawase above 8, in
+  `impl/vulkan_blur.inl`. `pui_vulkan_blur_tests` covers CPU kernels, threshold,
+  DPI/clips/target reuse and 108 exact cache/reference frames per upload mode,
+  including idle cache hits and filter-identity invalidation.
+  The shared mesh/SDL blur remains independent. Fresh
   Vulkan configurations enable pinned HarfBuzz and upstream Slug text; explicit
   OFF remains supported. Text uses an independent instanced graphics pipeline,
   append-only outline chunks and retained CPU batches. No SDF shape or compute

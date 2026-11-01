@@ -3810,6 +3810,7 @@ namespace pui
 #include "impl/vulkan_surface.inl"
 #include "impl/vulkan_cache.inl"
 #include "impl/vulkan_preparation.inl"
+#include "impl/vulkan_blur.inl"
 #include "impl/vulkan_text_coverage.inl"
 #include "impl/vulkan_text.inl"
 #include "impl/sdl3.inl"

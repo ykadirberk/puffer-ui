@@ -79,18 +79,37 @@ struct frame_slot
     std::vector<VkSemaphoreSubmitInfo> waits;
     graphics_binding graphics{};
 };
+enum class blur_kernel : u32
+{
+    GAUSSIAN = 1,
+    KAWASE_DOWN = 2,
+    KAWASE_UP = 3
+};
+struct blur_filter
+{
+    f32 step[2]{}, low[2]{}, high[2]{};
+    f32 weights[5]{}, offsets[4]{};
+};
+static_assert(sizeof(blur_filter) == 60);
+struct blur_pass
+{
+    blur_kernel kernel = blur_kernel::GAUSSIAN;
+    blur_filter parameters{};
+};
 struct cache_event
 {
     enum kind
     {
         CLEAR,
         DRAW,
-        COPY
+        COPY,
+        FILTER
     } type = CLEAR;
     texture *target = nullptr, *sample = nullptr;
     color clear_color{};
     bool clipped = false;
     rect clip{}, source_rect{}, destination_rect{};
+    blur_pass filter{};
     std::vector<vertex> vertices;
     std::vector<i32> indices;
 };
@@ -130,6 +149,7 @@ struct pipeline_pair
     VkFormat format = VK_FORMAT_UNDEFINED;
     VkPipeline blend = VK_NULL_HANDLE, copy = VK_NULL_HANDLE;
     VkPipeline text = VK_NULL_HANDLE;
+    VkPipeline filters[3]{};
 };
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
 struct glyph_instance
@@ -249,7 +269,8 @@ struct device : render_device, dispatch
     void cache_begin(surface *s);
     bool cache_add(cache_event::kind type, texture *sample = nullptr, const vertex *v = nullptr,
                    i32 vc = 0, const i32 *idx = nullptr, i32 ic = 0, color c = {},
-                   const rect *sr = nullptr, const rect *dr = nullptr);
+                   const rect *sr = nullptr, const rect *dr = nullptr,
+                   const blur_pass *filter = nullptr);
     void cache_flush(bool final);
     void cache_commit(bool success);
     u64 cache_usage() const;
@@ -282,9 +303,13 @@ struct device : render_device, dispatch
     bool valid(texture *t) const;
     bool commands();
     void transition(texture *t, VkImageLayout layout);
-    VkPipeline pipeline(VkFormat format, bool blend, bool glyphs = false);
+    VkPipeline pipeline(VkFormat format, bool blend, bool glyphs = false, u32 filter = 0);
     void paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32 ic, bool blend,
-               i32 index_base = 0);
+               i32 index_base = 0, const blur_filter *filter = nullptr, u32 kernel = 0);
+    void filter(texture *source, rect source_area, texture *destination, rect destination_area,
+                blur_kernel, blur_filter, rect valid_source);
+    void paint_filter(texture *, rect source_area, texture *, rect destination_area,
+                      const blur_pass &);
     bool prepare_geometry(const geometry_capacity &) override;
     bool prepare_slot_geometry(frame_slot &, VkDeviceSize bytes);
     VkDeviceSize geometry_reservation(VkDeviceSize requested, VkDeviceSize pixels) const;
@@ -554,14 +579,13 @@ bool device::initialize(const vulkan_device_opts &opts)
     if (!check(vkCreateDescriptorSetLayout(native.device, &dl, nullptr, &descriptor_layout),
                "vkCreateDescriptorSetLayout"))
         return false;
-    VkPushConstantRange range{};
-    range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    range.size = sizeof(float) * 2;
+    const VkPushConstantRange ranges[] = {{VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(float) * 2},
+                                          {VK_SHADER_STAGE_FRAGMENT_BIT, 16, sizeof(blur_filter)}};
     VkPipelineLayoutCreateInfo pl{VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
     pl.setLayoutCount = 1;
     pl.pSetLayouts = &descriptor_layout;
-    pl.pushConstantRangeCount = 1;
-    pl.pPushConstantRanges = &range;
+    pl.pushConstantRangeCount = 2;
+    pl.pPushConstantRanges = ranges;
     if (!check(vkCreatePipelineLayout(native.device, &pl, nullptr, &pipeline_layout),
                "vkCreatePipelineLayout"))
         return false;
@@ -614,6 +638,8 @@ device::~device()
             vkDestroyPipeline(native.device, p.blend, nullptr);
             vkDestroyPipeline(native.device, p.copy, nullptr);
             if (p.text) vkDestroyPipeline(native.device, p.text, nullptr);
+            for (auto filter : p.filters)
+                if (filter) vkDestroyPipeline(native.device, filter, nullptr);
         }
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
         release_text();

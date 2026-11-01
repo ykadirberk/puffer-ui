@@ -17,10 +17,11 @@ static constexpr byte_channel_table BYTE_CHANNELS{};
 static_assert(sizeof(vertex) == 20 && offsetof(vertex, c) == 16);
 static_assert(sizeof(color) == 4 && offsetof(color, r) == 0 && offsetof(color, g) == 1 &&
               offsetof(color, b) == 2 && offsetof(color, a) == 3);
-VkPipeline device::pipeline(VkFormat format, bool blend, bool glyphs)
+VkPipeline device::pipeline(VkFormat format, bool blend, bool glyphs, u32 filter)
 {
     for (auto &p : pipelines)
-        if (p.format == format) return glyphs ? p.text : (blend ? p.blend : p.copy);
+        if (p.format == format)
+            return filter ? p.filters[filter - 1] : (glyphs ? p.text : (blend ? p.blend : p.copy));
     if (!vertex_shader)
     {
         VkShaderModuleCreateInfo sc{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
@@ -121,6 +122,23 @@ VkPipeline device::pipeline(VkFormat format, bool blend, bool glyphs)
         vkDestroyPipeline(native.device, pair.blend, nullptr);
         return VK_NULL_HANDLE;
     }
+    const VkSpecializationMapEntry filter_entry{0, 0, sizeof(u32)};
+    for (u32 mode = 1; format == VK_FORMAT_R8G8B8A8_UNORM && mode <= 3; ++mode)
+    {
+        const VkSpecializationInfo specialization{1, &filter_entry, sizeof(mode), &mode};
+        stages[1].pSpecializationInfo = &specialization;
+        if (!check(vkCreateGraphicsPipelines(native.device, VK_NULL_HANDLE, 1, &pc, nullptr,
+                                             &pair.filters[mode - 1]),
+                   "vkCreateGraphicsPipelines(blur)"))
+        {
+            for (auto created : pair.filters)
+                if (created) vkDestroyPipeline(native.device, created, nullptr);
+            vkDestroyPipeline(native.device, pair.blend, nullptr);
+            vkDestroyPipeline(native.device, pair.copy, nullptr);
+            return VK_NULL_HANDLE;
+        }
+    }
+    stages[1].pSpecializationInfo = nullptr;
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
     if (text)
     {
@@ -149,12 +167,15 @@ VkPipeline device::pipeline(VkFormat format, bool blend, bool glyphs)
         {
             vkDestroyPipeline(native.device, pair.blend, nullptr);
             vkDestroyPipeline(native.device, pair.copy, nullptr);
+            for (auto created : pair.filters)
+                if (created) vkDestroyPipeline(native.device, created, nullptr);
             return VK_NULL_HANDLE;
         }
     }
 #endif
     pipelines.push_back(pair);
-    return glyphs ? pair.text : (blend ? pair.blend : pair.copy);
+    return filter ? pair.filters[filter - 1]
+                  : (glyphs ? pair.text : (blend ? pair.blend : pair.copy));
 }
 void device::set_target(texture_handle handle)
 {
@@ -193,7 +214,7 @@ void device::clear(color c)
     ++target->revision;
 }
 void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32 ic, bool blend,
-                   i32 index_base)
+                   i32 index_base, const blur_filter *filter, u32 kernel)
 {
     paint_guard drawing(*this);
     if (current_surface && current_surface->suspended && target == current_surface->scene) return;
@@ -251,13 +272,13 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
                                            v[idx[start + 1] - index_base],
                                            v[idx[start + 2] - index_base]};
                 const i32 local[] = {0, 1, 2};
-                paint(sample, triangle, 3, local, 3, blend);
+                paint(sample, triangle, 3, local, 3, blend, 0, filter, kernel);
                 start += 3;
             }
             else
             {
                 paint(sample, v + low - index_base, high - low + 1, idx + start, end - start, blend,
-                      low);
+                      low, filter, kernel);
                 start = end;
             }
         }
@@ -357,7 +378,7 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
         end_rendering();
     transition(sample, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     if (!start_rendering(target)) return;
-    const VkPipeline pipe = pipeline(target->format, blend);
+    const VkPipeline pipe = pipeline(target->format, blend, false, kernel);
     if (!pipe) return;
     VkRect2D scissor{{static_cast<i32>(left), static_cast<i32>(top)},
                      {static_cast<u32>(right - left), static_cast<u32>(bottom - top)}};
@@ -368,6 +389,9 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
     bind_graphics(pipe, pipeline_layout,
                   {static_cast<u32>(target->width), static_cast<u32>(target->height)}, scissor,
                   descriptor, 0);
+    if (filter)
+        vkCmdPushConstants(frame->command, pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, 16,
+                           sizeof(*filter), filter);
     vkCmdDrawIndexed(frame->command, static_cast<u32>(ic), 1, 0, 0, 0);
     target->last_use = sample->last_use = next_serial;
     ++target->revision;

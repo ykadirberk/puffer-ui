@@ -81,7 +81,8 @@ void device::cache_begin(surface *s)
     }
 }
 bool device::cache_add(cache_event::kind kind, texture *sample, const vertex *v, i32 vc,
-                       const i32 *idx, i32 ic, color c, const rect *sr, const rect *dr)
+                       const i32 *idx, i32 ic, color c, const rect *sr, const rect *dr,
+                       const blur_pass *filter)
 {
     if (!cache_active || !current_surface || !valid(target)) return false;
     struct prepare_timer
@@ -111,7 +112,8 @@ bool device::cache_add(cache_event::kind kind, texture *sample, const vertex *v,
     const u64 written_capacity = cache_written.size() == cache_written.capacity()
                                      ? (cache_written.capacity() ? cache_written.capacity() * 2 : 8)
                                      : 0;
-    const u64 needed = payload * 2 + 128 + event_capacity * sizeof(cache_event) +
+    const u64 header = kind == cache_event::FILTER ? 192 : 128;
+    const u64 needed = payload * 2 + header + event_capacity * sizeof(cache_event) +
                        record_capacity * sizeof(cache_record) +
                        written_capacity * sizeof(texture *);
     if (!cache_reserve(needed))
@@ -124,7 +126,7 @@ bool device::cache_add(cache_event::kind kind, texture *sample, const vertex *v,
     if (event_capacity) events.reserve(static_cast<usize>(event_capacity));
     if (record_capacity) records.reserve(static_cast<usize>(record_capacity));
     if (written_capacity) cache_written.reserve(static_cast<usize>(written_capacity));
-    record.canonical.reserve(static_cast<usize>(payload + 128));
+    record.canonical.reserve(static_cast<usize>(payload + header));
     auto integer = [&](u64 value, u32 bytes)
     {
         for (u32 i = 0; i < bytes; ++i)
@@ -152,10 +154,13 @@ bool device::cache_add(cache_event::kind kind, texture *sample, const vertex *v,
     for (auto *t : cache_written)
         if (t == target) target_written = true;
     const bool replaces_target =
-        kind == cache_event::CLEAR ||
+        kind == cache_event::CLEAR || kind == cache_event::FILTER ||
         (kind == cache_event::COPY && !has_clip && dr && dr->x <= 0 && dr->y <= 0 &&
          dr->right() >= target->width && dr->bottom() >= target->height);
-    // LOAD/partial writes depend on the previous contents. An identical alpha
+    // FILTER is private native scratch: every consumed texel is overwritten,
+    // and all later samples clamp to that valid region. Unused padding is not
+    // a dependency. Ordinary LOAD/partial writes depend on previous contents.
+    // An identical alpha
     // draw without a clear must accumulate again rather than becoming a hit.
     integer(target_written || replaces_target ? 0 : target->revision, 8);
     integer(has_clip, 1);
@@ -180,12 +185,22 @@ bool device::cache_add(cache_event::kind kind, texture *sample, const vertex *v,
         integer(c.b, 1);
         integer(c.a, 1);
     }
-    else if (kind == cache_event::COPY)
+    else if (kind == cache_event::COPY || kind == cache_event::FILTER)
     {
         event.source_rect = *sr;
         event.destination_rect = *dr;
         rectangle(*sr);
         rectangle(*dr);
+        if (filter)
+        {
+            event.filter = *filter;
+            integer(static_cast<u32>(filter->kernel), 4);
+            for (f32 value : filter->parameters.step) number(value);
+            for (f32 value : filter->parameters.low) number(value);
+            for (f32 value : filter->parameters.high) number(value);
+            for (f32 value : filter->parameters.weights) number(value);
+            for (f32 value : filter->parameters.offsets) number(value);
+        }
     }
     else
     {
@@ -377,6 +392,8 @@ void device::cache_flush(bool final)
             else if (e.type == cache_event::DRAW)
                 paint(e.sample, e.vertices.data(), static_cast<i32>(e.vertices.size()),
                       e.indices.data(), static_cast<i32>(e.indices.size()), true);
+            else if (e.type == cache_event::FILTER)
+                paint_filter(e.sample, e.source_rect, e.target, e.destination_rect, e.filter);
             else
                 blit(e.sample, &e.source_rect, e.target, &e.destination_rect);
         }
