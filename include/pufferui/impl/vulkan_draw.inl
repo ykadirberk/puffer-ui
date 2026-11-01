@@ -238,6 +238,88 @@ void device::paint(texture *sample, const vertex *v, i32 vc, const i32 *idx, i32
         }
     paint_validated(sample, {v, vc, idx, ic, index_base}, {blend, filter, kernel});
 }
+struct geometry_span
+{
+    i32 end, low, high;
+};
+#if defined(PUFFERUI_VULKAN_INDEXED_TESTS)
+struct geometry_span_work
+{
+    u64 blocks = 0, triangles = 0;
+};
+inline thread_local geometry_span_work span_work;
+#endif
+inline geometry_span plan_geometry_span(const i32 *indices, i32 start, i32 count,
+                                        VkDeviceSize stride, VkDeviceSize capacity)
+{
+    geometry_span span{start, 0x7fffffff, 0};
+    if (count - start >= 24)
+    {
+        // A sparse first triangle can exceed the arena on its own. Keep that
+        // fallback at one triangle's reads instead of probing an entire block.
+#if defined(PUFFERUI_VULKAN_INDEXED_TESTS)
+        ++span_work.triangles;
+#endif
+        const i32 low = std::min(indices[start], std::min(indices[start + 1], indices[start + 2]));
+        const i32 high =
+            std::max(0, std::max(indices[start], std::max(indices[start + 1], indices[start + 2])));
+        if ((static_cast<VkDeviceSize>(high) - low + 1) * stride + 3 * sizeof(i32) > capacity)
+            return span;
+    }
+    while (span.end < count)
+    {
+        // A fitting block proves that every prefix fits: its vertex interval
+        // and index bytes can only grow. Refine a boundary with the original
+        // triangle rule so uploads, sparse fallback and draw order stay exact.
+        if (count - span.end >= 24)
+        {
+#if defined(PUFFERUI_VULKAN_INDEXED_TESTS)
+            ++span_work.blocks;
+#endif
+            i32 low = 0x7fffffff, high = 0;
+            for (i32 i = 0; i < 24; ++i)
+            {
+                low = std::min(low, indices[span.end + i]);
+                high = std::max(high, indices[span.end + i]);
+            }
+            low = std::min(span.low, low);
+            high = std::max(span.high, high);
+            if ((static_cast<VkDeviceSize>(high) - low + 1) * stride +
+                    static_cast<VkDeviceSize>(span.end - start + 24) * 4 <=
+                capacity)
+            {
+                span.low = low;
+                span.high = high;
+                span.end += 24;
+                continue;
+            }
+        }
+#if defined(PUFFERUI_VULKAN_INDEXED_TESTS)
+        ++span_work.triangles;
+#endif
+        const i32 low =
+            std::min(span.low, std::min(indices[span.end],
+                                        std::min(indices[span.end + 1], indices[span.end + 2])));
+        const i32 high =
+            std::max(span.high, std::max(indices[span.end],
+                                         std::max(indices[span.end + 1], indices[span.end + 2])));
+        if ((static_cast<VkDeviceSize>(high) - low + 1) * stride +
+                static_cast<VkDeviceSize>(span.end - start + 3) * 4 >
+            capacity)
+            break;
+        span.low = low;
+        span.high = high;
+        span.end += 3;
+    }
+    return span;
+}
+inline i32 geometry_vertex_offset(i32 base, i32 count)
+{
+    // Borrowed devices need no fullDrawIndexUint32 feature. Keep raw indices
+    // within Vulkan's guaranteed 24-bit range, and retain CPU rebasing for
+    // negative/internal bases (including INT_MIN) or larger original ranges.
+    return base > 0 && count > 0 && static_cast<i64>(base) + count - 1 <= 0x00ffffff ? -base : 0;
+}
 void device::paint_validated(texture *sample, const indexed_geometry &geometry,
                              const paint_style &style)
 {
@@ -259,21 +341,7 @@ void device::paint_validated(texture *sample, const indexed_geometry &geometry,
         // triangle uses three stack copies rather than a huge unused interval.
         for (i32 start = 0; start < ic;)
         {
-            i32 end = start, low = 0x7fffffff, high = 0;
-            while (end < ic)
-            {
-                const i32 lo =
-                    std::min(low, std::min(idx[end], std::min(idx[end + 1], idx[end + 2])));
-                const i32 hi =
-                    std::max(high, std::max(idx[end], std::max(idx[end + 1], idx[end + 2])));
-                if ((static_cast<VkDeviceSize>(hi) - lo + 1) * stride +
-                        static_cast<VkDeviceSize>(end - start + 3) * 4 >
-                    chunk)
-                    break;
-                low = lo;
-                high = hi;
-                end += 3;
-            }
+            const auto [end, low, high] = plan_geometry_span(idx, start, ic, stride, chunk);
             if (end == start)
             {
                 const vertex triangle[] = {v[idx[start] - index_base],
@@ -322,6 +390,7 @@ void device::paint_validated(texture *sample, const indexed_geometry &geometry,
     VkDeviceSize offset = 0;
     page *p = upload(vertex_bytes + index_bytes, offset, true);
     if (!p) return;
+    const i32 vertex_offset = geometry_vertex_offset(index_base, vc);
     // Integer byte attributes are expanded to the original exact float bits in
     // ui.vert. Positions/UVs and all four color bytes can be copied verbatim.
     if (options.compact_vertices)
@@ -339,7 +408,7 @@ void device::paint_validated(texture *sample, const indexed_geometry &geometry,
                            BYTE_CHANNELS.values[v[i].c.b],
                            BYTE_CHANNELS.values[v[i].c.a]};
     }
-    if (!index_base)
+    if (!index_base || vertex_offset)
         std::memcpy(p->mapped + offset + vertex_bytes, idx, static_cast<usize>(index_bytes));
     else
     {
@@ -418,7 +487,7 @@ void device::paint_validated(texture *sample, const indexed_geometry &geometry,
         vkCmdPushConstants(frame->command, pipeline_layout, VK_SHADER_STAGE_FRAGMENT_BIT, 8,
                            sizeof(constants), &constants);
     }
-    vkCmdDrawIndexed(frame->command, static_cast<u32>(ic), 1, 0, 0, 0);
+    vkCmdDrawIndexed(frame->command, static_cast<u32>(ic), 1, 0, vertex_offset, 0);
     target->last_use = sample->last_use = next_serial;
     ++target->revision;
     ++stats.draws;

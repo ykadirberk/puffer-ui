@@ -333,6 +333,15 @@ prefix; proven subspans skip the duplicate bounds scan. A full prepared arena
 can continue in another existing arena of the same capacity. Single-slot and
 differently sized configurations keep the bounded wait/reuse fallback.
 
+Validated dense spans accept fitting blocks of triangles, refining a boundary
+with the original scalar rule. This preserves the exact greedy split and sparse
+fallback without allocating planner storage. Dense subspans can upload original
+indices and apply their base through `vkCmdDrawIndexed`'s signed vertex offset.
+This path stays within the guaranteed 24-bit source-index range, so borrowed
+devices need no additional feature enablement. Negative/internal bases, signed
+boundary cases and larger original ranges retain CPU rebasing. Vertex selection,
+primitive order, upload byte counts and the complete input check stay unchanged.
+
 Acquire semaphores remain owned by logical frames and wait for their final
 submission. Command pools/upload arenas track their own last submission;
 the next logical frame can choose an older compatible pool instead of waiting
@@ -375,6 +384,13 @@ GPU timestamp samples are cumulative, delayed completed submissions, not the
 current CPU frame; do not add overlapped
 CPU/GPU intervals. `vulkan_present_mode(surface)` reports the selected WSI mode
 or `VK_PRESENT_MODE_MAX_ENUM_KHR` for offscreen/non-Vulkan surfaces.
+
+`pui_vulkan_indexed_tests` pins exact scalar/block split tuples, bounded serial
+capacity checks and actual uploaded index bytes/native vertex offsets. It
+compares full pixels for ordinary, negative, INT_MIN, 24-bit-boundary and large
+bases, both vertex representations and one/two frame slots in direct/staged
+mode. See the [indexed upload report](perf_vulkan_indexed_optimizations.md) for
+alternating production timings and immutable all-frame Spiral comparisons.
 
 ## Support and verification
 

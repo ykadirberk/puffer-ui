@@ -103,6 +103,12 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   regressions. `vulkan_prepare_blur` can reserve known scratch requirements
   before painting; the showcase uses it without changing shape/text pixels.
   See `docs/perf_vulkan_blur_optimizations.md` for all-frame measurements/goldens.
+  `pui_vulkan_indexed_tests` compares block planning with the frozen scalar
+  greedy split, bounds serial checks, inspects actual uploaded indices/native
+  vertex offsets and checks negative/large-base fallback pixels in direct/staged,
+  20/32-byte and one/two-slot configurations. The planner allocates no storage.
+  See `docs/perf_vulkan_indexed_optimizations.md` for unchanged all-frame Spiral
+  goldens and alternating measurements; existing test/oracle files remain fixed.
   The shared mesh/SDL blur remains independent. Fresh
   Vulkan configurations enable pinned HarfBuzz and upstream Slug text; explicit
   OFF remains supported. Text uses an independent instanced graphics pipeline,
