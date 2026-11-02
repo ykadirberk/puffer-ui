@@ -265,6 +265,7 @@ struct device : render_device, dispatch
     std::vector<surface *> surfaces;
     frame_slot utility;
     frame_slot *frame = nullptr;
+    bool preparing_geometry = false; // explicit nonblocking surface setup only
     surface *current_surface = nullptr;
     texture *target = nullptr, *white = nullptr, *rendering_target = nullptr;
     texture *discard_target = nullptr; // first rendering scope of an overwrite-only filter

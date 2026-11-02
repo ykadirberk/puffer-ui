@@ -404,6 +404,50 @@ one/two-slot configurations. See the
 [integer preparation report](perf_vulkan_integer_optimizations.md) for unchanged
 all-frame Spiral goldens and alternating production measurements.
 
+## Scene preparation before the first frame
+
+After creating a context/surface and completing any initial uploads, prepare a
+known scene outside the frame loop:
+
+```cpp
+const pui::geometry_capacity capacity{4096, 8192};
+(void)pui::ui(ctx).prepare_geometry(capacity);
+if (pui::vulkan_wait_idle(device))
+    (void)pui::vulkan_prepare_surface_geometry(surface, capacity);
+```
+
+The explicit wait belongs to the application's loading phase. The surface
+preparation operation itself never waits, submits, resets a command buffer,
+advances UI state or touches another surface's resources. Call it on the
+rendering thread between frames. It uses the surface's current framebuffer
+extent, the selected vertex/upload representation, the existing per-slot
+reservation policy and the configured global upload budget.
+
+All slots must be completed and unreferenced; their command-pool and logical
+continuation completion values are checked before replacement. A recording
+anywhere on the device, an in-flight slot, dirty/zero-extent surface, unsupported
+surface or invalid count returns false. Complete work explicitly before retrying;
+the API does not poll/wait on the caller's behalf. Budget pressure is a soft
+decline and does not trim/wait for other surfaces. Allocation/map errors retain
+the normal sticky native error. False may leave a bounded or partial reservation;
+true certifies the full requested capacity in every slot. Repeated fitting hints
+allocate nothing. The usual per-frame preparation/continuation path remains the
+fallback after resize, later growth or a declined hint.
+
+Preparation moves existing work into setup; it does not promise lower total
+startup time or memory demand. Include setup, first frames and their sum in
+reports. `buffer_allocations` includes geometry preparation while
+`draw_buffer_allocations` counts only allocations inside a native paint operation;
+zero of the latter does not mean a whole frame made no allocations.
+
+`pui_vulkan_preflight_tests` covers ownership, budgets, failure, resize, repeated
+hints and exact first frames. `pui_vulkan_startup_spiral_tests` compares every
+5000-item frame against an independent late-preparation context, including cache
+off/on and both upload modes. Its separate `--bench` records setup and all 180
+frame times without readbacks; `--legacy` exercises the retained late-hint path.
+Immutable `--reference` never updates an existing capture. See
+[the startup optimization report](perf_vulkan_startup_optimizations.md).
+
 ## Support and verification
 
 The initial API targets Vulkan 1.3 on Windows/Linux with dynamic rendering,

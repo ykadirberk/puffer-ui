@@ -408,7 +408,10 @@ void device::set_vsync(bool enabled)
 {
     if (vsync == enabled) return;
     vsync = enabled;
-    for (auto *s : surfaces) s->dirty = true;
+    // Offscreen scenes have no present mode to rebuild. In particular, the
+    // selftest's startup pacing policy must not invalidate an idle preflight.
+    for (auto *s : surfaces)
+        if (s->native) s->dirty = true;
 }
 } // namespace vk_detail
 render_surface *create_vulkan_surface(render_device *base, const vulkan_surface_opts &opts)

@@ -115,6 +115,15 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   other targets retain the original scalar algorithms. It introduces no heap
   scratch or global floating-point/architecture flags. See
   `docs/perf_vulkan_integer_optimizations.md` for all-frame evidence.
+  `pui_vulkan_preflight_tests` pins nonblocking idle-surface geometry preparation,
+  slot/continuation ownership, bounded budgets, resize and allocation/map failure.
+  `pui_vulkan_startup_spiral_tests` compares every 5000-item frame with the late
+  preparation path; `--bench` reports setup and all frame times, `--legacy` keeps
+  the original cold path, and `--reference` uses immutable captures. The showcase
+  callable prepares known initial Spiral resources before the frame clock.
+  `tests/test_fan_performance.inl` extends the existing private performance suite
+  with frozen stream/bounds oracles, rounding modes and bounded allocation-free
+  fan work. See `docs/perf_vulkan_startup_optimizations.md`.
   The shared mesh/SDL blur remains independent. Fresh
   Vulkan configurations enable pinned HarfBuzz and upstream Slug text; explicit
   OFF remains supported. Text uses an independent instanced graphics pipeline,

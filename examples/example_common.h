@@ -35,6 +35,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <type_traits>
 
 using namespace pui;
 
@@ -244,7 +245,13 @@ inline bool example_environment_flag(const char *value)
            SDL_strcasecmp(value, "no") != 0;
 }
 
-inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int argc, char **argv)
+struct example_setup_opts
+{
+    void (*prepare)(example_app &, void *user) = nullptr;
+    void *user = nullptr;
+};
+inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int argc, char **argv,
+                         const example_setup_opts &setup = {})
 {
     app.name = title;
     app.width = w;
@@ -339,10 +346,6 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
     app.win = boot.win;
     app.font = boot.font;     // the bootstrap loaded the bundled (or fallback) font
     example_sync_client(app); // adopt the window's real client size
-    // Interactive runs keep the device default (vsync on); an offscreen
-    // selftest has no display to wait for, so it runs uncapped.
-    if (app.selftest) app.device->set_vsync(false);
-
     // Bold/oblique keep examples (and screenshots) deterministic; they reuse
     // the base font when the bundled variants are missing.
     app.font_bold = load_font(app.ctx, PUFFERUI_ASSET_DIR "/fonts/DejaVuSans-Bold.ttf");
@@ -364,6 +367,11 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
     set_theme(app.ctx, t);
     focus_window(app.ctx, *app.win);
     if (!app.selftest) SDL_StartTextInput(app.sdl_window);
+    // Prepare while the newly created surface is still idle. Applying the
+    // selftest's pacing policy first would mark a native swapchain dirty and
+    // make a safe geometry preflight decline it. No UI/model frame is advanced.
+    if (setup.prepare) setup.prepare(app, setup.user);
+    if (app.selftest) app.device->set_vsync(false);
     return true;
 }
 
@@ -565,11 +573,21 @@ inline void example_tick(example_app &app, example_clock &clk)
 }
 
 // Single-window run loop. `frame` is called as `frame(ui&, example_app&)`.
+// Callable objects may provide prepare(example_app&) for resource setup once
+// after bootstrap and before the frame clock. It must not advance the model.
 template <typename FrameFn>
 int example_run(const char *title, i32 w, i32 h, int argc, char **argv, FrameFn &&frame)
 {
     example_app app;
-    if (!example_init(app, title, w, h, argc, argv))
+    example_setup_opts setup;
+    if constexpr (requires { frame.prepare(app); })
+    {
+        using frame_type = std::remove_reference_t<FrameFn>;
+        setup.prepare = [](example_app &ready, void *user)
+        { static_cast<frame_type *>(user)->prepare(ready); };
+        setup.user = &frame;
+    }
+    if (!example_init(app, title, w, h, argc, argv, setup))
     {
         const bool help = app.help;
         app.selftest = false; // initialization/help did not run a selftest

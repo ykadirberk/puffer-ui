@@ -233,6 +233,11 @@ void device::free_page(page &p)
 }
 bool device::reserve_mapped(VkDeviceSize bytes)
 {
+    // Explicit surface setup never waits for, trims or submits another surface.
+    // A bounded hint may be declined; ordinary frame preparation still falls back.
+    if (preparing_geometry && (bytes > options.upload_budget_bytes ||
+                               stats.upload_allocated_bytes > options.upload_budget_bytes - bytes))
+        return false;
     if (bytes > options.upload_budget_bytes)
         return fail("mapped allocation exceeds Vulkan upload budget");
     if (stats.upload_allocated_bytes <= options.upload_budget_bytes - bytes) return true;

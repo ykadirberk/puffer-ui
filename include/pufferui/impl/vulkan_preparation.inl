@@ -123,4 +123,46 @@ void device::bind_graphics(VkPipeline pipeline, VkPipelineLayout layout, VkExten
     graphics.extent = extent;
 }
 } // namespace vk_detail
+bool vulkan_prepare_surface_geometry(render_surface *base, const geometry_capacity &capacity)
+{
+    auto *surface = dynamic_cast<vk_detail::surface *>(base);
+    constexpr usize limit = 0x7fffffff;
+    if (!surface || capacity.vertices > limit || capacity.indices > limit) return false;
+    auto &d = *surface->dev;
+    if (d.result != VK_SUCCESS || d.preparing_geometry || d.paint_depth || d.cache_active ||
+        (d.frame && d.frame->recording) || surface->dirty || !surface->scene ||
+        !surface->extent.width || !surface->extent.height)
+        return false;
+    // Check every slot before replacing anything. group_serial covers uses by
+    // another logical frame's continuation, not just this command pool's serial.
+    for (const auto &slot : surface->slots)
+        if (slot.recording || slot.serial > d.known_completed ||
+            slot.group_serial > d.known_completed)
+            return false;
+    const VkDeviceSize requested =
+        static_cast<VkDeviceSize>(capacity.vertices) * d.vertex_stride() +
+        static_cast<VkDeviceSize>(capacity.indices) * sizeof(i32);
+    if (!requested) return true;
+    const VkDeviceSize bytes = d.geometry_reservation(
+        requested, static_cast<VkDeviceSize>(surface->extent.width) * surface->extent.height);
+    if (!bytes) return false;
+    struct preparation_scope
+    {
+        vk_detail::device &d;
+        explicit preparation_scope(vk_detail::device &value) : d(value)
+        {
+            d.preparing_geometry = true;
+        }
+        ~preparation_scope() { d.preparing_geometry = false; }
+    } scope(d);
+    for (auto &slot : surface->slots)
+    {
+        // Completed recordings can no longer read these pages. No UI frame,
+        // model update, command buffer reset or GPU submission is required.
+        for (auto &page : slot.pages)
+            if (page.geometry) page.used = 0;
+        if (!d.prepare_slot_geometry(slot, bytes)) return false;
+    }
+    return requested <= bytes;
+}
 #endif

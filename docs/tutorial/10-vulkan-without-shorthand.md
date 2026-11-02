@@ -158,6 +158,28 @@ to display scale divided by pixel density. It then loads the bundled font,
 sets the theme and clipboard, and starts SDL text input. These are explicit
 application responsibilities when using the low-level entry points.
 
+## Prepare a known scene during loading
+
+The optional surface preparation API needs no example bootstrap. After creating
+the context and loading its resources, the application can commit CPU geometry
+storage and prepare every idle native slot before starting the frame clock:
+
+```cpp
+const pui::geometry_capacity capacity{4096, 8192};
+(void)pui::ui(ctx).prepare_geometry(capacity);
+if (pui::vulkan_wait_idle(device))
+    (void)pui::vulkan_prepare_surface_geometry(surface, capacity);
+```
+
+The surface operation never submits or waits. It declines active/in-flight,
+dirty or zero-extent surfaces and respects the existing upload budget. Oversized
+hints can receive a bounded reservation and still return false. The ordinary
+frame path handles later growth and resize; preparation does not draw a hidden
+frame or advance animation. Keep its CPU time in the application's loading
+measurement. The standalone `pui_ex_vulkan_preparation` demonstrates this same
+resource boundary with the common example bootstrap; this chapter's explicit
+window/device/context ownership stays the same.
+
 ## Route input and handle DPI/resize
 
 The loop polls SDL events and passes each one to the library's public event

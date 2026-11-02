@@ -4246,8 +4246,31 @@ static void showcase_frame(ui &u, example_app &app)
     }
 }
 
+// Resource setup for a known initial scene. The paint callback retains its
+// existing late-hint path for page changes, resize and direct test callers.
+static void showcase_prepare_scene(example_app &app)
+{
+    const i32 page = g_start_page >= 0 ? g_start_page : g_app.page;
+    if (page != PAGE_LAYOUT || g_app.lab_mode != 4) return;
+    const geometry_capacity capacity = lab_geometry_capacity(g_app.tiles.size());
+    (void)ui(app.ctx).prepare_geometry(capacity);
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    if (is_vulkan_device(app.device))
+        if (vulkan_wait_idle(app.device))
+            (void)vulkan_prepare_surface_geometry(app.surface, capacity);
+#endif
+}
+
+struct showcase_program
+{
+    void prepare(example_app &app) const { showcase_prepare_scene(app); }
+    void operator()(ui &u, example_app &app) const { showcase_frame(u, app); }
+};
+
 int main(int argc, char **argv)
 {
+    i32 start_tiles = -1, start_mode = -1;
+    f32 start_size = -1;
     for (int i = 1; i < argc; ++i)
     {
 #if defined(PUFFERUI_ENABLE_VULKAN)
@@ -4270,6 +4293,12 @@ int main(int argc, char **argv)
             g_start_page = std::atoi(argv[i + 1]);
         if (i + 1 < argc && std::strcmp(argv[i], "--fuzz") == 0)
             g_fuzz = static_cast<u32>(std::atoi(argv[i + 1]));
+        if (i + 1 < argc && std::strcmp(argv[i], "--tiles") == 0)
+            start_tiles = std::clamp(std::atoi(argv[i + 1]), 0, 100000);
+        if (i + 1 < argc && std::strcmp(argv[i], "--lab-mode") == 0)
+            start_mode = std::clamp(std::atoi(argv[i + 1]), 0, 4);
+        if (i + 1 < argc && std::strcmp(argv[i], "--lab-size") == 0)
+            start_size = static_cast<f32>(std::atoi(argv[i + 1]));
         if (std::strcmp(argv[i], "--no-hud") == 0) g_no_hud = true;
         if (std::strcmp(argv[i], "--perf") == 0) g_perf = true;
         if (std::strcmp(argv[i], "--a11y") == 0) g_a11y = true;
@@ -4277,7 +4306,14 @@ int main(int argc, char **argv)
     }
     if (g_fuzz) g_app.rng = g_fuzz * 2654435761u + 1u;
     seed(g_app);
-    const int rc = example_run("showcase", 1360, 860, argc, argv, showcase_frame);
+    if (start_tiles >= 0)
+    {
+        while (g_app.tiles.size() < static_cast<usize>(start_tiles)) add_tile(g_app);
+        if (g_app.tiles.size() > static_cast<usize>(start_tiles)) g_app.tiles.resize(start_tiles);
+    }
+    if (start_mode >= 0) g_app.lab_mode = start_mode;
+    if (start_size > 0) g_app.lab_size = std::clamp(start_size, 64.0f, 180.0f);
+    const int rc = example_run("showcase", 1360, 860, argc, argv, showcase_program{});
     if (g_perf && g_perf_totals.frames > 0)
     {
         const perf_totals &p = g_perf_totals;

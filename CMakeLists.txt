@@ -185,6 +185,7 @@ if(PUFFERUI_WITH_VULKAN)
     DEFS PUFFERUI_VULKAN_INDEXED_TESTS RUNS "--staged")
   pui_add_vulkan_test(pui_vulkan_integer_tests SOURCES tests/test_vulkan_integer.cpp
     DEFS PUFFERUI_VULKAN_INTEGER_TESTS RUNS "--staged")
+  pui_add_vulkan_test(pui_vulkan_preflight_tests SOURCES tests/test_vulkan_preflight.cpp RUNS "--staged")
   if(PUFFERUI_WITH_HARFBUZZ)
     pui_add_vulkan_test(pui_harfbuzz_tests SOURCES tests/test_harfbuzz.cpp)
     pui_add_vulkan_test(pui_vulkan_native_text_tests SOURCES tests/test_vulkan_native_text.cpp RUNS "--staged")
@@ -204,6 +205,9 @@ if(PUFFERUI_WITH_VULKAN)
     pui_add_vulkan_test(pui_vulkan_native_spiral_tests FULL_ONLY
         SOURCES tests/test_vulkan_native_spiral.cpp DEFS PUFFERUI_NATIVE_TELEMETRY
         RUNS "--staged" "--bitmap" "--bitmap --staged")
+    pui_add_vulkan_test(pui_vulkan_startup_spiral_tests FULL_ONLY
+        SOURCES tests/test_vulkan_startup_spiral.cpp DEFS PUFFERUI_NATIVE_TELEMETRY
+        RUNS "--staged" "--cache" "--cache --staged")
     pui_add_exe(pui_vulkan_native_opt3_bench VULKAN
         SOURCES tests/bench_vulkan_native_optimizations.cpp DEFS PUFFERUI_NATIVE_TELEMETRY)
     pui_add_vulkan_test(pui_vulkan_example_font_tests SOURCES tests/test_vulkan_example_font.cpp)
@@ -303,6 +307,7 @@ pui_add_selftest_exe(pui_showcase SDL3 SOURCES examples/pui_showcase.cpp)
 if(PUFFERUI_WITH_VULKAN)
 pui_add_selftest_exe(pui_showcase_vulkan VULKAN SOURCES examples/pui_showcase.cpp)
 pui_add_selftest_exe(pui_ex_vulkan VULKAN SOURCES examples/atomic/vulkan.cpp)
+pui_add_selftest_exe(pui_ex_vulkan_preparation VULKAN SOURCES examples/atomic/vulkan_preparation.cpp)
 pui_add_selftest_exe(pui_tut_vulkan_manual VULKAN SOURCES examples/tutorial/vulkan_manual.cpp)
 endif()
 

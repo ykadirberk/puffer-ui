@@ -63,6 +63,11 @@ u64 release_vulkan_image(render_device *device, texture_handle image,
 VkSemaphore vulkan_completion_semaphore(render_device *device);
 bool vulkan_wait(render_device *device, u64 value);
 bool vulkan_wait_idle(render_device *device);
+// Prepare bounded geometry pages for every slot of an idle surface, without
+// recording/submitting a frame or waiting. False also reports an oversized
+// hint: its bounded reservation may still be prepared. In-flight, referenced,
+// dirty, zero-extent and non-Vulkan surfaces are left unchanged.
+bool vulkan_prepare_surface_geometry(render_surface *surface, const geometry_capacity &capacity);
 // Reserve a window's backdrop scratch before painting; the optional logical
 // area bounds its largest Gaussian mask. Unsupported callers return false.
 struct vulkan_blur_capacity

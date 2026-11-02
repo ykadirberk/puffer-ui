@@ -5,6 +5,7 @@
 #if defined(PUFFERUI_INTERNAL_TESTS)
 #include "../tests/test_performance.inl"
 #include "../tests/test_geometry_performance.inl"
+#include "../tests/test_fan_performance.inl"
 #include "../tests/test_core_performance.inl"
 #include "../tests/test_state_pool.inl"
 #endif

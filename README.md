@@ -1550,6 +1550,42 @@ runs start with VSync enabled; selftests start uncapped and the HUD reflects it.
 can use an existing DriverStore manifest when Windows registration is stale,
 without a manually entered path or system configuration changes.
 
+### 40. Preparing a Vulkan scene
+
+![Vulkan scene preparation](docs/img/readme/vulkan-preparation.png)
+
+Run: `pui_ex_vulkan_preparation` (configure with `-DPUFFERUI_WITH_VULKAN=ON`).
+
+Known scene resources can be prepared after bootstrap and before the first UI
+frame. The example's callable supplies `prepare(example_app&)`; `example_run`
+calls it once before starting the frame clock. Preparation does not advance
+animation, submit a UI frame or change drawing order.
+
+```cpp
+        const geometry_capacity capacity{4096, 8192};
+        ready = ui(app.ctx).prepare_geometry(capacity);
+        if (vulkan_wait_idle(app.device))
+            ready = vulkan_prepare_surface_geometry(app.surface, capacity) && ready;
+        else
+            ready = false;
+```
+
+`ui::prepare_geometry` commits CPU storage. The native surface operation prepares
+bounded geometry pages for every completed slot without waiting or submitting.
+It declines active/in-flight surfaces; oversized hints may receive a bounded
+reservation while returning false. Later frame hints and ordinary growth remain
+available. Count this preparation in loading time when measuring startup.
+
+The showcase uses the same hook. Reproduce its known initial Spiral directly:
+
+```powershell
+& "out/build/x64-release/Release/pui_showcase_vulkan.exe" --page 1 --tiles 5000 --lab-mode 4 --lab-size 64
+```
+
+Full source: `examples/atomic/vulkan_preparation.cpp`. See the
+[explicit Vulkan tutorial](docs/tutorial/10-vulkan-without-shorthand.md) for the
+equivalent integration without the example bootstrap.
+
 ## Examples index
 
 | Target | Capability |
@@ -1603,6 +1639,7 @@ without a manually entered path or system configuration changes.
 | `pui_ex_renderer` | `examples/atomic/renderer.cpp` | a CPU `render_device` writing a PPM |
 | `pui_ex_vulkan` | `examples/atomic/vulkan.cpp` | optional native Vulkan renderer, SDL windows, application-owned VkImage |
 | `pui_showcase_vulkan` | `examples/pui_showcase.cpp` | the existing motion showcase on the optional native Vulkan backend |
+| `pui_ex_vulkan_preparation` | `examples/atomic/vulkan_preparation.cpp` | prepare known CPU and native surface geometry resources before the first frame |
 
 Every example supports:
 

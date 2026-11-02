@@ -3,6 +3,34 @@
 // defined; never include it directly. The slices concatenate to the original
 // implementation block in order (tools/amalgamate.ps1 rebuilds the single header).
 // ---- draw primitives ----
+namespace detail
+{
+#if defined(PUFFERUI_INTERNAL_TESTS)
+inline thread_local u64 fan_direction_work = 0, fan_bounds_work = 0;
+#endif
+inline rect vertex_bounds(const vertex *vertices, i32 count)
+{
+#if defined(PUFFERUI_INTERNAL_TESTS)
+    fan_bounds_work += static_cast<u64>(count);
+#endif
+    f32 minx = vertices[0].x, maxx = minx, miny = vertices[0].y, maxy = miny;
+    for (i32 i = 1; i < count; ++i)
+    {
+        minx = min2(minx, vertices[i].x);
+        maxx = max2(maxx, vertices[i].x);
+        miny = min2(miny, vertices[i].y);
+        maxy = max2(maxy, vertices[i].y);
+    }
+    return {minx, miny, maxx - minx, maxy - miny};
+}
+inline vec2 rounded_fan_direction(f32 cs, f32 sn, i32 dx, i32 dy)
+{
+#if defined(PUFFERUI_INTERNAL_TESTS)
+    ++fan_direction_work;
+#endif
+    return {cs * dx - sn * dy, sn * dx + cs * dy};
+}
+} // namespace detail
 void renderer_detail::mesh_painter::draw_triangles(texture_handle tex, const vertex *vertices,
                                                    i32 vertex_count, const i32 *indices,
                                                    i32 index_count)
@@ -18,15 +46,7 @@ void renderer_detail::mesh_painter::draw_triangles(texture_handle tex, const ver
     if (detail::paint_bounds(ctx, bounds))
     {
         if (bounds.w <= 0.0f || bounds.h <= 0.0f) return;
-        f32 minx = vertices[0].x, maxx = minx, miny = vertices[0].y, maxy = miny;
-        for (i32 i = 1; i < vertex_count; ++i)
-        {
-            minx = min2(minx, vertices[i].x);
-            maxx = max2(maxx, vertices[i].x);
-            miny = min2(miny, vertices[i].y);
-            maxy = max2(maxy, vertices[i].y);
-        }
-        const rect aabb{minx, miny, maxx - minx, maxy - miny};
+        const rect aabb = detail::vertex_bounds(vertices, vertex_count);
         const rect isect = rect::intersect(aabb, bounds);
         if (isect.w <= 0.0f || isect.h <= 0.0f) return;
     }
@@ -138,6 +158,34 @@ struct rounded_fan_indices
 };
 inline constexpr rounded_fan_indices ROUNDED_FAN_INDICES{};
 
+// Only for the fan emitted below, never inferred from arbitrary mesh counts.
+// Each quarter's coordinates are monotone. Keep emitted endpoints in their
+// original order, including ties, rather than approximate the feather bounds.
+inline rect rounded_fan_bounds(const vertex *vertices)
+{
+    f32 minx = vertices[0].x, maxx = minx, miny = vertices[0].y, maxy = miny;
+    bool finite = std::isfinite(minx) && std::isfinite(miny);
+    for (i32 ring = 0; ring < 2; ++ring)
+        for (i32 corner = 0; corner < 4; ++corner)
+            for (i32 end = 0; end < 2; ++end)
+            {
+                const i32 i = 1 + ring * rounded_fan_indices::RING +
+                              corner * (rounded_fan_indices::SEG + 1) +
+                              end * rounded_fan_indices::SEG;
+                const f32 x = vertices[i].x, y = vertices[i].y;
+                finite = finite && std::isfinite(x) && std::isfinite(y);
+                minx = min2(minx, x);
+                maxx = max2(maxx, x);
+                miny = min2(miny, y);
+                maxy = max2(maxy, y);
+            }
+#if defined(PUFFERUI_INTERNAL_TESTS)
+    fan_bounds_work += 17;
+#endif
+    if (!finite) return vertex_bounds(vertices, 1 + 2 * rounded_fan_indices::RING);
+    return {minx, miny, maxx - minx, maxy - miny};
+}
+
 template <class UvFn>
 inline void build_rounded_fan(rect r, const corner_radii &radii, color c, UvFn &&uv,
                               std::vector<vertex> &verts, std::vector<i32> &idx)
@@ -148,6 +196,7 @@ inline void build_rounded_fan(rect r, const corner_radii &radii, color c, UvFn &
     struct arc_table
     {
         f32 cs[SEG + 1], sn[SEG + 1];
+        vec2 directions[4][SEG + 1];
         arc_table()
         {
             for (i32 s = 0; s <= SEG; ++s)
@@ -156,6 +205,11 @@ inline void build_rounded_fan(rect r, const corner_radii &radii, color c, UvFn &
                 cs[s] = cosf(ang);
                 sn[s] = sinf(ang);
             }
+            const i32 dx[4] = {1, 0, -1, 0}, dy[4] = {0, 1, 0, -1};
+            for (i32 corner = 0; corner < 4; ++corner)
+                for (i32 s = 0; s <= SEG; ++s)
+                    directions[corner][s] =
+                        rounded_fan_direction(cs[s], sn[s], dx[corner], dy[corner]);
         }
     };
     static const arc_table arc;
@@ -190,11 +244,14 @@ inline void build_rounded_fan(rect r, const corner_radii &radii, color c, UvFn &
             const f32 rad = ring == 0 ? max2(0.0f, corners[ci].rad - 0.5f) : corners[ci].rad + 0.5f;
             for (i32 s = 0; s <= SEG; ++s)
             {
-                const f32 cs = arc.cs[s], sn = arc.sn[s];
-                const f32 dx = cs * corners[ci].dx - sn * corners[ci].dy;
-                const f32 dy = sn * corners[ci].dx + cs * corners[ci].dy;
-                const f32 px = corners[ci].cx + dx * rad;
-                const f32 py = corners[ci].cy + dy * rad;
+                // Signed-zero arithmetic at the first angle follows the current
+                // FP environment, even if it changed since table construction.
+                const vec2 direction = s == 0
+                                           ? rounded_fan_direction(arc.cs[s], arc.sn[s],
+                                                                   corners[ci].dx, corners[ci].dy)
+                                           : arc.directions[ci][s];
+                const f32 px = corners[ci].cx + direction.x * rad;
+                const f32 py = corners[ci].cy + direction.y * rad;
                 f32 uu = 0.0f, vv = 0.0f;
                 uv(px, py, uu, vv);
                 verts.push_back({px, py, uu, vv, col});
@@ -216,6 +273,26 @@ inline void build_rounded_fan(rect r, const corner_radii &radii, color c, UvFn &
     }
 }
 } // namespace detail
+
+void renderer_detail::mesh_painter::draw_rounded_fan(texture_handle tex, const vertex *vertices,
+                                                     i32 vertex_count, const i32 *indices,
+                                                     i32 index_count)
+{
+    if (vertex_count != 1 + 2 * detail::rounded_fan_indices::RING ||
+        index_count != detail::rounded_fan_indices::COUNT)
+    {
+        draw_triangles(tex, vertices, vertex_count, indices, index_count);
+        return;
+    }
+    rect bounds;
+    if (detail::paint_bounds(ctx, bounds))
+    {
+        if (bounds.w <= 0.0f || bounds.h <= 0.0f) return;
+        const rect isect = rect::intersect(detail::rounded_fan_bounds(vertices), bounds);
+        if (isect.w <= 0.0f || isect.h <= 0.0f) return;
+    }
+    append_triangles(tex, vertices, vertex_count, indices, index_count);
+}
 
 void renderer_detail::mesh_painter::draw_rounded_rect(rect r, color c, f32 radius)
 {
@@ -240,8 +317,8 @@ void renderer_detail::mesh_painter::draw_rounded_rect(rect r, color c, const cor
     idx.clear();
     detail::build_rounded_fan(
         r, radii, c, [](f32, f32, f32 &u, f32 &v) { u = v = 0.0f; }, verts, idx);
-    draw_triangles(nullptr, verts.data(), static_cast<i32>(verts.size()), idx.data(),
-                   static_cast<i32>(idx.size()));
+    draw_rounded_fan(nullptr, verts.data(), static_cast<i32>(verts.size()), idx.data(),
+                     static_cast<i32>(idx.size()));
 }
 
 void renderer_detail::mesh_painter::draw_image(const skin_image &img, rect dst)
@@ -294,8 +371,8 @@ rect renderer_detail::mesh_painter::draw_fitted_image(rect r, const image_handle
             v = uv.y + (y - dst.y) / dst.h * uv.h;
         },
         verts, idx);
-    draw_triangles(img.tex, verts.data(), static_cast<i32>(verts.size()), idx.data(),
-                   static_cast<i32>(idx.size()));
+    draw_rounded_fan(img.tex, verts.data(), static_cast<i32>(verts.size()), idx.data(),
+                     static_cast<i32>(idx.size()));
     return dst;
 }
 
