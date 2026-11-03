@@ -1333,6 +1333,222 @@ inline constexpr bool has_cap(backend_caps caps, backend_caps bit)
 
 struct render_surface;
 
+// Immutable vector sources. Creation copies command/paint input; renderer
+// preparation owns flattening, caches and native encoding. Release each owning
+// handle once with destroy_vector; renderers retain data used by pending work.
+struct vector_resource;
+using vector_handle = vector_resource *;
+struct affine2
+{
+    f32 a = 1, b = 0, c = 0, d = 1, e = 0, f = 0;
+    vec2 apply(vec2 p) const { return {a * p.x + c * p.y + e, b * p.x + d * p.y + f}; }
+};
+enum class path_verb : u8
+{
+    MOVE,
+    LINE,
+    QUADRATIC,
+    CUBIC,
+    CLOSE
+};
+struct path_command
+{
+    path_verb verb = path_verb::MOVE;
+    vec2 p1{}, p2{}, p3{};
+};
+enum class path_fill_rule : u8
+{
+    NONZERO,
+    EVENODD
+};
+enum class vector_paint_kind : u8
+{
+    NONE,
+    SOLID,
+    LINEAR,
+    RADIAL
+};
+enum class vector_spread : u8
+{
+    PAD,
+    REPEAT,
+    REFLECT
+};
+enum class vector_paint_units : u8
+{
+    USER_SPACE,
+    OBJECT_BOUNDS
+};
+enum class path_line_cap : u8
+{
+    BUTT,
+    ROUND,
+    SQUARE
+};
+enum class path_line_join : u8
+{
+    MITER,
+    ROUND,
+    BEVEL
+};
+struct gradient_stop
+{
+    f32 offset = 0;
+    color tint{};
+    f32 opacity = 1;
+    bool current_color = false;
+};
+struct vector_paint
+{
+    vector_paint_kind kind = vector_paint_kind::SOLID;
+    color tint{0, 0, 0, 255};
+    bool current_color = false;
+    vec2 start{}, end{1, 0}, center{0.5f, 0.5f}, focal{0.5f, 0.5f};
+    f32 radius = 0.5f;
+    std::span<const gradient_stop> stops{};
+    affine2 transform{};
+    vector_spread spread = vector_spread::PAD;
+    vector_paint_units units = vector_paint_units::USER_SPACE;
+};
+struct path_stroke
+{
+    f32 width = 0, miter_limit = 4, dash_offset = 0;
+    path_line_cap cap = path_line_cap::BUTT;
+    path_line_join join = path_line_join::MITER;
+    std::span<const f32> dashes{};
+};
+struct path_source
+{
+    std::span<const path_command> commands{};
+    vector_paint fill{}, stroke{.kind = vector_paint_kind::NONE};
+    path_stroke stroke_options{};
+    path_fill_rule fill_rule = path_fill_rule::NONZERO;
+    rect view_box{}; // zero extents select the geometric bounds
+};
+enum class vector_error_code : u8
+{
+    NONE,
+    INVALID_PATH,
+    INVALID_PAINT,
+    INVALID_SVG,
+    UNSUPPORTED,
+    LIMIT,
+    NOT_PREPARED,
+    WRONG_CONTEXT,
+    DEVICE_ERROR
+};
+struct vector_error
+{
+    vector_error_code code = vector_error_code::NONE;
+    usize offset = 0;
+    const char *message = nullptr; // static diagnostic; never borrows SVG input
+};
+struct vector_result
+{
+    vector_handle image = nullptr;
+    vector_error error{};
+    explicit operator bool() const { return image != nullptr; }
+};
+struct svg_load_opts
+{
+    usize max_bytes = 4 * 1024 * 1024, max_commands = 262144;
+    i32 max_depth = 64;
+};
+vector_result create_path(const path_source &source);
+vector_result load_svg(std::string_view xml, const svg_load_opts &opts = {});
+void destroy_vector(vector_handle &image);
+rect vector_view_box(vector_handle image);
+// Additional explicit ownership for a backend or another application owner.
+bool retain_vector(vector_handle image);
+
+// Immutable borrowed source views for third-party renderers. Spans remain valid
+// while any source owner is alive; preparing a representation is backend policy.
+enum class vector_operation_kind : u8
+{
+    SHAPE,
+    BEGIN_GROUP,
+    END_GROUP
+};
+struct vector_scene_info
+{
+    rect view_box{};
+    vec2 alignment{.5f, .5f};
+    usize shape_count = 0, clip_count = 0, operation_count = 0;
+    bool preserve_aspect = true, slice = false, valid = false;
+};
+struct vector_shape_view
+{
+    path_source path{}; // path.view_box is the local, un-stroked geometry bounds
+    affine2 transform{};
+    std::span<const u32> clips{};
+    f32 fill_opacity = 1, stroke_opacity = 1;
+    bool stroke_first = false, valid = false;
+};
+struct vector_clip_view
+{
+    usize shape_count = 0;
+    bool valid = false;
+};
+struct vector_clip_shape_ref
+{
+    usize clip = 0, shape = 0;
+};
+struct vector_operation_view
+{
+    vector_operation_kind kind = vector_operation_kind::SHAPE;
+    u32 index = 0;
+    f32 opacity = 1;
+    std::span<const u32> clips{};
+    bool valid = false;
+};
+vector_scene_info inspect_vector(vector_handle);
+vector_shape_view inspect_vector_shape(vector_handle, usize index);
+vector_clip_view inspect_vector_clip(vector_handle, usize index);
+vector_shape_view inspect_vector_clip_shape(vector_handle, const vector_clip_shape_ref &);
+vector_operation_view inspect_vector_operation(vector_handle, usize index);
+
+struct vector_status
+{
+    vector_error error{};
+    explicit operator bool() const { return error.code == vector_error_code::NONE; }
+};
+struct vector_style
+{
+    color current_color{0, 0, 0, 255};
+    color tint{255, 255, 255, 255};
+    f32 opacity = 1;
+};
+enum class vector_fit : u8
+{
+    SOURCE,
+    CONTAIN,
+    COVER,
+    STRETCH
+};
+struct vector_prepare_opts
+{
+    // Maximum framebuffer size of the complete image, including DPI/affine scale.
+    vec2 max_pixel_size{256, 256};
+    // Batch storage hint; larger submissions flush bounded storage and continue.
+    usize max_instances = 64;
+    usize resource_budget_bytes = 16 * 1024 * 1024;
+    vector_style style{};
+};
+struct vector_draw_opts
+{
+    // Applied after mapping the image viewBox into the logical destination.
+    affine2 transform{};
+    vector_fit fit = vector_fit::SOURCE;
+    vector_style style{};
+};
+struct paint_vector
+{
+    rect area{};
+    vector_handle image = nullptr;
+    vector_draw_opts options{};
+    f32 scope_alpha = 1; // semantic recorders snapshot disabled-scope alpha here
+};
+
 // Optional high-water storage hint. Counts are per batch, not per primitive.
 // Preparation commits CPU storage up front; it never changes draw-list sizes.
 struct geometry_capacity
@@ -1440,6 +1656,11 @@ struct render_painter
     virtual void invalidate() = 0;
     virtual void flush() = 0;
     virtual bool prepare(const geometry_capacity &) = 0;
+    virtual vector_status prepare_vector(vector_handle, const vector_prepare_opts &) = 0;
+    virtual vector_status release_vector(vector_handle) = 0;
+    virtual vector_status vector_ready(const paint_vector &) const = 0;
+    virtual usize vector_capacity() const = 0;
+    virtual vector_status vector(const paint_vector &) = 0;
     // Optional introspection data, borrowed from the painter; nullptr is valid
     // for a renderer that does not use a CPU mesh. Core never owns this storage.
     virtual draw_list *geometry() = 0;
@@ -1834,6 +2055,7 @@ struct vulkan_device_opts
     bool vector_text = true; // HarfBuzz shaping + native graphics Slug; ignored without HarfBuzz
     bool compact_vertices = true; // exact integer-byte colors; false retains the 32-byte oracle
     vulkan_upload_mode upload_mode = vulkan_upload_mode::DIRECT;
+    bool vector_paths = true; // font-independent Slug; false selects portable vector preparation
     u32 physical_device_index = 0xffffffffu; // automatic: prefer a compatible discrete GPU
     u32 frames_in_flight = 2;
     u64 upload_budget_bytes = 256ull * 1024 * 1024;
@@ -2819,6 +3041,11 @@ struct ui
     // separately preparable through device->prepare_geometry(capacity).
     // Invalid counts (> i32 draw limits) return false without changing storage.
     bool prepare_geometry(const geometry_capacity &capacity);
+    // Prepare/release vector residency between frames. Source ownership remains
+    // explicit; the renderer retains prepared sources until release/destruction.
+    vector_status prepare_vector(vector_handle, const vector_prepare_opts & = {});
+    vector_status release_vector(vector_handle);
+    vector_status draw_vector(rect, vector_handle, const vector_draw_opts & = {});
     void draw_triangles(texture_handle tex, const vertex *vertices, i32 vertex_count,
                         const i32 *indices, i32 index_count);
     void draw_rect(rect r, color c);
@@ -3755,6 +3982,7 @@ i32 violation_count(context *c);
 #include <string>
 #include <unordered_map>
 #include <memory_resource>
+#include <atomic>
 #include <fstream>
 #include <chrono>
 #include <algorithm>
@@ -3789,6 +4017,8 @@ namespace pui
 // The implementation, in order (one namespace; slices are plain text cuts).
 #include "impl/core_pool.inl"
 #include "impl/core_state.inl"
+#include "impl/vector_data.inl"
+#include "impl/vector_svg.inl"
 #include "impl/harfbuzz_text.inl"
 #include "impl/renderer_mesh_state.inl"
 #include "impl/renderer_overlay_state.inl"
@@ -3806,6 +4036,12 @@ namespace pui
 #include "impl/renderer_text.inl"
 #include "impl/renderer_widgets.inl"
 #include "impl/renderer_gradient.inl"
+#include "impl/renderer_vector_geometry.inl"
+#include "impl/renderer_vector_paint.inl"
+#include "impl/renderer_vector_raster.inl"
+#include "impl/renderer_vector.inl"
+#include "impl/renderer_vector_slug.inl"
+#include "impl/renderer_vector_gpu.inl"
 #if defined(PUFFERUI_ENABLE_VULKAN)
 #include "impl/vulkan_shaders.inl"
 #endif
@@ -3820,6 +4056,11 @@ namespace pui
 #include "impl/vulkan_blur.inl"
 #include "impl/vulkan_text_coverage.inl"
 #include "impl/vulkan_text.inl"
+#if defined(PUFFERUI_ENABLE_VULKAN) && defined(PUFFERUI_ENABLE_HARFBUZZ)
+#include "impl/vulkan_vector_shaders.inl"
+#endif
+#include "impl/vulkan_vector_pipeline.inl"
+#include "impl/vulkan_vector.inl"
 #include "impl/sdl3.inl"
 #include "impl/sdl3_vulkan_host.inl"
 } // namespace pui

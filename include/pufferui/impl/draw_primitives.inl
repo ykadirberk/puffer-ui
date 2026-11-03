@@ -3,6 +3,18 @@
 // defined; never include it directly. The slices concatenate to the original
 // implementation block in order (tools/amalgamate.ps1 rebuilds the single header).
 // ---- draw primitives ----
+vector_status ui::prepare_vector(vector_handle image, const vector_prepare_opts &options)
+{
+    return ctx->painter->prepare_vector(image, options);
+}
+vector_status ui::release_vector(vector_handle image)
+{
+    return ctx->painter->release_vector(image);
+}
+vector_status ui::draw_vector(rect area, vector_handle image, const vector_draw_opts &options)
+{
+    return ctx->painter->vector({area, image, options});
+}
 void ui::draw_triangles(texture_handle tex, const vertex *vertices, i32 vertex_count,
                         const i32 *indices, i32 index_count)
 {

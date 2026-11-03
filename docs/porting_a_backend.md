@@ -74,6 +74,16 @@ Optional overrides, and when they matter:
 
 ## render_painter
 
+Vector sources add five required methods: `prepare_vector`, `release_vector`,
+`vector_ready`, `vector_capacity` and `vector`. Preparation/release run outside
+frames; drawing must use already prepared storage. Implement every operation;
+missing handlers are compile errors. Immutable source inspection views expose
+path/paint/clip/group data to independent backends. Retain source ownership while
+storing a binding and release native resources only after their last recorded
+GPU use. `vector_capacity` describes reserved deferred overlay storage;
+`vector_ready` validates before a recorder accepts a command. See the complete
+[SVG/path contract](vector_paths.md), including explicit limits and errors.
+
 Every operation is pure virtual. Missing handlers are compile errors; core never
 selects a tessellator when a backend omits an operation. Implement mesh, rectangle,
 line, rounded rectangle, skin image, fitted image, nine-slice, polygon, sector,

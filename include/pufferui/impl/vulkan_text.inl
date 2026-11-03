@@ -107,6 +107,7 @@ bool device::text_chunk(VkDeviceSize required)
 }
 bool device::glyph(context *c, font_handle font, u32 index, vec2 baseline, f32 scale, color tint)
 {
+    if (paths) flush_paths();
     paint_guard drawing(*this);
     if (!text) return false;
     auto *outline = detail::harfbuzz_outline(c, font, index);
@@ -221,9 +222,10 @@ bool device::upload_glyphs(const glyph_instance *instances, usize count, VkBuffe
     return true;
 }
 #endif
-void device::flush_text()
+void device::flush_text(bool preserve_paths)
 {
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    if (!preserve_paths && paths) flush_paths();
     if (!text || text->pending.empty() || text_flushing) return;
     struct flush_guard
     {
@@ -317,6 +319,8 @@ void device::flush_text()
         for (u32 i = 0; i < 4; ++i)
             if (coverage_regions & (1u << i)) text->coverage->regions[i].last_use = next_serial;
     text->pending.clear();
+#else
+    (void)preserve_paths;
 #endif
 }
 } // namespace vk_detail

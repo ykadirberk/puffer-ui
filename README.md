@@ -1586,6 +1586,35 @@ Full source: `examples/atomic/vulkan_preparation.cpp`. See the
 [explicit Vulkan tutorial](docs/tutorial/10-vulkan-without-shorthand.md) for the
 equivalent integration without the example bootstrap.
 
+### 41. SVG and native Slug paths
+
+![SVG/path gallery with gradients, clipping and strokes](docs/img/readme/vector.png)
+
+Run: `pui_ex_vector`, or `pui_ex_vector_vulkan` with Vulkan enabled.
+
+Load SVG or create immutable C++ paths once, then prepare the renderer's
+representation outside UI frames. The gallery owns three sources, prepares its
+palette and submits affine/opacity changes without reparsing or encoding during
+drawing. The native version uses font-independent Slug coverage; the portable
+version reuses prepared RGBA textures.
+
+```cpp
+            for (auto current : colors)
+                if (!ui(app.ctx).prepare_vector(images[i],
+                                                {.max_pixel_size = {256, 256},
+                                                 .max_instances = 64,
+                                                 .resource_budget_bytes = 32 * 1024 * 1024,
+                                                 .style = {.current_color = current}}))
+                    ready = false;
+```
+
+Full source: `examples/atomic/vector.cpp` and `examples/vector_gallery.h`.
+Open the same gallery with `pui_showcase_vulkan --vectors` or `pui_tour --vectors`.
+See the [SVG/path contract](docs/vector_paths.md) for supported features/limits
+and [chapter 11](docs/tutorial/11-svg-and-paths.md) for a complete application
+without example shorthand. Static fixed-size icons can favor cached textures;
+native analytic coverage is a representation choice to measure for the workload.
+
 ## Examples index
 
 | Target | Capability |
@@ -1640,6 +1669,7 @@ equivalent integration without the example bootstrap.
 | `pui_ex_vulkan` | `examples/atomic/vulkan.cpp` | optional native Vulkan renderer, SDL windows, application-owned VkImage |
 | `pui_showcase_vulkan` | `examples/pui_showcase.cpp` | the existing motion showcase on the optional native Vulkan backend |
 | `pui_ex_vulkan_preparation` | `examples/atomic/vulkan_preparation.cpp` | prepare known CPU and native surface geometry resources before the first frame |
+| `pui_ex_vector` / `pui_ex_vector_vulkan` | `examples/atomic/vector.cpp` | immutable SVG/path resources, gradients, isolated opacity, strokes and clipping; native font-independent Slug with Vulkan/HarfBuzz |
 
 Every example supports:
 

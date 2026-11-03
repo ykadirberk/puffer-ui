@@ -24,6 +24,7 @@
 //   pui_showcase --a11y       accessibility recording on (what a screen reader enables)
 #include "example_common.h"
 #include "tutorial/glass.h"
+#include "vector_gallery.h"
 
 #include <algorithm>
 #include <cmath>
@@ -4269,6 +4270,11 @@ struct showcase_program
 
 int main(int argc, char **argv)
 {
+    for (int i = 1; i < argc; ++i)
+        if (!std::strcmp(argv[i], "--vectors"))
+        {
+            return vector_gallery_run("Nebula / SVG and paths", argc, argv);
+        }
     i32 start_tiles = -1, start_mode = -1;
     f32 start_size = -1;
     for (int i = 1; i < argc; ++i)

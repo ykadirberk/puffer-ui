@@ -6,6 +6,8 @@
 namespace vk_detail
 {
 struct device;
+struct native_vectors;
+struct native_vector_bindings;
 struct cache_record
 {
     std::vector<u8> canonical;
@@ -289,7 +291,7 @@ struct device : render_device, dispatch
     bool upload_glyphs(const glyph_instance *, usize, VkBuffer &, VkDeviceSize &);
     void release_text();
 #endif
-    void flush_text();
+    void flush_text(bool preserve_paths = false);
     bool cache_active = false, replay_clipped = false;
     rect replay_clip{};
     u64 cache_bytes = 0;
@@ -396,6 +398,13 @@ struct device : render_device, dispatch
     void draw(texture_handle tex, const vertex *v, i32 vc, const i32 *idx, i32 ic) override;
     void blit(texture_handle src, const rect *sr, texture_handle dst, const rect *dr) override;
     bool read_pixels(texture_handle t, i32 x, i32 y, i32 w, i32 h, u8 *rgba) override;
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    native_vectors *paths = nullptr;
+    void flush_paths();
+    void collect_paths(u64 done);
+    void release_paths();
+    bool prepare_path_slot(frame_slot &);
+#endif
 };
 struct paint_guard
 {
@@ -658,6 +667,9 @@ device::~device()
             }
         }
         if (timeline) wait(next_serial - 1);
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+        release_paths();
+#endif
         for (surface *s : surfaces)
         {
             s->release_swapchain();

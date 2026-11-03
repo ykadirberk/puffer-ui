@@ -1,0 +1,1937 @@
+{
+  "base_commit": "06d1d669cb3af188291ffc76ff68296115e7c5ae",
+  "adapter": "AMD Radeon RX 9070 XT",
+  "vendor_id": 4098,
+  "device_id": 30032,
+  "driver": 8388996,
+  "protocol": {
+    "old_scene": "actual showcase 5000 ->5003 Spiral, 180 frames, three keyboard Add activations",
+    "old_pairs_per_case": 8,
+    "vector_pairs_per_case": 6,
+    "svg_scenes": {
+      "simple_instances": 5000,
+      "complex_instances": 96
+    },
+    "reference_frames": 2160,
+    "main_timed_runs": 128,
+    "aa_timed_runs": 32,
+    "all_timed_frames": 30240,
+    "mode": "offscreen, unpaced, no readback in timed frames",
+    "discarded_frames": 0
+  },
+  "tests": {
+    "debug_full": "all steps passed",
+    "release_full": "all steps passed",
+    "native_registry_cases_per_config": 53,
+    "python_tools_after_packaging_and_gallery_fixes": 19,
+    "portable_private_tests": 23,
+    "native_private_tests": 28,
+    "new_painter_mode_images": 84,
+    "new_pipeline_images": 12,
+    "new_overlay_images": 16,
+    "new_affine_images": 24,
+    "new_immutable_vector_images": 21,
+    "source_snippets": 65,
+    "dependency_off_and_single_header": "passed",
+    "final_actual_showcase_frames": {
+      "native_svg": 180,
+      "portable_svg_resized": 180,
+      "spiral": 180
+    },
+    "live": "actual native Slug gallery, standard Vulkan showcase and two-window SDL demo reviewed; desktop input interfered with some CUA actions",
+    "optional_visible_pacing": "inconclusive: separate --visible helper returned 0 with no required output; not used to certify foreground pacing"
+  },
+  "protected": {
+    "base": "06d1d669cb3af188291ffc76ff68296115e7c5ae",
+    "historical_test_oracle_files_unchanged": 88,
+    "required_interface_stub_additions": 5,
+    "old_test_body_or_assertion_changes": 0,
+    "unrelated_drafts_unchanged": 32,
+    "immutable_spiral_reference_hashes": {
+      "direct": 180,
+      "staged": 180
+    },
+    "base_shader_header_and_manifest_byte_exact": true,
+    "slug_include_byte_exact": true,
+    "SDL_submodule_clean": true,
+    "new_vector_goldens": {
+      "frame-000.rgba": "99533db81c5a8b6b97fb3497a2c5814bfd40ce6d50301422f29d57efa378e26e",
+      "frame-001.rgba": "8464c2ef01a6f227d56d67aba35684c29b5baf203ea448b354b472878370398a",
+      "frame-002.rgba": "f2368f8b57e3610cdf5ac0a1b8d91c97d1e993e06ec53cea867677f67959a307",
+      "frame-003.rgba": "0af3a156a572f70e1d15b8f26342a44378faa4678d2a8af20d46a3591a8ffff5",
+      "frame-004.rgba": "bd5f409d8883f8bf6a5d617de18eb115bf61224e056d5a5b905375f8f80a42cd",
+      "frame-005.rgba": "8464c2ef01a6f227d56d67aba35684c29b5baf203ea448b354b472878370398a",
+      "frame-006.rgba": "ccc05229e4717cbfa3f48d01d9dee1d916e7887691e9a1e787722d474f2e122c",
+      "frame-007.rgba": "99533db81c5a8b6b97fb3497a2c5814bfd40ce6d50301422f29d57efa378e26e",
+      "frame-008.rgba": "8464c2ef01a6f227d56d67aba35684c29b5baf203ea448b354b472878370398a",
+      "frame-009.rgba": "f2368f8b57e3610cdf5ac0a1b8d91c97d1e993e06ec53cea867677f67959a307",
+      "frame-010.rgba": "0af3a156a572f70e1d15b8f26342a44378faa4678d2a8af20d46a3591a8ffff5",
+      "frame-011.rgba": "bd5f409d8883f8bf6a5d617de18eb115bf61224e056d5a5b905375f8f80a42cd",
+      "frame-012.rgba": "8464c2ef01a6f227d56d67aba35684c29b5baf203ea448b354b472878370398a",
+      "frame-013.rgba": "ccc05229e4717cbfa3f48d01d9dee1d916e7887691e9a1e787722d474f2e122c",
+      "frame-014.rgba": "99533db81c5a8b6b97fb3497a2c5814bfd40ce6d50301422f29d57efa378e26e",
+      "frame-015.rgba": "8464c2ef01a6f227d56d67aba35684c29b5baf203ea448b354b472878370398a",
+      "frame-016.rgba": "f2368f8b57e3610cdf5ac0a1b8d91c97d1e993e06ec53cea867677f67959a307",
+      "frame-017.rgba": "0af3a156a572f70e1d15b8f26342a44378faa4678d2a8af20d46a3591a8ffff5",
+      "frame-018.rgba": "bd5f409d8883f8bf6a5d617de18eb115bf61224e056d5a5b905375f8f80a42cd",
+      "frame-019.rgba": "8464c2ef01a6f227d56d67aba35684c29b5baf203ea448b354b472878370398a",
+      "frame-020.rgba": "ccc05229e4717cbfa3f48d01d9dee1d916e7887691e9a1e787722d474f2e122c"
+    }
+  },
+  "groups": [
+    {
+      "workload": "null",
+      "case": "null",
+      "variants": {
+        "before": {
+          "runs": 8,
+          "frames": 1440,
+          "cpu_ms": {
+            "mean": 3.434758611111111,
+            "p50": 2.9242,
+            "p95": 6.4437,
+            "p99": 11.8842,
+            "maximum": 15.721
+          },
+          "cold_ms": {
+            "mean": 9.72645,
+            "p50": 9.6783,
+            "p95": 10.1756,
+            "p99": 10.1756,
+            "maximum": 10.3791
+          },
+          "peak": {
+            "run": "null-00-before",
+            "frame": 128,
+            "ms": 15.721
+          },
+          "draws": {
+            "sum": 18936,
+            "maximum": 14
+          }
+        },
+        "after": {
+          "runs": 8,
+          "frames": 1440,
+          "cpu_ms": {
+            "mean": 3.410704236111111,
+            "p50": 2.899,
+            "p95": 6.3222,
+            "p99": 11.5791,
+            "maximum": 14.425
+          },
+          "cold_ms": {
+            "mean": 9.88075,
+            "p50": 9.5913,
+            "p95": 10.6695,
+            "p99": 10.6695,
+            "maximum": 11.514
+          },
+          "peak": {
+            "run": "null-03-after",
+            "frame": 127,
+            "ms": 14.425
+          },
+          "draws": {
+            "sum": 18936,
+            "maximum": 14
+          }
+        }
+      },
+      "cpu_mean_change_pct": -0.7003221397330894
+    },
+    {
+      "workload": "spiral",
+      "case": "direct-cache",
+      "variants": {
+        "before": {
+          "runs": 8,
+          "frames": 1440,
+          "cpu_ms": {
+            "mean": 3.8718254166916317,
+            "p50": 3.16199999861,
+            "p95": 7.24860000052,
+            "p99": 16.8875999991,
+            "maximum": 23.0096000005
+          },
+          "cold_ms": {
+            "mean": 5.209299999755,
+            "p50": 5.17200000025,
+            "p95": 5.24129999988,
+            "p99": 5.24129999988,
+            "maximum": 6.04509999976
+          },
+          "peak": {
+            "run": "spiral-direct-cache-03-before",
+            "frame": 127,
+            "ms": 23.0096000005
+          },
+          "gpu_ms": {
+            "mean": 0.6488223333333334,
+            "p50": 0.6487855555555556,
+            "p95": 0.6642082222222222,
+            "p99": 0.6642082222222222,
+            "maximum": 0.6785031111111112
+          },
+          "setup_ms": {
+            "mean": 119.7432,
+            "p50": 118.607900001,
+            "p95": 120.386399999,
+            "p99": 120.386399999,
+            "maximum": 126.774699999
+          },
+          "setup_plus_cold_ms": {
+            "mean": 124.952499999755,
+            "p50": 123.84920000088,
+            "p95": 125.59529999804,
+            "p99": 125.59529999804,
+            "maximum": 131.60809999889
+          },
+          "draws": {
+            "sum": 105768,
+            "maximum": 82
+          },
+          "draw_buffer_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "upload_bytes": {
+            "sum": 20950496032,
+            "maximum": 72675408
+          },
+          "resident_bytes": {
+            "sum": 98901688320,
+            "maximum": 68681728
+          }
+        },
+        "after": {
+          "runs": 8,
+          "frames": 1440,
+          "cpu_ms": {
+            "mean": 3.8439469444693195,
+            "p50": 3.12519999966,
+            "p95": 6.51359999925,
+            "p99": 16.9309,
+            "maximum": 21.6457000002
+          },
+          "cold_ms": {
+            "mean": 5.4580374998025,
+            "p50": 5.27599999867,
+            "p95": 5.74159999937,
+            "p99": 5.74159999937,
+            "maximum": 6.19699999876
+          },
+          "peak": {
+            "run": "spiral-direct-cache-00-after",
+            "frame": 129,
+            "ms": 21.6457000002
+          },
+          "gpu_ms": {
+            "mean": 0.6506396388888889,
+            "p50": 0.6412204444444445,
+            "p95": 0.6668517777777778,
+            "p99": 0.6668517777777778,
+            "maximum": 0.6743808888888889
+          },
+          "setup_ms": {
+            "mean": 122.684412500125,
+            "p50": 120.500699999,
+            "p95": 129.713099999,
+            "p99": 129.713099999,
+            "maximum": 134.453
+          },
+          "setup_plus_cold_ms": {
+            "mean": 128.1424499999275,
+            "p50": 126.07010000032001,
+            "p95": 135.91009999776,
+            "p99": 135.91009999776,
+            "maximum": 139.60830000068
+          },
+          "draws": {
+            "sum": 105768,
+            "maximum": 82
+          },
+          "draw_buffer_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "upload_bytes": {
+            "sum": 20950496032,
+            "maximum": 72675408
+          },
+          "resident_bytes": {
+            "sum": 98901688320,
+            "maximum": 68681728
+          }
+        }
+      },
+      "cpu_mean_change_pct": -0.7200343306319246,
+      "gpu_mean_change_pct": 0.28009294103965576
+    },
+    {
+      "workload": "spiral",
+      "case": "direct-plain",
+      "variants": {
+        "before": {
+          "runs": 8,
+          "frames": 1440,
+          "cpu_ms": {
+            "mean": 4.211487500026778,
+            "p50": 3.26820000075,
+            "p95": 9.69440000132,
+            "p99": 16.9552999996,
+            "maximum": 22.2401999999
+          },
+          "cold_ms": {
+            "mean": 5.35316250031125,
+            "p50": 5.1651000008,
+            "p95": 5.54470000044,
+            "p99": 5.54470000044,
+            "maximum": 5.97800000012
+          },
+          "peak": {
+            "run": "spiral-direct-plain-01-before",
+            "frame": 128,
+            "ms": 22.2401999999
+          },
+          "gpu_ms": {
+            "mean": 0.7938704166666667,
+            "p50": 0.654996,
+            "p95": 0.985688888888889,
+            "p99": 0.985688888888889,
+            "maximum": 1.2317986666666667
+          },
+          "setup_ms": {
+            "mean": 123.873262499875,
+            "p50": 122.0341,
+            "p95": 128.999499999,
+            "p99": 128.999499999,
+            "maximum": 130.784599999
+          },
+          "setup_plus_cold_ms": {
+            "mean": 129.22642500018625,
+            "p50": 127.19920000079999,
+            "p95": 134.97749999912,
+            "p99": 134.97749999912,
+            "maximum": 136.18879999969
+          },
+          "draws": {
+            "sum": 105768,
+            "maximum": 82
+          },
+          "draw_buffer_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "upload_bytes": {
+            "sum": 20950496032,
+            "maximum": 72675408
+          },
+          "resident_bytes": {
+            "sum": 98901688320,
+            "maximum": 68681728
+          }
+        },
+        "after": {
+          "runs": 8,
+          "frames": 1440,
+          "cpu_ms": {
+            "mean": 4.055135555534347,
+            "p50": 3.18410000019,
+            "p95": 9.03299999982,
+            "p99": 16.8713000007,
+            "maximum": 24.4389999993
+          },
+          "cold_ms": {
+            "mean": 5.30099999951125,
+            "p50": 5.11360000074,
+            "p95": 5.66220000014,
+            "p99": 5.66220000014,
+            "maximum": 6.57959999889
+          },
+          "peak": {
+            "run": "spiral-direct-plain-01-after",
+            "frame": 127,
+            "ms": 24.4389999993
+          },
+          "gpu_ms": {
+            "mean": 0.7884852777777778,
+            "p50": 0.6388071111111111,
+            "p95": 1.0800377777777779,
+            "p99": 1.0800377777777779,
+            "maximum": 1.3937926666666667
+          },
+          "setup_ms": {
+            "mean": 121.897537500375,
+            "p50": 118.281400001,
+            "p95": 123.0655,
+            "p99": 123.0655,
+            "maximum": 138.066099999
+          },
+          "setup_plus_cold_ms": {
+            "mean": 127.19853749988624,
+            "p50": 123.37380000036,
+            "p95": 129.64509999889,
+            "p99": 129.64509999889,
+            "maximum": 143.17969999974
+          },
+          "draws": {
+            "sum": 105768,
+            "maximum": 82
+          },
+          "draw_buffer_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "upload_bytes": {
+            "sum": 20950496032,
+            "maximum": 72675408
+          },
+          "resident_bytes": {
+            "sum": 98901688320,
+            "maximum": 68681728
+          }
+        }
+      },
+      "cpu_mean_change_pct": -3.7125111849776737,
+      "gpu_mean_change_pct": -0.6783397864226104
+    },
+    {
+      "workload": "spiral",
+      "case": "staged-cache",
+      "variants": {
+        "before": {
+          "runs": 8,
+          "frames": 1440,
+          "cpu_ms": {
+            "mean": 4.406145347180368,
+            "p50": 3.5979999993,
+            "p95": 7.90770000033,
+            "p99": 19.8268999998,
+            "maximum": 26.8055000007
+          },
+          "cold_ms": {
+            "mean": 5.76361249992625,
+            "p50": 5.37639999948,
+            "p95": 6.12490000017,
+            "p99": 6.12490000017,
+            "maximum": 7.83650000021
+          },
+          "peak": {
+            "run": "spiral-staged-cache-02-before",
+            "frame": 128,
+            "ms": 26.8055000007
+          },
+          "gpu_ms": {
+            "mean": 0.9374400833333334,
+            "p50": 0.8929135555555555,
+            "p95": 1.0356126666666667,
+            "p99": 1.0356126666666667,
+            "maximum": 1.0694062222222223
+          },
+          "setup_ms": {
+            "mean": 139.690412500125,
+            "p50": 138.458900001,
+            "p95": 140.725499999,
+            "p99": 140.725499999,
+            "maximum": 152.9538
+          },
+          "setup_plus_cold_ms": {
+            "mean": 145.45402500005125,
+            "p50": 144.58380000116998,
+            "p95": 148.56199999921,
+            "p99": 148.56199999921,
+            "maximum": 158.37729999957
+          },
+          "draws": {
+            "sum": 105768,
+            "maximum": 82
+          },
+          "draw_buffer_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "upload_bytes": {
+            "sum": 20950496032,
+            "maximum": 72675408
+          },
+          "resident_bytes": {
+            "sum": 195538452480,
+            "maximum": 135790592
+          }
+        },
+        "after": {
+          "runs": 8,
+          "frames": 1440,
+          "cpu_ms": {
+            "mean": 4.4750554166437295,
+            "p50": 3.6118999999,
+            "p95": 8.84410000034,
+            "p99": 19.9408,
+            "maximum": 23.4642999992
+          },
+          "cold_ms": {
+            "mean": 6.03777499985875,
+            "p50": 5.94230000116,
+            "p95": 6.39539999887,
+            "p99": 6.39539999887,
+            "maximum": 7.13639999926
+          },
+          "peak": {
+            "run": "spiral-staged-cache-04-after",
+            "frame": 126,
+            "ms": 23.4642999992
+          },
+          "gpu_ms": {
+            "mean": 0.9916798055555556,
+            "p50": 0.9598384444444444,
+            "p95": 1.0019486666666668,
+            "p99": 1.0019486666666668,
+            "maximum": 1.2478593333333332
+          },
+          "setup_ms": {
+            "mean": 142.344537500125,
+            "p50": 144.0931,
+            "p95": 147.151700001,
+            "p99": 147.151700001,
+            "maximum": 151.302099999
+          },
+          "setup_plus_cold_ms": {
+            "mean": 148.38231249998375,
+            "p50": 150.25769999979,
+            "p95": 153.27830000014,
+            "p99": 153.27830000014,
+            "maximum": 158.43849999826
+          },
+          "draws": {
+            "sum": 105768,
+            "maximum": 82
+          },
+          "draw_buffer_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "upload_bytes": {
+            "sum": 20950496032,
+            "maximum": 72675408
+          },
+          "resident_bytes": {
+            "sum": 195538452480,
+            "maximum": 135790592
+          }
+        }
+      },
+      "cpu_mean_change_pct": 1.5639536155442224,
+      "gpu_mean_change_pct": 5.78594015623457
+    },
+    {
+      "workload": "spiral",
+      "case": "staged-plain",
+      "variants": {
+        "before": {
+          "runs": 8,
+          "frames": 1440,
+          "cpu_ms": {
+            "mean": 4.0769495833602365,
+            "p50": 3.19670000114,
+            "p95": 8.66119999997,
+            "p99": 17.510400001,
+            "maximum": 26.0934999995
+          },
+          "cold_ms": {
+            "mean": 6.2629125001825,
+            "p50": 5.56860000081,
+            "p95": 7.38389999978,
+            "p99": 7.38389999978,
+            "maximum": 9.46310000122
+          },
+          "peak": {
+            "run": "spiral-staged-plain-07-before",
+            "frame": 127,
+            "ms": 26.0934999995
+          },
+          "gpu_ms": {
+            "mean": 1.0510388055555555,
+            "p50": 1.0111122222222222,
+            "p95": 1.0282462222222222,
+            "p99": 1.0282462222222222,
+            "maximum": 1.5111013333333334
+          },
+          "setup_ms": {
+            "mean": 158.0962125,
+            "p50": 129.270500001,
+            "p95": 176.326400001,
+            "p99": 176.326400001,
+            "maximum": 312.455899999
+          },
+          "setup_plus_cold_ms": {
+            "mean": 164.3591250001825,
+            "p50": 134.3720000018,
+            "p95": 183.71030000078,
+            "p99": 183.71030000078,
+            "maximum": 321.91900000022
+          },
+          "draws": {
+            "sum": 105768,
+            "maximum": 82
+          },
+          "draw_buffer_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "upload_bytes": {
+            "sum": 20950496032,
+            "maximum": 72675408
+          },
+          "resident_bytes": {
+            "sum": 195538452480,
+            "maximum": 135790592
+          }
+        },
+        "after": {
+          "runs": 8,
+          "frames": 1440,
+          "cpu_ms": {
+            "mean": 4.186441458340215,
+            "p50": 3.15619999915,
+            "p95": 9.62349999882,
+            "p99": 18.0662999991,
+            "maximum": 23.557
+          },
+          "cold_ms": {
+            "mean": 5.2730250002337495,
+            "p50": 5.24930000119,
+            "p95": 5.43300000019,
+            "p99": 5.43300000019,
+            "maximum": 5.49780000001
+          },
+          "peak": {
+            "run": "spiral-staged-plain-07-after",
+            "frame": 127,
+            "ms": 23.557
+          },
+          "gpu_ms": {
+            "mean": 1.0250082777777778,
+            "p50": 1.0028762222222223,
+            "p95": 1.0301586666666667,
+            "p99": 1.0301586666666667,
+            "maximum": 1.297092222222222
+          },
+          "setup_ms": {
+            "mean": 125.886074999375,
+            "p50": 122.9921,
+            "p95": 130.479799999,
+            "p99": 130.479799999,
+            "maximum": 140.0515
+          },
+          "setup_plus_cold_ms": {
+            "mean": 131.15909999960874,
+            "p50": 127.98080000057,
+            "p95": 135.70779999912,
+            "p99": 135.70779999912,
+            "maximum": 145.48450000019
+          },
+          "draws": {
+            "sum": 105768,
+            "maximum": 82
+          },
+          "draw_buffer_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "upload_bytes": {
+            "sum": 20950496032,
+            "maximum": 72675408
+          },
+          "resident_bytes": {
+            "sum": 195538452480,
+            "maximum": 135790592
+          }
+        }
+      },
+      "cpu_mean_change_pct": 2.685632302809471,
+      "gpu_mean_change_pct": -2.47664764042832
+    },
+    {
+      "workload": "vector",
+      "case": "direct-complex",
+      "variants": {
+        "portable": {
+          "runs": 6,
+          "frames": 1080,
+          "cpu_ms": {
+            "mean": 0.2588315740740741,
+            "p50": 0.061,
+            "p95": 1.1844,
+            "p99": 3.5551,
+            "maximum": 5.7939
+          },
+          "cold_ms": {
+            "mean": 0.51095,
+            "p50": 0.3393,
+            "p95": 0.5175,
+            "p99": 0.5175,
+            "maximum": 1.2197
+          },
+          "peak": {
+            "run": "vector-direct-complex-01-portable",
+            "frame": 20,
+            "ms": 5.7939
+          },
+          "gpu_ms": {
+            "mean": 0.0064641481481481486,
+            "p50": 0.005871111111111111,
+            "p95": 0.006821555555555556,
+            "p99": 0.006821555555555556,
+            "maximum": 0.008067777777777778
+          },
+          "setup_ms": {
+            "mean": 122.92988333333334,
+            "p50": 120.6388,
+            "p95": 125.5888,
+            "p99": 125.5888,
+            "maximum": 129.0211
+          },
+          "setup_plus_cold_ms": {
+            "mean": 123.44083333333333,
+            "p50": 121.1563,
+            "p95": 126.80850000000001,
+            "p99": 126.80850000000001,
+            "maximum": 129.29059999999998
+          },
+          "path_residency_bytes": {
+            "mean": 39760,
+            "p50": 39760,
+            "p95": 39760,
+            "p99": 39760,
+            "maximum": 39760
+          },
+          "image_bytes": {
+            "mean": 1081600,
+            "p50": 1081600,
+            "p95": 1081600,
+            "p99": 1081600,
+            "maximum": 1081600
+          },
+          "draws": {
+            "sum": 1080,
+            "maximum": 1
+          },
+          "draw_cpp_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "draw_buffer_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "upload_bytes": {
+            "sum": 10782720,
+            "maximum": 9984
+          },
+          "resident_upload_bytes": {
+            "sum": 0,
+            "maximum": 0
+          }
+        },
+        "native": {
+          "runs": 6,
+          "frames": 1080,
+          "cpu_ms": {
+            "mean": 2.2871883333333334,
+            "p50": 1.9056,
+            "p95": 4.3086,
+            "p99": 6.5412,
+            "maximum": 7.721
+          },
+          "cold_ms": {
+            "mean": 1.5851166666666665,
+            "p50": 1.4859,
+            "p95": 1.9526,
+            "p99": 1.9526,
+            "maximum": 2.0136
+          },
+          "peak": {
+            "run": "vector-direct-complex-04-native",
+            "frame": 137,
+            "ms": 7.721
+          },
+          "gpu_ms": {
+            "mean": 2.2826936296296294,
+            "p50": 2.1749435555555556,
+            "p95": 2.4351113333333334,
+            "p99": 2.4351113333333334,
+            "maximum": 2.4596255555555553
+          },
+          "setup_ms": {
+            "mean": 116.98926666666667,
+            "p50": 116.2519,
+            "p95": 121.4151,
+            "p99": 121.4151,
+            "maximum": 121.6739
+          },
+          "setup_plus_cold_ms": {
+            "mean": 118.57438333333333,
+            "p50": 117.5631,
+            "p95": 122.95779999999999,
+            "p99": 122.95779999999999,
+            "maximum": 123.1598
+          },
+          "path_residency_bytes": {
+            "mean": 233728,
+            "p50": 233728,
+            "p95": 233728,
+            "p99": 233728,
+            "maximum": 233728
+          },
+          "image_bytes": {
+            "mean": 1253632,
+            "p50": 1253632,
+            "p95": 1253632,
+            "p99": 1253632,
+            "maximum": 1253632
+          },
+          "draws": {
+            "sum": 518400,
+            "maximum": 480
+          },
+          "draw_cpp_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "draw_buffer_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "upload_bytes": {
+            "sum": 66355200,
+            "maximum": 61440
+          },
+          "resident_upload_bytes": {
+            "sum": 0,
+            "maximum": 0
+          }
+        }
+      },
+      "cpu_mean_change_pct": 783.658935937534,
+      "gpu_mean_change_pct": 35213.13913780853
+    },
+    {
+      "workload": "vector",
+      "case": "direct-simple",
+      "variants": {
+        "portable": {
+          "runs": 6,
+          "frames": 1080,
+          "cpu_ms": {
+            "mean": 0.9806785185185185,
+            "p50": 0.5907,
+            "p95": 3.0404,
+            "p99": 5.7756,
+            "maximum": 8.6952
+          },
+          "cold_ms": {
+            "mean": 1.33155,
+            "p50": 1.2922,
+            "p95": 1.3401,
+            "p99": 1.3401,
+            "maximum": 1.7167
+          },
+          "peak": {
+            "run": "vector-direct-simple-02-portable",
+            "frame": 86,
+            "ms": 8.6952
+          },
+          "gpu_ms": {
+            "mean": 0.021485851851851853,
+            "p50": 0.018066,
+            "p95": 0.025448222222222223,
+            "p99": 0.025448222222222223,
+            "maximum": 0.03308866666666667
+          },
+          "setup_ms": {
+            "mean": 134.78751666666668,
+            "p50": 118.9797,
+            "p95": 122.5137,
+            "p99": 122.5137,
+            "maximum": 212.6483
+          },
+          "setup_plus_cold_ms": {
+            "mean": 136.11906666666667,
+            "p50": 120.27189999999999,
+            "p95": 123.8358,
+            "p99": 123.8358,
+            "maximum": 213.9884
+          },
+          "path_residency_bytes": {
+            "mean": 34192,
+            "p50": 34192,
+            "p95": 34192,
+            "p99": 34192,
+            "maximum": 34192
+          },
+          "image_bytes": {
+            "mean": 1081600,
+            "p50": 1081600,
+            "p95": 1081600,
+            "p99": 1081600,
+            "maximum": 1081600
+          },
+          "draws": {
+            "sum": 1080,
+            "maximum": 1
+          },
+          "draw_cpp_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "draw_buffer_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "upload_bytes": {
+            "sum": 561600000,
+            "maximum": 520000
+          },
+          "resident_upload_bytes": {
+            "sum": 0,
+            "maximum": 0
+          }
+        },
+        "native": {
+          "runs": 6,
+          "frames": 1080,
+          "cpu_ms": {
+            "mean": 1.2499072222222223,
+            "p50": 0.8171,
+            "p95": 3.6491,
+            "p99": 5.6009,
+            "maximum": 8.2075
+          },
+          "cold_ms": {
+            "mean": 1.4493166666666668,
+            "p50": 1.3606,
+            "p95": 1.5315,
+            "p99": 1.5315,
+            "maximum": 2.1766
+          },
+          "peak": {
+            "run": "vector-direct-simple-00-native",
+            "frame": 56,
+            "ms": 8.2075
+          },
+          "gpu_ms": {
+            "mean": 0.18444318518518518,
+            "p50": 0.159518,
+            "p95": 0.2225302222222222,
+            "p99": 0.2225302222222222,
+            "maximum": 0.246708
+          },
+          "setup_ms": {
+            "mean": 158.6646,
+            "p50": 120.4791,
+            "p95": 126.5116,
+            "p99": 126.5116,
+            "maximum": 349.604
+          },
+          "setup_plus_cold_ms": {
+            "mean": 160.11391666666665,
+            "p50": 121.85340000000001,
+            "p95": 127.7433,
+            "p99": 127.7433,
+            "maximum": 351.7806
+          },
+          "path_residency_bytes": {
+            "mean": 643784,
+            "p50": 643784,
+            "p95": 643784,
+            "p99": 643784,
+            "maximum": 643784
+          },
+          "image_bytes": {
+            "mean": 1048832,
+            "p50": 1048832,
+            "p95": 1048832,
+            "p99": 1048832,
+            "maximum": 1048832
+          },
+          "draws": {
+            "sum": 1080,
+            "maximum": 1
+          },
+          "draw_cpp_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "draw_buffer_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "upload_bytes": {
+            "sum": 691200000,
+            "maximum": 640000
+          },
+          "resident_upload_bytes": {
+            "sum": 0,
+            "maximum": 0
+          }
+        }
+      },
+      "cpu_mean_change_pct": 27.453308971264057,
+      "gpu_mean_change_pct": 758.4401794117747
+    },
+    {
+      "workload": "vector",
+      "case": "staged-complex",
+      "variants": {
+        "portable": {
+          "runs": 6,
+          "frames": 1080,
+          "cpu_ms": {
+            "mean": 0.2841862037037037,
+            "p50": 0.0549,
+            "p95": 1.49,
+            "p99": 3.9945,
+            "maximum": 6.3602
+          },
+          "cold_ms": {
+            "mean": 0.4164333333333333,
+            "p50": 0.3089,
+            "p95": 0.5695,
+            "p99": 0.5695,
+            "maximum": 0.7069
+          },
+          "peak": {
+            "run": "vector-staged-complex-00-portable",
+            "frame": 32,
+            "ms": 6.3602
+          },
+          "gpu_ms": {
+            "mean": 0.007026407407407407,
+            "p50": 0.006128222222222222,
+            "p95": 0.008228666666666667,
+            "p99": 0.008228666666666667,
+            "maximum": 0.009605111111111111
+          },
+          "setup_ms": {
+            "mean": 122.93183333333334,
+            "p50": 122.2437,
+            "p95": 123.9294,
+            "p99": 123.9294,
+            "maximum": 131.812
+          },
+          "setup_plus_cold_ms": {
+            "mean": 123.34826666666667,
+            "p50": 122.47030000000001,
+            "p95": 124.2383,
+            "p99": 124.2383,
+            "maximum": 132.234
+          },
+          "path_residency_bytes": {
+            "mean": 39760,
+            "p50": 39760,
+            "p95": 39760,
+            "p99": 39760,
+            "maximum": 39760
+          },
+          "image_bytes": {
+            "mean": 1081600,
+            "p50": 1081600,
+            "p95": 1081600,
+            "p99": 1081600,
+            "maximum": 1081600
+          },
+          "draws": {
+            "sum": 1080,
+            "maximum": 1
+          },
+          "draw_cpp_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "draw_buffer_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "upload_bytes": {
+            "sum": 10782720,
+            "maximum": 9984
+          },
+          "resident_upload_bytes": {
+            "sum": 2264924160,
+            "maximum": 2097152
+          }
+        },
+        "native": {
+          "runs": 6,
+          "frames": 1080,
+          "cpu_ms": {
+            "mean": 4.019517592592592,
+            "p50": 3.4623,
+            "p95": 6.8899,
+            "p99": 8.4081,
+            "maximum": 9.1902
+          },
+          "cold_ms": {
+            "mean": 2.0518666666666667,
+            "p50": 1.9296,
+            "p95": 2.2298,
+            "p99": 2.2298,
+            "maximum": 2.927
+          },
+          "peak": {
+            "run": "vector-staged-complex-00-native",
+            "frame": 9,
+            "ms": 9.1902
+          },
+          "gpu_ms": {
+            "mean": 4.029121111111111,
+            "p50": 3.955661111111111,
+            "p95": 4.101337333333333,
+            "p99": 4.101337333333333,
+            "maximum": 4.233717777777778
+          },
+          "setup_ms": {
+            "mean": 119.55775,
+            "p50": 119.6506,
+            "p95": 121.1624,
+            "p99": 121.1624,
+            "maximum": 121.418
+          },
+          "setup_plus_cold_ms": {
+            "mean": 121.60961666666667,
+            "p50": 121.3094,
+            "p95": 123.45270000000001,
+            "p99": 123.45270000000001,
+            "maximum": 123.8181
+          },
+          "path_residency_bytes": {
+            "mean": 233728,
+            "p50": 233728,
+            "p95": 233728,
+            "p99": 233728,
+            "maximum": 233728
+          },
+          "image_bytes": {
+            "mean": 1253632,
+            "p50": 1253632,
+            "p95": 1253632,
+            "p99": 1253632,
+            "maximum": 1253632
+          },
+          "draws": {
+            "sum": 518400,
+            "maximum": 480
+          },
+          "draw_cpp_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "draw_buffer_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "upload_bytes": {
+            "sum": 66355200,
+            "maximum": 61440
+          },
+          "resident_upload_bytes": {
+            "sum": 2264924160,
+            "maximum": 2097152
+          }
+        }
+      },
+      "cpu_mean_change_pct": 1314.3957518723869,
+      "gpu_mean_change_pct": 57242.54900823877
+    },
+    {
+      "workload": "vector",
+      "case": "staged-simple",
+      "variants": {
+        "portable": {
+          "runs": 6,
+          "frames": 1080,
+          "cpu_ms": {
+            "mean": 1.128548148148148,
+            "p50": 0.6393,
+            "p95": 3.622,
+            "p99": 8.0962,
+            "maximum": 10.1487
+          },
+          "cold_ms": {
+            "mean": 1.4119833333333334,
+            "p50": 1.3276,
+            "p95": 1.4125,
+            "p99": 1.4125,
+            "maximum": 1.9618
+          },
+          "peak": {
+            "run": "vector-staged-simple-04-portable",
+            "frame": 156,
+            "ms": 10.1487
+          },
+          "gpu_ms": {
+            "mean": 0.049715,
+            "p50": 0.022820888888888887,
+            "p95": 0.05275222222222222,
+            "p99": 0.05275222222222222,
+            "maximum": 0.1550688888888889
+          },
+          "setup_ms": {
+            "mean": 123.34115,
+            "p50": 118.1683,
+            "p95": 123.3368,
+            "p99": 123.3368,
+            "maximum": 149.4782
+          },
+          "setup_plus_cold_ms": {
+            "mean": 124.75313333333332,
+            "p50": 119.5808,
+            "p95": 125.2986,
+            "p99": 125.2986,
+            "maximum": 150.82289999999998
+          },
+          "path_residency_bytes": {
+            "mean": 34192,
+            "p50": 34192,
+            "p95": 34192,
+            "p99": 34192,
+            "maximum": 34192
+          },
+          "image_bytes": {
+            "mean": 1081600,
+            "p50": 1081600,
+            "p95": 1081600,
+            "p99": 1081600,
+            "maximum": 1081600
+          },
+          "draws": {
+            "sum": 1080,
+            "maximum": 1
+          },
+          "draw_cpp_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "draw_buffer_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "upload_bytes": {
+            "sum": 561600000,
+            "maximum": 520000
+          },
+          "resident_upload_bytes": {
+            "sum": 2264924160,
+            "maximum": 2097152
+          }
+        },
+        "native": {
+          "runs": 6,
+          "frames": 1080,
+          "cpu_ms": {
+            "mean": 1.197925462962963,
+            "p50": 0.7999,
+            "p95": 3.4408,
+            "p99": 5.4525,
+            "maximum": 9.5426
+          },
+          "cold_ms": {
+            "mean": 1.2751166666666667,
+            "p50": 1.2132,
+            "p95": 1.437,
+            "p99": 1.437,
+            "maximum": 1.7446
+          },
+          "peak": {
+            "run": "vector-staged-simple-05-native",
+            "frame": 144,
+            "ms": 9.5426
+          },
+          "gpu_ms": {
+            "mean": 0.18333418518518518,
+            "p50": 0.14140755555555556,
+            "p95": 0.24149422222222225,
+            "p99": 0.24149422222222225,
+            "maximum": 0.2965377777777778
+          },
+          "setup_ms": {
+            "mean": 123.37446666666666,
+            "p50": 123.8031,
+            "p95": 124.9438,
+            "p99": 124.9438,
+            "maximum": 125.514
+          },
+          "setup_plus_cold_ms": {
+            "mean": 124.64958333333334,
+            "p50": 125.1755,
+            "p95": 126.3808,
+            "p99": 126.3808,
+            "maximum": 126.7272
+          },
+          "path_residency_bytes": {
+            "mean": 643784,
+            "p50": 643784,
+            "p95": 643784,
+            "p99": 643784,
+            "maximum": 643784
+          },
+          "image_bytes": {
+            "mean": 1048832,
+            "p50": 1048832,
+            "p95": 1048832,
+            "p99": 1048832,
+            "maximum": 1048832
+          },
+          "draws": {
+            "sum": 1080,
+            "maximum": 1
+          },
+          "draw_cpp_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "draw_buffer_allocations": {
+            "sum": 0,
+            "maximum": 0
+          },
+          "upload_bytes": {
+            "sum": 691200000,
+            "maximum": 640000
+          },
+          "resident_upload_bytes": {
+            "sum": 4529848320,
+            "maximum": 4194304
+          }
+        }
+      },
+      "cpu_mean_change_pct": 6.147483820575772,
+      "gpu_mean_change_pct": 268.77036143052436
+    }
+  ],
+  "same_binary_aa": [
+    {
+      "case": "staged-plain",
+      "variants": {
+        "a": {
+          "cpu_ms": {
+            "mean": 3.598086944501757,
+            "p50": 2.94849999994,
+            "p95": 6.08740000054,
+            "p99": 15.4276999999,
+            "maximum": 16.5850999989
+          },
+          "gpu_ms": {
+            "mean": 1.000823611111111,
+            "p50": 0.9987777777777778,
+            "p95": 1.004966,
+            "p99": 1.004966,
+            "maximum": 1.0145555555555557
+          }
+        },
+        "b": {
+          "cpu_ms": {
+            "mean": 3.5925548611507154,
+            "p50": 2.95089999959,
+            "p95": 5.57019999996,
+            "p99": 15.5403999984,
+            "maximum": 17.9679000005
+          },
+          "gpu_ms": {
+            "mean": 0.9980325555555556,
+            "p50": 0.9959368888888889,
+            "p95": 1.001938,
+            "p99": 1.001938,
+            "maximum": 1.0059517777777778
+          }
+        }
+      },
+      "cpu_mean_change_pct": -0.1537506857496984,
+      "gpu_mean_change_pct": -0.2788758702901517
+    },
+    {
+      "case": "staged-cache",
+      "variants": {
+        "a": {
+          "cpu_ms": {
+            "mean": 3.7489115972265346,
+            "p50": 3.04900000058,
+            "p95": 5.92950000055,
+            "p99": 15.9188000001,
+            "maximum": 20.0342000015
+          },
+          "gpu_ms": {
+            "mean": 1.0016463055555556,
+            "p50": 0.9911153333333332,
+            "p95": 1.0182346666666666,
+            "p99": 1.0182346666666666,
+            "maximum": 1.0318457777777776
+          }
+        },
+        "b": {
+          "cpu_ms": {
+            "mean": 3.768953958331153,
+            "p50": 3.05279999971,
+            "p95": 7.06000000052,
+            "p99": 16.2873999998,
+            "maximum": 25.1350999996
+          },
+          "gpu_ms": {
+            "mean": 1.0029202777777777,
+            "p50": 1.0027204444444444,
+            "p95": 1.006647111111111,
+            "p99": 1.006647111111111,
+            "maximum": 1.0071251111111112
+          }
+        }
+      },
+      "cpu_mean_change_pct": 0.5346181307514852,
+      "gpu_mean_change_pct": 0.12718783218748086
+    }
+  ],
+  "memory_supplement": [
+    {
+      "name": "direct-simple-native",
+      "total_upload_bytes": 5245688,
+      "device_local_upload_bytes": 0,
+      "host_mapped_upload_bytes": 5245688
+    },
+    {
+      "name": "direct-simple-portable",
+      "total_upload_bytes": 3145728,
+      "device_local_upload_bytes": 0,
+      "host_mapped_upload_bytes": 3145728
+    },
+    {
+      "name": "direct-complex-native",
+      "total_upload_bytes": 3158408,
+      "device_local_upload_bytes": 0,
+      "host_mapped_upload_bytes": 3158408
+    },
+    {
+      "name": "direct-complex-portable",
+      "total_upload_bytes": 3145728,
+      "device_local_upload_bytes": 0,
+      "host_mapped_upload_bytes": 3145728
+    },
+    {
+      "name": "staged-simple-native",
+      "total_upload_bytes": 9439992,
+      "device_local_upload_bytes": 4194304,
+      "host_mapped_upload_bytes": 5245688
+    },
+    {
+      "name": "staged-simple-portable",
+      "total_upload_bytes": 5242880,
+      "device_local_upload_bytes": 2097152,
+      "host_mapped_upload_bytes": 3145728
+    },
+    {
+      "name": "staged-complex-native",
+      "total_upload_bytes": 5255560,
+      "device_local_upload_bytes": 2097152,
+      "host_mapped_upload_bytes": 3158408
+    },
+    {
+      "name": "staged-complex-portable",
+      "total_upload_bytes": 5242880,
+      "device_local_upload_bytes": 2097152,
+      "host_mapped_upload_bytes": 3145728
+    }
+  ],
+  "memory_binary_hash": "40d04e9b63f1a994bf9579d83e7b528e2758975224b844c1f3dfe09971d637ff",
+  "telemetry_schema": {
+    "primary_vector_resident_upload_bytes": "device-local subset only",
+    "memory_supplement_mapped_upload_bytes": "historical label for total upload counter; host-mapped = total - device-local"
+  },
+  "production_source_changed_after_primary": false,
+  "test_source_changed_after_primary": [
+    "tests/bench_vector.inl",
+    "tests/test_vulkan_vector_lifecycle.inl"
+  ],
+  "final_source_hashes": {
+    "include/pufferui/pufferui.h": "a9d1476af794327d3582a388027ab17cd8a0315e84429c671b1b32dca03a1dc9",
+    "include/pufferui/vulkan.h": "4e2e5a3a42d32f7a4f26b8dbf4d294ac96817a607447770eb6a74b9b74f0c1d6",
+    "include/pufferui/impl/chrome_scroll.inl": "d8b4cc31ca403fedfd48add4927c42ce0aaef59c1d9bd9e77834fc773882da50",
+    "include/pufferui/impl/components.inl": "21aad5d9c1c3ef8da97b814a54f7414dcb2b4ef1bb47b5d89f7fceebc4e7b3ee",
+    "include/pufferui/impl/core_pool.inl": "e2391d3ac142193d946df809bcdbab957ce3d9da4f6578443a422482952bd534",
+    "include/pufferui/impl/core_state.inl": "f15fff269881b9fc1154e0e94ac8757fe4a8f0b6d8ac721fea5f3f9b4bc02123",
+    "include/pufferui/impl/dock_style.inl": "400a11bc84f737312af3049d71779e8b606c54ee04273dfa38be85c5c05c2e19",
+    "include/pufferui/impl/draw_context.inl": "0c4aa736a0b4900ee9341072da532333303f7fc614a429fdee583a9a11c73518",
+    "include/pufferui/impl/draw_primitives.inl": "4d93054f9a72f1e93ff09cf460f1cd55eeba91206d10b1227f3d5e5b22593f1f",
+    "include/pufferui/impl/harfbuzz_text.inl": "0e226dbd54e7f98250e4a2166561474d76d4d9c2fc07e61231362fb68bbd15b2",
+    "include/pufferui/impl/input_interact.inl": "e151e2467bf43b549f45f6e24bf6c41c42a525c294bb72ff0637451d5d1df66e",
+    "include/pufferui/impl/layout_text.inl": "908e23b134db22fe64db3c376d6b3dbf46c003823077bb971e3a593a5ec84a75",
+    "include/pufferui/impl/renderer_gradient.inl": "112f77dcf3cad9edb3e37052332c85408e15e0b4d50f46b688b3ab8d785f613f",
+    "include/pufferui/impl/renderer_mesh_state.inl": "df3adf6885c46fb83f70a53fce9440dab6128f0ea6ba014878706073119126b0",
+    "include/pufferui/impl/renderer_overlay_state.inl": "7a783c26e4b9230c1e1fc31058d46bdd35a9a5020861273c69881b44af7b87ff",
+    "include/pufferui/impl/renderer_primitives.inl": "4aa03448c974362db346f9c8e6bb1a7f2055980d92a0d5967d4fe729f4007e41",
+    "include/pufferui/impl/renderer_text.inl": "a3b9c57744e5877f6e1d27f4425d2569aacd5722adff575a99f9bba771d249b1",
+    "include/pufferui/impl/renderer_text_state.inl": "ca81433f90439a581001327d788e640c5d7b2309589eab14757a34ac5c2cfcb1",
+    "include/pufferui/impl/renderer_vector.inl": "630bd8cccfb19918c0477be5f3ffc3ee749139a7e1a690701d9ffa96b6443327",
+    "include/pufferui/impl/renderer_vector_boolean.inl": "673532ef376733be3085ea666503d94d4853f9af7ca68beb9a806f407142a332",
+    "include/pufferui/impl/renderer_vector_boundary.inl": "41cf7dc0afe18ca132331b064efc7f0a2f5fa2a256141e0e6d648ff1f0fced22",
+    "include/pufferui/impl/renderer_vector_geometry.inl": "b6676dfbb7004c567cf4c1a6d40e505fe882946d23a61b42864833044c4bf412",
+    "include/pufferui/impl/renderer_vector_gpu.inl": "3dd031dbe5b04c87f26c21345fdb2b5bd5cfa1444672a34e689a83923391ce21",
+    "include/pufferui/impl/renderer_vector_paint.inl": "fd1c4798f870de6af38f320ca52d6896bc5357f47bb7622a5a26df513ca78e2d",
+    "include/pufferui/impl/renderer_vector_raster.inl": "2909bb915e8d3e5806d45d671350990bace3bb152d9295caebdda732c59dab65",
+    "include/pufferui/impl/renderer_vector_slug.inl": "39060e1a0ccd10c06a12ba11039e810502aa3c3ff0b9975fd3baafa0650f533d",
+    "include/pufferui/impl/renderer_widgets.inl": "3d44bd81b1a72dc990ec38867adcfd46d7238ab79f904df381b96b219518518c",
+    "include/pufferui/impl/sdl3.inl": "89cc37ac52d2e490f3f7efd319eee2dd74559e99d1cd0ebe9168a6e8498f8489",
+    "include/pufferui/impl/sdl3_vulkan_host.inl": "9b51c683ab4192478f1ce0542ef7d1563071aa8afc1079d333873eea684f2acb",
+    "include/pufferui/impl/typed_inputs.inl": "b7000448abae71477f297bed6c11d8b0e804d129ff3796a27fd91698ae714480",
+    "include/pufferui/impl/uia_windows.inl": "81190fcf0169f493fb552472e03d25f78f9fa39346b6e3aef117dd5fe45d1758",
+    "include/pufferui/impl/vector_data.inl": "f5745cb9e77693087f64292eb2af9952d545872b97c2503ced9fcf6dc2a864b9",
+    "include/pufferui/impl/vector_svg.inl": "f9f891bf5492a8f86ea1c5179d39b8f5fe37a0ead7b4f8419db1d0ad99a6db92",
+    "include/pufferui/impl/vector_svg_clips.inl": "105e69731d693938316363f739e94f7eb83a4a4a565700654c68c51f64d21c6f",
+    "include/pufferui/impl/vector_svg_geometry.inl": "49c5a3fb169f68843b788ab222025b413bdf307a5403cf449b958d20381174a5",
+    "include/pufferui/impl/vector_svg_gradients.inl": "60be5f58071611dcf78a2e0adee2c3386556b0066f1b666f2d2deef9763f2581",
+    "include/pufferui/impl/vector_svg_namespaces.inl": "d5f99a02326c6be29053a08bcc3eb68899054217edb93eda8e9fec12cc875d97",
+    "include/pufferui/impl/vector_svg_path.inl": "abfbac3dea6b8703e02b7882bd1f7c487aebc11b78036bdaf92471de07324763",
+    "include/pufferui/impl/vector_svg_scene.inl": "0655eb10793c03f388aca8d57bcc899cdf60d2a70c1f4d5f76b8f7e4f2dc4c90",
+    "include/pufferui/impl/vector_svg_style.inl": "a6be764a071d69edfd6ac5310c8f52c93d7ffd6ccef827cbdbaca30c1abf814a",
+    "include/pufferui/impl/vector_svg_xml.inl": "ca251e1c7cc1e41762e52aba2fec6e9a7e95c950e897ffddcf89c268f6db0dfd",
+    "include/pufferui/impl/vulkan_blur.inl": "eb96cb7a9b6d2f9a848736684e24168bcd73edb72f6511aa2046e6af1f04da42",
+    "include/pufferui/impl/vulkan_cache.inl": "0d0106746444ba186c5d2103ea7b8b88e6a75590c84eeb47386d430e63796a9a",
+    "include/pufferui/impl/vulkan_device.inl": "5417186df8f94af4d2f99ce787f22a39e57f77ec90a7390869c62df12432202b",
+    "include/pufferui/impl/vulkan_dispatch.inl": "7a288aa96d997809c71baa7f5512e57f77b7588fb69cae5d8e6116dbb417fb88",
+    "include/pufferui/impl/vulkan_draw.inl": "6b42e5a54e294268395b38d1e3141925df6edc857bc1c2a1eb1e78d4c4303dd3",
+    "include/pufferui/impl/vulkan_memory.inl": "7d7e6542b54aaa14f7bc2669b63275849d04667b8930c2f8330e102035c4ba3d",
+    "include/pufferui/impl/vulkan_native.inl": "a7336c41cbff843c5f3e58572c5205dea22713ca20095e5d07c5caabc766f848",
+    "include/pufferui/impl/vulkan_preparation.inl": "d08b025b177fe5afc47b8c2d0697298b8077cbdfcd7370f548322973d3803fe1",
+    "include/pufferui/impl/vulkan_resources.inl": "e5e1bcd37f03f2889ee59a158e74806ae678afa39eb20dc4e60d356327920de6",
+    "include/pufferui/impl/vulkan_shaders.inl": "0e60a808e25116bf03bc3918c755d34a0e86a46a72f32191667d98b87bee30be",
+    "include/pufferui/impl/vulkan_surface.inl": "2c2d719fc6c28de8fe851d8af3d525e6e970c9f3ca5a71f40371d57d26d56f74",
+    "include/pufferui/impl/vulkan_text.inl": "80c451f8cb97e880312ab649f6d89e580617656626f5bbef2e162d6315037631",
+    "include/pufferui/impl/vulkan_text_coverage.inl": "d4c5a5edf8ff254752491912f4f5955fc7ad880638991c37fc4423f5f6d8d898",
+    "include/pufferui/impl/vulkan_vector.inl": "ce26198e340ccc2cdf336571249c843f8fdb2601262f02e5eca53038ed8d650f",
+    "include/pufferui/impl/vulkan_vector_pipeline.inl": "47fa4e3a8316d8071a8590b9f3597631b6e05e953ef237b42d6b66caae261933",
+    "include/pufferui/impl/vulkan_vector_shaders.inl": "8453648871a97932c4ff6b6f50b42fab79e22475442fa2f06a12dfbfb08c4ce1",
+    "include/pufferui/impl/widgets.inl": "5c7c078aa6bb95aa7e93ea9047efba018c452d4c16fb953942274661cdfe8f18",
+    "src/pufferui_impl.cpp": "798bb2a2e15fe0546419be42694caea5e01568aaaafbfb22ea443905e06f6ef8",
+    "src/sdl_d3d11_arena.inl": "1c0e9105c3b4e2d0913069eeb34ac4caaf68183356f4e605e8644f9c6cbe28df",
+    "src/sdl_d3d11_buffer.h": "b980858d3eb64a4e4b44698880603bf0efc0fde254643f32d2a3e698dcb7d3cd",
+    "src/sdl_d3d11_buffer.inl": "726328615af1944095ba741a4dc737e785ace73c145bc74e87114f78088c157a",
+    "src/sdl_d3d11_draw.inl": "a1b484fcc47e5525d88732a593e9d6fdc523b6746959ac96b55d32d40ca3912f",
+    "src/sdl_d3d11_geometry.inl": "81ccb578b4bba15444bb2a146eb710f524dece7ab471df4e95a60e50b7a54247",
+    "src/shaders/vulkan/harfbuzz_slug.glsl": "a83b9587e42b1e3db726be5b6237589007ce33a1bf607c8aea8e8c7bdffa12df",
+    "src/shaders/vulkan/path.frag": "1f73596a6608b314f278ce32adb8138c86f093e4850a33885d0299d7813b6f80",
+    "src/shaders/vulkan/path.vert": "a2e555789d7ebe1732478dc9f60be509e368220ce74534d2187a9fc4171c80c8",
+    "src/shaders/vulkan/text.frag": "dd42e3ea90253b37c0528810c8980246aaba0d9834b24b6531e3fa18beec57e3",
+    "src/shaders/vulkan/text.vert": "d4aba9bc8d5484b7fb6d262d0f15957b62a59e0eebe6acb67de9899c8d6a3e95",
+    "src/shaders/vulkan/ui.frag": "ad7ca02655046dc54898fb409b9d0719eeaa909ee9bba57ea479191c261714f9",
+    "src/shaders/vulkan/ui.vert": "e805a100dbab4253f3fa46346a02de33ea0a2618b5176b4c9ceda8def0e120cf",
+    "examples/dock_helpers.h": "f2f6f3522c19ec4dfef905029d2cec5e987584bb2254316c7a454278320e0083",
+    "examples/example_common.h": "b9f23eb4530359cf64c00e5fa2beb20327da6a9ddcefaf84ebedbf9a79df8773",
+    "examples/pui_counter.cpp": "925378b12ed5cf89f4ccc8810797b2b57cf1229d58b62950ea402b8418e23c77",
+    "examples/pui_demo.cpp": "ab885689d0a75c9c371ecb88629ce943019848cb3703d2dd01cdbf9049094ce2",
+    "examples/pui_showcase.cpp": "e456691e0bc0a074a10cb9835bcde087f753f9278aa73c94b2703499ff782786",
+    "examples/pui_tour.cpp": "f1f5b0047818cd650ed74b2b82058b84de32676c01be92895438fc9c704aada4",
+    "examples/vector_gallery.h": "529543cceee10b8a9faddd966915a3525221fa2bec54295e2207522493f3f793",
+    "examples/atomic/a11y.cpp": "40a182362964131e1030221e7a3e5d7acdbf491d7a4daa08e8f2e5fae68d3c34",
+    "examples/atomic/animation.cpp": "b1af8acef468e5d32fb9b39687539aca8f2ec9dd3b4e2462e4c345075272da4d",
+    "examples/atomic/blur.cpp": "9fb14e1d34fba0281c5527f48f23211326fc7ac4914904bc02fadb522d1af8dc",
+    "examples/atomic/bootstrap.cpp": "2b4dd94a570477fa70239aabbceec1dfacdb2c99a45d3e15057d7d9577daaa55",
+    "examples/atomic/buttons.cpp": "9969193ba86907bfcbda2747f4322f82ef90755ae47a38266871d963776085c8",
+    "examples/atomic/colors.cpp": "c70b0f68c3a0a6d755490225a8452b3e1337a5ef789261dd70491d337cda47cc",
+    "examples/atomic/combo.cpp": "043526548d7f9f8f57591ac1e85db738a0c1bd013c9553958193fd426b0d39f4",
+    "examples/atomic/components.cpp": "d383e445998d4b3f069e9466c904422454feb962d01d6600e080ab7477b2ed54",
+    "examples/atomic/controls.cpp": "784b46feb31ed49358f28e3eef6f11fdc16b15b6d3c41a1754df197e9e67e817",
+    "examples/atomic/cursors.cpp": "a3422285cf778e6a4a117afccc7ad6d507a17f3012bd7db7403c418fb840a395",
+    "examples/atomic/custom.cpp": "4956327cef9677c3668ea175d1cab77c3dd6ae1517543c015d7b4abb956f746d",
+    "examples/atomic/dock.cpp": "6fb731b8faf9d27be92ef156a6615815cbbcfb64d54e81b7fa3d024612a12679",
+    "examples/atomic/dpi.cpp": "26331be5d8675eb48706e2420fcf7c4543a9c7a149fa93a7e4376ad9f502d4f2",
+    "examples/atomic/drawing.cpp": "5405b626e94965bcabbb58110deb5a68986d6238768247eeb0950aff97b66e46",
+    "examples/atomic/expander.cpp": "1dd09e9058b4f045cf8ce5bf63e445f55d58de05f1ddd0ef8c906268f02f6d33",
+    "examples/atomic/files.cpp": "f8c036f299677b226c15ffd68b73e72b5e30161bb8ef8bc60d3a913d06ebf567",
+    "examples/atomic/grid.cpp": "b09ef5c27cd8d810daf5b6299a36f92d319b393276d412768ec7c094d9a788e9",
+    "examples/atomic/headless.cpp": "a940b7276eb579dd246a33e44144370a1588408bf8b66e35f54d48e223b34697",
+    "examples/atomic/hello.cpp": "03291636b2bd41c9375fac99a9aad4f44468f26521135b2ee96903c83e715085",
+    "examples/atomic/ids.cpp": "4012dd82fbb864f790cc7974ba75caeba2fe68db8deebd784e61d63c603312ed",
+    "examples/atomic/inputs.cpp": "ad452914689f2332294de4e851f17d0690676c6392a0bee1ec809607ebc03afa",
+    "examples/atomic/keyboard.cpp": "8e34aea699c7ce372b52f5df78ab12621cdfe3bdfe23ee5b2cbf8d5d8405526d",
+    "examples/atomic/numeric.cpp": "2fceb603e05e0f60ad7af6581a15fbf01f50be19cf5859dc4dc37c20857056f7",
+    "examples/atomic/overflow.cpp": "d17d812f398207f3a43c0fa043a2492042b575fc1113450f9cd391cc922503d0",
+    "examples/atomic/panels.cpp": "09daff315db249877ee1eadb5d96166dd6e8e2d1e846a4d9017ba673ac63d123",
+    "examples/atomic/patterns.cpp": "1023af2178a5302416881e8d0563b101ab2cb118447689f6e384857bde2ee860",
+    "examples/atomic/pickers.cpp": "65f1740fb093dcf86b890ad52b907b8efd8fb694483ebd40b2e34753d6d752f9",
+    "examples/atomic/popups.cpp": "df1e6d6f098bf4c6450c9f50c8b028669a4dcfcedbd2c0ce57b4c671b1080115",
+    "examples/atomic/rect.cpp": "de42b9b53b59cb779f66ddfd580353708a09d5d038e48fcca74fb1eabf9476de",
+    "examples/atomic/relayout.cpp": "cb94595c0538d440a91311282fea0d5ae5e4936d79070893e90ac5161c0cfc62",
+    "examples/atomic/renderer.cpp": "77d4a7edcfd9e67b4f6a7ad3de507c4b6029e8e8dcb6e2522dd4e0ddd01bc44f",
+    "examples/atomic/scroll.cpp": "ae67fcb05b9dc21dde92a700e4321968286bf34eefa0e8b1361bb2086f90007d",
+    "examples/atomic/tables.cpp": "8eadd7853b829d01f31d124c74a35a4841952b367d6ac67b263754feb5c96a67",
+    "examples/atomic/text.cpp": "f6439dc37656ec2f6644f32cc680b9d4f4ba31bb3b0b8ef6da143967b7c37b79",
+    "examples/atomic/textarea.cpp": "74819b7a0780707e29deec3199299b9c468285b1adddfbe54a7cf84525ba19e4",
+    "examples/atomic/theme.cpp": "ecb9fe09f5af3cd3a195f9aae055a4d2558cd8b7eea47dc9786fc81598ea3ae7",
+    "examples/atomic/tracks.cpp": "f1032181a4a25a071faefbac7f1550ddab7a3f84bde82a53d7205c466d49f0f8",
+    "examples/atomic/tree.cpp": "4a4105eb9d4bed4f827de9a96906da3b7280cf76bb38f7c48b94cc99cc1a41c4",
+    "examples/atomic/vector.cpp": "e3c776a883510bc5f807b61cf41639685059f92f284c430b2fafa0326dbde62f",
+    "examples/atomic/vlist.cpp": "942bc4bce20db1606577ec38797239668d46ce917d131729d8a3db3410021269",
+    "examples/atomic/vulkan.cpp": "1978741409af45dc5d129c1329f3b3e172409eb52185b85a96c2fe7bb027cbee",
+    "examples/atomic/vulkan_preparation.cpp": "86b2a9547a1f4abd4592073c555d5aa95e6e9e32b28fb8c644cc9d22564da5e0",
+    "examples/atomic/widgets.cpp": "17a90bc52dbb6b620ac236bfd4e45e791b6e0bc915a5d94eb362b614a3ecde61",
+    "examples/atomic/windows.cpp": "120a4d75fe40acdfe4a5c7af5f64f916c4d149765f79ad46011166c5f9a782b6",
+    "examples/tutorial/button_states.cpp": "56ff9f7439efbbb090ebd646d76f8a3b42937e5341752984affc163b28136c10",
+    "examples/tutorial/glass.h": "2132cf4031e6eca3d783b72ce79fb9344e31a83986551170b96f4750137e0ab5",
+    "examples/tutorial/glass_widgets.h": "0bd519557244c1dd3085668fe076c576bfd826efa553c2625e0f56574dd1e7d8",
+    "examples/tutorial/step01_shot.cpp": "75b36f0022dad46065afc25bc649a8a75a53c9e5e4bf449e03e5379c3c71a644",
+    "examples/tutorial/step01_window.cpp": "b5304feb561ddb22f18029a7df07eccae88946abe3c1b6711224d303cfe278e1",
+    "examples/tutorial/step02_layout.cpp": "abc48138b2c7d3e4a53da92f5f1acc50d8adeb35357bd38663f8926a706b9911",
+    "examples/tutorial/step03_tasks.cpp": "67970386218a146bbb5debb0700236e75f5c2125d5899c33d6786004657ebcf6",
+    "examples/tutorial/step04_filters.cpp": "198525a638d35be295cbc54599c2a806888721b0cb075d4d9db4d8ff936b98db",
+    "examples/tutorial/step05_glass.cpp": "199c478e0ea3e1645e5401997978c09b6af8a7fa3a36b29e32385694fd526e1d",
+    "examples/tutorial/step06_motion.cpp": "491f31dc9bf7337f15cfd3214fcff808c1666d54b565420997de7c2987d67f48",
+    "examples/tutorial/todo.cpp": "24c4b288b8893a070f39f4f79fd5fec9014e3d8179bc2afe55da247150dfb0d8",
+    "examples/tutorial/todo_model.h": "1ecaf1800c9164fde450a4529003e44470524d84eca09ae5b0b0343907550c78",
+    "examples/tutorial/todo_test.cpp": "5ce5aa12eed1db23df8fab216563455a8262bcbd91ff4a9e914bca9223e25d2e",
+    "examples/tutorial/todo_ui.h": "52a925810f7bcb66204da117fdddebf68c6328a3b47cd02a21ce5b8150e8044d",
+    "examples/tutorial/tut.h": "44c91f47010fe1cafbe30e4b82f44e5f1a991ed3d92dc5908eca57446b8c32b9",
+    "examples/tutorial/vector_manual.cpp": "a43d46e40c4eef0f7d3fc1f403e4bbd1d14eb834ef9f36d284b0b2f91c2364be",
+    "examples/tutorial/vulkan_manual.cpp": "f56a62038a6beafc913d71e62cbca2889c019582c58124dc79f7e57be671ef37",
+    "tests/bench.cpp": "ecbfd2a0215adf47abb6398960def43c2ea3dd1838ea0d3557a660572104ed7a",
+    "tests/bench_core_performance.inl": "761ef98e7d753a32beff581eb9f7eaa2d994f991eaf9c88896ff151ce2bd25c3",
+    "tests/bench_vector.inl": "cf0f30ab678e308b7715949ffd9f28e003be85a404971b1afa7a6830c71b72b8",
+    "tests/bench_vulkan_native_optimizations.cpp": "d4ecf99478098ad33db6b771fab3cb159b532943c35d230a283d5c637d9e1849",
+    "tests/test_components.cpp": "83375b64524607e5c5381525287ca1c5a6473a5c76aaa543af068bae97bc5bbd",
+    "tests/test_core.cpp": "79067c12d17205eea213c87824d270553918cca42d941149ef0a7f3fa70aa45b",
+    "tests/test_core_performance.inl": "3dfbaddd55f760aecae73ea49ca3b929d05ece27dadc250af5c2b9d51a0b8e32",
+    "tests/test_core_perf_pixels.cpp": "3f3cc582418fcf0fd6bbbf7e6b3f3eb94c5a1c9f8f1e7e30fd55fa9eeef46eee",
+    "tests/test_dock.cpp": "4181b165f4b6634a3638eacc35a60e1af6e98e47a52a3bfd9a8f433eb5204811",
+    "tests/test_ergonomics.cpp": "94da126e932c4d3a4ba6dd0d7a652c5fce40d5490f457982f16cbb898e5644fd",
+    "tests/test_fan_performance.inl": "682a9264caf529e3bd18358ebd37d08b8c859e0fe8c24d9c89c13c432fe296df",
+    "tests/test_geometry_performance.inl": "fcbef413e14d63226d5ccfc4d59089edc91c074b6aec79f18f5b7614fd51b81e",
+    "tests/test_geometry_preparation.inl": "a9121fac2068d55cd0bc877dd2d04afb2071d40a960e2c261d2fc3f6e7de808b",
+    "tests/test_harfbuzz.cpp": "1ee07ea285b622b7da28296a82d550e9c400662726b149bd066b14e04fdfa720",
+    "tests/test_harfbuzz_interaction.cpp": "71cf3dd9a9a193af93ce217a90aaede0734f0742175236fea35969e813f7afb7",
+    "tests/test_input.cpp": "58bb610900e95d49a5ff52bba7c6495fd097b8eab5b4b3f83fc26b062fa50e5c",
+    "tests/test_layout.cpp": "7ae5dcd1b5a6ecfae3f1549622d308239e00a0b442e322b10d1cc8d3e6d0067f",
+    "tests/test_memory_performance.inl": "e1b0e64f890f0bb7c13afe6e0574c995a52852bfb44f41d68ce3a112f726d364",
+    "tests/test_memory_upload.cpp": "38606400b442095704eb86e8f2863b201053f5177ccbe4df9a3d27743b1e6294",
+    "tests/test_motion.cpp": "60dddffd37c3afcd215acf46c70b3750cb493f629b369a48efdf30ef417bdc6a",
+    "tests/test_native_optimization_tools.py": "6e37699dde764e0f42bbb6b4a56ac6fb48f79ab64ae0acecc557d76ffa043209",
+    "tests/test_native_vulkan_tools.py": "bc8065947360ba12fa9e8a903050fc2165ac15e87e2ca72e1113855504040d7c",
+    "tests/test_performance.inl": "bc97cc9b748f5fceeb8fef7576d06109a2ddcf3a39bd4b3ac661e6c1c9f7c92a",
+    "tests/test_perf_pixels.cpp": "973afcdf39317dbcb39ba795bc78c410c87bcb2f9dae0b3f93fbec1aacadef97",
+    "tests/test_platform.cpp": "b89c748a35e7d0d480e78ba7fcb4f1b13d0cd75dfa93bea7b801e4f1d9c7a1de",
+    "tests/test_pump.cpp": "1d5509bdcb7ad7cc6015c0e5f1a88dda09be43799bfc4b13d616e9bdee0e7dcc",
+    "tests/test_render.cpp": "80de5d1469d17f4b5d2e0657eb2f16f6ec7c649eba7ed315d6a9fdabef729dfb",
+    "tests/test_renderer_boundary.cpp": "e176cfce2e32f36a0225872659249600b5ac5f410cbc677d1b4bcc16717fb1f0",
+    "tests/test_sdl_capacity.cpp": "47f6087c476107b36fbc7ef1f662191e69b21c5d2e5c99cb21e6104bd3d30a93",
+    "tests/test_sdl_geometry.cpp": "d221ee0443b862d5e3488fce6e3bcf5d3a9fd617dee42c97a2eec79a0bd1935a",
+    "tests/test_sdl_upload.cpp": "e32f95aca5a017aa1e33f63434af58e444a4e43593d54211b206f3c14dde89ae",
+    "tests/test_showcase.cpp": "729379eb8f6e17e9ba8712852f6616e4d8a145c69dfeefb1457bba4bdb954cca",
+    "tests/test_showcase_paint.inl": "f655a80789477de0704df92ae745731626985b85bd31aedebf227d1513cd264a",
+    "tests/test_state_pool.inl": "c94f9851cf587ebad36f61714b132a40f0a962ad6ee7c3f1faf4b9ccc69093f6",
+    "tests/test_text.cpp": "95b5d2d673e9cb895dbb23a75d1bba08ab7802d2413e0b240ec12ee5ca8439f1",
+    "tests/test_textarea.cpp": "1d6f40f13521857565941aed679af0ddbfe2e15fb016c9c40153000b7a294a25",
+    "tests/test_util.h": "98d309de8744cdde6a1e4dfaec64d6e0ad3bd8f8cd1fab2273290ba4b8f78619",
+    "tests/test_vector.cpp": "bf76d4b6bd2a9de5b40d332a151faaee6307ca3cc4ca263f45a3ecef22d14fb2",
+    "tests/test_vector_amalgamation_tools.py": "eaa2a741f1e5213030ca36e5340214ebef4cb80609784fd20d3da0b3c309062e",
+    "tests/test_vector_data.inl": "9bf460ba51de70ac380d252fd1bcb2781d4028c49ebf937d9c5719b397ca5d13",
+    "tests/test_vector_gallery_tools.py": "3af89d579b5f52862d61d6e3d03633f217604d8253ddfe380e383f32135b897b",
+    "tests/test_vector_shader_tools.py": "43f4aeb2df73a1358a0b1a10b27f92b952b5c6880fc1c45a319d74be6d9f2e4b",
+    "tests/test_vulkan.cpp": "39ef946bc59ee2e500c71c78a3b6158880ad4cf5cfab13462441ee61c6459b1f",
+    "tests/test_vulkan_blur.cpp": "cad8b7913a7990eff95ae0dc18ebf209aba064e051a92f91834b853acb7dea75",
+    "tests/test_vulkan_blur_optimization.cpp": "a49fe666e8b39275aede84c1e044ca4496af81fd2eb402eac06c6c02083e38e7",
+    "tests/test_vulkan_cache.cpp": "e329c5669caf466de3f03f1f8099c57d3c8996dc4886d50de121f105d2a49bea",
+    "tests/test_vulkan_example_font.cpp": "35cecd1ddc52781c37edf2fce4d7e2d844dafb213a8ffb8683eeff5770262729",
+    "tests/test_vulkan_example_validation.cpp": "262dc7dd843069ddb12e6c5ab309342319e9c8649b2ca5a1be435113184680d6",
+    "tests/test_vulkan_external.cpp": "532f4c2012d32f2fd5230206f11bda2e371f34e4a61dc98468d832a6d268b433",
+    "tests/test_vulkan_faults.cpp": "c5db748d0fdedf9b7895ca74a8bdc37abfe0996164059bd5cf839b7e52a187cd",
+    "tests/test_vulkan_gaussian.cpp": "d3cb3ef69b6a78f5be818a1fda6c1637ba87fc7f42cc4f47a845201e5398d695",
+    "tests/test_vulkan_indexed.cpp": "42a44026b719af540c880e15c59cca4c0ae5a45855624157197686cd8ba234e4",
+    "tests/test_vulkan_integer.cpp": "ece0e8d9f8cf04be3b794c4a0c76ff5f642d6500233a0c83bb5521f1afc8cdaf",
+    "tests/test_vulkan_interaction.cpp": "eeb22055261354e7e9dda6c6cd1aa44bed016f6f23440ca4a99de9e014aa7bc5",
+    "tests/test_vulkan_internal.inl": "53330256ae2a9c382c517002dd0c66a9c78d36c893179e3e078fc74fc133a5fd",
+    "tests/test_vulkan_native_optimizations.cpp": "9b87c22f8845f8c81de659cc3bed84f7f05cdba711b4f3364d767bfccdbaa4d0",
+    "tests/test_vulkan_native_spiral.cpp": "56066abc68f1bf431ea6abce128db37559e125c247a2321bb3c730ec04a59e60",
+    "tests/test_vulkan_native_stream.inl": "5f5cfe60833da633e983b994a4bb638a1452fece40dda7521f28edbc57f627b9",
+    "tests/test_vulkan_native_text.cpp": "434fae70dc4f375ad42a2561b57b3e1bfbd715383c8f54d6ce2aee6d7340a122",
+    "tests/test_vulkan_preflight.cpp": "b7a9e06b3fb51c1c41fd16c6527a7c7c5cfe1109d7cec9659dc571157341722f",
+    "tests/test_vulkan_showcase.cpp": "b1d50d1fa2d4e3994693e88cdf9477d23eddf63383190eced31a974e7231f1c7",
+    "tests/test_vulkan_spiral.cpp": "0e47c781d13feb9f10022e5d5bf9a54c8bcbef241f71ff83426a418fff8e7f96",
+    "tests/test_vulkan_startup_spiral.cpp": "355b8e6930d035de19406e3559b8f0764339b01051438cf181e3daf62ed4178a",
+    "tests/test_vulkan_startup_tools.py": "bc3cab23efeef30437814ee6e90333f58342dd9a0836af8a13ff97a5942473c5",
+    "tests/test_vulkan_tools.py": "d43a9f01c369dfb8a15190eeeb9da708ae8309eaa3a427ed6af4a80c48a39cd3",
+    "tests/test_vulkan_vector_bounds.inl": "fa13311f32d51f40aad6e8fa83293708386dbb8cc6ec435195ce9aa752158811",
+    "tests/test_vulkan_vector_faults.inl": "46314584b0070c29ee476304bfceacda65a7df5086d2161120c2538d331613fb",
+    "tests/test_vulkan_vector_lifecycle.inl": "968bead46e0aa6287be6b2c4f70d6a9ec1fdf8f4f5cc16312441468f51579fdc",
+    "tests/test_vulkan_vector_overlay.inl": "52ea4416ee5ad1eb4650d178b192a085e04919fa0638c627734ca2c9f969476a",
+    "tests/test_vulkan_vector_painter.inl": "48a929728022429283c72f92f1a451fab6097902b2decb7c3f4311f6f243b1dc",
+    "tests/test_vulkan_vector_pipeline.inl": "b94b84fcbe62aa37f3a7ea40e37a31962c52bcb8eea2ce5cf7bbc084b6f89092",
+    "tests/test_vulkan_wsi.cpp": "233ae034277e04d476e66a54d75332b5902ee2de9e58f0327986af5380a064f6",
+    "tests/test_widgets.cpp": "88498ac9a68e976b8469b8e8ff9da9511b2a0e2d96f69ea0a20794a734d9a000",
+    "tests/consumer/main.cpp": "3c94e847a0b0a6fd4db623766cd15e6ec93af7f2af0f93205f56d428ebf8388f",
+    "tests/consumer_vulkan/main.cpp": "e2cbcd6a526012429b794a513c4845c9f2db1eba8c647eb2891fb510768d3c34",
+    "tests/golden/test_golden.cpp": "6d64ca62ae43957bf8fd82720433f74e5a7792772b6dd174366fe5fde3aea337",
+    "tools/amalgamate.ps1": "573b086ea609a4d6e37ae3fb8859822434ff311f08dcb4057f213a5b1e9ff433",
+    "tools/check_consumers.py": "a48e1816fd03296247e632f6fbac012e174be7659ddfa3b0ee7a60bf68527b6f",
+    "tools/check_tutorial.ps1": "46d0cd35849e0897094f05f0466c1411649a359185452089959a32dda84f4f8f",
+    "tools/check_vulkan_consumers.py": "8c0a68d923a89cf44bf03e438d733512b58f08b7b0387aa416b155e855b93fa7",
+    "tools/compare_core.ps1": "f814a5f89d9d659a9032d5a71da64a507f0506a651c2f5eb3bab2952efd82da2",
+    "tools/compare_showcase.ps1": "7b152d96bb94a70330f165026e4d614bb441dc9a2eb9b194fb7e34f9a90724a2",
+    "tools/compare_spiral.ps1": "e9accab4aee0f26a53d8002421d65583ba00b4d08a94aac8e692cd5098e9c68a",
+    "tools/compare_vulkan.py": "f6338fc50416d9a0fb67647ab28538a9471bfa49d78976601e12d3cfea3408aa",
+    "tools/compare_vulkan_blur.py": "d87c3bcbc493c039deaf7fb375a2a4a3c9cbe1a39adfe5aff0c5c34fdb8a04e0",
+    "tools/compare_vulkan_indexed.py": "1b31c3738e116cef6b905e9c370e3a72bf45d5f6c96d7f3bbc01b1d00d75d4ae",
+    "tools/compare_vulkan_native.py": "69b63b17dc828467ec292b9be6e40d4d459382bdbb911060b19b24c031680437",
+    "tools/compare_vulkan_native_optimizations.py": "033b9d4d1bbee478f64ab235a1f6eee970f9ac321e4c3556137f836f3e591c09",
+    "tools/compare_vulkan_startup.py": "83f70fb57f8d3cb17e423b7d44b426e27a1b72aa886fd276382dba3a5a4d6601",
+    "tools/compile_vulkan_shaders.py": "db007870498ef79f450cc976f681466c4799c6945f008e0dc9b4156afffd8d3e",
+    "tools/gen_api.ps1": "a5483c0a830809806e3df5230ca3f35904896989c9d5796ab467d0e92dfd3d19",
+    "tools/readme_shots.ps1": "53838b0b303ce4494665d40bf64a9da6b834d7b1ec629cefa2e32d8a9313ee5b",
+    "tools/run_tests.py": "2a49465082c400a8d48b40c4e8a7ee2301731673e038cf3efb4af70a86a83741",
+    "tools/run_vulkan_showcase.py": "c9a451da5cd0df47b709a3c8753a89552cb9f7e7fb97b5401238f88a333fbc35",
+    "tools/tutorial_shots.ps1": "37eedda5390c0cf9d5d42fd889ffdce97166473acebefc1740d29cfdfd4186f7"
+  },
+  "source_hashes": {
+    "include/pufferui/pufferui.h": "a9d1476af794327d3582a388027ab17cd8a0315e84429c671b1b32dca03a1dc9",
+    "include/pufferui/vulkan.h": "4e2e5a3a42d32f7a4f26b8dbf4d294ac96817a607447770eb6a74b9b74f0c1d6",
+    "include/pufferui/impl/chrome_scroll.inl": "d8b4cc31ca403fedfd48add4927c42ce0aaef59c1d9bd9e77834fc773882da50",
+    "include/pufferui/impl/components.inl": "21aad5d9c1c3ef8da97b814a54f7414dcb2b4ef1bb47b5d89f7fceebc4e7b3ee",
+    "include/pufferui/impl/core_pool.inl": "e2391d3ac142193d946df809bcdbab957ce3d9da4f6578443a422482952bd534",
+    "include/pufferui/impl/core_state.inl": "f15fff269881b9fc1154e0e94ac8757fe4a8f0b6d8ac721fea5f3f9b4bc02123",
+    "include/pufferui/impl/dock_style.inl": "400a11bc84f737312af3049d71779e8b606c54ee04273dfa38be85c5c05c2e19",
+    "include/pufferui/impl/draw_context.inl": "0c4aa736a0b4900ee9341072da532333303f7fc614a429fdee583a9a11c73518",
+    "include/pufferui/impl/draw_primitives.inl": "4d93054f9a72f1e93ff09cf460f1cd55eeba91206d10b1227f3d5e5b22593f1f",
+    "include/pufferui/impl/harfbuzz_text.inl": "0e226dbd54e7f98250e4a2166561474d76d4d9c2fc07e61231362fb68bbd15b2",
+    "include/pufferui/impl/input_interact.inl": "e151e2467bf43b549f45f6e24bf6c41c42a525c294bb72ff0637451d5d1df66e",
+    "include/pufferui/impl/layout_text.inl": "908e23b134db22fe64db3c376d6b3dbf46c003823077bb971e3a593a5ec84a75",
+    "include/pufferui/impl/renderer_gradient.inl": "112f77dcf3cad9edb3e37052332c85408e15e0b4d50f46b688b3ab8d785f613f",
+    "include/pufferui/impl/renderer_mesh_state.inl": "df3adf6885c46fb83f70a53fce9440dab6128f0ea6ba014878706073119126b0",
+    "include/pufferui/impl/renderer_overlay_state.inl": "7a783c26e4b9230c1e1fc31058d46bdd35a9a5020861273c69881b44af7b87ff",
+    "include/pufferui/impl/renderer_primitives.inl": "4aa03448c974362db346f9c8e6bb1a7f2055980d92a0d5967d4fe729f4007e41",
+    "include/pufferui/impl/renderer_text.inl": "a3b9c57744e5877f6e1d27f4425d2569aacd5722adff575a99f9bba771d249b1",
+    "include/pufferui/impl/renderer_text_state.inl": "ca81433f90439a581001327d788e640c5d7b2309589eab14757a34ac5c2cfcb1",
+    "include/pufferui/impl/renderer_vector.inl": "630bd8cccfb19918c0477be5f3ffc3ee749139a7e1a690701d9ffa96b6443327",
+    "include/pufferui/impl/renderer_vector_boolean.inl": "673532ef376733be3085ea666503d94d4853f9af7ca68beb9a806f407142a332",
+    "include/pufferui/impl/renderer_vector_boundary.inl": "41cf7dc0afe18ca132331b064efc7f0a2f5fa2a256141e0e6d648ff1f0fced22",
+    "include/pufferui/impl/renderer_vector_geometry.inl": "b6676dfbb7004c567cf4c1a6d40e505fe882946d23a61b42864833044c4bf412",
+    "include/pufferui/impl/renderer_vector_gpu.inl": "3dd031dbe5b04c87f26c21345fdb2b5bd5cfa1444672a34e689a83923391ce21",
+    "include/pufferui/impl/renderer_vector_paint.inl": "fd1c4798f870de6af38f320ca52d6896bc5357f47bb7622a5a26df513ca78e2d",
+    "include/pufferui/impl/renderer_vector_raster.inl": "2909bb915e8d3e5806d45d671350990bace3bb152d9295caebdda732c59dab65",
+    "include/pufferui/impl/renderer_vector_slug.inl": "39060e1a0ccd10c06a12ba11039e810502aa3c3ff0b9975fd3baafa0650f533d",
+    "include/pufferui/impl/renderer_widgets.inl": "3d44bd81b1a72dc990ec38867adcfd46d7238ab79f904df381b96b219518518c",
+    "include/pufferui/impl/sdl3.inl": "89cc37ac52d2e490f3f7efd319eee2dd74559e99d1cd0ebe9168a6e8498f8489",
+    "include/pufferui/impl/sdl3_vulkan_host.inl": "9b51c683ab4192478f1ce0542ef7d1563071aa8afc1079d333873eea684f2acb",
+    "include/pufferui/impl/typed_inputs.inl": "b7000448abae71477f297bed6c11d8b0e804d129ff3796a27fd91698ae714480",
+    "include/pufferui/impl/uia_windows.inl": "81190fcf0169f493fb552472e03d25f78f9fa39346b6e3aef117dd5fe45d1758",
+    "include/pufferui/impl/vector_data.inl": "f5745cb9e77693087f64292eb2af9952d545872b97c2503ced9fcf6dc2a864b9",
+    "include/pufferui/impl/vector_svg.inl": "f9f891bf5492a8f86ea1c5179d39b8f5fe37a0ead7b4f8419db1d0ad99a6db92",
+    "include/pufferui/impl/vector_svg_clips.inl": "105e69731d693938316363f739e94f7eb83a4a4a565700654c68c51f64d21c6f",
+    "include/pufferui/impl/vector_svg_geometry.inl": "49c5a3fb169f68843b788ab222025b413bdf307a5403cf449b958d20381174a5",
+    "include/pufferui/impl/vector_svg_gradients.inl": "60be5f58071611dcf78a2e0adee2c3386556b0066f1b666f2d2deef9763f2581",
+    "include/pufferui/impl/vector_svg_namespaces.inl": "d5f99a02326c6be29053a08bcc3eb68899054217edb93eda8e9fec12cc875d97",
+    "include/pufferui/impl/vector_svg_path.inl": "abfbac3dea6b8703e02b7882bd1f7c487aebc11b78036bdaf92471de07324763",
+    "include/pufferui/impl/vector_svg_scene.inl": "0655eb10793c03f388aca8d57bcc899cdf60d2a70c1f4d5f76b8f7e4f2dc4c90",
+    "include/pufferui/impl/vector_svg_style.inl": "a6be764a071d69edfd6ac5310c8f52c93d7ffd6ccef827cbdbaca30c1abf814a",
+    "include/pufferui/impl/vector_svg_xml.inl": "ca251e1c7cc1e41762e52aba2fec6e9a7e95c950e897ffddcf89c268f6db0dfd",
+    "include/pufferui/impl/vulkan_blur.inl": "eb96cb7a9b6d2f9a848736684e24168bcd73edb72f6511aa2046e6af1f04da42",
+    "include/pufferui/impl/vulkan_cache.inl": "0d0106746444ba186c5d2103ea7b8b88e6a75590c84eeb47386d430e63796a9a",
+    "include/pufferui/impl/vulkan_device.inl": "5417186df8f94af4d2f99ce787f22a39e57f77ec90a7390869c62df12432202b",
+    "include/pufferui/impl/vulkan_dispatch.inl": "7a288aa96d997809c71baa7f5512e57f77b7588fb69cae5d8e6116dbb417fb88",
+    "include/pufferui/impl/vulkan_draw.inl": "6b42e5a54e294268395b38d1e3141925df6edc857bc1c2a1eb1e78d4c4303dd3",
+    "include/pufferui/impl/vulkan_memory.inl": "7d7e6542b54aaa14f7bc2669b63275849d04667b8930c2f8330e102035c4ba3d",
+    "include/pufferui/impl/vulkan_native.inl": "a7336c41cbff843c5f3e58572c5205dea22713ca20095e5d07c5caabc766f848",
+    "include/pufferui/impl/vulkan_preparation.inl": "d08b025b177fe5afc47b8c2d0697298b8077cbdfcd7370f548322973d3803fe1",
+    "include/pufferui/impl/vulkan_resources.inl": "e5e1bcd37f03f2889ee59a158e74806ae678afa39eb20dc4e60d356327920de6",
+    "include/pufferui/impl/vulkan_shaders.inl": "0e60a808e25116bf03bc3918c755d34a0e86a46a72f32191667d98b87bee30be",
+    "include/pufferui/impl/vulkan_surface.inl": "2c2d719fc6c28de8fe851d8af3d525e6e970c9f3ca5a71f40371d57d26d56f74",
+    "include/pufferui/impl/vulkan_text.inl": "80c451f8cb97e880312ab649f6d89e580617656626f5bbef2e162d6315037631",
+    "include/pufferui/impl/vulkan_text_coverage.inl": "d4c5a5edf8ff254752491912f4f5955fc7ad880638991c37fc4423f5f6d8d898",
+    "include/pufferui/impl/vulkan_vector.inl": "ce26198e340ccc2cdf336571249c843f8fdb2601262f02e5eca53038ed8d650f",
+    "include/pufferui/impl/vulkan_vector_pipeline.inl": "47fa4e3a8316d8071a8590b9f3597631b6e05e953ef237b42d6b66caae261933",
+    "include/pufferui/impl/vulkan_vector_shaders.inl": "8453648871a97932c4ff6b6f50b42fab79e22475442fa2f06a12dfbfb08c4ce1",
+    "include/pufferui/impl/widgets.inl": "5c7c078aa6bb95aa7e93ea9047efba018c452d4c16fb953942274661cdfe8f18",
+    "src/pufferui_impl.cpp": "798bb2a2e15fe0546419be42694caea5e01568aaaafbfb22ea443905e06f6ef8",
+    "src/sdl_d3d11_arena.inl": "1c0e9105c3b4e2d0913069eeb34ac4caaf68183356f4e605e8644f9c6cbe28df",
+    "src/sdl_d3d11_buffer.h": "b980858d3eb64a4e4b44698880603bf0efc0fde254643f32d2a3e698dcb7d3cd",
+    "src/sdl_d3d11_buffer.inl": "726328615af1944095ba741a4dc737e785ace73c145bc74e87114f78088c157a",
+    "src/sdl_d3d11_draw.inl": "a1b484fcc47e5525d88732a593e9d6fdc523b6746959ac96b55d32d40ca3912f",
+    "src/sdl_d3d11_geometry.inl": "81ccb578b4bba15444bb2a146eb710f524dece7ab471df4e95a60e50b7a54247",
+    "src/shaders/vulkan/harfbuzz_slug.glsl": "a83b9587e42b1e3db726be5b6237589007ce33a1bf607c8aea8e8c7bdffa12df",
+    "src/shaders/vulkan/path.frag": "1f73596a6608b314f278ce32adb8138c86f093e4850a33885d0299d7813b6f80",
+    "src/shaders/vulkan/path.vert": "a2e555789d7ebe1732478dc9f60be509e368220ce74534d2187a9fc4171c80c8",
+    "src/shaders/vulkan/text.frag": "dd42e3ea90253b37c0528810c8980246aaba0d9834b24b6531e3fa18beec57e3",
+    "src/shaders/vulkan/text.vert": "d4aba9bc8d5484b7fb6d262d0f15957b62a59e0eebe6acb67de9899c8d6a3e95",
+    "src/shaders/vulkan/ui.frag": "ad7ca02655046dc54898fb409b9d0719eeaa909ee9bba57ea479191c261714f9",
+    "src/shaders/vulkan/ui.vert": "e805a100dbab4253f3fa46346a02de33ea0a2618b5176b4c9ceda8def0e120cf",
+    "examples/dock_helpers.h": "f2f6f3522c19ec4dfef905029d2cec5e987584bb2254316c7a454278320e0083",
+    "examples/example_common.h": "b9f23eb4530359cf64c00e5fa2beb20327da6a9ddcefaf84ebedbf9a79df8773",
+    "examples/pui_counter.cpp": "925378b12ed5cf89f4ccc8810797b2b57cf1229d58b62950ea402b8418e23c77",
+    "examples/pui_demo.cpp": "ab885689d0a75c9c371ecb88629ce943019848cb3703d2dd01cdbf9049094ce2",
+    "examples/pui_showcase.cpp": "e456691e0bc0a074a10cb9835bcde087f753f9278aa73c94b2703499ff782786",
+    "examples/pui_tour.cpp": "f1f5b0047818cd650ed74b2b82058b84de32676c01be92895438fc9c704aada4",
+    "examples/vector_gallery.h": "529543cceee10b8a9faddd966915a3525221fa2bec54295e2207522493f3f793",
+    "examples/atomic/a11y.cpp": "40a182362964131e1030221e7a3e5d7acdbf491d7a4daa08e8f2e5fae68d3c34",
+    "examples/atomic/animation.cpp": "b1af8acef468e5d32fb9b39687539aca8f2ec9dd3b4e2462e4c345075272da4d",
+    "examples/atomic/blur.cpp": "9fb14e1d34fba0281c5527f48f23211326fc7ac4914904bc02fadb522d1af8dc",
+    "examples/atomic/bootstrap.cpp": "2b4dd94a570477fa70239aabbceec1dfacdb2c99a45d3e15057d7d9577daaa55",
+    "examples/atomic/buttons.cpp": "9969193ba86907bfcbda2747f4322f82ef90755ae47a38266871d963776085c8",
+    "examples/atomic/colors.cpp": "c70b0f68c3a0a6d755490225a8452b3e1337a5ef789261dd70491d337cda47cc",
+    "examples/atomic/combo.cpp": "043526548d7f9f8f57591ac1e85db738a0c1bd013c9553958193fd426b0d39f4",
+    "examples/atomic/components.cpp": "d383e445998d4b3f069e9466c904422454feb962d01d6600e080ab7477b2ed54",
+    "examples/atomic/controls.cpp": "784b46feb31ed49358f28e3eef6f11fdc16b15b6d3c41a1754df197e9e67e817",
+    "examples/atomic/cursors.cpp": "a3422285cf778e6a4a117afccc7ad6d507a17f3012bd7db7403c418fb840a395",
+    "examples/atomic/custom.cpp": "4956327cef9677c3668ea175d1cab77c3dd6ae1517543c015d7b4abb956f746d",
+    "examples/atomic/dock.cpp": "6fb731b8faf9d27be92ef156a6615815cbbcfb64d54e81b7fa3d024612a12679",
+    "examples/atomic/dpi.cpp": "26331be5d8675eb48706e2420fcf7c4543a9c7a149fa93a7e4376ad9f502d4f2",
+    "examples/atomic/drawing.cpp": "5405b626e94965bcabbb58110deb5a68986d6238768247eeb0950aff97b66e46",
+    "examples/atomic/expander.cpp": "1dd09e9058b4f045cf8ce5bf63e445f55d58de05f1ddd0ef8c906268f02f6d33",
+    "examples/atomic/files.cpp": "f8c036f299677b226c15ffd68b73e72b5e30161bb8ef8bc60d3a913d06ebf567",
+    "examples/atomic/grid.cpp": "b09ef5c27cd8d810daf5b6299a36f92d319b393276d412768ec7c094d9a788e9",
+    "examples/atomic/headless.cpp": "a940b7276eb579dd246a33e44144370a1588408bf8b66e35f54d48e223b34697",
+    "examples/atomic/hello.cpp": "03291636b2bd41c9375fac99a9aad4f44468f26521135b2ee96903c83e715085",
+    "examples/atomic/ids.cpp": "4012dd82fbb864f790cc7974ba75caeba2fe68db8deebd784e61d63c603312ed",
+    "examples/atomic/inputs.cpp": "ad452914689f2332294de4e851f17d0690676c6392a0bee1ec809607ebc03afa",
+    "examples/atomic/keyboard.cpp": "8e34aea699c7ce372b52f5df78ab12621cdfe3bdfe23ee5b2cbf8d5d8405526d",
+    "examples/atomic/numeric.cpp": "2fceb603e05e0f60ad7af6581a15fbf01f50be19cf5859dc4dc37c20857056f7",
+    "examples/atomic/overflow.cpp": "d17d812f398207f3a43c0fa043a2492042b575fc1113450f9cd391cc922503d0",
+    "examples/atomic/panels.cpp": "09daff315db249877ee1eadb5d96166dd6e8e2d1e846a4d9017ba673ac63d123",
+    "examples/atomic/patterns.cpp": "1023af2178a5302416881e8d0563b101ab2cb118447689f6e384857bde2ee860",
+    "examples/atomic/pickers.cpp": "65f1740fb093dcf86b890ad52b907b8efd8fb694483ebd40b2e34753d6d752f9",
+    "examples/atomic/popups.cpp": "df1e6d6f098bf4c6450c9f50c8b028669a4dcfcedbd2c0ce57b4c671b1080115",
+    "examples/atomic/rect.cpp": "de42b9b53b59cb779f66ddfd580353708a09d5d038e48fcca74fb1eabf9476de",
+    "examples/atomic/relayout.cpp": "cb94595c0538d440a91311282fea0d5ae5e4936d79070893e90ac5161c0cfc62",
+    "examples/atomic/renderer.cpp": "77d4a7edcfd9e67b4f6a7ad3de507c4b6029e8e8dcb6e2522dd4e0ddd01bc44f",
+    "examples/atomic/scroll.cpp": "ae67fcb05b9dc21dde92a700e4321968286bf34eefa0e8b1361bb2086f90007d",
+    "examples/atomic/tables.cpp": "8eadd7853b829d01f31d124c74a35a4841952b367d6ac67b263754feb5c96a67",
+    "examples/atomic/text.cpp": "f6439dc37656ec2f6644f32cc680b9d4f4ba31bb3b0b8ef6da143967b7c37b79",
+    "examples/atomic/textarea.cpp": "74819b7a0780707e29deec3199299b9c468285b1adddfbe54a7cf84525ba19e4",
+    "examples/atomic/theme.cpp": "ecb9fe09f5af3cd3a195f9aae055a4d2558cd8b7eea47dc9786fc81598ea3ae7",
+    "examples/atomic/tracks.cpp": "f1032181a4a25a071faefbac7f1550ddab7a3f84bde82a53d7205c466d49f0f8",
+    "examples/atomic/tree.cpp": "4a4105eb9d4bed4f827de9a96906da3b7280cf76bb38f7c48b94cc99cc1a41c4",
+    "examples/atomic/vector.cpp": "e3c776a883510bc5f807b61cf41639685059f92f284c430b2fafa0326dbde62f",
+    "examples/atomic/vlist.cpp": "942bc4bce20db1606577ec38797239668d46ce917d131729d8a3db3410021269",
+    "examples/atomic/vulkan.cpp": "1978741409af45dc5d129c1329f3b3e172409eb52185b85a96c2fe7bb027cbee",
+    "examples/atomic/vulkan_preparation.cpp": "86b2a9547a1f4abd4592073c555d5aa95e6e9e32b28fb8c644cc9d22564da5e0",
+    "examples/atomic/widgets.cpp": "17a90bc52dbb6b620ac236bfd4e45e791b6e0bc915a5d94eb362b614a3ecde61",
+    "examples/atomic/windows.cpp": "120a4d75fe40acdfe4a5c7af5f64f916c4d149765f79ad46011166c5f9a782b6",
+    "examples/tutorial/button_states.cpp": "56ff9f7439efbbb090ebd646d76f8a3b42937e5341752984affc163b28136c10",
+    "examples/tutorial/glass.h": "2132cf4031e6eca3d783b72ce79fb9344e31a83986551170b96f4750137e0ab5",
+    "examples/tutorial/glass_widgets.h": "0bd519557244c1dd3085668fe076c576bfd826efa553c2625e0f56574dd1e7d8",
+    "examples/tutorial/step01_shot.cpp": "75b36f0022dad46065afc25bc649a8a75a53c9e5e4bf449e03e5379c3c71a644",
+    "examples/tutorial/step01_window.cpp": "b5304feb561ddb22f18029a7df07eccae88946abe3c1b6711224d303cfe278e1",
+    "examples/tutorial/step02_layout.cpp": "abc48138b2c7d3e4a53da92f5f1acc50d8adeb35357bd38663f8926a706b9911",
+    "examples/tutorial/step03_tasks.cpp": "67970386218a146bbb5debb0700236e75f5c2125d5899c33d6786004657ebcf6",
+    "examples/tutorial/step04_filters.cpp": "198525a638d35be295cbc54599c2a806888721b0cb075d4d9db4d8ff936b98db",
+    "examples/tutorial/step05_glass.cpp": "199c478e0ea3e1645e5401997978c09b6af8a7fa3a36b29e32385694fd526e1d",
+    "examples/tutorial/step06_motion.cpp": "491f31dc9bf7337f15cfd3214fcff808c1666d54b565420997de7c2987d67f48",
+    "examples/tutorial/todo.cpp": "24c4b288b8893a070f39f4f79fd5fec9014e3d8179bc2afe55da247150dfb0d8",
+    "examples/tutorial/todo_model.h": "1ecaf1800c9164fde450a4529003e44470524d84eca09ae5b0b0343907550c78",
+    "examples/tutorial/todo_test.cpp": "5ce5aa12eed1db23df8fab216563455a8262bcbd91ff4a9e914bca9223e25d2e",
+    "examples/tutorial/todo_ui.h": "52a925810f7bcb66204da117fdddebf68c6328a3b47cd02a21ce5b8150e8044d",
+    "examples/tutorial/tut.h": "44c91f47010fe1cafbe30e4b82f44e5f1a991ed3d92dc5908eca57446b8c32b9",
+    "examples/tutorial/vector_manual.cpp": "a43d46e40c4eef0f7d3fc1f403e4bbd1d14eb834ef9f36d284b0b2f91c2364be",
+    "examples/tutorial/vulkan_manual.cpp": "f56a62038a6beafc913d71e62cbca2889c019582c58124dc79f7e57be671ef37",
+    "tests/bench.cpp": "ecbfd2a0215adf47abb6398960def43c2ea3dd1838ea0d3557a660572104ed7a",
+    "tests/bench_core_performance.inl": "761ef98e7d753a32beff581eb9f7eaa2d994f991eaf9c88896ff151ce2bd25c3",
+    "tests/bench_vector.inl": "e1e96c8a30c32cc656e53bfd83b20baf47727ff02a65c1d864724ce1b6547533",
+    "tests/bench_vulkan_native_optimizations.cpp": "d4ecf99478098ad33db6b771fab3cb159b532943c35d230a283d5c637d9e1849",
+    "tests/test_components.cpp": "83375b64524607e5c5381525287ca1c5a6473a5c76aaa543af068bae97bc5bbd",
+    "tests/test_core.cpp": "79067c12d17205eea213c87824d270553918cca42d941149ef0a7f3fa70aa45b",
+    "tests/test_core_performance.inl": "3dfbaddd55f760aecae73ea49ca3b929d05ece27dadc250af5c2b9d51a0b8e32",
+    "tests/test_core_perf_pixels.cpp": "3f3cc582418fcf0fd6bbbf7e6b3f3eb94c5a1c9f8f1e7e30fd55fa9eeef46eee",
+    "tests/test_dock.cpp": "4181b165f4b6634a3638eacc35a60e1af6e98e47a52a3bfd9a8f433eb5204811",
+    "tests/test_ergonomics.cpp": "94da126e932c4d3a4ba6dd0d7a652c5fce40d5490f457982f16cbb898e5644fd",
+    "tests/test_fan_performance.inl": "682a9264caf529e3bd18358ebd37d08b8c859e0fe8c24d9c89c13c432fe296df",
+    "tests/test_geometry_performance.inl": "fcbef413e14d63226d5ccfc4d59089edc91c074b6aec79f18f5b7614fd51b81e",
+    "tests/test_geometry_preparation.inl": "a9121fac2068d55cd0bc877dd2d04afb2071d40a960e2c261d2fc3f6e7de808b",
+    "tests/test_harfbuzz.cpp": "1ee07ea285b622b7da28296a82d550e9c400662726b149bd066b14e04fdfa720",
+    "tests/test_harfbuzz_interaction.cpp": "71cf3dd9a9a193af93ce217a90aaede0734f0742175236fea35969e813f7afb7",
+    "tests/test_input.cpp": "58bb610900e95d49a5ff52bba7c6495fd097b8eab5b4b3f83fc26b062fa50e5c",
+    "tests/test_layout.cpp": "7ae5dcd1b5a6ecfae3f1549622d308239e00a0b442e322b10d1cc8d3e6d0067f",
+    "tests/test_memory_performance.inl": "e1b0e64f890f0bb7c13afe6e0574c995a52852bfb44f41d68ce3a112f726d364",
+    "tests/test_memory_upload.cpp": "38606400b442095704eb86e8f2863b201053f5177ccbe4df9a3d27743b1e6294",
+    "tests/test_motion.cpp": "60dddffd37c3afcd215acf46c70b3750cb493f629b369a48efdf30ef417bdc6a",
+    "tests/test_native_optimization_tools.py": "6e37699dde764e0f42bbb6b4a56ac6fb48f79ab64ae0acecc557d76ffa043209",
+    "tests/test_native_vulkan_tools.py": "bc8065947360ba12fa9e8a903050fc2165ac15e87e2ca72e1113855504040d7c",
+    "tests/test_performance.inl": "bc97cc9b748f5fceeb8fef7576d06109a2ddcf3a39bd4b3ac661e6c1c9f7c92a",
+    "tests/test_perf_pixels.cpp": "973afcdf39317dbcb39ba795bc78c410c87bcb2f9dae0b3f93fbec1aacadef97",
+    "tests/test_platform.cpp": "b89c748a35e7d0d480e78ba7fcb4f1b13d0cd75dfa93bea7b801e4f1d9c7a1de",
+    "tests/test_pump.cpp": "1d5509bdcb7ad7cc6015c0e5f1a88dda09be43799bfc4b13d616e9bdee0e7dcc",
+    "tests/test_render.cpp": "80de5d1469d17f4b5d2e0657eb2f16f6ec7c649eba7ed315d6a9fdabef729dfb",
+    "tests/test_renderer_boundary.cpp": "e176cfce2e32f36a0225872659249600b5ac5f410cbc677d1b4bcc16717fb1f0",
+    "tests/test_sdl_capacity.cpp": "47f6087c476107b36fbc7ef1f662191e69b21c5d2e5c99cb21e6104bd3d30a93",
+    "tests/test_sdl_geometry.cpp": "d221ee0443b862d5e3488fce6e3bcf5d3a9fd617dee42c97a2eec79a0bd1935a",
+    "tests/test_sdl_upload.cpp": "e32f95aca5a017aa1e33f63434af58e444a4e43593d54211b206f3c14dde89ae",
+    "tests/test_showcase.cpp": "729379eb8f6e17e9ba8712852f6616e4d8a145c69dfeefb1457bba4bdb954cca",
+    "tests/test_showcase_paint.inl": "f655a80789477de0704df92ae745731626985b85bd31aedebf227d1513cd264a",
+    "tests/test_state_pool.inl": "c94f9851cf587ebad36f61714b132a40f0a962ad6ee7c3f1faf4b9ccc69093f6",
+    "tests/test_text.cpp": "95b5d2d673e9cb895dbb23a75d1bba08ab7802d2413e0b240ec12ee5ca8439f1",
+    "tests/test_textarea.cpp": "1d6f40f13521857565941aed679af0ddbfe2e15fb016c9c40153000b7a294a25",
+    "tests/test_util.h": "98d309de8744cdde6a1e4dfaec64d6e0ad3bd8f8cd1fab2273290ba4b8f78619",
+    "tests/test_vector.cpp": "bf76d4b6bd2a9de5b40d332a151faaee6307ca3cc4ca263f45a3ecef22d14fb2",
+    "tests/test_vector_amalgamation_tools.py": "eaa2a741f1e5213030ca36e5340214ebef4cb80609784fd20d3da0b3c309062e",
+    "tests/test_vector_data.inl": "9bf460ba51de70ac380d252fd1bcb2781d4028c49ebf937d9c5719b397ca5d13",
+    "tests/test_vector_gallery_tools.py": "3af89d579b5f52862d61d6e3d03633f217604d8253ddfe380e383f32135b897b",
+    "tests/test_vector_shader_tools.py": "43f4aeb2df73a1358a0b1a10b27f92b952b5c6880fc1c45a319d74be6d9f2e4b",
+    "tests/test_vulkan.cpp": "39ef946bc59ee2e500c71c78a3b6158880ad4cf5cfab13462441ee61c6459b1f",
+    "tests/test_vulkan_blur.cpp": "cad8b7913a7990eff95ae0dc18ebf209aba064e051a92f91834b853acb7dea75",
+    "tests/test_vulkan_blur_optimization.cpp": "a49fe666e8b39275aede84c1e044ca4496af81fd2eb402eac06c6c02083e38e7",
+    "tests/test_vulkan_cache.cpp": "e329c5669caf466de3f03f1f8099c57d3c8996dc4886d50de121f105d2a49bea",
+    "tests/test_vulkan_example_font.cpp": "35cecd1ddc52781c37edf2fce4d7e2d844dafb213a8ffb8683eeff5770262729",
+    "tests/test_vulkan_example_validation.cpp": "262dc7dd843069ddb12e6c5ab309342319e9c8649b2ca5a1be435113184680d6",
+    "tests/test_vulkan_external.cpp": "532f4c2012d32f2fd5230206f11bda2e371f34e4a61dc98468d832a6d268b433",
+    "tests/test_vulkan_faults.cpp": "c5db748d0fdedf9b7895ca74a8bdc37abfe0996164059bd5cf839b7e52a187cd",
+    "tests/test_vulkan_gaussian.cpp": "d3cb3ef69b6a78f5be818a1fda6c1637ba87fc7f42cc4f47a845201e5398d695",
+    "tests/test_vulkan_indexed.cpp": "42a44026b719af540c880e15c59cca4c0ae5a45855624157197686cd8ba234e4",
+    "tests/test_vulkan_integer.cpp": "ece0e8d9f8cf04be3b794c4a0c76ff5f642d6500233a0c83bb5521f1afc8cdaf",
+    "tests/test_vulkan_interaction.cpp": "eeb22055261354e7e9dda6c6cd1aa44bed016f6f23440ca4a99de9e014aa7bc5",
+    "tests/test_vulkan_internal.inl": "53330256ae2a9c382c517002dd0c66a9c78d36c893179e3e078fc74fc133a5fd",
+    "tests/test_vulkan_native_optimizations.cpp": "9b87c22f8845f8c81de659cc3bed84f7f05cdba711b4f3364d767bfccdbaa4d0",
+    "tests/test_vulkan_native_spiral.cpp": "56066abc68f1bf431ea6abce128db37559e125c247a2321bb3c730ec04a59e60",
+    "tests/test_vulkan_native_stream.inl": "5f5cfe60833da633e983b994a4bb638a1452fece40dda7521f28edbc57f627b9",
+    "tests/test_vulkan_native_text.cpp": "434fae70dc4f375ad42a2561b57b3e1bfbd715383c8f54d6ce2aee6d7340a122",
+    "tests/test_vulkan_preflight.cpp": "b7a9e06b3fb51c1c41fd16c6527a7c7c5cfe1109d7cec9659dc571157341722f",
+    "tests/test_vulkan_showcase.cpp": "b1d50d1fa2d4e3994693e88cdf9477d23eddf63383190eced31a974e7231f1c7",
+    "tests/test_vulkan_spiral.cpp": "0e47c781d13feb9f10022e5d5bf9a54c8bcbef241f71ff83426a418fff8e7f96",
+    "tests/test_vulkan_startup_spiral.cpp": "355b8e6930d035de19406e3559b8f0764339b01051438cf181e3daf62ed4178a",
+    "tests/test_vulkan_startup_tools.py": "bc3cab23efeef30437814ee6e90333f58342dd9a0836af8a13ff97a5942473c5",
+    "tests/test_vulkan_tools.py": "d43a9f01c369dfb8a15190eeeb9da708ae8309eaa3a427ed6af4a80c48a39cd3",
+    "tests/test_vulkan_vector_bounds.inl": "fa13311f32d51f40aad6e8fa83293708386dbb8cc6ec435195ce9aa752158811",
+    "tests/test_vulkan_vector_faults.inl": "46314584b0070c29ee476304bfceacda65a7df5086d2161120c2538d331613fb",
+    "tests/test_vulkan_vector_lifecycle.inl": "56fee9734fc6e46a399fb533f02898b453ba7bf20495d302826cf541d8036346",
+    "tests/test_vulkan_vector_overlay.inl": "52ea4416ee5ad1eb4650d178b192a085e04919fa0638c627734ca2c9f969476a",
+    "tests/test_vulkan_vector_painter.inl": "48a929728022429283c72f92f1a451fab6097902b2decb7c3f4311f6f243b1dc",
+    "tests/test_vulkan_vector_pipeline.inl": "b94b84fcbe62aa37f3a7ea40e37a31962c52bcb8eea2ce5cf7bbc084b6f89092",
+    "tests/test_vulkan_wsi.cpp": "233ae034277e04d476e66a54d75332b5902ee2de9e58f0327986af5380a064f6",
+    "tests/test_widgets.cpp": "88498ac9a68e976b8469b8e8ff9da9511b2a0e2d96f69ea0a20794a734d9a000",
+    "tests/consumer/main.cpp": "3c94e847a0b0a6fd4db623766cd15e6ec93af7f2af0f93205f56d428ebf8388f",
+    "tests/consumer_vulkan/main.cpp": "e2cbcd6a526012429b794a513c4845c9f2db1eba8c647eb2891fb510768d3c34",
+    "tests/golden/test_golden.cpp": "6d64ca62ae43957bf8fd82720433f74e5a7792772b6dd174366fe5fde3aea337",
+    "tools/amalgamate.ps1": "573b086ea609a4d6e37ae3fb8859822434ff311f08dcb4057f213a5b1e9ff433",
+    "tools/check_consumers.py": "a48e1816fd03296247e632f6fbac012e174be7659ddfa3b0ee7a60bf68527b6f",
+    "tools/check_tutorial.ps1": "46d0cd35849e0897094f05f0466c1411649a359185452089959a32dda84f4f8f",
+    "tools/check_vulkan_consumers.py": "8c0a68d923a89cf44bf03e438d733512b58f08b7b0387aa416b155e855b93fa7",
+    "tools/compare_core.ps1": "f814a5f89d9d659a9032d5a71da64a507f0506a651c2f5eb3bab2952efd82da2",
+    "tools/compare_showcase.ps1": "7b152d96bb94a70330f165026e4d614bb441dc9a2eb9b194fb7e34f9a90724a2",
+    "tools/compare_spiral.ps1": "e9accab4aee0f26a53d8002421d65583ba00b4d08a94aac8e692cd5098e9c68a",
+    "tools/compare_vulkan.py": "f6338fc50416d9a0fb67647ab28538a9471bfa49d78976601e12d3cfea3408aa",
+    "tools/compare_vulkan_blur.py": "d87c3bcbc493c039deaf7fb375a2a4a3c9cbe1a39adfe5aff0c5c34fdb8a04e0",
+    "tools/compare_vulkan_indexed.py": "1b31c3738e116cef6b905e9c370e3a72bf45d5f6c96d7f3bbc01b1d00d75d4ae",
+    "tools/compare_vulkan_native.py": "69b63b17dc828467ec292b9be6e40d4d459382bdbb911060b19b24c031680437",
+    "tools/compare_vulkan_native_optimizations.py": "033b9d4d1bbee478f64ab235a1f6eee970f9ac321e4c3556137f836f3e591c09",
+    "tools/compare_vulkan_startup.py": "83f70fb57f8d3cb17e423b7d44b426e27a1b72aa886fd276382dba3a5a4d6601",
+    "tools/compile_vulkan_shaders.py": "db007870498ef79f450cc976f681466c4799c6945f008e0dc9b4156afffd8d3e",
+    "tools/gen_api.ps1": "a5483c0a830809806e3df5230ca3f35904896989c9d5796ab467d0e92dfd3d19",
+    "tools/readme_shots.ps1": "53838b0b303ce4494665d40bf64a9da6b834d7b1ec629cefa2e32d8a9313ee5b",
+    "tools/run_tests.py": "2a49465082c400a8d48b40c4e8a7ee2301731673e038cf3efb4af70a86a83741",
+    "tools/run_vulkan_showcase.py": "c9a451da5cd0df47b709a3c8753a89552cb9f7e7fb97b5401238f88a333fbc35",
+    "tools/tutorial_shots.ps1": "37eedda5390c0cf9d5d42fd889ffdce97166473acebefc1740d29cfdfd4186f7"
+  },
+  "binary_hashes": {
+    "before/pui_vulkan_startup_spiral_tests": "0e2c1cab2e34c1eeba05aaa9f91665ae19a4771e0ad12dfb4a1f04fb72c48548",
+    "before/pui_vulkan_native_spiral_tests": "a656bf406240e19e81851cbd68ffad550b2fd02f61ce243066ab393b45c37fc0",
+    "before/pui_showcase_tests": "ac12f91401c517ea138992e488cd2cb8c727c292eca32ad81def94b390f35f6a",
+    "after/pui_vulkan_startup_spiral_tests": "e7d301b54fd2db2e11ae59b15ed77d54e387c6bec55b34d8a8f78377b7a2df09",
+    "after/pui_vulkan_native_spiral_tests": "bbac1bc8991a5d9dfad38e45c37cbfe5024a271bd92befd047d6deeee61d1a6b",
+    "after/pui_showcase_tests": "2f8d8d1bc94528d417e4b5ba89150d784d7da45e12294b8b7f6fa1c8683b7516",
+    "after/pui_vulkan_vector_data_tests": "66f4f0e9bf0b2a38bf9d38ccf798e9a0d0fe70ebb4d26a0a656a268bb03c36ce"
+  },
+  "shader_receipts": {
+    "src/shaders/vulkan/manifest.json": "d20ba4866045ce85ad5e90568286dc2c851d4d6cb184ffa2eab7cae9feb2260f",
+    "src/shaders/vulkan/path_manifest.json": "8022cfa28a74d5e2abad89404e608b92ba5ce0bcccf6c79c7746ee459403e372"
+  }
+}

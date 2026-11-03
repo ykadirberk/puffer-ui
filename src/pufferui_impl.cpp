@@ -25,3 +25,7 @@
 #if defined(PUFFERUI_VULKAN_INTERNAL_TESTS)
 #include "../tests/test_vulkan_internal.inl"
 #endif
+
+#if defined(PUFFERUI_VECTOR_TESTS)
+#include "../tests/test_vector_data.inl"
+#endif

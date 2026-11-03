@@ -34,6 +34,7 @@ chapter 2 explains what that means.
 | 8 | [Testing and debugging](08-testing-and-debugging.md) | violations, the overlay, headless tests | `todo_test` |
 | 9 | [Where next](09-where-next.md) | exercises, a cheat sheet, common pitfalls | — |
 | 10 | [Vulkan without shorthand](10-vulkan-without-shorthand.md) | own the SDL host, native renderer, fonts, frame loop and teardown | `vulkan_manual` |
+| 11 | [SVG and paths](11-svg-and-paths.md) | load immutable vector sources, prepare and draw Slug paths, own their lifetime without example shorthand | `vector_manual` |
 
 Every program is a real file under [`examples/tutorial/`](../../examples/tutorial/),
 built by the project's CMake and run by CI (`--selftest`). The code blocks in the

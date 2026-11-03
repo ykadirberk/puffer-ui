@@ -449,6 +449,30 @@ existing suite unchanged**:
 - Do not report work as done until the suite passes. A fix without a regression
   test is considered incomplete.
 
+## SVG and path resources
+
+- Public immutable source/inspection/prepare/draw/release APIs live in the main
+  declaration section. Source ownership/import belongs in `vector_data.inl` and
+  `vector_svg*.inl`; backend geometry/raster/encoding belongs in
+  `renderer_vector*.inl`. Keep UI submission semantic and every painter complete.
+- Vulkan paths use `vulkan_vector{,_pipeline}.inl` and independent `path.vert` /
+  `path.frag`, sharing the unchanged licensed Slug include. No font is needed.
+  `vector_paths=true` defaults to native coverage with HarfBuzz; explicit false
+  or HarfBuzz OFF uses the portable implementation. Preserve old shape/text
+  shaders, pixels and gamma. Prepare assets/layers/batches outside frames and
+  retire descriptors/buffers only after the last recorded submission completes.
+- `pui_vector_tests` checks source/import, stroke/fill/clip geometry, errors,
+  retained raster caches, allocation-free draws and device rebinding. Native
+  `pui_vulkan_vector_data_tests` adds `--gpu`, `--painter`, `--lifecycle`,
+  `--overlay`, `--bounds`, `--faults`; all direct/staged/cache images must match exactly.
+  `--goldens tests/golden/vector` checks new immutable fixtures;
+  `--capture-reference NEW_DIRECTORY` refuses existing directories. Existing
+  golden files/assertions/tolerances remain independent and unchanged.
+- The actual gallery is `examples/vector_gallery.h`, used by SDL/Vulkan atomics
+  and opt-in `--vectors` showcase/tour modes. Keep default pages stable. Explicit
+  public integration: `examples/tutorial/vector_manual.cpp` / tutorial chapter
+  11. The contract, subset and limits are in `docs/vector_paths.md`.
+
 ## Design plan & status
 
 The single plan and roadmap lives at `~/.opencode/plan/pufferui-roadmap.md`

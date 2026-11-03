@@ -56,6 +56,9 @@ inline bool overlay_begin(context *c, uiid id, rect area)
         e->placed = area;
     }
     e->area = area;
+    const usize vector_capacity = c->painter->vector_capacity();
+    e->rec.prepare_vectors(vector_capacity);
+    e->painter.vector_proxy = c->painter;
     e->rec.reset(area.x * w->scale, area.y * w->scale); // the overlay's origin, pixels
     e->rec.real = c->device;
     dl_flush(c); // what was drawn so far belongs to the window
@@ -115,7 +118,10 @@ inline void overlays_present(context *c, window &w)
             render_device &dev = *c->device;
             e->h.surface->make_current(dev);
             dev.clear(color{0, 0, 0, 0}); // transparent around rounded corners
-            e->rec.replay(dev);
+            const rect old_overlay = c->overlay_area;
+            if (e->rec.vectors && !e->rec.vectors->commands.empty()) c->overlay_area = e->area;
+            e->rec.replay(dev, *c);
+            c->overlay_area = old_overlay;
             e->h.surface->present();
         }
         ++i;

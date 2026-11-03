@@ -1,0 +1,51 @@
+{
+  "format": "RGBA8,64x64,21 frames",
+  "verification_adapter": "AMD Radeon RX 9070 XT",
+  "driver": 8388996,
+  "base_revision": "06d1d669cb3af188291ffc76ff68296115e7c5ae",
+  "verified_release_binary_sha256": "87c206fb728079abf56e8f9ca8fcfd13d9a29848328b6e544508d28de265703a",
+  "path_shader_manifest": {
+    "compiler": "Glslang Version: 11:16.0.0\nESSL Version: OpenGL ES GLSL 3.20 glslang Khronos. 16.0.0\nGLSL Version: 4.60 glslang Khronos. 16.0.0\nSPIR-V Version 0x00010600, Revision 1\nGLSL.std.450 Version 100, Revision 1\nKhronos Tool ID 8\nSPIR-V Generator Version 11\nGL_KHR_vulkan_glsl version 100\nARB_GL_gl_spirv version 100\n",
+    "command_flags": [
+      "-V",
+      "--target-env",
+      "vulkan1.3"
+    ],
+    "shaders": {
+      "path.vert": {
+        "source_sha256": "a2e555789d7ebe1732478dc9f60be509e368220ce74534d2187a9fc4171c80c8",
+        "spirv_sha256": "69813281f4d4710d68c63875f7e3eb49c2812fd5360a51d70246e537d1623da0"
+      },
+      "path.frag": {
+        "source_sha256": "1f73596a6608b314f278ce32adb8138c86f093e4850a33885d0299d7813b6f80",
+        "spirv_sha256": "9be84884cb1a465b2fce19ee5e5a01be313003195794868d39446fb0205939b4"
+      }
+    },
+    "includes": {
+      "harfbuzz_slug.glsl": "a83b9587e42b1e3db726be5b6237589007ce33a1bf607c8aea8e8c7bdffa12df"
+    }
+  },
+  "images": {
+    "frame-000.rgba": "99533db81c5a8b6b97fb3497a2c5814bfd40ce6d50301422f29d57efa378e26e",
+    "frame-001.rgba": "8464c2ef01a6f227d56d67aba35684c29b5baf203ea448b354b472878370398a",
+    "frame-002.rgba": "f2368f8b57e3610cdf5ac0a1b8d91c97d1e993e06ec53cea867677f67959a307",
+    "frame-003.rgba": "0af3a156a572f70e1d15b8f26342a44378faa4678d2a8af20d46a3591a8ffff5",
+    "frame-004.rgba": "bd5f409d8883f8bf6a5d617de18eb115bf61224e056d5a5b905375f8f80a42cd",
+    "frame-005.rgba": "8464c2ef01a6f227d56d67aba35684c29b5baf203ea448b354b472878370398a",
+    "frame-006.rgba": "ccc05229e4717cbfa3f48d01d9dee1d916e7887691e9a1e787722d474f2e122c",
+    "frame-007.rgba": "99533db81c5a8b6b97fb3497a2c5814bfd40ce6d50301422f29d57efa378e26e",
+    "frame-008.rgba": "8464c2ef01a6f227d56d67aba35684c29b5baf203ea448b354b472878370398a",
+    "frame-009.rgba": "f2368f8b57e3610cdf5ac0a1b8d91c97d1e993e06ec53cea867677f67959a307",
+    "frame-010.rgba": "0af3a156a572f70e1d15b8f26342a44378faa4678d2a8af20d46a3591a8ffff5",
+    "frame-011.rgba": "bd5f409d8883f8bf6a5d617de18eb115bf61224e056d5a5b905375f8f80a42cd",
+    "frame-012.rgba": "8464c2ef01a6f227d56d67aba35684c29b5baf203ea448b354b472878370398a",
+    "frame-013.rgba": "ccc05229e4717cbfa3f48d01d9dee1d916e7887691e9a1e787722d474f2e122c",
+    "frame-014.rgba": "99533db81c5a8b6b97fb3497a2c5814bfd40ce6d50301422f29d57efa378e26e",
+    "frame-015.rgba": "8464c2ef01a6f227d56d67aba35684c29b5baf203ea448b354b472878370398a",
+    "frame-016.rgba": "f2368f8b57e3610cdf5ac0a1b8d91c97d1e993e06ec53cea867677f67959a307",
+    "frame-017.rgba": "0af3a156a572f70e1d15b8f26342a44378faa4678d2a8af20d46a3591a8ffff5",
+    "frame-018.rgba": "bd5f409d8883f8bf6a5d617de18eb115bf61224e056d5a5b905375f8f80a42cd",
+    "frame-019.rgba": "8464c2ef01a6f227d56d67aba35684c29b5baf203ea448b354b472878370398a",
+    "frame-020.rgba": "ccc05229e4717cbfa3f48d01d9dee1d916e7887691e9a1e787722d474f2e122c"
+  }
+}

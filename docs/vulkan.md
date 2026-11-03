@@ -1,5 +1,15 @@
 # Native Vulkan renderer
 
+SVG and application-created paths use a separate font-independent Slug graphics
+pipeline when HarfBuzz is enabled and `vulkan_device_opts::vector_paths` is true
+(the default). Load immutable sources and call `ui::prepare_vector` outside
+frames; submit `ui::draw_vector` during frames. Metadata, batches, layer targets
+and retirement belong to the renderer. HarfBuzz OFF or `vector_paths=false`
+uses the complete portable implementation. This does not change existing shape
+or text shaders, text gamma or glyph cache behavior. See
+[SVG/path resources](vector_paths.md) and the
+[explicit application tutorial](tutorial/11-svg-and-paths.md).
+
 PufferUI's optional Vulkan 1.3 backend implements `render_device` and
 `render_surface`. SDL3 still manages windows, input, clipboard, system chrome,
 accessibility and popup overlays. Vulkan records and presents the graphics;

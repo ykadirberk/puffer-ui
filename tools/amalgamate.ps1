@@ -19,16 +19,35 @@ $utf8 = New-Object System.Text.UTF8Encoding $false
 $header = [System.IO.File]::ReadAllText($headerPath, $utf8) -replace "`r`n", "`n"
 $lines = $header -split "`n"
 
+# Slices can split a private namespace/class across smaller local .inl files.
+# Expand them in place so the distribution never requires the source tree.
+$implRoot = [System.IO.Path]::GetFullPath((Join-Path $root 'include/pufferui/impl'))
+function Add-Slice([string]$path, [System.Collections.Generic.List[string]]$destination, [string[]]$parents) {
+    $path = [System.IO.Path]::GetFullPath($path)
+    $prefix = $implRoot + [System.IO.Path]::DirectorySeparatorChar
+    if (-not $path.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "slice outside implementation directory: $path"
+    }
+    if ($parents -contains $path) { throw "cyclic implementation include: $path" }
+    $text = [System.IO.File]::ReadAllText($path, $utf8) -replace "`r`n", "`n"
+    if ($text.EndsWith("`n")) { $text = $text.Substring(0, $text.Length - 1) }
+    $sliceLines = $text -split "`n"
+    # Every slice begins with the four-line provenance banner.
+    for ($i = 4; $i -lt $sliceLines.Count; $i++) {
+        $entry = $sliceLines[$i]
+        if ($entry -match '^\s*#include "([^"\r\n]+\.inl)"\s*$') {
+            $child = Join-Path (Split-Path $path -Parent) $Matches[1]
+            Add-Slice $child $destination ($parents + @($path))
+        } else { $destination.Add($entry) }
+    }
+    $destination.Add('')
+}
+
 $result = New-Object System.Collections.Generic.List[string]
 foreach ($line in $lines) {
     if ($line -match '^#include "impl/([A-Za-z0-9_]+)\.inl"$') {
         $slice = Join-Path $root ("include/pufferui/impl/" + $Matches[1] + ".inl")
-        $text = [System.IO.File]::ReadAllText($slice, $utf8) -replace "`r`n", "`n"
-        if ($text.EndsWith("`n")) { $text = $text.Substring(0, $text.Length - 1) }
-        $sliceLines = $text -split "`n"
-        # drop the 4-line slice banner the split added
-        for ($i = 4; $i -lt $sliceLines.Count; $i++) { $result.Add($sliceLines[$i]) }
-        $result.Add('') # slices are separated by one blank line (clang-format trims it from the files)
+        Add-Slice $slice $result @()
     }
     elseif ($line -eq '// The implementation, in order (one namespace; slices are plain text cuts).') {
         continue

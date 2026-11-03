@@ -143,7 +143,7 @@ def main():
             return 1
 
     if not args.no_build:
-        targets = ["pui_core_tests", "pui_pump_tests", "pui_perf_tests", "pui_memory_tests", "pui_preparation_tests", "pui_showcase_tests"]
+        targets = ["pui_core_tests", "pui_pump_tests", "pui_perf_tests", "pui_memory_tests", "pui_preparation_tests", "pui_vector_tests", "pui_showcase_tests"]
         targets += list(dict.fromkeys(case["target"] for case in vulkan_cases))
         if not args.quick:
             targets.append("pui_golden_tests")
@@ -167,6 +167,7 @@ def main():
     suite("pui_perf_tests", "performance regressions")
     suite("pui_memory_tests", "memory performance regressions")
     suite("pui_preparation_tests", "geometry preparation regressions")
+    suite("pui_vector_tests", "vector resource and renderer regressions")
     suite("pui_showcase_tests", "showcase regressions")
     suite("pui_pump_tests", "pump tests (SDL event routing)")
     r.step("Python tool regressions", [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-p", "test_*tools.py"])

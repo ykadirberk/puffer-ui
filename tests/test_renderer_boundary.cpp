@@ -55,6 +55,11 @@ struct semantic_painter : render_painter
     void invalidate() override {}
     void flush() override { ++probe.flushes; }
     bool prepare(const geometry_capacity &) override { return true; }
+    vector_status prepare_vector(vector_handle, const vector_prepare_opts &) override { return {}; }
+    vector_status release_vector(vector_handle) override { return {}; }
+    vector_status vector_ready(const paint_vector &) const override { return {}; }
+    usize vector_capacity() const override { return 0; }
+    vector_status vector(const paint_vector &) override { return {}; }
     draw_list *geometry() override { return nullptr; }
     bool vector_text() const override { return false; }
     void release_text() override {}

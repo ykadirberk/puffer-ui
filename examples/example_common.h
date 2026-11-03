@@ -290,6 +290,10 @@ inline bool example_init(example_app &app, const char *title, i32 w, i32 h, int 
             app.show_violations = true;
         else if (std::strcmp(argv[i], "--no-script") == 0)
             app.no_script = true;
+#if defined(PUFFERUI_ENABLE_VULKAN)
+        else if (std::strcmp(argv[i], "--portable-vectors") == 0)
+            app.boot.vulkan.vector_paths = false;
+#endif
         else if (std::strcmp(argv[i], "--help") == 0)
             app.help = true;
     }

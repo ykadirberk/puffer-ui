@@ -8,6 +8,7 @@
 //   pui_tour --selftest
 #include "dock_helpers.h"
 #include "example_common.h"
+#include "vector_gallery.h"
 
 #include <cmath>
 #include <algorithm>
@@ -1485,6 +1486,11 @@ static void tour_frame(ui &u, example_app &app)
 
 int main(int argc, char **argv)
 {
+    for (i32 i = 1; i < argc; ++i)
+        if (!std::strcmp(argv[i], "--vectors"))
+        {
+            return vector_gallery_run("Tour / SVG and paths", argc, argv);
+        }
     for (i32 i = 1; i + 1 < argc; ++i)
         if (std::strcmp(argv[i], "--chapter") == 0)
         {

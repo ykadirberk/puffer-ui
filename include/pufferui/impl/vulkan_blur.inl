@@ -106,6 +106,16 @@ struct native_painter : renderer_detail::mesh_painter
     f32 gaussian_radius = -1;
     blur_plan gaussian_plan{};
     native_painter(context &c, device &d) : mesh_painter(c), dev(&d) {}
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    native_vector_bindings *path_bindings = nullptr;
+    ~native_painter() override;
+    vector_status prepare_vector(vector_handle, const vector_prepare_opts &) override;
+    vector_status release_vector(vector_handle) override;
+    vector_status vector_ready(const paint_vector &) const override;
+    usize vector_capacity() const override;
+    vector_status vector(const paint_vector &) override;
+    void flush() override;
+#endif
     void begin() override
     {
         mesh_painter::begin();

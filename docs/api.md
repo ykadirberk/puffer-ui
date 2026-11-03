@@ -60,6 +60,9 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `i32 context_menu(uiid id, rect anchor, const char *const *item_labels, i32 item_count);`
 - `i32 context_menu(uiid id, rect anchor, std::span<const char *const> items);`
 - `bool prepare_geometry(const geometry_capacity &capacity);`
+- `vector_status prepare_vector(vector_handle, const vector_prepare_opts & = {});`
+- `vector_status release_vector(vector_handle);`
+- `vector_status draw_vector(rect, vector_handle, const vector_draw_opts & = {});`
 - `void draw_triangles(texture_handle tex, const vertex *vertices, i32 vertex_count, const i32 *indices, i32 index_count);`
 - `void draw_rect(rect r, color c);`
 - `void draw_rounded_gradient(const paint_rounded_gradient &);`
@@ -98,6 +101,16 @@ is public; the implementation lives behind `PUFFERUI_IMPLEMENTATION`.
 - `date add_months(date d, i32 months); // the day clamps to the new month // ---- HSV (comp::color_picker) ---- struct hsv_color;`
 - `hsv_color to_hsv(color c);`
 - `color from_hsv(hsv_color c, u8 alpha = 255);`
+- `vector_result create_path(const path_source &source);`
+- `vector_result load_svg(std::string_view xml, const svg_load_opts &opts = {});`
+- `void destroy_vector(vector_handle &image);`
+- `rect vector_view_box(vector_handle image);`
+- `bool retain_vector(vector_handle image);`
+- `vector_scene_info inspect_vector(vector_handle);`
+- `vector_shape_view inspect_vector_shape(vector_handle, usize index);`
+- `vector_clip_view inspect_vector_clip(vector_handle, usize index);`
+- `vector_shape_view inspect_vector_clip_shape(vector_handle, const vector_clip_shape_ref &);`
+- `vector_operation_view inspect_vector_operation(vector_handle, usize index);`
 - `render_painter *create_mesh_painter(context &);`
 - `rect fit_image(rect area, f32 img_w, f32 img_h, image_fit fit, rect &uv);`
 - `std::string save_window_state(const window_state &s); // "x y w h maximized" bool load_window_state(std::string_view text, window_state &out); // false: malformed // `r` moved (and shrunk) so that it is visible on one of `displays` (usable // desktop rects): kept as is when a usable part already shows, else centered on // the first display. An app restores a saved rect through this. rect clamp_to_displays(rect r, std::span<const rect> displays);`

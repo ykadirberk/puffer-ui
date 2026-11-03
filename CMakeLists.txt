@@ -187,6 +187,7 @@ if(PUFFERUI_WITH_VULKAN)
     DEFS PUFFERUI_VULKAN_INTEGER_TESTS RUNS "--staged")
   pui_add_vulkan_test(pui_vulkan_preflight_tests SOURCES tests/test_vulkan_preflight.cpp RUNS "--staged")
   if(PUFFERUI_WITH_HARFBUZZ)
+    pui_add_vulkan_test(pui_vulkan_vector_data_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VECTOR_TESTS RUNS "--gpu" "--painter" "--lifecycle" "--overlay" "--bounds" "--faults")
     pui_add_vulkan_test(pui_harfbuzz_tests SOURCES tests/test_harfbuzz.cpp)
     pui_add_vulkan_test(pui_vulkan_native_text_tests SOURCES tests/test_vulkan_native_text.cpp RUNS "--staged")
     target_include_directories(pui_vulkan_native_text_tests PRIVATE vendored/stb)
@@ -214,6 +215,8 @@ if(PUFFERUI_WITH_VULKAN)
     pui_add_vulkan_test(pui_vulkan_example_validation_tests SOURCES tests/test_vulkan_example_validation.cpp)
     set_property(GLOBAL APPEND PROPERTY PUFFERUI_VULKAN_TARGETS pui_tut_vulkan_manual)
     pui_vulkan_case(pui_tut_vulkan_manual false --selftest --frames 8 --resize 760x520)
+    set_property(GLOBAL APPEND PROPERTY PUFFERUI_VULKAN_TARGETS pui_tut_vector_manual)
+    pui_vulkan_case(pui_tut_vector_manual false --selftest --frames 8 --resize 800x560)
     pui_add_vulkan_test(pui_vulkan_wsi_tests SOURCES tests/test_vulkan_wsi.cpp)
     pui_add_vulkan_test(pui_vulkan_showcase_tests SOURCES tests/test_vulkan_showcase.cpp)
     pui_add_vulkan_test(pui_vulkan_spiral_tests FULL_ONLY SOURCES tests/test_vulkan_spiral.cpp
@@ -237,6 +240,7 @@ pui_add_exe(pui_core_tests SOURCES
     tests/test_widgets.cpp
     tests/test_dock.cpp
     tests/test_render.cpp
+    tests/test_vector.cpp
     tests/test_renderer_boundary.cpp
     tests/test_components.cpp
     tests/test_ergonomics.cpp
@@ -253,6 +257,7 @@ pui_add_exe(pui_core_bench SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_CORE_PERF
 # White-box regressions use the same implementation TU, with private test code
 # included at its end. The core archive is not pulled in (no unresolved symbols).
 pui_add_exe(pui_perf_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_INTERNAL_TESTS)
+pui_add_exe(pui_vector_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VECTOR_TESTS)
 
 # SDL event-pump tests: SDL_PushEvent-driven routing through the offscreen
 # driver. Same exit contract as the core tests (exit 0 = all passed).
@@ -288,7 +293,7 @@ set(PUFFERUI_EXAMPLE_NAMES
     hello bootstrap rect cursors tracks grid ids text buttons inputs widgets
     panels scroll popups dock windows drawing blur animation theme custom
     patterns expander combo keyboard components vlist overflow relayout
-    controls tables tree numeric colors dpi files textarea a11y pickers)
+    controls tables tree numeric colors dpi files textarea a11y pickers vector)
 
 # Headless examples: no SDL, no window (they still get the bundled font path).
 set(PUFFERUI_HEADLESS_EXAMPLES headless renderer)
@@ -307,8 +312,10 @@ pui_add_selftest_exe(pui_showcase SDL3 SOURCES examples/pui_showcase.cpp)
 if(PUFFERUI_WITH_VULKAN)
 pui_add_selftest_exe(pui_showcase_vulkan VULKAN SOURCES examples/pui_showcase.cpp)
 pui_add_selftest_exe(pui_ex_vulkan VULKAN SOURCES examples/atomic/vulkan.cpp)
+pui_add_selftest_exe(pui_ex_vector_vulkan VULKAN SOURCES examples/atomic/vector.cpp)
 pui_add_selftest_exe(pui_ex_vulkan_preparation VULKAN SOURCES examples/atomic/vulkan_preparation.cpp)
 pui_add_selftest_exe(pui_tut_vulkan_manual VULKAN SOURCES examples/tutorial/vulkan_manual.cpp)
+pui_add_selftest_exe(pui_tut_vector_manual VULKAN SOURCES examples/tutorial/vector_manual.cpp)
 endif()
 
 # ---------------------------------------------------------------------------

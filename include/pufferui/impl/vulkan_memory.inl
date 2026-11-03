@@ -74,6 +74,9 @@ bool device::begin(frame_slot &slot)
     else if (!check(vkResetCommandPool(native.device, slot.pool, 0), "vkResetCommandPool"))
         return false;
     for (auto &p : slot.pages) p.used = 0;
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    if (paths && !prepare_path_slot(slot)) return false;
+#endif
     slot.waits.clear();
     VkCommandBufferBeginInfo bi{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     bi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -407,6 +410,9 @@ void device::destroy_slot(frame_slot &slot)
 void device::collect()
 {
     const u64 done = completed();
+#if defined(PUFFERUI_ENABLE_HARFBUZZ)
+    if (paths) collect_paths(done);
+#endif
     harvest(utility, done);
     for (auto *s : surfaces)
         for (auto &slot : s->slots) harvest(slot, done);

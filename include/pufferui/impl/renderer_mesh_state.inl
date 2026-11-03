@@ -25,6 +25,7 @@ struct draw_list
 
 namespace renderer_detail
 {
+struct vector_cache;
 struct mesh_painter : render_painter
 {
     context *ctx;
@@ -34,12 +35,23 @@ struct mesh_painter : render_painter
     bool (*native_glyph)(render_device *, context *, font_handle, u32, vec2, f32, color) = nullptr;
 #endif
     bool vectors = false;
+    vector_cache *vector_images = nullptr;
+    usize vector_batch_hint = 0;
+    render_painter *vector_proxy = nullptr;
+    void *vector_recorder = nullptr;
+    vector_status (*record_vector)(void *, const paint_vector &) = nullptr;
     explicit mesh_painter(context &c) : ctx(&c) {}
+    ~mesh_painter() override;
     void begin() override;
     void end() override;
     void invalidate() override;
     void flush() override;
     bool prepare(const geometry_capacity &) override;
+    vector_status prepare_vector(vector_handle, const vector_prepare_opts &) override;
+    vector_status release_vector(vector_handle) override;
+    vector_status vector_ready(const paint_vector &) const override;
+    usize vector_capacity() const override { return vector_batch_hint; }
+    vector_status vector(const paint_vector &) override;
     draw_list *geometry() override { return &storage; }
     bool vector_text() const override { return vectors; }
     f32 measure_text_width(std::string_view s) override { return text_width(s); }

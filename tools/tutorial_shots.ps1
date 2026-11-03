@@ -31,6 +31,9 @@ $shots = @(
 if (Test-Path (Join-Path $bin 'pui_tut_vulkan_manual.exe')) {
     $shots += ,@('vulkan-manual', 'pui_tut_vulkan_manual', 8, '')
 }
+if (Test-Path (Join-Path $bin 'pui_tut_vector_manual.exe')) {
+    $shots += ,@('vector-manual', 'pui_tut_vector_manual', 8, '')
+}
 foreach ($s in $shots) {
     if ($Only.Count -gt 0 -and $Only -notcontains $s[0]) { continue }
     $exe = Join-Path $bin ($s[1] + '.exe')
