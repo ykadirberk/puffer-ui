@@ -187,6 +187,8 @@ if(PUFFERUI_WITH_VULKAN)
     DEFS PUFFERUI_VULKAN_INTEGER_TESTS RUNS "--staged")
   pui_add_vulkan_test(pui_vulkan_preflight_tests SOURCES tests/test_vulkan_preflight.cpp RUNS "--staged")
   if(PUFFERUI_WITH_HARFBUZZ)
+    pui_add_vulkan_test(pui_vulkan_vector_cpu_tests SOURCES tests/test_vulkan_vector_cpu.cpp
+      DEFS PUFFERUI_VULKAN_VECTOR_CPU_TESTS PUFFERUI_VULKAN_INTEGER_TESTS RUNS "--staged")
     pui_add_vulkan_test(pui_vulkan_batch_tests SOURCES tests/test_vulkan_batch.cpp RUNS "--staged")
     pui_add_vulkan_test(pui_vulkan_vector_data_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VECTOR_TESTS RUNS "--gpu" "--painter" "--lifecycle" "--overlay" "--bounds" "--faults")
     pui_add_vulkan_test(pui_harfbuzz_tests SOURCES tests/test_harfbuzz.cpp)

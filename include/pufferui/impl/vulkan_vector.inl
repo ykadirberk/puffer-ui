@@ -30,6 +30,25 @@ struct native_vector_bindings
         return nullptr;
     }
 };
+struct checked_vector_placement
+{
+    renderer_detail::vector_placement placed;
+    vector_asset *asset = nullptr;
+};
+inline vector_status check_vector_placement(const context &ctx,
+                                            const native_vector_bindings *bindings,
+                                            const paint_vector &paint,
+                                            checked_vector_placement &out)
+{
+    if (auto status = renderer_detail::place_vector(ctx, paint, out.placed); !status) return status;
+    if (out.placed.empty) return {};
+    out.asset = bindings ? bindings->get(paint.image) : nullptr;
+    if (!out.asset || out.placed.pixel_size.x > out.asset->max_pixels.x + .001f ||
+        out.placed.pixel_size.y > out.asset->max_pixels.y + .001f)
+        return renderer_detail::vector_failure(vector_error_code::NOT_PREPARED,
+                                               "native vector extent is not prepared");
+    return {};
+}
 struct native_vectors
 {
     static constexpr usize SCENE_BATCH = 16;
@@ -707,17 +726,9 @@ vector_status native_painter::release_vector(vector_handle source)
 }
 vector_status native_painter::vector_ready(const paint_vector &paint) const
 {
-    using namespace renderer_detail;
     if (!dev->options.vector_paths) return mesh_painter::vector_ready(paint);
-    vector_placement placed;
-    if (auto status = place_vector(*ctx, paint, placed); !status) return status;
-    if (placed.empty) return {};
-    auto *asset = path_bindings ? path_bindings->get(paint.image) : nullptr;
-    if (!asset || placed.pixel_size.x > asset->max_pixels.x + .001f ||
-        placed.pixel_size.y > asset->max_pixels.y + .001f)
-        return vector_failure(vector_error_code::NOT_PREPARED,
-                              "native vector extent is not prepared");
-    return {};
+    checked_vector_placement checked;
+    return check_vector_placement(*ctx, path_bindings, paint, checked);
 }
 vector_status native_painter::vector(const paint_vector &paint)
 {
@@ -726,17 +737,18 @@ vector_status native_painter::vector(const paint_vector &paint)
     if (!ctx->current_window)
         return vector_failure(vector_error_code::WRONG_CONTEXT,
                               "draw_vector requires an open frame");
-    if (auto status = vector_ready(paint); !status) return status;
-    vector_placement placed;
-    if (auto status = place_vector(*ctx, paint, placed); !status) return status;
-    if (placed.empty) return {};
+    // Readiness and submission consume one checked placement. Prepared sources
+    // cannot be released during an open frame, including while batches flush.
+    checked_vector_placement checked;
+    if (auto status = check_vector_placement(*ctx, path_bindings, paint, checked); !status)
+        return status;
+    if (checked.placed.empty) return {};
     if (dev->current_surface && dev->current_surface->suspended &&
         (!dev->target || dev->target == dev->current_surface->scene))
         return {};
     detail::mesh_flush(ctx);
     dev->flush_text(true);
-    auto *asset = path_bindings->get(paint.image);
-    const bool drawn = dev->paths->draw_scene(*asset, paint, placed, *ctx);
+    const bool drawn = dev->paths->draw_scene(*checked.asset, paint, checked.placed, *ctx);
     // Native clipping/targets bypass the mesh recorder. Its next semantic
     // primitive must re-establish the current logical clip, even after a pop.
     invalidate();

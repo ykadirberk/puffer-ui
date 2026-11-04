@@ -89,9 +89,15 @@ struct vector_placement
     vec2 pixel_size{};
     bool empty = false;
 };
+#if defined(PUFFERUI_VULKAN_VECTOR_CPU_TESTS)
+inline thread_local u64 vector_placement_calls = 0;
+#endif
 inline vector_status place_vector(const context &ctx, const paint_vector &paint,
                                   vector_placement &out)
 {
+#if defined(PUFFERUI_VULKAN_VECTOR_CPU_TESTS)
+    ++vector_placement_calls;
+#endif
     if (!paint.image)
         return vector_failure(vector_error_code::INVALID_PATH, "null vector resource");
     const auto &options = paint.options;

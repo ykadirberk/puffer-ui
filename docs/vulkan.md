@@ -335,6 +335,12 @@ own slot ownership. GPU timestamps include the upload command buffer. Buffer
 budgets, arena counts and the DIRECT representation are unchanged. See
 [the lossless batch qualification](perf_vulkan_batches.md).
 
+Native index planning uses four independent signed min/max accumulator chains
+when the compilation target guarantees SSE2. Their merged bounds preserve the
+scalar greedy splits, offsets and ordered primitives; other targets retain the
+scalar route. This needs no heap scratch or extra upload storage. See
+[native CPU measurements and unchanged frames](perf_vulkan_vector_cpu.md).
+
 Native shape vertices default to 20-byte position/UV/integer-byte-color inputs.
 The shader reconstructs the original exact float channel bits. Set
 `compact_vertices=false` for the retained 32-byte float-color reference. Native

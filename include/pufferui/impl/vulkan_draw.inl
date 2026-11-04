@@ -338,16 +338,35 @@ inline geometry_span plan_geometry_span(const i32 *indices, i32 start, i32 count
                     const auto cmp = _mm_cmpgt_epi32(a, b);
                     return _mm_or_si128(_mm_and_si128(cmp, a), _mm_andnot_si128(cmp, b));
                 };
-                for (i32 i = 0; i < block; i += 4)
+                // Independent chains avoid serial compare/select latency on
+                // SSE2. Signed min/max is associative, so merging preserves
+                // every original block bound without changing the loads.
+                __m128i low0 = lower4, low1 = lower4, low2 = lower4, low3 = lower4;
+                __m128i high0 = upper4, high1 = upper4, high2 = upper4, high3 = upper4;
+                for (i32 i = 0; i < block; i += 16)
                 {
-                    const __m128i value =
+                    const __m128i v0 =
                         _mm_loadu_si128(reinterpret_cast<const __m128i *>(indices + span.end + i));
-                    lower4 = minimum(lower4, value);
-                    upper4 = maximum(upper4, value);
+                    const __m128i v1 = _mm_loadu_si128(
+                        reinterpret_cast<const __m128i *>(indices + span.end + i + 4));
+                    const __m128i v2 = _mm_loadu_si128(
+                        reinterpret_cast<const __m128i *>(indices + span.end + i + 8));
+                    const __m128i v3 = _mm_loadu_si128(
+                        reinterpret_cast<const __m128i *>(indices + span.end + i + 12));
+                    low0 = minimum(low0, v0);
+                    high0 = maximum(high0, v0);
+                    low1 = minimum(low1, v1);
+                    high1 = maximum(high1, v1);
+                    low2 = minimum(low2, v2);
+                    high2 = maximum(high2, v2);
+                    low3 = minimum(low3, v3);
+                    high3 = maximum(high3, v3);
 #if defined(PUFFERUI_VULKAN_INTEGER_TESTS)
-                    ++index_work.planning_vectors;
+                    index_work.planning_vectors += 4;
 #endif
                 }
+                lower4 = minimum(minimum(low0, low1), minimum(low2, low3));
+                upper4 = maximum(maximum(high0, high1), maximum(high2, high3));
                 lower4 = minimum(lower4, _mm_shuffle_epi32(lower4, 0x4e));
                 lower4 = minimum(lower4, _mm_shuffle_epi32(lower4, 0xb1));
                 upper4 = maximum(upper4, _mm_shuffle_epi32(upper4, 0x4e));

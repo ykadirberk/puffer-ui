@@ -55,6 +55,11 @@ that cannot be replayed. Prepare the required palette/currentColor variants in
 advance for the portable painter; native paint metadata can resolve currentColor
 at draw time.
 
+Native readiness and drawing share one checked placement. A draw validates its
+placement and prepared extent once, then consumes that result and source binding
+through submission. Placements are not retained across frames or different
+transforms/clips; standalone readiness checks remain available.
+
 ## Supported icon/logo SVG subset
 
 | Area | Supported |
@@ -155,6 +160,13 @@ were captured on the qualified adapter; cross-driver raster equality is not
 promised. `--capture-reference NEW_DIRECTORY` refuses an existing directory.
 It never overwrites these or any previous golden. The new feature has no reason
 to regenerate existing primitive, text, blur or Spiral images.
+
+`pui_vulkan_vector_cpu_tests [--staged]` adds one-placement work counts,
+allocation-free 5000-path submissions, readiness/error/clip/DPI checks and exact
+signed SIMD merge boundaries. Its `--reference DIRECTORY` mode reuses the actual
+unchanged 180-frame simple-path benchmark. Immutable pre-fix full frames are in
+`tests/golden/vector_cpu/frames.zip`; capture requires a new directory. See
+[native CPU measurements and all-frame qualification](perf_vulkan_vector_cpu.md).
 
 The [qualification and performance report](perf_vector_paths.md) retains all
 old-scene frames and the native/texture tradeoff measurements. Slug is the native

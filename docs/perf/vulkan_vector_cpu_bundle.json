@@ -1,0 +1,25 @@
+{
+  "base_revision": "a0dbe72c5e642540bcd758c69360d05e449ead9a",
+  "timed_application_frames": 31680,
+  "timed_cpu_kernel_scans": 384,
+  "exact_full_image_comparisons": 3600,
+  "initial_simple_captures": 360,
+  "files": {
+    "docs/perf/vulkan_vector_cpu.json": {
+      "bytes": 884409,
+      "sha256": "41dceaa947fd04187730d60cbd2d1a8de66c9529919ed63b09a0843976b3186c"
+    },
+    "docs/perf/vulkan_vector_cpu_frames.csv.gz": {
+      "bytes": 528098,
+      "sha256": "1f5f879bbe08ea1dea6713f262ff47faf96d1fe7f8115e66452f8386e8df882f"
+    },
+    "docs/perf/vulkan_vector_cpu_raw.zip": {
+      "bytes": 10767482,
+      "sha256": "fd8f58f12cc76ab4958a36a83bac4726caa71e95a6400a90a2e6fc1450cf8a5f"
+    },
+    "tests/golden/vector_cpu/frames.zip": {
+      "bytes": 670479,
+      "sha256": "11b100f5e036e699902381f83d9cc0298d4c9fa460060231d8a0f5fbc5f00111"
+    }
+  }
+}

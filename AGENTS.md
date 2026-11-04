@@ -477,6 +477,13 @@ existing suite unchanged**:
   alternates frozen binaries without readbacks during timing. Native fixed
   fixtures qualify their recorded adapter/driver; never regenerate to hide a
   difference. See `docs/perf_vulkan_batches.md`.
+- `pui_vulkan_vector_cpu_tests` pins one checked placement per native submission,
+  readiness/error/clip/DPI behavior, allocation-free 5000-path draws and exact
+  signed block extrema across all independent SIMD chains. Its separate capture
+  mode reuses the unchanged vector benchmark; `tests/golden/vector_cpu/frames.zip`
+  retains all 180 pre-fix simple-path frames. `tools/compare_vulkan_vector_cpu.py`
+  alternates the unchanged timing binaries and verifies every simple/SVG/Spiral
+  frame. See `docs/perf_vulkan_vector_cpu.md`; existing tests/oracles stay fixed.
 - The actual gallery is `examples/vector_gallery.h`, used by SDL/Vulkan atomics
   and opt-in `--vectors` showcase/tour modes. Keep default pages stable. Explicit
   public integration: `examples/tutorial/vector_manual.cpp` / tutorial chapter
