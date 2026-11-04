@@ -194,31 +194,7 @@ bool device::upload_glyphs(const glyph_instance *instances, usize count, VkBuffe
     if (!p) return false;
     std::memcpy(p->mapped + offset, instances, static_cast<usize>(bytes));
     buffer = p->staged ? p->device_buffer : p->buffer;
-    if (p->staged)
-    {
-        end_rendering();
-        VkBufferMemoryBarrier2 barrier{VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2};
-        barrier.srcStageMask = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
-        barrier.srcAccessMask = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_2_INDEX_READ_BIT;
-        barrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-        barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
-        barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.buffer = buffer;
-        barrier.size = VK_WHOLE_SIZE;
-        VkDependencyInfo dep{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
-        dep.bufferMemoryBarrierCount = 1;
-        dep.pBufferMemoryBarriers = &barrier;
-        vkCmdPipelineBarrier2(frame->command, &dep);
-        VkBufferCopy copy{offset, offset, bytes};
-        vkCmdCopyBuffer(frame->command, p->buffer, p->device_buffer, 1, &copy);
-        barrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-        barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
-        barrier.dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
-        barrier.dstAccessMask = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT;
-        barrier.offset = offset;
-        barrier.size = bytes;
-        vkCmdPipelineBarrier2(frame->command, &dep);
-    }
+    // Slot-owned STAGED geometry is copied once before graphics submission.
     return true;
 }
 #endif

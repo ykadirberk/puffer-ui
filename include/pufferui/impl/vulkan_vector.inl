@@ -32,6 +32,13 @@ struct native_vector_bindings
 };
 struct native_vectors
 {
+    static constexpr usize SCENE_BATCH = 16;
+    struct scene_instance
+    {
+        affine2 matrix, inverse;
+        rect viewport, bounds;
+        color tint, current;
+    };
     device &dev;
     vector_graphics graphics;
     std::vector<vector_asset *> assets;
@@ -39,6 +46,7 @@ struct native_vectors
     vector_asset *pending_asset = nullptr;
     VkRect2D pending_scissor{};
     bool flushing = false;
+    usize scene_count = 0;
     std::vector<texture *> layers;
     struct retired_layer
     {
@@ -49,6 +57,11 @@ struct native_vectors
     usize bytes = 0, layer_bytes = 0, retired_bytes = 0;
     VkDeviceSize requested_upload = 0;
     i32 layer_side = 0;
+    u32 layer_columns = 1;
+    // Keep frequently read queue/clip/layer state together. Tile scratch is
+    // cold for the simple-path route and belongs after those hot fields.
+    scene_instance scenes[SCENE_BATCH]{};
+    rect group_rois[66][SCENE_BATCH]{};
     explicit native_vectors(device &d) : dev(d), graphics(d)
     {
         assets.reserve(renderer_detail::VECTOR_CACHE_ENTRIES);
@@ -62,7 +75,8 @@ struct native_vectors
     }
     usize usage() const
     {
-        return bytes + layer_bytes + retired_bytes + pending.capacity() * sizeof(vector_instance);
+        return bytes + layer_bytes + retired_bytes + pending.capacity() * sizeof(vector_instance) +
+               sizeof(scenes) + sizeof(group_rois);
     }
     void collect(u64 done)
     {
@@ -94,18 +108,33 @@ struct native_vectors
         }
         layers.clear();
         layer_side = 0;
+        layer_columns = 1;
         layer_bytes = 0;
     }
-    bool reserve_layers(u32 depth, i32 side, usize extra)
+    bool reserve_layers(u32 depth, i32 side, usize extra, usize instances, usize budget)
     {
         if (!depth) return true;
         const usize count = std::max<usize>(depth, layers.size());
         side = std::max(side, layer_side);
-        if (side == layer_side && depth <= layers.size()) return true;
-        const usize estimated = count * static_cast<usize>(side) * side * 4;
-        const bool replace = side != layer_side;
-        const usize growth =
-            replace ? estimated : (count - layers.size()) * static_cast<usize>(side) * side * 4;
+        u32 columns = 1;
+        while ((columns + 1) * (columns + 1) <= std::min(instances, SCENE_BATCH)) ++columns;
+        const usize tile_bytes = count * static_cast<usize>(side) * side * 4;
+        // Tiling is optional: reduce batch width before declining an otherwise
+        // valid single-instance preparation. Bound both transient residency and
+        // this source's explicit resource budget, including actual alignment.
+        const usize available = renderer_detail::VECTOR_CACHE_BYTES -
+                                std::min(usage(), renderer_detail::VECTOR_CACHE_BYTES);
+        while (columns > 1 &&
+               (tile_bytes * columns * columns > budget - std::min(extra, budget) ||
+                extra > available || tile_bytes * columns * columns > available - extra ||
+                static_cast<u64>(side) * columns > dev.properties.limits.maxImageDimension2D))
+            --columns;
+        if (side == layer_side && depth <= layers.size() && columns <= layer_columns) return true;
+        const usize estimated = tile_bytes * columns * columns;
+        const bool replace = side != layer_side || columns != layer_columns;
+        const usize growth = replace ? estimated
+                                     : (count - layers.size()) * static_cast<usize>(side) * side *
+                                           columns * columns * 4;
         if (extra > renderer_detail::VECTOR_CACHE_BYTES -
                         std::min(usage(), renderer_detail::VECTOR_CACHE_BYTES) ||
             growth > renderer_detail::VECTOR_CACHE_BYTES - usage() - extra)
@@ -119,7 +148,8 @@ struct native_vectors
         {
             for (usize i = replace ? 0 : layers.size(); i < count; ++i)
             {
-                auto *target = static_cast<texture *>(dev.create_target(side, side));
+                auto *target = static_cast<texture *>(dev.create_target(
+                    side * static_cast<i32>(columns), side * static_cast<i32>(columns)));
                 if (!target)
                 {
                     for (auto *made : fresh) dev.destroy_target(made);
@@ -136,14 +166,23 @@ struct native_vectors
             for (auto *made : fresh) dev.destroy_target(made);
             throw;
         }
-        if (allocated > renderer_detail::VECTOR_CACHE_BYTES - usage() - extra)
+        if (allocated > renderer_detail::VECTOR_CACHE_BYTES - usage() - extra ||
+            (columns > 1 && allocated > budget - std::min(extra, budget)))
         {
             for (auto *made : fresh) dev.destroy_target(made);
+            if (columns > 1)
+            {
+                // These fresh, unrecorded images have serial zero. Reclaim
+                // their actual aligned allocations before trying fewer tiles.
+                dev.collect();
+                return reserve_layers(depth, side, extra, (columns - 1) * (columns - 1), budget);
+            }
             return false;
         }
         if (replace) trim_layers();
         layers.insert(layers.end(), fresh.begin(), fresh.end());
         layer_side = side;
+        layer_columns = columns;
         layer_bytes += allocated;
         return true;
     }
@@ -157,23 +196,30 @@ struct native_vectors
     }
     bool flush()
     {
-        if (pending.empty()) return true;
+        if (pending.empty() && !scene_count) return true;
         if (flushing) return true;
         flushing = true;
         if (dev.cache_active) dev.cache_flush(false);
-        const bool okay = graphics.draw(dev.white, pending_asset->buffer.descriptor, pending.data(),
-                                        pending.size(), pending_scissor);
+        const bool okay = scene_count
+                              ? draw_scenes()
+                              : graphics.draw(dev.white, pending_asset->buffer.descriptor,
+                                              pending.data(), pending.size(), pending_scissor);
         pending_asset->last_use = std::max(pending_asset->last_use, dev.next_serial);
         pending.clear();
+        scene_count = 0;
         pending_asset = nullptr;
         flushing = false;
         return okay;
     }
     bool queue(vector_asset &asset, const vector_instance &instance, VkRect2D scissor)
     {
-        if (!pending.empty() && (pending_asset != &asset ||
-                                 std::memcmp(&pending_scissor, &scissor, sizeof(scissor)) != 0 ||
-                                 pending.size() == pending.capacity()))
+        // Immutable assets cannot be both a single-paint source and an isolated
+        // scene. A mode change therefore already changes pending_asset. Reuse
+        // that discriminator instead of testing scene state for every simple
+        // instance; the empty queue has a null asset and flushes as a no-op.
+        if (pending_asset != &asset ||
+            std::memcmp(&pending_scissor, &scissor, sizeof(scissor)) != 0 ||
+            pending.size() == pending.capacity())
             if (!flush()) return false;
         if (pending.capacity() == 0) return false;
         pending_asset = &asset;
@@ -183,6 +229,8 @@ struct native_vectors
     }
     bool draw_scene(vector_asset &, const paint_vector &, const renderer_detail::vector_placement &,
                     context &);
+    bool queue_scene(vector_asset &, const scene_instance &, VkRect2D);
+    bool draw_scenes();
 };
 void device::flush_paths()
 {
@@ -249,6 +297,7 @@ inline vector_instance vector_packet(rect bounds, const affine2 &inverse, rect v
             {parent_origin.x, parent_origin.y, sample_origin.x, sample_origin.y},
             {path, paint, clip, flags}};
 }
+#include "vulkan_vector_batch.inl"
 bool native_vectors::draw_scene(vector_asset &asset, const paint_vector &paint,
                                 const renderer_detail::vector_placement &placed, context &ctx)
 {
@@ -285,6 +334,18 @@ bool native_vectors::draw_scene(vector_asset &asset, const paint_vector &paint,
                                    paint.options.style.current_color, {}, {}, step.path, step.paint,
                                    step.clip, 0),
                      scissor);
+    }
+    // Isolating the complete source makes each tile independent. Only the final
+    // composites touch the caller's target, in the original submission order.
+    // Opaque/non-isolated scenes retain the original ordered immediate route.
+    if (tint.a != 255 && layer_columns > 1)
+    {
+        const rect bounds = vector_group_roi(asset.scene.bounds, viewport, matrix, scissor);
+        if (bounds.w <= 0 || bounds.h <= 0) return true;
+        if (bounds.w <= layer_side && bounds.h <= layer_side)
+            return queue_scene(
+                asset, {matrix, inverse, viewport, bounds, tint, paint.options.style.current_color},
+                scissor);
     }
     if (!flush()) return false;
     dev.flush_text(true);
@@ -518,7 +579,8 @@ try
                            static_cast<usize>(fresh->buffer.storage.allocation);
             if (fresh->bytes > requested.resource_budget_bytes ||
                 fresh->bytes > VECTOR_CACHE_BYTES - std::min(state.usage(), VECTOR_CACHE_BYTES) ||
-                !state.reserve_layers(depth, side, fresh->bytes))
+                !state.reserve_layers(depth, side, fresh->bytes, requested.max_instances,
+                                      requested.resource_budget_bytes))
             {
                 delete fresh;
                 return vector_failure(vector_error_code::LIMIT, "native vector group reservation");

@@ -499,40 +499,7 @@ void device::paint_validated(texture *sample, const indexed_geometry &geometry,
         for (i32 i = 0; i < ic; ++i) out[i] = idx[i] - index_base;
     }
     const VkBuffer geometry_buffer = p->staged ? p->device_buffer : p->buffer;
-    if (p->staged)
-    {
-        end_rendering();
-        const VkBufferCopy copy{offset, offset, vertex_bytes + index_bytes};
-        // A previous indexed draw can read this buffer. Order its input reads
-        // before another transfer, including the conservative indexed-fetch
-        // range used by synchronization validation.
-        VkBufferMemoryBarrier2 before{VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2};
-        before.srcStageMask = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
-        before.srcAccessMask = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_2_INDEX_READ_BIT;
-        before.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-        before.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
-        before.srcQueueFamilyIndex = before.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        before.buffer = p->device_buffer;
-        before.size = VK_WHOLE_SIZE;
-        VkDependencyInfo prior{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
-        prior.bufferMemoryBarrierCount = 1;
-        prior.pBufferMemoryBarriers = &before;
-        vkCmdPipelineBarrier2(frame->command, &prior);
-        vkCmdCopyBuffer(frame->command, p->buffer, p->device_buffer, 1, &copy);
-        VkBufferMemoryBarrier2 barrier{VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2};
-        barrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-        barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
-        barrier.dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
-        barrier.dstAccessMask = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_2_INDEX_READ_BIT;
-        barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.buffer = p->device_buffer;
-        barrier.offset = offset;
-        barrier.size = copy.size;
-        VkDependencyInfo dep{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
-        dep.bufferMemoryBarrierCount = 1;
-        dep.pBufferMemoryBarriers = &barrier;
-        vkCmdPipelineBarrier2(frame->command, &dep);
-    }
+    // STAGED copies are consolidated in submit(), ahead of graphics.
     // Transition sampled images outside a render instance; LOAD preserves the
     // already recorded prefix when streaming updates or effects split a pass.
     if (sample->layout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL || sample->ready)

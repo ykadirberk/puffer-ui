@@ -1,0 +1,18 @@
+{
+  "docs/perf/vulkan_batches_raw.zip": {
+    "bytes": 4025054,
+    "sha256": "3e3aec05087ee4e34858531658adf386a6111e13c6669d74911d0aefc65cecc4"
+  },
+  "docs/perf/vulkan_batches.json": {
+    "bytes": 743028,
+    "sha256": "a1965fe19391d64087bec039eadea95737afc852faf76468e47272eb0dd22b70"
+  },
+  "docs/perf/vulkan_batches_frames.csv.gz": {
+    "bytes": 894870,
+    "sha256": "2e15259449305db86faf11112a8c084b37a68aa89ae520a7f9a1523aafd74b01"
+  },
+  "tests/golden/vector_batch/frames.zip": {
+    "bytes": 2736536,
+    "sha256": "492bda45517d65c1516c5776d58148cbf8e7e3ea0e0af01ef974b201949a046f"
+  }
+}

@@ -326,6 +326,15 @@ example with explicit destruction before backend shutdown.
   buffer, with explicit transfer/input synchronization. It doubles the geometry
   storage requirement and is an explicit device/workload measurement choice.
 
+STAGED geometry is append-only within a slot recording. Submission copies each
+populated page once in a preceding command buffer, then publishes transfer writes
+to vertex/index input with one dependency. Shape, glyph and vector draws share
+this path without interrupting rendering for each upload. Both command buffers
+use the slot's existing pool/completion serial; bounded continuations retain their
+own slot ownership. GPU timestamps include the upload command buffer. Buffer
+budgets, arena counts and the DIRECT representation are unchanged. See
+[the lossless batch qualification](perf_vulkan_batches.md).
+
 Native shape vertices default to 20-byte position/UV/integer-byte-color inputs.
 The shader reconstructs the original exact float channel bits. Set
 `compact_vertices=false` for the retained 32-byte float-color reference. Native

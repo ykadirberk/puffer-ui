@@ -70,6 +70,7 @@ struct frame_slot
 {
     VkCommandPool pool = VK_NULL_HANDLE;
     VkCommandBuffer command = VK_NULL_HANDLE;
+    VkCommandBuffer uploads = VK_NULL_HANDLE;
     VkSemaphore acquired = VK_NULL_HANDLE;
     VkQueryPool queries = VK_NULL_HANDLE;
     u64 query_serial = 0;

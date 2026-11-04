@@ -66,10 +66,14 @@ bool device::begin(frame_slot &slot)
         VkCommandBufferAllocateInfo ac{VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO};
         ac.commandPool = slot.pool;
         ac.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        ac.commandBufferCount = 1;
-        if (!check(vkAllocateCommandBuffers(native.device, &ac, &slot.command),
+        const bool staged = options.upload_mode == vulkan_upload_mode::STAGED;
+        ac.commandBufferCount = staged ? 2u : 1u;
+        VkCommandBuffer commands[2]{};
+        if (!check(vkAllocateCommandBuffers(native.device, &ac, commands),
                    "vkAllocateCommandBuffers"))
             return false;
+        slot.command = commands[0];
+        slot.uploads = commands[1];
     }
     else if (!check(vkResetCommandPool(native.device, slot.pool, 0), "vkResetCommandPool"))
         return false;
@@ -81,6 +85,9 @@ bool device::begin(frame_slot &slot)
     VkCommandBufferBeginInfo bi{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     bi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     if (!check(vkBeginCommandBuffer(slot.command, &bi), "vkBeginCommandBuffer")) return false;
+    if (slot.uploads &&
+        !check(vkBeginCommandBuffer(slot.uploads, &bi), "vkBeginCommandBuffer(uploads)"))
+        return false;
     slot.graphics = {};
     if (stats.timestamps_supported)
     {
@@ -93,8 +100,9 @@ bool device::begin(frame_slot &slot)
                        "vkCreateQueryPool"))
                 return false;
         }
-        vkCmdResetQueryPool(slot.command, slot.queries, 0, 2);
-        vkCmdWriteTimestamp2(slot.command, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, slot.queries, 0);
+        const auto first = slot.uploads ? slot.uploads : slot.command;
+        vkCmdResetQueryPool(first, slot.queries, 0, 2);
+        vkCmdWriteTimestamp2(first, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT, slot.queries, 0);
     }
     slot.recording = true;
     frame = &slot;
@@ -129,6 +137,30 @@ u64 device::submit(VkSemaphore acquired, VkSemaphore finished)
                              1);
     for (auto &p : frame->pages)
         if (!flush_page(p)) return 0;
+    if (frame->uploads)
+    {
+        // This slot's previous submission completed before begin() reset its
+        // append-only pages. Copy each populated geometry page once, before
+        // any graphics reads. No earlier draw can read these new bytes; no
+        // per-draw read-to-transfer barrier or render-pass interruption is
+        // needed. Continuations submit/drain their own completed slot likewise.
+        for (const auto &p : frame->pages)
+            if (p.staged && p.used)
+            {
+                const VkBufferCopy copy{0, 0, p.used};
+                vkCmdCopyBuffer(frame->uploads, p.buffer, p.device_buffer, 1, &copy);
+            }
+        VkMemoryBarrier2 barrier{VK_STRUCTURE_TYPE_MEMORY_BARRIER_2};
+        barrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+        barrier.dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
+        barrier.dstAccessMask = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_2_INDEX_READ_BIT;
+        VkDependencyInfo dependency{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+        dependency.memoryBarrierCount = 1;
+        dependency.pMemoryBarriers = &barrier;
+        vkCmdPipelineBarrier2(frame->uploads, &dependency);
+        if (!check(vkEndCommandBuffer(frame->uploads), "vkEndCommandBuffer(uploads)")) return 0;
+    }
     if (!check(vkEndCommandBuffer(frame->command), "vkEndCommandBuffer")) return 0;
     VkSemaphoreSubmitInfo ai{VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO};
     if (acquired)
@@ -145,13 +177,15 @@ u64 device::submit(VkSemaphore acquired, VkSemaphore finished)
     signals[1].sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
     signals[1].semaphore = finished;
     signals[1].stageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
-    VkCommandBufferSubmitInfo cb{VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO};
-    cb.commandBuffer = frame->command;
+    VkCommandBufferSubmitInfo cb[2]{};
+    cb[0].sType = cb[1].sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
+    cb[0].commandBuffer = frame->uploads ? frame->uploads : frame->command;
+    cb[1].commandBuffer = frame->command;
     VkSubmitInfo2 si{VK_STRUCTURE_TYPE_SUBMIT_INFO_2};
     si.waitSemaphoreInfoCount = static_cast<u32>(frame->waits.size());
     si.pWaitSemaphoreInfos = frame->waits.data();
-    si.commandBufferInfoCount = 1;
-    si.pCommandBufferInfos = &cb;
+    si.commandBufferInfoCount = frame->uploads ? 2u : 1u;
+    si.pCommandBufferInfos = cb;
     si.signalSemaphoreInfoCount = finished ? 2u : 1u;
     si.pSignalSemaphoreInfos = signals;
     frame->recording = false;

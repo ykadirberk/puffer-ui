@@ -468,6 +468,15 @@ existing suite unchanged**:
   `--goldens tests/golden/vector` checks new immutable fixtures;
   `--capture-reference NEW_DIRECTORY` refuses existing directories. Existing
   golden files/assertions/tolerances remain independent and unchanged.
+- `pui_vulkan_batch_tests` adds exact immediate/batched isolated Slug overlap,
+  clip/DPI/order, aligned tile budgets and bounded streaming/copy regressions.
+  STAGED copies slot-owned append-only pages before graphics in the same queue
+  submission; both command buffers share the original completion serial.
+  `tests/golden/vector_batch/frames.zip` retains all 180 frozen composed-SVG
+  frames. `tools/compare_vulkan_batches.py` compares every Spiral/SVG frame and
+  alternates frozen binaries without readbacks during timing. Native fixed
+  fixtures qualify their recorded adapter/driver; never regenerate to hide a
+  difference. See `docs/perf_vulkan_batches.md`.
 - The actual gallery is `examples/vector_gallery.h`, used by SDL/Vulkan atomics
   and opt-in `--vectors` showcase/tour modes. Keep default pages stable. Explicit
   public integration: `examples/tutorial/vector_manual.cpp` / tutorial chapter

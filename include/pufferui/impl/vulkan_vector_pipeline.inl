@@ -175,33 +175,7 @@ struct vector_graphics
         if (!upload) return false;
         std::memcpy(upload->mapped + offset, instances, static_cast<usize>(bytes));
         VkBuffer buffer = upload->staged ? upload->device_buffer : upload->buffer;
-        if (upload->staged)
-        {
-            dev.end_rendering();
-            VkBufferMemoryBarrier2 barrier{VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER_2};
-            barrier.srcStageMask = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
-            barrier.srcAccessMask =
-                VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_2_INDEX_READ_BIT;
-            barrier.dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-            barrier.dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
-            barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            barrier.buffer = buffer;
-            barrier.size = VK_WHOLE_SIZE;
-            VkDependencyInfo dependency{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
-            dependency.bufferMemoryBarrierCount = 1;
-            dependency.pBufferMemoryBarriers = &barrier;
-            dev.vkCmdPipelineBarrier2(dev.frame->command, &dependency);
-            const VkBufferCopy copy{offset, offset, bytes};
-            dev.vkCmdCopyBuffer(dev.frame->command, upload->buffer, upload->device_buffer, 1,
-                                &copy);
-            barrier.srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-            barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
-            barrier.dstStageMask = VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
-            barrier.dstAccessMask = VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT;
-            barrier.offset = offset;
-            barrier.size = bytes;
-            dev.vkCmdPipelineBarrier2(dev.frame->command, &dependency);
-        }
+        // STAGED copies are recorded once per slot, before its graphics buffer.
         dev.transition(sample, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         if (!dev.start_rendering(dev.target)) return false;
         const VkExtent2D extent{static_cast<u32>(dev.target->width),

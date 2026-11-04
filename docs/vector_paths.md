@@ -100,6 +100,17 @@ text shaping, text gamma, glyph coverage caches and the existing shape shaders.
 It does not add a compute painter or tile binning. Explicit HarfBuzz OFF or
 `vector_paths=false` selects the complete portable painter.
 
+Repeated instances whose complete source is already isolated by draw opacity
+can share up to 16 prepared layer tiles. Each layer evaluates the same Slug and
+paint operands at the same absolute pixel centers; final composites preserve
+submission order even when destinations overlap. A source/clip change, a full
+batch or a following mesh/text/target operation flushes pending work. Opaque
+non-isolated sources retain the ordered immediate route. Preparation reduces
+tile count to fit source/cache budgets, actual image alignment and device limits;
+it allocates no storage during drawing. This remains analytic Slug rendering.
+See [measurements and exact golden validation](perf_vulkan_batches.md) for draw,
+GPU and bounded memory tradeoffs against the previous implementation.
+
 Both caches are bounded to 64 MiB/256 entries, with per-preparation resource
 budgets. Native accounting includes retained assets, shared layer storage and
 retired allocations; upload arenas have their own existing bounded budget.
