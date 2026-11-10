@@ -1,6 +1,6 @@
 # 11. SVG and paths without example shorthand
 
-![The explicit SVG/path application](img/vector-manual.png)
+![The Explore Material Icon and a C++ path on Vulkan](img/vector-manual.png)
 
 Run: `pui_tut_vector_manual` (Vulkan enabled). The complete application is
 [`examples/tutorial/vector_manual.cpp`](../../examples/tutorial/vector_manual.cpp).
@@ -19,17 +19,49 @@ cmake --build out/build/x64-release --target pui_tut_vector_manual
 ```
 
 For an installed library, use `find_package(pufferui CONFIG REQUIRED COMPONENTS
-vulkan)`, link your executable to `pufferui::vulkan` and SDL3, and give your own
-font path instead of the repository's `PUFFERUI_ASSET_DIR`. Fresh Vulkan builds
+vulkan)`, link your executable to `pufferui::vulkan` and SDL3, and point the file
+paths at the SVG and font in your app. Fresh Vulkan builds
 enable HarfBuzz/Slug. An explicit HarfBuzz OFF configuration still draws the
 same semantic resources through the portable vector painter.
 
 ## Load and prepare once
 
-The application calls `load_svg` during initialization and checks its structured
-error. It keeps the returned `image` owner. SVG sources can include gradients,
-clips, isolated groups and strokes; unsupported features fail explicitly.
-For generated graphics the same application creates an immutable C++ path:
+The left preview loads Google's Explore icon from a bundled local file. The
+helper reads the XML during initialization and passes it to `load_svg`. The
+parser copies the source, so the temporary XML string can go out of scope.
+The app checks the structured result and owns the returned handle. See the
+[file loader](../../examples/material_icons.h) and
+[the icon's source and license](../../assets/icons/material/README.md).
+
+<!-- src: examples/tutorial/vector_manual.cpp -->
+```cpp
+        const auto svg = example_assets::load_svg_file(example_assets::EXPLORE_SVG);
+        if (!svg)
+        {
+            std::fprintf(stderr, "%s: %s (byte %zu)\n", example_assets::EXPLORE_SVG,
+                         svg.error.message, svg.error.offset);
+            return false;
+        }
+        icon = svg.image;
+```
+
+The file loader checks the parser's byte limit before allocating the XML buffer.
+
+<!-- src: examples/material_icons.h -->
+```cpp
+    const svg_load_opts limits{};
+    // ...
+    const std::streamoff length = file.tellg();
+    if (length < 0) return {nullptr, {vector_error_code::INVALID_SVG, 0, "cannot open SVG file"}};
+    if (static_cast<u64>(length) > limits.max_bytes)
+        return {nullptr, {vector_error_code::LIMIT, 0, "SVG file exceeds the byte limit"}};
+    std::string xml(static_cast<usize>(length), '\0');
+    if (!file.seekg(0) || !file.read(xml.data(), static_cast<std::streamsize>(length)))
+        return {nullptr, {vector_error_code::INVALID_SVG, 0, "cannot read SVG file"}};
+    return load_svg(xml, limits);
+```
+
+The right preview creates an immutable C++ path from commands and paint options.
 
 <!-- src: examples/tutorial/vector_manual.cpp -->
 ```cpp
@@ -53,7 +85,8 @@ the first frame clock starts**:
 ```cpp
         const vector_prepare_opts preparation{.max_pixel_size = {256, 256},
                                               .max_instances = 8,
-                                              .resource_budget_bytes = 16 * 1024 * 1024};
+                                              .resource_budget_bytes = 16 * 1024 * 1024,
+                                              .style = {.current_color = ICON_COLOR}};
         // Resource setup runs before the first begin_frame. Draws reuse it.
         return static_cast<bool>(u.prepare_vector(icon, preparation)) &&
                static_cast<bool>(u.prepare_vector(path, preparation));
@@ -67,16 +100,17 @@ in startup measurements.
 
 ## Submit each frame
 
-The model owns opacity and angle. Ordinary controls update them; `draw_vector`
-submits the destination rectangle, affine transform and style. The UI does not
-reparse XML, flatten curves or encode Slug data. Native Vulkan resolves affine
-coverage on the GPU; the portable renderer reuses its prepared texture.
+The model owns opacity and angle. `draw_vector` submits the destination
+rectangle, affine transform and style each frame. The SVG's root
+`fill="currentColor"` takes its color from `ICON_COLOR`. Native Vulkan resolves
+coverage on the GPU, while the portable renderer reuses its prepared texture.
 
 <!-- src: examples/tutorial/vector_manual.cpp -->
 ```cpp
             const auto status = u.draw_vector(
                 {center.x - size * .5f, center.y - size * .5f, size, size}, i ? path : icon,
-                {.transform = rotation, .style = {.opacity = opacity}});
+                {.transform = rotation,
+                 .style = {.current_color = ICON_COLOR, .opacity = opacity}});
 ```
 
 Always inspect the returned status. A missed preparation is a reported
@@ -102,7 +136,8 @@ the window, draws eight frames and requires zero UI/validation violations:
 & "out/build/x64-debug/Debug/pui_tut_vector_manual.exe" --selftest --frames 8 --resize 800x560 --screenshot vector.bmp
 ```
 
-The [SVG/path contract](../vector_paths.md) lists supported features, limits,
-backend choices and the independent golden/lifetime tests. The full
-[`vector_gallery.h`](../../examples/vector_gallery.h) adds palette preparation,
-gradient badges, dashed strokes and clipping using the normal example runner.
+Try `pui_ex_svg_icons` or `pui_ex_svg_icons_vulkan` to reuse Favorite at three
+sizes and switch between two prepared colors. The gallery adds six Material
+Icons, gradient badges, dashed strokes and clipping. See the
+[focused example](../../examples/atomic/svg_icons.cpp),
+[gallery source](../../examples/vector_gallery.h) and [SVG/path contract](../vector_paths.md).

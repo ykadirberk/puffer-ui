@@ -1,6 +1,7 @@
 // Chapter 11: public SVG/path resources, explicit SDL/Vulkan application lifetime.
 #include <pufferui/vulkan.h>
 #include <SDL3/SDL.h>
+#include "../material_icons.h"
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -11,6 +12,7 @@ using namespace pui;
 
 struct vector_application
 {
+    static constexpr color ICON_COLOR{116, 193, 255, 255};
     SDL_Window *native = nullptr;
     render_device *device = nullptr;
     render_surface *surface = nullptr;
@@ -60,14 +62,11 @@ struct vector_application
     }
     bool prepare_vectors()
     {
-        const auto svg =
-            load_svg(R"svg(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-          <defs><linearGradient id="paint" x2="1" y2="1"><stop stop-color="#55c5f8"/><stop offset="1" stop-color="#7562db"/></linearGradient></defs>
-          <circle cx="64" cy="64" r="54" fill="url(#paint)"/>
-          <g opacity=".8"><path d="M32 72Q64 20 96 72Q64 112 32 72Z" fill="white"/><circle cx="72" cy="60" r="5" fill="#17233b"/></g></svg>)svg");
+        const auto svg = example_assets::load_svg_file(example_assets::EXPLORE_SVG);
         if (!svg)
         {
-            std::fprintf(stderr, "SVG: %s (byte %zu)\n", svg.error.message, svg.error.offset);
+            std::fprintf(stderr, "%s: %s (byte %zu)\n", example_assets::EXPLORE_SVG,
+                         svg.error.message, svg.error.offset);
             return false;
         }
         icon = svg.image;
@@ -86,7 +85,8 @@ struct vector_application
         ui u(ctx);
         const vector_prepare_opts preparation{.max_pixel_size = {256, 256},
                                               .max_instances = 8,
-                                              .resource_budget_bytes = 16 * 1024 * 1024};
+                                              .resource_budget_bytes = 16 * 1024 * 1024,
+                                              .style = {.current_color = ICON_COLOR}};
         // Resource setup runs before the first begin_frame. Draws reuse it.
         return static_cast<bool>(u.prepare_vector(icon, preparation)) &&
                static_cast<bool>(u.prepare_vector(path, preparation));
@@ -113,6 +113,8 @@ struct vector_application
         for (i32 i = 0; i < 2; ++i)
         {
             rect bounds = previews.next(width);
+            u.text_ellipsis(bounds.cut_top(u.control_h()), i ? "C++ path" : "Explore.svg",
+                            u.th().text_dim, ALIGN_CENTER);
             const f32 size =
                 std::max(0.0f, std::min(std::min(bounds.w, bounds.h), 256.0f / win->scale) -
                                    u.spacing() * 2);
@@ -126,7 +128,8 @@ struct vector_application
                                    center.y - s * center.x - c * center.y};
             const auto status = u.draw_vector(
                 {center.x - size * .5f, center.y - size * .5f, size, size}, i ? path : icon,
-                {.transform = rotation, .style = {.opacity = opacity}});
+                {.transform = rotation,
+                 .style = {.current_color = ICON_COLOR, .opacity = opacity}});
             if (!status)
             {
                 std::fprintf(stderr, "Vector: %s\n", status.error.message);

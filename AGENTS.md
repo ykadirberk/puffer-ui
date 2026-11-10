@@ -484,10 +484,14 @@ existing suite unchanged**:
   retains all 180 pre-fix simple-path frames. `tools/compare_vulkan_vector_cpu.py`
   alternates the unchanged timing binaries and verifies every simple/SVG/Spiral
   frame. See `docs/perf_vulkan_vector_cpu.md`; existing tests/oracles stay fixed.
-- The actual gallery is `examples/vector_gallery.h`, used by SDL/Vulkan atomics
-  and opt-in `--vectors` showcase/tour modes. Keep default pages stable. Explicit
-  public integration: `examples/tutorial/vector_manual.cpp` / tutorial chapter
-  11. The contract, subset and limits are in `docs/vector_paths.md`.
+- `examples/vector_gallery.h` shows the six bundled Google Material Icons in
+  the SDL/Vulkan atomics and opt-in `--vectors` showcase/tour modes. Keep default
+  pages stable. `pui_ex_svg_icons` and `pui_ex_svg_icons_vulkan` reuse a single
+  SVG file at three sizes with two prepared colors. The explicit Vulkan example
+  loads Explore from disk in `examples/tutorial/vector_manual.cpp` (chapter 11).
+  Icon provenance and the upstream license live in `assets/icons/material/`.
+  `tests/test_material_icons.cpp` checks the shipped files and their color/alpha
+  coverage in `pui_vector_tests`. See `docs/vector_paths.md` for the contract.
 
 ## Design plan & status
 

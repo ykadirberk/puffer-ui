@@ -260,7 +260,7 @@ pui_add_exe(pui_core_bench SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_CORE_PERF
 # White-box regressions use the same implementation TU, with private test code
 # included at its end. The core archive is not pulled in (no unresolved symbols).
 pui_add_exe(pui_perf_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_INTERNAL_TESTS)
-pui_add_exe(pui_vector_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_VECTOR_TESTS)
+pui_add_exe(pui_vector_tests SOURCES src/pufferui_impl.cpp tests/test_material_icons.cpp DEFS PUFFERUI_VECTOR_TESTS)
 
 # SDL event-pump tests: SDL_PushEvent-driven routing through the offscreen
 # driver. Same exit contract as the core tests (exit 0 = all passed).
@@ -296,7 +296,7 @@ set(PUFFERUI_EXAMPLE_NAMES
     hello bootstrap rect cursors tracks grid ids text buttons inputs widgets
     panels scroll popups dock windows drawing blur animation theme custom
     patterns expander combo keyboard components vlist overflow relayout
-    controls tables tree numeric colors dpi files textarea a11y pickers vector)
+    controls tables tree numeric colors dpi files textarea a11y pickers vector svg_icons)
 
 # Headless examples: no SDL, no window (they still get the bundled font path).
 set(PUFFERUI_HEADLESS_EXAMPLES headless renderer)
@@ -316,6 +316,7 @@ if(PUFFERUI_WITH_VULKAN)
 pui_add_selftest_exe(pui_showcase_vulkan VULKAN SOURCES examples/pui_showcase.cpp)
 pui_add_selftest_exe(pui_ex_vulkan VULKAN SOURCES examples/atomic/vulkan.cpp)
 pui_add_selftest_exe(pui_ex_vector_vulkan VULKAN SOURCES examples/atomic/vector.cpp)
+pui_add_selftest_exe(pui_ex_svg_icons_vulkan VULKAN SOURCES examples/atomic/svg_icons.cpp)
 pui_add_selftest_exe(pui_ex_vulkan_preparation VULKAN SOURCES examples/atomic/vulkan_preparation.cpp)
 pui_add_selftest_exe(pui_tut_vulkan_manual VULKAN SOURCES examples/tutorial/vulkan_manual.cpp)
 pui_add_selftest_exe(pui_tut_vector_manual VULKAN SOURCES examples/tutorial/vector_manual.cpp)

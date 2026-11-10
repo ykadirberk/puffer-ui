@@ -1,11 +1,16 @@
 // Application-owned SVG/path sources shared by the standalone and opt-in gallery.
 #pragma once
 #include "example_common.h"
+#include "material_icons.h"
 #include <cmath>
 
 struct vector_gallery
 {
+    static constexpr i32 ICON_COUNT = static_cast<i32>(std::size(example_assets::MATERIAL_ICONS));
+    static constexpr f32 ICON_PIXELS = 128;
+    static constexpr f32 PREVIEW_PIXELS = 256;
     vector_handle images[3]{};
+    vector_handle icons[ICON_COUNT]{};
     bool ready = false;
     f32 opacity = 1, angle = 0;
     i32 palette = 0;
@@ -55,40 +60,118 @@ struct vector_gallery
     void close(example_app &app)
     {
         ui u(app.ctx);
-        for (auto &image : images)
+        const auto release = [&](vector_handle &image)
+        {
             if (image)
             {
                 (void)u.release_vector(image);
                 destroy_vector(image);
             }
+        };
+        for (auto &image : images) release(image);
+        for (auto &icon : icons) release(icon);
     }
     void prepare(example_app &app)
     {
         app.before_shutdown = [](example_app &a, void *user)
         { static_cast<vector_gallery *>(user)->close(a); };
         app.shutdown_user = this;
-        const vector_result sources[] = {badge(), route(), heart()};
+        ui u(app.ctx);
         ready = true;
-        for (usize i = 0; i < 3; ++i)
+        const auto prepare_image = [&](vector_result source, vector_handle &image, const char *name,
+                                       vector_prepare_opts options)
         {
-            images[i] = sources[i].image;
-            if (!sources[i])
+            image = source.image;
+            if (!source)
             {
+                std::fprintf(stderr, "%s: %s (byte %zu)\n", name, source.error.message,
+                             source.error.offset);
                 ready = false;
-                continue;
+                return;
             }
             for (auto current : colors)
-                if (!ui(app.ctx).prepare_vector(images[i],
-                                                {.max_pixel_size = {256, 256},
-                                                 .max_instances = 64,
-                                                 .resource_budget_bytes = 32 * 1024 * 1024,
-                                                 .style = {.current_color = current}}))
+            {
+                options.style.current_color = current;
+                if (const auto status = u.prepare_vector(image, options); !status)
+                {
+                    std::fprintf(stderr, "%s: %s\n", name, status.error.message);
                     ready = false;
-        }
-        if (!ready)
+                    return;
+                }
+            }
+        };
+        const vector_prepare_opts preview{.max_pixel_size = {PREVIEW_PIXELS, PREVIEW_PIXELS},
+                                          .resource_budget_bytes = 32 * 1024 * 1024};
+        prepare_image(badge(), images[0], "SVG badge", preview);
+        prepare_image(route(), images[1], "Clips and strokes", preview);
+        prepare_image(heart(), images[2], "Cubic path", preview);
+        for (i32 i = 0; i < ICON_COUNT; ++i)
         {
-            std::fprintf(stderr, "vector gallery resource preparation failed\n");
+            const char *filename = example_assets::MATERIAL_ICONS[i].filename;
+            prepare_image(example_assets::load_svg_file(filename), icons[i], filename,
+                          {.max_pixel_size = {ICON_PIXELS, ICON_PIXELS}, .max_instances = 1});
+        }
+        if (!ready) app.running = false;
+    }
+    void draw_preview(ui &u, example_app &app, rect bounds, vector_handle image, f32 pixels)
+    {
+        const f32 size =
+            max2(0, std::min({bounds.w, bounds.h, pixels / app.win->scale}) - u.spacing() * 2);
+        const vec2 center{bounds.center_x(), bounds.center_y()};
+        const rect area{center.x - size * .5f, center.y - size * .5f, size, size};
+        const f32 c = std::cos(angle), s = std::sin(angle);
+        const affine2 rotation{c,
+                               s,
+                               -s,
+                               c,
+                               center.x - c * center.x + s * center.y,
+                               center.y - s * center.x - c * center.y};
+        const auto status =
+            u.draw_vector(area, image,
+                          {.transform = rotation,
+                           .style = {.current_color = colors[palette], .opacity = opacity}});
+        if (!status)
+        {
+            std::fprintf(stderr, "vector gallery draw failed: %s\n", status.error.message);
+            ready = false;
             app.running = false;
+        }
+    }
+    void draw_material_icons(ui &u, example_app &app, rect &content)
+    {
+        const auto &appearance = u.th();
+        const f32 gap = u.spacing();
+        const f32 inner_width = content.pad(appearance.card.padding).w;
+        f32 minimum_width = 0;
+        for (const auto &icon : example_assets::MATERIAL_ICONS)
+            minimum_width = max2(minimum_width, u.text_size(icon.label).x + 2 * gap);
+        const auto fits = [&](i32 columns)
+        { return columns * minimum_width + (columns - 1) * gap <= inner_width; };
+        const i32 columns = fits(ICON_COUNT) ? ICON_COUNT : fits(3) ? 3 : fits(2) ? 2 : 1;
+        const i32 rows = (ICON_COUNT + columns - 1) / columns;
+        const f32 cell_h = u.control_h() * 3;
+        const auto &section = appearance.section;
+        const f32 header_h = 2 * appearance.card.padding + section.title_h + section.caption_h +
+                             section.caption_gap + section.body_gap;
+        const rect card = content.cut_top(header_h + rows * cell_h + (rows - 1) * gap);
+        if (card.w <= 0 || card.h <= 0) return;
+        auto clip = u.region(card, "material_icons"_id);
+        rect body = example_section(u, card, "Material Icons", "Google SVGs with a shared palette",
+                                    app.font_bold);
+        const f32 width = max2(0, (body.w - (columns - 1) * gap) / columns);
+        for (i32 i = 0; i < ICON_COUNT && body.h > 0;)
+        {
+            row cells(body.cut_top(cell_h), gap);
+            for (i32 column = 0; column < columns && i < ICON_COUNT; ++column, ++i)
+            {
+                rect cell = cells.next(width);
+                if (cell.w <= 0 || cell.h <= 0) continue;
+                const auto &icon = example_assets::MATERIAL_ICONS[i];
+                u.text_ellipsis(cell.cut_bottom(u.control_h()), icon.label, appearance.text_dim,
+                                ALIGN_CENTER);
+                draw_preview(u, app, cell, icons[i], ICON_PIXELS);
+            }
+            (void)body.cut_top(gap);
         }
     }
     void operator()(ui &u, example_app &app)
@@ -113,6 +196,9 @@ struct vector_gallery
                 palette = i;
         }
         (void)page.content.cut_top(u.spacing());
+        draw_material_icons(u, app, page.content);
+        (void)page.content.cut_top(u.spacing());
+        if (page.content.w <= 0 || page.content.h <= 0) return;
         const f32 width = std::max(0.0f, (page.content.w - u.spacing() * 2) / 3);
         row cards(page.content, u.spacing());
         const char *titles[] = {"SVG badge", "Clips and strokes", "Cubic path"};
@@ -125,29 +211,7 @@ struct vector_gallery
             auto card_clip = u.region(card_area, u.local("card_clip"));
             rect body = example_section(u, card_area, titles[i], captions[i], app.font_bold);
             auto clip = u.region(body, u.local("preview"));
-            const f32 size =
-                std::max(0.0f, std::min(std::min(body.w, body.h), 256.0f / app.win->scale) -
-                                   u.spacing() * 2);
-            const vec2 center{body.x + body.w * .5f, body.y + body.h * .5f};
-            const rect area{center.x - size * .5f, center.y - size * .5f, size, size};
-            const f32 c = std::cos(angle), s = std::sin(angle);
-            const affine2 rotation{c,
-                                   s,
-                                   -s,
-                                   c,
-                                   center.x - c * center.x + s * center.y,
-                                   center.y - s * center.x - c * center.y};
-            const auto status =
-                u.draw_vector(area, images[i],
-                              {.transform = rotation,
-                               .style = {.current_color = colors[palette], .opacity = opacity}});
-            if (!status)
-            {
-                std::fprintf(stderr, "vector gallery draw %d failed: %s\n", i,
-                             status.error.message);
-                ready = false;
-                app.running = false;
-            }
+            draw_preview(u, app, body, images[i], PREVIEW_PIXELS);
         }
     }
 };

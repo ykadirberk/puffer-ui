@@ -7,22 +7,28 @@ SVG drawing does not require a font, a font face or a glyph atlas.
 
 ![Native Slug SVG/path gallery](img/readme/vector-vulkan.png)
 
-See the [complete application tutorial](tutorial/11-svg-and-paths.md),
-[`vector_manual.cpp`](../examples/tutorial/vector_manual.cpp) and the
-[`vector_gallery`](../examples/vector_gallery.h). Run the gallery directly:
+The gallery displays six Google Material Icons alongside the gradient, clip,
+stroke and C++ path samples. The SVG files ship with the examples under
+`assets/icons/material`. Each icon uses `currentColor` for the gallery palette.
+See the [pinned sources and license](../assets/icons/material/README.md).
+
+The focused SVG icon example reuses `favorite.svg` at three sizes and prepares
+both colors up front. The same gallery and icon examples run on SDL and Vulkan.
 
 ```powershell
 & "out/build/x64-release/Release/pui_ex_vector.exe"
 & "out/build/x64-release/Release/pui_ex_vector_vulkan.exe"
+& "out/build/x64-release/Release/pui_ex_svg_icons.exe"
+& "out/build/x64-release/Release/pui_ex_svg_icons_vulkan.exe"
+& "out/build/x64-release/Release/pui_showcase.exe" --vectors
 & "out/build/x64-release/Release/pui_showcase_vulkan.exe" --vectors
 & "out/build/x64-release/Release/pui_tour.exe" --vectors
 ```
 
-The opt-in showcase/tour gallery keeps the original pages and their images
-stable. Its controls exercise currentColor, isolated opacity and rotation.
-`pui_ex_vector_vulkan --portable-vectors` selects the portable implementation for
-an explicit comparison. The startup defaults of ordinary showcase pages stay
-the same.
+The showcase and tour use `--vectors` to open the gallery. Use
+`pui_ex_vector_vulkan --portable-vectors` to run it with the portable painter
+on a Vulkan device. See [chapter 11](tutorial/11-svg-and-paths.md) for file
+loading, painter preparation and teardown in an explicit SDL/Vulkan application.
 
 ## Ownership and frame boundaries
 

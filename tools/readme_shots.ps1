@@ -66,6 +66,7 @@ $shots = @(
     @('vulkan-preparation', 'pui_ex_vulkan_preparation', '--selftest --frames 6 --no-script', 'optional'),
     @('vector', 'pui_ex_vector', '--selftest --frames 6 --no-script'),
     @('vector-vulkan', 'pui_ex_vector_vulkan', '--selftest --frames 6 --no-script', 'optional'),
+    @('svg-icons', 'pui_ex_svg_icons', '--selftest --frames 6'),
     @('vulkan-showcase', 'pui_showcase_vulkan', '--selftest --frames 100 --page 0 --no-script', 'optional'),
     @('counter', 'pui_counter', ''),  # its own --screenshot mode (frame 4)
     @('showcase', 'pui_showcase', '--selftest --frames 100 --page 0 --no-script --no-hud'),

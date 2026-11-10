@@ -1588,32 +1588,28 @@ equivalent integration without the example bootstrap.
 
 ### 41. SVG and native Slug paths
 
-![SVG/path gallery with gradients, clipping and strokes](docs/img/readme/vector.png)
+![Material Icons above SVG and C++ path examples](docs/img/readme/vector.png)
 
 Run: `pui_ex_vector`, or `pui_ex_vector_vulkan` with Vulkan enabled.
 
-Load SVG or create immutable C++ paths once, then prepare the renderer's
-representation outside UI frames. The gallery owns three sources, prepares its
-palette and submits affine/opacity changes without reparsing or encoding during
-drawing. The native version uses font-independent Slug coverage; the portable
-version reuses prepared RGBA textures.
+The gallery loads six local Google Material Icons alongside gradient, clipping,
+stroke and C++ path examples. Opacity, rotation and palette controls apply to
+both groups. SVG and C++ paths become immutable sources that the application
+prepares outside UI frames. The native version uses Slug coverage and the
+portable version uses prepared RGBA textures.
 
-```cpp
-            for (auto current : colors)
-                if (!ui(app.ctx).prepare_vector(images[i],
-                                                {.max_pixel_size = {256, 256},
-                                                 .max_instances = 64,
-                                                 .resource_budget_bytes = 32 * 1024 * 1024,
-                                                 .style = {.current_color = current}}))
-                    ready = false;
-```
+Open the gallery with `pui_showcase --vectors`, `pui_showcase_vulkan --vectors`,
+or `pui_tour --vectors`. See [the gallery source](examples/vector_gallery.h) and
+the [SVG/path contract](docs/vector_paths.md).
 
-Full source: `examples/atomic/vector.cpp` and `examples/vector_gallery.h`.
-Open the same gallery with `pui_showcase_vulkan --vectors` or `pui_tour --vectors`.
-See the [SVG/path contract](docs/vector_paths.md) for supported features/limits
-and [chapter 11](docs/tutorial/11-svg-and-paths.md) for a complete application
-without example shorthand. Static fixed-size icons can favor cached textures;
-native analytic coverage is a representation choice to measure for the workload.
+![Favorite.svg reused at 16, 32 and 64 pixels](docs/img/readme/svg-icons.png)
+
+Run `pui_ex_svg_icons` or `pui_ex_svg_icons_vulkan` for the focused example.
+It loads `favorite.svg` once, prepares both colors and draws the same handle
+at 16, 32 and 64 logical pixels. The checkbox changes the SVG's `currentColor`.
+See [the example source](examples/atomic/svg_icons.cpp), the
+[icon sources and license](assets/icons/material/README.md), and
+[chapter 11](docs/tutorial/11-svg-and-paths.md) for the explicit Vulkan lifecycle.
 
 ## Examples index
 
@@ -1670,6 +1666,7 @@ native analytic coverage is a representation choice to measure for the workload.
 | `pui_showcase_vulkan` | `examples/pui_showcase.cpp` | the existing motion showcase on the optional native Vulkan backend |
 | `pui_ex_vulkan_preparation` | `examples/atomic/vulkan_preparation.cpp` | prepare known CPU and native surface geometry resources before the first frame |
 | `pui_ex_vector` / `pui_ex_vector_vulkan` | `examples/atomic/vector.cpp` | immutable SVG/path resources, gradients, isolated opacity, strokes and clipping; native font-independent Slug with Vulkan/HarfBuzz |
+| `pui_ex_svg_icons` / `pui_ex_svg_icons_vulkan` | `examples/atomic/svg_icons.cpp` | load a Material Icon file, prepare two colors and reuse the handle at three sizes |
 
 Every example supports:
 
