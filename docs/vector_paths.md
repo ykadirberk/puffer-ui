@@ -25,7 +25,15 @@ both colors up front. The same gallery and icon examples run on SDL and Vulkan.
 & "out/build/x64-release/Release/pui_tour.exe" --vectors
 ```
 
-The showcase and tour use `--vectors` to open the gallery. Use
+The regular SDL and Vulkan showcase pages use Material Icons SVGs for
+navigation and controls by default. The showcase prepares one white version
+of each icon before the first frame and supplies its animated color, opacity
+and rotation at draw time. SDL draws the prepared textures. The default Vulkan
+painter uses native Slug coverage. If an icon cannot be prepared or submitted,
+its original primitive drawing is available as a fallback. `--mesh-icons`
+selects the original icons for every page.
+
+The showcase and tour use `--vectors` to open the separate gallery. Use
 `pui_ex_vector_vulkan --portable-vectors` to run it with the portable painter
 on a Vulkan device. See [chapter 11](tutorial/11-svg-and-paths.md) for file
 loading, painter preparation and teardown in an explicit SDL/Vulkan application.

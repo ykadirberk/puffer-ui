@@ -22,7 +22,9 @@
 //   pui_showcase --light      start in the light theme;  --no-hud  hide the perf card
 //   pui_showcase --perf       print the average UI build / frame times at exit
 //   pui_showcase --a11y       accessibility recording on (what a screen reader enables)
+//   pui_showcase --mesh-icons draw the original primitive icons
 #include "example_common.h"
+#include "showcase_icons.h"
 #include "tutorial/glass.h"
 #include "vector_gallery.h"
 
@@ -53,24 +55,8 @@ static const char *const PAGE_CAPTIONS[PAGE_COUNT] = {
     "blur, light, particles and pseudo-3D from plain triangles",
     "springs, curves and staggers you can tune live"};
 
-enum icon_kind : i32
-{
-    ICON_GRID,
-    ICON_LAYERS,
-    ICON_BOARD,
-    ICON_SPARK,
-    ICON_WAVE,
-    ICON_GEAR,
-    ICON_BELL,
-    ICON_SEARCH,
-    ICON_PLUS,
-    ICON_MINUS,
-    ICON_CHEVRON,
-    ICON_ROCKET,
-    ICON_SHUFFLE,
-    ICON_SORT,
-    ICON_CHECK,
-};
+using example_assets::showcase_icon_set;
+using enum example_assets::icon_kind;
 static const i32 PAGE_ICONS[PAGE_COUNT] = {ICON_GRID, ICON_LAYERS, ICON_BOARD, ICON_SPARK,
                                            ICON_WAVE};
 
@@ -202,6 +188,7 @@ struct feed_event
 struct showcase
 {
     font_handle font = FONT_INVALID, bold = FONT_INVALID;
+    const showcase_icon_set *icons = nullptr; // borrowed from the running example
 
     // navigation
     i32 page = PAGE_OVERVIEW, prev_page = PAGE_OVERVIEW;
@@ -530,9 +517,10 @@ static void soft_shadow(ui &u, rect r, f32 radius, f32 spread, f32 strength, f32
     }
 }
 
-// Vector icons drawn from lines/arcs/polygons, rotatable (gear spin, bell wiggle).
+// Material Icons with a primitive fallback. Both follow the same center and rotation.
 static void icon(ui &u, i32 kind, vec2 c, f32 s, color col, f32 angle = 0.0f)
 {
+    if (g_app.icons && g_app.icons->draw(u, kind, c, s, col, angle)) return;
     const f32 ca = std::cos(angle), sa = std::sin(angle);
     const auto P = [&](f32 x, f32 y)
     { return vec2{c.x + (x * ca - y * sa) * s, c.y + (x * sa + y * ca) * s}; };
@@ -4264,7 +4252,25 @@ static void showcase_prepare_scene(example_app &app)
 
 struct showcase_program
 {
-    void prepare(example_app &app) const { showcase_prepare_scene(app); }
+    showcase_icon_set *icons = nullptr;
+
+    void prepare(example_app &app) const
+    {
+        if (icons)
+        {
+            ui u(app.ctx);
+            icons->prepare(u);
+            g_app.icons = icons;
+            app.shutdown_user = icons;
+            app.before_shutdown = [](example_app &closing, void *user)
+            {
+                g_app.icons = nullptr;
+                ui painter(closing.ctx);
+                static_cast<showcase_icon_set *>(user)->release(painter);
+            };
+        }
+        showcase_prepare_scene(app);
+    }
     void operator()(ui &u, example_app &app) const { showcase_frame(u, app); }
 };
 
@@ -4277,6 +4283,7 @@ int main(int argc, char **argv)
         }
     i32 start_tiles = -1, start_mode = -1;
     f32 start_size = -1;
+    bool mesh_icons = false;
     for (int i = 1; i < argc; ++i)
     {
 #if defined(PUFFERUI_ENABLE_VULKAN)
@@ -4309,6 +4316,7 @@ int main(int argc, char **argv)
         if (std::strcmp(argv[i], "--perf") == 0) g_perf = true;
         if (std::strcmp(argv[i], "--a11y") == 0) g_a11y = true;
         if (std::strcmp(argv[i], "--light") == 0) g_app.theme_mode = 1; // start in the light theme
+        if (std::strcmp(argv[i], "--mesh-icons") == 0) mesh_icons = true;
     }
     if (g_fuzz) g_app.rng = g_fuzz * 2654435761u + 1u;
     seed(g_app);
@@ -4319,7 +4327,9 @@ int main(int argc, char **argv)
     }
     if (start_mode >= 0) g_app.lab_mode = start_mode;
     if (start_size > 0) g_app.lab_size = std::clamp(start_size, 64.0f, 180.0f);
-    const int rc = example_run("showcase", 1360, 860, argc, argv, showcase_program{});
+    showcase_icon_set icons;
+    const int rc = example_run("showcase", 1360, 860, argc, argv,
+                               showcase_program{.icons = mesh_icons ? nullptr : &icons});
     if (g_perf && g_perf_totals.frames > 0)
     {
         const perf_totals &p = g_perf_totals;

@@ -260,7 +260,8 @@ pui_add_exe(pui_core_bench SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_CORE_PERF
 # White-box regressions use the same implementation TU, with private test code
 # included at its end. The core archive is not pulled in (no unresolved symbols).
 pui_add_exe(pui_perf_tests SOURCES src/pufferui_impl.cpp DEFS PUFFERUI_INTERNAL_TESTS)
-pui_add_exe(pui_vector_tests SOURCES src/pufferui_impl.cpp tests/test_material_icons.cpp DEFS PUFFERUI_VECTOR_TESTS)
+pui_add_exe(pui_vector_tests SOURCES src/pufferui_impl.cpp tests/test_material_icons.cpp
+    tests/test_showcase_svg_icons.cpp DEFS PUFFERUI_VECTOR_TESTS)
 
 # SDL event-pump tests: SDL_PushEvent-driven routing through the offscreen
 # driver. Same exit contract as the core tests (exit 0 = all passed).

@@ -67,6 +67,8 @@ The `pui_ex_*` binaries each show one capability in isolation, and
 `pui_showcase` is the motion-heavy one: layout that springs from rect to rect
 when it re-flows, frosted glass, particles, a draggable board, a settings drawer
 and a command palette (Ctrl+Space).
+Both `pui_showcase` and `pui_showcase_vulkan` open with bundled Material Icons
+SVGs on the regular pages. Use `--mesh-icons` to compare the original icons.
 
 ![pui_showcase in the light theme: blur lens, ripples, radial menu, pseudo-3D tilt, shimmer and morphing blob](docs/img/readme/showcase-light.png)
 
@@ -1598,9 +1600,11 @@ both groups. SVG and C++ paths become immutable sources that the application
 prepares outside UI frames. The native version uses Slug coverage and the
 portable version uses prepared RGBA textures.
 
-Open the gallery with `pui_showcase --vectors`, `pui_showcase_vulkan --vectors`,
-or `pui_tour --vectors`. See [the gallery source](examples/vector_gallery.h) and
-the [SVG/path contract](docs/vector_paths.md).
+Open the separate gallery with `pui_showcase --vectors`,
+`pui_showcase_vulkan --vectors` or `pui_tour --vectors`. The showcase's regular
+pages prepare one white version of each icon at startup and tint it at draw
+time for hover and theme transitions. See [the gallery source](examples/vector_gallery.h)
+and the [SVG/path contract](docs/vector_paths.md).
 
 ![Favorite.svg reused at 16, 32 and 64 pixels](docs/img/readme/svg-icons.png)
 
