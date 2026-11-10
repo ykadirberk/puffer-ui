@@ -56,6 +56,18 @@ VkDeviceSize device::geometry_reservation(VkDeviceSize requested, VkDeviceSize p
     while (bytes < desired && bytes <= budget / 2) bytes *= 2;
     return bytes <= budget ? bytes : 0;
 }
+VkDeviceSize device::geometry_hint_reservation(VkDeviceSize requested, VkDeviceSize pixels,
+                                               VkDeviceSize peak) const
+{
+    const VkDeviceSize bytes = geometry_reservation(requested, pixels);
+    if (!options.analytic_rounded_rects || !bytes || requested <= bytes) return bytes;
+
+    // A rejected mesh hint can describe the tessellation that analytic paints
+    // avoid. Reserve less speculatively and retain headroom for observed usage.
+    const VkDeviceSize observed = peak <= UINT64_MAX / 2 ? peak * 2 : peak;
+    const VkDeviceSize desired = std::max(pixels * 2, observed);
+    return desired < bytes ? geometry_reservation(desired, pixels) : bytes;
+}
 bool device::prepare_geometry(const geometry_capacity &capacity)
 {
     constexpr usize limit = 0x7fffffff;
@@ -65,8 +77,11 @@ bool device::prepare_geometry(const geometry_capacity &capacity)
     const VkDeviceSize requested = static_cast<VkDeviceSize>(capacity.vertices) * vertex_stride() +
                                    static_cast<VkDeviceSize>(capacity.indices) * 4;
     if (!requested) return true;
+    const VkDeviceSize pixels = static_cast<VkDeviceSize>(target->width) * target->height;
     const VkDeviceSize bytes =
-        geometry_reservation(requested, static_cast<VkDeviceSize>(target->width) * target->height);
+        current_surface && target == current_surface->scene
+            ? geometry_hint_reservation(requested, pixels, current_surface->geometry_peak)
+            : geometry_reservation(requested, pixels);
     if (!bytes) return false;
     const bool prepared = prepare_slot_geometry(*frame, bytes);
     // True certifies the complete requested byte count. Oversized hints still
@@ -143,8 +158,9 @@ bool vulkan_prepare_surface_geometry(render_surface *base, const geometry_capaci
         static_cast<VkDeviceSize>(capacity.vertices) * d.vertex_stride() +
         static_cast<VkDeviceSize>(capacity.indices) * sizeof(i32);
     if (!requested) return true;
-    const VkDeviceSize bytes = d.geometry_reservation(
-        requested, static_cast<VkDeviceSize>(surface->extent.width) * surface->extent.height);
+    const VkDeviceSize bytes = d.geometry_hint_reservation(
+        requested, static_cast<VkDeviceSize>(surface->extent.width) * surface->extent.height,
+        surface->geometry_peak);
     if (!bytes) return false;
     struct preparation_scope
     {

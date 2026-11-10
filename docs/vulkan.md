@@ -478,6 +478,11 @@ true certifies the full requested capacity in every slot. Repeated fitting hints
 allocate nothing. The usual per-frame preparation/continuation path remains the
 fallback after resize, later growth or a declined hint.
 
+For analytic rounded surfaces, a hint that exceeds the complete reservation
+starts with two bytes per framebuffer pixel before page rounding. Once a frame
+records a larger footprint, preparation can reserve twice that observed usage
+within the existing bounds. Fitting hints still reserve their full capacity.
+
 Preparation moves existing work into setup; it does not promise lower total
 startup time or memory demand. Include setup, first frames and their sum in
 reports. `buffer_allocations` includes geometry preparation while

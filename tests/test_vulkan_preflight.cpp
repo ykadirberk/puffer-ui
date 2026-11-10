@@ -196,6 +196,46 @@ bool preflight_failures(vulkan_device_opts options)
     }
     return true;
 }
+bool analytic_advisory_capacity(vulkan_device_opts options)
+{
+    options.analytic_rounded_rects = true;
+    auto *d = static_cast<vk_detail::device *>(create_vulkan_device(options));
+    CHECK(d);
+    auto *surface =
+        static_cast<vk_detail::surface *>(create_vulkan_surface(d, {.width = 1360, .height = 860}));
+    CHECK(surface && vulkan_wait_idle(d));
+    constexpr VkDeviceSize mib = 1024 * 1024;
+    const geometry_capacity oversized{2000000, 8000000};
+    CHECK(!vulkan_prepare_surface_geometry(surface, oversized));
+    for (const auto &slot : surface->slots) CHECK(slot.geometry_chunk_bytes == 4 * mib);
+    const auto reserved = geometry_buffers(*surface);
+    const auto initial = d->stats;
+    CHECK(!vulkan_prepare_surface_geometry(surface, oversized));
+    CHECK(d->stats.buffer_allocations == initial.buffer_allocations);
+
+    context *ctx = create_context(d, surface);
+    CHECK(ctx);
+    begin_frame(ctx, 0, 1.0 / 60.0, {0, 0, 1360, 860});
+    CHECK(!d->prepare_geometry(oversized));
+    ui(ctx).draw_rounded_rect({10, 10, 64, 64}, color::white(), 4);
+    end_frame(ctx);
+    CHECK(vulkan_wait_idle(d));
+    CHECK(geometry_buffers(*surface) == reserved);
+    CHECK(d->stats.draw_buffer_allocations == initial.draw_buffer_allocations);
+
+    // Emulate a completed frame with a larger measured geometry footprint.
+    surface->geometry_peak = 3 * mib;
+    CHECK(!vulkan_prepare_surface_geometry(surface, oversized));
+    for (const auto &slot : surface->slots) CHECK(slot.geometry_chunk_bytes == 8 * mib);
+    const geometry_capacity fitting{500000, 500000};
+    CHECK(vulkan_prepare_surface_geometry(surface, fitting));
+    for (const auto &slot : surface->slots) CHECK(slot.geometry_chunk_bytes == 16 * mib);
+    CHECK(!violation_count(ctx) && !d->stats.validation_errors);
+    destroy_context(ctx);
+    d->destroy_surface(surface);
+    destroy_vulkan_device(d);
+    return true;
+}
 } // namespace
 
 int main(int argc, char **argv)
@@ -220,7 +260,9 @@ int main(int argc, char **argv)
     options.validation = true;
     options.error_callback = diagnostic;
     options.upload_mode = staged ? vulkan_upload_mode::STAGED : vulkan_upload_mode::DIRECT;
-    if (!preflight_budget(options) || !preflight_failures(options) || errors) return 1;
+    if (!preflight_budget(options) || !preflight_failures(options) ||
+        !analytic_advisory_capacity(options) || errors)
+        return 1;
     std::puts("all Vulkan surface preparation regressions passed");
     return 0;
 }

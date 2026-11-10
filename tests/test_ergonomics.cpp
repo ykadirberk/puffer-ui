@@ -344,3 +344,24 @@ PUI_TEST(test_font_fallback_and_dpi_measurement)
     CHECK(set_font_fallbacks(env.c, {}));
     CHECK(!u.has_glyph(missing));
 }
+
+PUI_TEST(idle_context_menu_preserves_pending_picks_for_their_owner)
+{
+    tf_env env;
+    const char *items[] = {"First", "Second"};
+    const rect anchor{10, 10, 100, 40};
+    const uiid id = "menu_owner"_id;
+    const uiid result = id_child(id, "menu"_id);
+    env.frame(0.0,
+              [&](ui &u)
+              {
+                  CHECK(u.context_menu(id, anchor, items, 2) == -1);
+                  CHECK(env.c->defer_menu_id == 0 && env.c->defer_result_id == 0);
+                  env.c->defer_result_id = result;
+                  env.c->defer_result_pick = 1;
+                  CHECK(u.context_menu("other_menu"_id, anchor, items, 2) == -1);
+                  CHECK(env.c->defer_result_id == result);
+                  CHECK(u.context_menu(id, anchor, items, 2) == 1);
+                  CHECK(u.context_menu(id, anchor, items, 2) == -1);
+              });
+}

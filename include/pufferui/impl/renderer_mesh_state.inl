@@ -97,6 +97,7 @@ struct mesh_painter : render_painter
     void stroke(const paint_line &) override;
     void gradient(const paint_gradient &) override;
     void rounded_gradient(const paint_rounded_gradient &) override;
+    void draw_rounded_gradient(const paint_rounded_gradient &, bool compact_square);
     void draw_triangles(texture_handle, const vertex *, i32, const i32 *, i32);
     void draw_rounded_fan(texture_handle, const vertex *, i32, const i32 *, i32);
     void append_triangles(texture_handle, const vertex *, i32, const i32 *, i32);

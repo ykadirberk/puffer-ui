@@ -53,6 +53,63 @@ bool check_coverage(const std::vector<u8> &pixels, f32 scale)
            channel(x, foreground_y, 2) == 255 && channel(x, foreground_y, 1) == 0 &&
            channel(clipped_x, gradient_y, 1) == 0;
 }
+
+bool check_square_gradient(render_device *device, render_surface *surface, context *ctx,
+                           window &win, std::vector<u8> &reference, std::vector<u8> &actual)
+{
+    const rect area{15.25f, 13.75f, 31.5f, 22.25f};
+    const color tl{15, 33, 201, 65}, tr{87, 159, 20, 163};
+    const color br{150, 19, 102, 228}, bl{71, 221, 69, 34};
+    const color mid =
+        theme_lerp_color(theme_lerp_color(tl, tr, .5f), theme_lerp_color(bl, br, .5f), .5f);
+    const vertex corners[] = {{area.x, area.y, 0, 0, tl},
+                              {area.right(), area.y, 0, 0, tr},
+                              {area.right(), area.bottom(), 0, 0, br},
+                              {area.x, area.bottom(), 0, 0, bl}};
+    // The original fan submitted seven coincident vertices for each square corner.
+    vertex fan[29]{{area.center_x(), area.center_y(), 0, 0, mid}};
+    i32 indices[84];
+    for (i32 i = 0; i < 28; ++i)
+    {
+        fan[i + 1] = corners[i / 7];
+        indices[3 * i] = 0;
+        indices[3 * i + 1] = i + 1;
+        indices[3 * i + 2] = (i + 1) % 28 + 1;
+    }
+    const auto draw = [&](bool compact, f32 radius, std::vector<u8> &pixels)
+    {
+        begin_frame(ctx, win, 1, 1.0 / 60.0);
+        const auto before = vulkan_statistics(device);
+        {
+            ui u(ctx);
+            auto clip = u.region({19, 14, 24, 18}, "square_gradient_clip"_id);
+            if (compact)
+                u.draw_rounded_gradient({area, radius, tl, tr, br, bl});
+            else
+            {
+                u.draw_rounded_rect(area, mid, 0);
+                u.draw_triangles(nullptr, fan, 29, indices, 84);
+            }
+        }
+        end_frame(ctx);
+        const auto after = vulkan_statistics(device);
+        return after.requested_vertices - before.requested_vertices == (compact ? 9u : 33u) &&
+               after.requested_indices - before.requested_indices == (compact ? 18u : 90u) &&
+               device->read_pixels(surface->scene_target(), 0, 0, WIDTH, HEIGHT, pixels.data());
+    };
+    vulkan_set_cache(device, false);
+    for (f32 scale : {1.0f, 2.0f, 4.0f})
+    {
+        set_window_scale(win, scale);
+        if (!draw(false, 0, reference) || !draw(true, 0, actual) || actual != reference ||
+            !draw(true, -2, actual) || actual != reference)
+        {
+            std::fprintf(stderr, "square gradient geometry or pixels differ at %.1fx\n", scale);
+            return false;
+        }
+    }
+    return true;
+}
 } // namespace
 
 int main(int argc, char **argv)
@@ -123,6 +180,7 @@ int main(int argc, char **argv)
                 device->read_pixels(surface->scene_target(), 0, 0, WIDTH, HEIGHT, cached.data());
         const auto center = (7 * WIDTH + 7) * 4;
         okay &= cached[center] == 0 && cached[center + 2] == 255 && violation_count(ctx) == 0;
+        okay &= check_square_gradient(device, surface, ctx, *win, reference, cached);
     }
     okay &= vulkan_wait_idle(device) && vulkan_last_result(device) == VK_SUCCESS &&
             vulkan_statistics(device).validation_errors == 0;

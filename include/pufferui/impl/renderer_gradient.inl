@@ -4,6 +4,12 @@
 // Four-line slice banner for amalgamation.
 void renderer_detail::mesh_painter::rounded_gradient(const paint_rounded_gradient &p)
 {
+    draw_rounded_gradient(p, false);
+}
+
+void renderer_detail::mesh_painter::draw_rounded_gradient(const paint_rounded_gradient &p,
+                                                          bool compact_square)
+{
     const rect r = p.area;
     f32 radius = p.radius;
     const color tl = p.top_left, tr = p.top_right, br = p.bottom_right, bl = p.bottom_left;
@@ -21,10 +27,37 @@ void renderer_detail::mesh_painter::rounded_gradient(const paint_rounded_gradien
         return mixc(mixc(tl, tr, fx), mixc(bl, br, fx), fy);
     };
     const color mid = col_at(r.center_x(), r.center_y());
+    if (compact_square && radius == 0.0f)
+    {
+        // Six triangles per corner have zero area. Keep each original
+        // side triangle and the separate underlay, including their blend order.
+        const f32 x = r.x, y = r.y, right = r.right(), bottom = r.bottom();
+        const vertex v[] = {{r.center_x(), r.center_y(), 0.0f, 0.0f, mid},
+                            {x, y, 0.0f, 0.0f, col_at(x, y)},
+                            {right, y, 0.0f, 0.0f, col_at(right, y)},
+                            {right, bottom, 0.0f, 0.0f, col_at(right, bottom)},
+                            {x, bottom, 0.0f, 0.0f, col_at(x, bottom)}};
+        constexpr i32 idx[] = {0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 1};
+        draw_rounded_rect(r, mid, radius);
+        draw_triangles(nullptr, v, 5, idx, 12);
+        return;
+    }
     constexpr i32 SEG = 6;
     constexpr i32 RING = 4 * (SEG + 1);
+    struct fan_indices
+    {
+        i32 values[3 * RING]{};
+        constexpr fan_indices()
+        {
+            for (i32 i = 0; i < RING; ++i)
+            {
+                values[3 * i + 1] = 1 + i;
+                values[3 * i + 2] = 1 + (i + 1) % RING;
+            }
+        }
+    };
+    static constexpr fan_indices indices{};
     vertex v[1 + RING];
-    i32 idx[3 * RING];
     const vec2 centers[4] = {{r.x + radius, r.y + radius},
                              {r.right() - radius, r.y + radius},
                              {r.right() - radius, r.bottom() - radius},
@@ -58,13 +91,6 @@ void renderer_detail::mesh_painter::rounded_gradient(const paint_rounded_gradien
             v[n++] = {x, y, 0.0f, 0.0f, col_at(x, y)};
         }
     }
-    i32 k = 0;
-    for (i32 i = 0; i < RING; ++i)
-    {
-        idx[k++] = 0;
-        idx[k++] = 1 + i;
-        idx[k++] = 1 + (i + 1) % RING;
-    }
     draw_rounded_rect(r, mid, radius);
-    draw_triangles(nullptr, v, n, idx, k);
+    draw_triangles(nullptr, v, n, indices.values, 3 * RING);
 }

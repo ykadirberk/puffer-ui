@@ -365,6 +365,8 @@ struct device : render_device, dispatch
     bool prepare_geometry(const geometry_capacity &) override;
     bool prepare_slot_geometry(frame_slot &, VkDeviceSize bytes);
     VkDeviceSize geometry_reservation(VkDeviceSize requested, VkDeviceSize pixels) const;
+    VkDeviceSize geometry_hint_reservation(VkDeviceSize requested, VkDeviceSize pixels,
+                                           VkDeviceSize peak) const;
     VkDeviceSize vertex_stride() const
     {
         return options.compact_vertices ? sizeof(vertex) : sizeof(legacy_vertex);

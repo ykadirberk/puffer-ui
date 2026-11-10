@@ -186,7 +186,7 @@ void native_painter::rounded_rectangle(const paint_rounded_rect &p)
 void native_painter::rounded_gradient(const paint_rounded_gradient &p)
 {
     if (!can_draw_rounded() || !p.area.is_valid() || !(p.radius > .5f))
-        return mesh_painter::rounded_gradient(p);
+        return draw_rounded_gradient(p, true);
     if (p.area.w <= .5f || p.area.h <= .5f) return;
     const f32 radius = min2(p.radius, min2(p.area.w, p.area.h) * .5f);
     queue_rounded({p.area,

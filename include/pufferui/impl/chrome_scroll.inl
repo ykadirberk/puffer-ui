@@ -447,6 +447,8 @@ rect ui::tooltip(rect anchor, uiid id, std::string_view tip)
 i32 ui::context_menu(uiid id, rect anchor, const char *const *item_labels, i32 item_count)
 {
     context *c = ctx;
+    if (!c->prev_popup_depth && !c->right_pressed && !c->defer_result_id && !c->defer_menu_id)
+        return -1;
     const theme &t = c->active_theme;
     const uiid menu_id = id_child(id, "menu"_id);
     if (c->disabled_depth > 0)

@@ -69,3 +69,62 @@ timestamps on stderr.
   exactly reproduces the previous build in Overview, the 5000-item Spiral
   and a 520 × 580 resized window. The default analytic captures show the
   intentionally different antialiased edges and gradient interpolation.
+
+## Library follow-up
+
+The library bounds oversized Vulkan geometry hints on analytic surfaces with
+a smaller starting reservation. Recorded high-water usage can grow it within
+the existing surface and device limits. Vulkan keeps the underlay and the
+four original side triangles for square gradients, omitting triangles whose
+corner vertices coincide. The portable mesh painter preserves its submitted
+geometry. Rounded fans reuse their fixed indices. Idle context menus bypass
+the ID hash and keep the existing deferred-result path.
+
+The comparison links one instrumented Release showcase benchmark object
+against the `464dd7d` library and the candidate library. The unchanged workload
+renders the same 180 frames and three Add events. Each mode uses one warmup
+per version and seven alternating measured pairs without readbacks. Timings
+below are medians of per-run values, except the single worst frame. Use
+`pui_vulkan_rounded_showcase_tests --bench` and `--bench --staged` on each
+revision to reproduce the workload and the upload counters.
+
+| Measurement | DIRECT before → after | STAGED before → after |
+| --- | ---: | ---: |
+| Resident upload pages (MiB) | 65.59 → 9.59 | 129.59 → 17.59 |
+| Device-side staged pages (MiB) | — | 64 → 8 |
+| Mean frame (ms) | 2.512 → 2.432 | 2.352 → 2.227 |
+| p95 frame (ms) | 5.995 → 5.720 | 6.138 → 5.286 |
+| p99 frame (ms) | 7.412 → 6.988 | 7.519 → 6.657 |
+| Frame 0 (ms) | 5.759 → 6.596 | 5.577 → 6.418 |
+| Total completed GPU time (ms) | 96.848 → 93.714 | 100.268 → 90.840 |
+| Worst observed frame (index and ms) | 59 · 14.613 → 8 · 15.196 | 108 · 12.230 → 107 · 13.433 |
+
+The median paired change in mean frame time was −7.25% DIRECT and −13.46%
+STAGED. The p99 improved in four of seven pairs in each mode. Frame 0 grew
+in six DIRECT pairs and all seven STAGED pairs. Median frame 0 UI construction
+rose from 5.530 to 6.347 ms DIRECT and from 5.178 to 6.009 ms STAGED.
+All runs uploaded 201,092 bytes at frame 0 with zero slot wait and zero
+draw-time buffer allocations.
+The slowest candidate frames spent 13.510 ms DIRECT and 11.881 ms STAGED
+waiting for a slot, with zero draw-time buffer allocations. The preliminary
+build with a broader mesh change recorded a 34.196 ms DIRECT frame, of which
+32.930 ms was UI construction.
+
+Both modes recorded the same work reduction over 180 frames. Uploads fell
+from 89,091,752 to 87,616,424 bytes, removing 46,104 vertices and 138,312
+indices. At frame 2, the painter removes degenerate triangles from 650
+square gradients.
+That frame uploads 572,984 bytes instead of 1,072,184, a 46.6% reduction.
+Its 1,421 draws and 1,398 pipeline binds are the same in both versions.
+Both versions submit 180 times and report zero draw-time buffer allocations.
+
+Validation compares the SHA-256 of every full RGBA frame against `464dd7d`
+with DIRECT and STAGED uploads and both analytic and mesh rounded paths.
+All 720 comparisons match. Regressions exercise the bounded reservation,
+fitting hints, recorded-peak growth, exact square-gradient pixels at three
+DPI scales and deferred menu picks. The existing Showcase stream test still
+checks the portable vertex and index stream at the clip edges. [Vulkan polygon rasterization rules](https://docs.vulkan.org/spec/latest/chapters/primsrast.html#primsrast-polygons-basic)
+
+Full Release verification passed all 60 Vulkan cases, the existing SDL
+goldens and Spiral peak frames, installed consumer checks, example selftests,
+API and tutorial checks, and clang-format.
