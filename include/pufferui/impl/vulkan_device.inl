@@ -182,6 +182,16 @@ struct pipeline_pair
     VkPipeline text = VK_NULL_HANDLE;
     VkPipeline filters[4]{};
 };
+struct rounded_instance
+{
+    rect area{};
+    corner_radii radii{};
+    color shades[4]{};
+    color underlay{};
+    u32 gradient = 0;
+};
+static_assert(sizeof(rounded_instance) == 56);
+inline constexpr usize ROUNDED_BATCH_LIMIT = 256;
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
 struct glyph_instance
 {
@@ -262,6 +272,11 @@ struct device : render_device, dispatch
     VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
     VkSampler samplers[2]{};
     VkShaderModule vertex_shader = VK_NULL_HANDLE, fragment_shader = VK_NULL_HANDLE;
+    VkPipeline rounded_pipeline = VK_NULL_HANDLE;
+    std::vector<rounded_instance> rounded_pending;
+    bool rounded_flushing = false;
+    bool initialize_rounded(const VkGraphicsPipelineCreateInfo &);
+    void flush_rounded();
     std::vector<VkDescriptorPool> descriptor_pools;
     std::vector<pipeline_pair> pipelines;
     std::vector<texture *> textures, retired;
@@ -689,6 +704,7 @@ device::~device()
             for (auto filter : p.filters)
                 if (filter) vkDestroyPipeline(native.device, filter, nullptr);
         }
+        if (rounded_pipeline) vkDestroyPipeline(native.device, rounded_pipeline, nullptr);
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
         release_text();
 #endif

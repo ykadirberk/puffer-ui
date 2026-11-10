@@ -23,6 +23,7 @@
 //   pui_showcase --perf       print the average UI build / frame times at exit
 //   pui_showcase --a11y       accessibility recording on (what a screen reader enables)
 //   pui_showcase --mesh-icons draw the original primitive icons
+//   pui_showcase_vulkan --mesh-rounds  use the original rounded fills and gradients
 #include "example_common.h"
 #include "showcase_icons.h"
 #include "tutorial/glass.h"
@@ -189,6 +190,7 @@ struct showcase
 {
     font_handle font = FONT_INVALID, bold = FONT_INVALID;
     const showcase_icon_set *icons = nullptr; // borrowed from the running example
+    bool analytic_rounded_rects = false;
 
     // navigation
     i32 page = PAGE_OVERVIEW, prev_page = PAGE_OVERVIEW;
@@ -327,68 +329,9 @@ static void gradient_quad(ui &u, rect r, color tl, color tr, color br, color bl)
     u.draw_triangles(nullptr, v, 4, idx, 6);
 }
 
-// A rounded rect whose color is interpolated from its four corners: a fan from
-// the center over the outline (barycentric interpolation does the gradient),
-// over a same-shape anti-aliased underlay so the edge stays soft.
 static void gradient_round(ui &u, rect r, f32 radius, color tl, color tr, color br, color bl)
 {
-    if (r.w <= 0.5f || r.h <= 0.5f) return;
-    // Keep the rounded underlay's feather (the fan itself stays inside r).
-    // State and interaction still run for tiles outside the paint area.
-    if (!u.is_visible(r.pad(-1.5f))) return;
-    radius = clampf(radius, 0.0f, min2(r.w, r.h) * 0.5f);
-    constexpr i32 SEG = 6;
-    constexpr i32 RING = 4 * (SEG + 1);
-    vertex v[1 + RING];
-    i32 idx[3 * RING];
-    const auto col_at = [&](f32 x, f32 y)
-    {
-        const f32 fx = sat((x - r.x) / r.w), fy = sat((y - r.y) / r.h);
-        return mixc(mixc(tl, tr, fx), mixc(bl, br, fx), fy);
-    };
-    const vec2 centers[4] = {{r.x + radius, r.y + radius},
-                             {r.right() - radius, r.y + radius},
-                             {r.right() - radius, r.bottom() - radius},
-                             {r.x + radius, r.bottom() - radius}};
-    struct arc_table
-    {
-        f32 cs[4][SEG + 1], sn[4][SEG + 1];
-        arc_table()
-        {
-            const f32 starts[4] = {PI, PI * 1.5f, 0.0f, PI * 0.5f};
-            for (i32 c = 0; c < 4; ++c)
-                for (i32 s = 0; s <= SEG; ++s)
-                {
-                    // Same expression and rounding as the original per-vertex path.
-                    const f32 a =
-                        starts[c] + (PI * 0.5f) * static_cast<f32>(s) / static_cast<f32>(SEG);
-                    cs[c][s] = std::cos(a);
-                    sn[c][s] = std::sin(a);
-                }
-        }
-    };
-    static const arc_table arcs;
-    const color mid = col_at(r.center_x(), r.center_y());
-    v[0] = {r.center_x(), r.center_y(), 0.0f, 0.0f, mid};
-    i32 n = 1;
-    for (i32 c = 0; c < 4; ++c)
-    {
-        for (i32 s = 0; s <= SEG; ++s)
-        {
-            const f32 x = centers[c].x + arcs.cs[c][s] * radius;
-            const f32 y = centers[c].y + arcs.sn[c][s] * radius;
-            v[n++] = {x, y, 0.0f, 0.0f, col_at(x, y)};
-        }
-    }
-    i32 k = 0;
-    for (i32 i = 0; i < RING; ++i)
-    {
-        idx[k++] = 0;
-        idx[k++] = 1 + i;
-        idx[k++] = 1 + (i + 1) % RING;
-    }
-    u.draw_rounded_rect(r, mid, radius);
-    u.draw_triangles(nullptr, v, n, idx, k);
+    u.draw_rounded_gradient({r, radius, tl, tr, br, bl});
 }
 
 // An anti-aliased polyline: a triangle strip with a feathered rim on both sides
@@ -2286,16 +2229,20 @@ static void lab_tile_draw(ui &u, showcase &s, const lab_tile &tl, rect d, bool h
 // an outline on every hovered tile and the longest u32 label. Spare tile buckets
 // absorb nearby Adds. A 128 MiB CPU preparation budget is split between core
 // vertices, core indices and SDL colors; larger scenes retain normal growth.
-static geometry_capacity lab_geometry_capacity(usize tiles)
+static geometry_capacity lab_geometry_capacity(usize tiles, bool analytic_rounded_rects = false)
 {
     constexpr usize fan_ring = 4 * (8 + 1), fan_v = 1 + 2 * fan_ring, fan_i = 9 * fan_ring;
     constexpr usize gradient_ring = 4 * (6 + 1);
     constexpr usize outline_points = 4 * (ROUND_SEG + 1) + 1;
     constexpr usize label_chars = 11; // '#' plus UINT32_MAX
-    constexpr usize tile_v =
-        4 * fan_v + 2 * (fan_v + 1 + gradient_ring) + 4 * outline_points + 4 * label_chars;
-    constexpr usize tile_i =
-        4 * fan_i + 2 * (fan_i + 3 * gradient_ring) + 18 * (outline_points - 1) + 6 * label_chars;
+    // Four vertex units per analytic instance cover the instance and alignment
+    // in the GPU arena. Keep both square-gradient mesh fallbacks in the hint.
+    const usize round_v = analytic_rounded_rects ? 6 * 4 + 2 * (4 + 1 + gradient_ring)
+                                                 : 6 * fan_v + 2 * (1 + gradient_ring);
+    const usize round_i =
+        analytic_rounded_rects ? 2 * (6 + 3 * gradient_ring) : 6 * fan_i + 2 * (3 * gradient_ring);
+    const usize tile_v = round_v + 4 * outline_points + 4 * label_chars;
+    const usize tile_i = round_i + 18 * (outline_points - 1) + 6 * label_chars;
     constexpr usize share = (128 * 1024 * 1024) / 3;
     const auto power_limit = [](usize n)
     {
@@ -4017,7 +3964,8 @@ static void showcase_frame(ui &u, example_app &app)
 
     if (s.page == PAGE_LAYOUT && s.lab_mode == 4)
     {
-        const geometry_capacity capacity = lab_geometry_capacity(s.tiles.size());
+        const geometry_capacity capacity =
+            lab_geometry_capacity(s.tiles.size(), s.analytic_rounded_rects);
         (void)u.prepare_geometry(capacity);
         if (app.device) (void)app.device->prepare_geometry(capacity);
     }
@@ -4241,7 +4189,8 @@ static void showcase_prepare_scene(example_app &app)
 {
     const i32 page = g_start_page >= 0 ? g_start_page : g_app.page;
     if (page != PAGE_LAYOUT || g_app.lab_mode != 4) return;
-    const geometry_capacity capacity = lab_geometry_capacity(g_app.tiles.size());
+    const geometry_capacity capacity =
+        lab_geometry_capacity(g_app.tiles.size(), g_app.analytic_rounded_rects);
     (void)ui(app.ctx).prepare_geometry(capacity);
 #if defined(PUFFERUI_ENABLE_VULKAN)
     if (is_vulkan_device(app.device))
@@ -4253,9 +4202,16 @@ static void showcase_prepare_scene(example_app &app)
 struct showcase_program
 {
     showcase_icon_set *icons = nullptr;
+    bool analytic_rounded_rects = false;
+
+    void configure_vulkan(vulkan_device_opts &opts) const
+    {
+        opts.analytic_rounded_rects = analytic_rounded_rects;
+    }
 
     void prepare(example_app &app) const
     {
+        g_app.analytic_rounded_rects = analytic_rounded_rects;
         if (icons)
         {
             ui u(app.ctx);
@@ -4284,6 +4240,11 @@ int main(int argc, char **argv)
     i32 start_tiles = -1, start_mode = -1;
     f32 start_size = -1;
     bool mesh_icons = false;
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    bool analytic_rounded_rects = true;
+#else
+    bool analytic_rounded_rects = false;
+#endif
     for (int i = 1; i < argc; ++i)
     {
 #if defined(PUFFERUI_ENABLE_VULKAN)
@@ -4317,6 +4278,7 @@ int main(int argc, char **argv)
         if (std::strcmp(argv[i], "--a11y") == 0) g_a11y = true;
         if (std::strcmp(argv[i], "--light") == 0) g_app.theme_mode = 1; // start in the light theme
         if (std::strcmp(argv[i], "--mesh-icons") == 0) mesh_icons = true;
+        if (std::strcmp(argv[i], "--mesh-rounds") == 0) analytic_rounded_rects = false;
     }
     if (g_fuzz) g_app.rng = g_fuzz * 2654435761u + 1u;
     seed(g_app);
@@ -4329,7 +4291,8 @@ int main(int argc, char **argv)
     if (start_size > 0) g_app.lab_size = std::clamp(start_size, 64.0f, 180.0f);
     showcase_icon_set icons;
     const int rc = example_run("showcase", 1360, 860, argc, argv,
-                               showcase_program{.icons = mesh_icons ? nullptr : &icons});
+                               showcase_program{.icons = mesh_icons ? nullptr : &icons,
+                                                .analytic_rounded_rects = analytic_rounded_rects});
     if (g_perf && g_perf_totals.frames > 0)
     {
         const perf_totals &p = g_perf_totals;

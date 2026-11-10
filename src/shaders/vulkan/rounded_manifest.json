@@ -1,0 +1,18 @@
+{
+  "compiler": "Glslang Version: 11:16.0.0\nESSL Version: OpenGL ES GLSL 3.20 glslang Khronos. 16.0.0\nGLSL Version: 4.60 glslang Khronos. 16.0.0\nSPIR-V Version 0x00010600, Revision 1\nGLSL.std.450 Version 100, Revision 1\nKhronos Tool ID 8\nSPIR-V Generator Version 11\nGL_KHR_vulkan_glsl version 100\nARB_GL_gl_spirv version 100\n",
+  "command_flags": [
+    "-V",
+    "--target-env",
+    "vulkan1.3"
+  ],
+  "shaders": {
+    "rounded.vert": {
+      "source_sha256": "508af17d45198511a127bb1ca0c9ecb11c1ae0e97d780af38e0b3c5b1e5d445e",
+      "spirv_sha256": "397fdc605e44c418741de3255598cf77b7928d1e3fb992796717730b7d76f088"
+    },
+    "rounded.frag": {
+      "source_sha256": "15ae458153ffb5850e734265f2e7525a3d9224a9699721a4d20151b7e01cd24e",
+      "spirv_sha256": "bbd621af706bf45c020dfcfea26464e640ce6afd61d54e7904d976fd38745abb"
+    }
+  }
+}

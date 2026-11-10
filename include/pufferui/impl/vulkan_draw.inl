@@ -140,6 +140,15 @@ VkPipeline device::pipeline(VkFormat format, bool blend, bool glyphs, u32 filter
         }
     }
     stages[1].pSpecializationInfo = nullptr;
+    if (options.analytic_rounded_rects && format == VK_FORMAT_R8G8B8A8_UNORM && !rounded_pipeline &&
+        !initialize_rounded(pc))
+    {
+        for (auto created : pair.filters)
+            if (created) vkDestroyPipeline(native.device, created, nullptr);
+        vkDestroyPipeline(native.device, pair.blend, nullptr);
+        vkDestroyPipeline(native.device, pair.copy, nullptr);
+        return VK_NULL_HANDLE;
+    }
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
     if (text)
     {

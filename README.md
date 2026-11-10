@@ -1544,6 +1544,10 @@ for feature requirements, queue/lifetime rules, validation and build commands.
 Full source: `examples/atomic/vulkan.cpp`. `pui_showcase_vulkan` runs the actual
 motion showcase on the same native backend.
 
+Its regular pages use analytic coverage for rounded fills and gradients.
+`--mesh-rounds` selects the original Vulkan triangle path for comparison.
+See [the analytic rounded rectangle option](docs/vulkan.md#analytic-rounded-rectangles).
+
 ![Vulkan showcase with its renderer label](docs/img/readme/vulkan-showcase.png)
 
 Its sidebar says `vulkan showcase` when the actual device is Vulkan. Interactive

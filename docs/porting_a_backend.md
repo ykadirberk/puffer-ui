@@ -129,9 +129,9 @@ render_painter *create_painter(context &c) override
 
 SDL3, the recording null backend and the CPU example choose this implementation.
 Vulkan supplies the same complete operation set and selects native triangle
-shapes, the original blur and optional HarfBuzz/Slug text inside its own factory.
-Core contains no Vulkan painter selection. This branch has no SDF shape or
-compute painter. Backend wrappers should forward `create_painter`
+shapes, optional analytic rounded fills and gradients, native blur and
+HarfBuzz/Slug text inside its own factory. Core contains no Vulkan painter
+selection. Backend wrappers should forward `create_painter`
 to their wrapped device while keeping the context bound to the wrapper for upload,
 mesh and lifecycle accounting.
 

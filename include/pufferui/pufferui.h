@@ -2063,6 +2063,7 @@ struct vulkan_device_opts
     u64 glyph_coverage_budget_bytes = 4ull * 1024 * 1024; // exact Slug R32 cache; 0 disables
     void (*error_callback)(i32 result, const char *operation, void *user) = nullptr;
     void *user = nullptr;
+    bool analytic_rounded_rects = false; // pixel-space coverage for rounded fills and gradients
 };
 render_device *create_vulkan_device(const vulkan_device_opts &opts = {});
 void destroy_vulkan_device(render_device *device);
@@ -4044,6 +4045,7 @@ namespace pui
 #include "impl/renderer_vector_gpu.inl"
 #if defined(PUFFERUI_ENABLE_VULKAN)
 #include "impl/vulkan_shaders.inl"
+#include "impl/vulkan_rounded_shaders.inl"
 #endif
 #include "impl/vulkan_dispatch.inl"
 #include "impl/vulkan_device.inl"
@@ -4054,6 +4056,7 @@ namespace pui
 #include "impl/vulkan_cache.inl"
 #include "impl/vulkan_preparation.inl"
 #include "impl/vulkan_blur.inl"
+#include "impl/vulkan_rounded.inl"
 #include "impl/vulkan_text_coverage.inl"
 #include "impl/vulkan_text.inl"
 #if defined(PUFFERUI_ENABLE_VULKAN) && defined(PUFFERUI_ENABLE_HARFBUZZ)

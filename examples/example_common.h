@@ -583,6 +583,10 @@ template <typename FrameFn>
 int example_run(const char *title, i32 w, i32 h, int argc, char **argv, FrameFn &&frame)
 {
     example_app app;
+#if defined(PUFFERUI_ENABLE_VULKAN)
+    if constexpr (requires { frame.configure_vulkan(app.boot.vulkan); })
+        frame.configure_vulkan(app.boot.vulkan);
+#endif
     example_setup_opts setup;
     if constexpr (requires { frame.prepare(app); })
     {

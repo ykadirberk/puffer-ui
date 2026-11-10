@@ -113,7 +113,7 @@ void device::bind_graphics(VkPipeline pipeline, VkPipelineLayout layout, VkExten
         graphics.descriptors[0] = graphics.descriptors[1] = VK_NULL_HANDLE;
         graphics.layout = layout;
     }
-    if (graphics.descriptors[set] != descriptor)
+    if (descriptor && graphics.descriptors[set] != descriptor)
     {
         vkCmdBindDescriptorSets(frame->command, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, set, 1,
                                 &descriptor, 0, nullptr);

@@ -100,6 +100,7 @@ struct vulkan_stats
     bool timestamps_supported = false;
     u64 gpu_samples = 0;
     f64 completed_gpu_ms = 0; // delayed completed submissions, not current CPU frame
+    u64 rounded_draws = 0, rounded_instances = 0;
 };
 vulkan_stats vulkan_statistics(render_device *device);
 void vulkan_set_cache(render_device *device, bool enabled);

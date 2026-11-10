@@ -499,11 +499,6 @@ native_painter::~native_painter()
         if (!dev->paths->requested_upload) dev->paths->trim_layers();
     }
 }
-void native_painter::flush()
-{
-    mesh_painter::flush();
-    if (dev->paths) dev->flush_paths();
-}
 usize native_painter::vector_capacity() const
 {
     return std::max(vector_batch_hint, mesh_painter::vector_capacity());

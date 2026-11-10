@@ -177,6 +177,7 @@ if(PUFFERUI_WITH_VULKAN)
     endforeach()
   endfunction()
   pui_add_vulkan_test(pui_vulkan_tests SOURCES tests/test_vulkan.cpp)
+  pui_add_vulkan_test(pui_vulkan_rounded_tests SOURCES tests/test_vulkan_rounded.cpp RUNS "--staged")
   pui_add_vulkan_test(pui_vulkan_blur_tests SOURCES tests/test_vulkan_blur.cpp RUNS "--staged")
   pui_add_vulkan_test(pui_vulkan_gaussian_tests SOURCES tests/test_vulkan_gaussian.cpp RUNS "--staged")
   pui_add_vulkan_test(pui_vulkan_blur_optimization_tests
@@ -222,6 +223,8 @@ if(PUFFERUI_WITH_VULKAN)
     pui_vulkan_case(pui_tut_vector_manual false --selftest --frames 8 --resize 800x560)
     pui_add_vulkan_test(pui_vulkan_wsi_tests SOURCES tests/test_vulkan_wsi.cpp)
     pui_add_vulkan_test(pui_vulkan_showcase_tests SOURCES tests/test_vulkan_showcase.cpp)
+    pui_add_vulkan_test(pui_vulkan_rounded_showcase_tests FULL_ONLY
+        SOURCES tests/test_vulkan_rounded_showcase.cpp)
     pui_add_vulkan_test(pui_vulkan_spiral_tests FULL_ONLY SOURCES tests/test_vulkan_spiral.cpp
         RUNS "--tiles 5000" "--tiles 1150 --upload-reference" "--tiles 5000 --upload-reference"
              "--tiles 1150 --staged" "--tiles 5000 --staged")

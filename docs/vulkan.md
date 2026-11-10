@@ -16,13 +16,32 @@ accessibility and popup overlays. Vulkan records and presents the graphics;
 this route does not create an `SDL_Renderer`. The existing SDL renderer remains
 the default. Core-only and SDL-only applications need no Vulkan SDK.
 
-This branch starts from the first native Vulkan renderer (`8c62fc4`). Shapes use
-triangle geometry; backdrop filtering uses Gaussian or Dual Kawase according to
-the pixel radius. With HarfBuzz built, the default factory
+This branch starts from the first native Vulkan renderer (`8c62fc4`). The
+library defaults to triangle geometry. Backdrop filtering uses Gaussian or
+Dual Kawase according to the pixel radius. With HarfBuzz built, the default factory
 shapes text with HarfBuzz and draws upstream Slug outlines through a separate
-instanced graphics pipeline. There is no SDF shape painter or compute/tile
-interpreter. See [HarfBuzz text](harfbuzz.md) and the
+instanced graphics pipeline. See [HarfBuzz text](harfbuzz.md) and the
 [explicit ownership tutorial](tutorial/10-vulkan-without-shorthand.md).
+
+## Analytic rounded rectangles
+
+Set `vulkan_device_opts::analytic_rounded_rects` before device creation to
+enable analytic coverage for solid rounded fills and four-color rounded
+gradients. `pui_showcase_vulkan` enables it on the regular pages. Use
+`--mesh-rounds` in the showcase for the original triangle path.
+
+The native painter groups consecutive shapes at the current clip into bounded
+instanced graphics draws. Each shape uploads a 56-byte instance and renders a
+four-vertex quad with a 1.25-framebuffer-pixel coverage ramp. The gradient and
+its underlay share that coverage. The gradient's color interpolation is
+continuous across the shape. Shape preparation and the fixed batch reservation
+happen before painting. DIRECT and STAGED use the same slot-owned geometry
+pages and respect submission order across mesh, text, SVG and backdrop effects.
+
+The mesh painter handles square primitives, stroked rings and popup overlays.
+Mixed analytic frames fall back from the retained mesh pixel cache at
+the first analytic draw, using the same ordered-prefix policy as native text
+and SVG. See [measurements and visual checks](perf_vulkan_rounded_rects.md).
 
 ## Build and run
 

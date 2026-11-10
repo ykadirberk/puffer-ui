@@ -106,6 +106,11 @@ struct native_painter : renderer_detail::mesh_painter
     f32 gaussian_radius = -1;
     blur_plan gaussian_plan{};
     native_painter(context &c, device &d) : mesh_painter(c), dev(&d) {}
+    bool can_draw_rounded() const;
+    void queue_rounded(rounded_instance);
+    void rounded_rectangle(const paint_rounded_rect &) override;
+    void rounded_gradient(const paint_rounded_gradient &) override;
+    void flush() override;
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
     native_vector_bindings *path_bindings = nullptr;
     ~native_painter() override;
@@ -114,7 +119,6 @@ struct native_painter : renderer_detail::mesh_painter
     vector_status vector_ready(const paint_vector &) const override;
     usize vector_capacity() const override;
     vector_status vector(const paint_vector &) override;
-    void flush() override;
 #endif
     void begin() override
     {

@@ -120,6 +120,7 @@ bool device::glyph(context *c, font_handle font, u32 index, vec2 baseline, f32 s
     const rect *clip = c->clip_depth > 0 ? &c->clip_stack[c->clip_depth - 1] : nullptr;
     detail::dl_prepare(c, nullptr, clip);
     detail::mesh_flush(c);
+    flush_rounded();
     // The original retained-pixel cache records only mesh events. Replay its
     // ordered prefix before a glyph; it cannot certify a mixed native-text frame.
     if (cache_active) cache_flush(false);
@@ -200,6 +201,8 @@ bool device::upload_glyphs(const glyph_instance *instances, usize count, VkBuffe
 #endif
 void device::flush_text(bool preserve_paths)
 {
+    // Render-state transitions already pass through this pending-paint barrier.
+    flush_rounded();
 #if defined(PUFFERUI_ENABLE_HARFBUZZ)
     if (!preserve_paths && paths) flush_paths();
     if (!text || text->pending.empty() || text_flushing) return;

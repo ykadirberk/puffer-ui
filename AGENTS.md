@@ -88,7 +88,12 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   checked-in SPIR-V plus a compiler/source manifest. Ordinary consumers do not
   run the shader compiler. Frame mesh caching is opt-in; native Slug coverage
   caching defaults to a bounded 4 MiB image. GPU binning is not implemented.
-- This native branch preserves Vulkan triangle shapes. Native backdrop blur
+- The native library defaults to Vulkan triangle shapes. The Vulkan showcase
+  enables `analytic_rounded_rects` for solid fills and rounded gradients.
+  `--mesh-rounds` preserves the original showcase path. The painter uses
+  bounded instancing and a fixed 1.25-pixel coverage ramp. The round tests cover
+  independent DPI/clip/alpha checks and 180 exact DIRECT/STAGED showcase frames.
+  See `docs/perf_vulkan_rounded_rects.md`. Native backdrop blur
   uses CSS-strength Gaussian through 8 framebuffer pixels and Dual Kawase above 8, in
   `impl/vulkan_blur.inl`. `pui_vulkan_blur_tests` covers CPU kernels, threshold,
   DPI/clips/target reuse and 108 exact cache/reference frames per upload mode,
@@ -127,8 +132,9 @@ its section; `tools/amalgamate.ps1` rebuilds the single-file header.
   The shared mesh/SDL blur remains independent. Fresh
   Vulkan configurations enable pinned HarfBuzz and upstream Slug text; explicit
   OFF remains supported. Text uses an independent instanced graphics pipeline,
-  append-only outline chunks and retained CPU batches. No SDF shape or compute
-  painter is included. See `docs/harfbuzz.md` and tutorial chapter 10.
+  append-only outline chunks and retained CPU batches. Analytic rounded
+  rectangles use a separate graphics pipeline. See `docs/harfbuzz.md` and
+  tutorial chapter 10.
 - Native preparation lives in `impl/vulkan_preparation.inl`; native text lives
   in `impl/vulkan_text.inl`. `pui_vulkan_native_text_tests` compares 96 scalar/
   instanced frames in direct/staged modes. `pui_vulkan_native_spiral_tests`

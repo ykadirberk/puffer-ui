@@ -146,11 +146,12 @@ two frame slots and the original blur. `vector_text=true` enables HarfBuzz/Slug
 when it is built; an explicit HarfBuzz OFF build uses bitmap text.
 The original retained-pixel cache is optional and off by default.
 
-The Vulkan factory supplies a complete renderer-owned mesh painter. Shapes
-preserve the first Vulkan renderer's geometry, while text uses instanced
-graphics quads and append-only resident outlines. There is no SDF shape
-substitution, compute painting or GPU tile interpreter. See
-[HarfBuzz text](../harfbuzz.md) for font ownership, coverage and residency.
+The Vulkan factory supplies a complete renderer-owned painter. This tutorial
+uses the triangle shape path. Enable `vulkan_device_opts::analytic_rounded_rects`
+before device creation to draw rounded fills and gradients as instanced quads
+with analytic edge coverage. Text uses instanced graphics quads and append-only
+resident outlines. See [the rounded rectangle option](../vulkan.md#analytic-rounded-rectangles)
+and [HarfBuzz text](../harfbuzz.md).
 
 The source initializes the client rectangle from SDL's actual size/position,
 sets the render scale to `SDL_GetWindowDisplayScale`, and sets the input scale
