@@ -38,6 +38,7 @@ struct texture_creation
     VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
     bool render_target = false, internal = false;
     const u8 *rgba = nullptr;
+    bool defer_clear = false;
 };
 struct legacy_vertex
 {
@@ -174,6 +175,7 @@ struct surface : render_surface, dispatch
     void present() override;
     bool rebuild();
     void release_swapchain();
+    u32 next_frame_slot(u64 completed) const;
 };
 struct pipeline_pair
 {
@@ -347,6 +349,7 @@ struct device : render_device, dispatch
     u32 memory_type(u32 bits, VkMemoryPropertyFlags required, VkMemoryPropertyFlags preferred);
     texture *make_texture(i32 w, i32 h, bool render_target, const u8 *rgba);
     texture *allocate_texture(i32 w, i32 h, const texture_creation &);
+    bool initialize_texture(texture *t);
     void free_texture(texture *t);
     bool descriptors(texture *t);
     bool valid(texture *t) const;

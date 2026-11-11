@@ -140,9 +140,8 @@ struct native_painter : renderer_detail::mesh_painter
     {
         i32 width, height, a_width, a_height;
     };
-    bool prepare_images(const blur_extent &extent)
+    bool prepare_images(blur_store &scratch, const blur_extent &extent, bool defer_clear = false)
     {
-        auto &scratch = *ctx->blur;
         const i32 width = std::max(scratch.w, extent.width);
         const i32 height = std::max(scratch.h, extent.height);
         auto *old_a = static_cast<texture *>(scratch.half);
@@ -152,8 +151,12 @@ struct native_painter : renderer_detail::mesh_painter
         const i32 ah = std::max(old_a ? old_a->height : 0, extent.a_height);
         const bool grow_a = !old_a || old_a->width < aw || old_a->height < ah;
         const bool grow_b = !scratch.quarter || scratch.w < width || scratch.h < height;
-        texture_handle a = grow_a ? dev->create_target(aw, ah) : scratch.half;
-        texture_handle b = grow_b && a ? dev->create_target(width, height) : scratch.quarter;
+        const auto make = [&](i32 w, i32 h)
+        {
+            return dev->allocate_texture(w, h, {.render_target = true, .defer_clear = defer_clear});
+        };
+        auto *a = grow_a ? make(aw, ah) : old_a;
+        auto *b = grow_b && a ? make(width, height) : static_cast<texture *>(scratch.quarter);
         if (!a || !b)
         {
             if (grow_a && a) dev->destroy_target(a);
@@ -165,21 +168,20 @@ struct native_painter : renderer_detail::mesh_painter
         scratch.quarter = b;
         scratch.w = width;
         scratch.h = height;
-        return true;
+        return defer_clear || (dev->initialize_texture(a) && dev->initialize_texture(b));
     }
     bool prepare_blur(i32 width, i32 height, i32 output_width, i32 output_height, bool gaussian)
     {
         width = std::min(output_width, (width + 31) / 32 * 32);
         height = std::min(output_height, (height + 31) / 32 * 32);
-        return prepare_images({width, height, gaussian ? width : (width + 1) / 2,
-                               gaussian ? height : (height + 1) / 2});
+        return prepare_images(*ctx->blur, {width, height, gaussian ? width : (width + 1) / 2,
+                                           gaussian ? height : (height + 1) / 2});
     }
-    bool prepare(const vulkan_blur_capacity &capacity)
+    bool prepare(render_surface *surface, blur_store *&scratch, f32 density,
+                 const vulkan_blur_capacity &capacity, bool defer_clear)
     {
-        if (!ctx->blur || ctx->overlay_depth || !capacity.gaussian_area.is_valid()) return false;
-        render_surface *surface = ctx->current_window ? ctx->current_window->surface : ctx->surface;
+        if (!capacity.gaussian_area.is_valid()) return false;
         auto *scene = surface ? static_cast<texture *>(surface->scene_target()) : nullptr;
-        const f32 density = ctx->render_scale;
         if (!scene || scene->width <= 2 || scene->height <= 2 || !std::isfinite(density) ||
             density <= 0)
             return false;
@@ -200,7 +202,21 @@ struct native_painter : renderer_detail::mesh_painter
         }
         // Coalesce known requirements before drawing. Callers without a hint
         // retain lazy growth instead of paying for unused scene storage.
-        return prepare_images({width, height, aw, ah});
+        const bool create_store = !scratch;
+        if (create_store) scratch = new blur_store{};
+        if (prepare_images(*scratch, {width, height, aw, ah}, defer_clear)) return true;
+        if (create_store)
+        {
+            delete scratch;
+            scratch = nullptr;
+        }
+        return false;
+    }
+    bool prepare(const vulkan_blur_capacity &capacity)
+    {
+        if (!ctx->blur || ctx->overlay_depth) return false;
+        render_surface *surface = ctx->current_window ? ctx->current_window->surface : ctx->surface;
+        return prepare(surface, ctx->blur, ctx->render_scale, capacity, false);
     }
     void blur(const paint_blur &p) override
     {
@@ -397,5 +413,22 @@ bool vulkan_prepare_blur(context *ctx, const vulkan_blur_capacity &capacity)
 {
     auto *painter = ctx ? dynamic_cast<vk_detail::native_painter *>(ctx->painter) : nullptr;
     return painter && painter->prepare(capacity);
+}
+bool vulkan_prepare_window_blur(context *ctx, window &win, const vulkan_blur_capacity &capacity)
+{
+    if (!ctx || ctx->current_window || ctx->overlay_depth || !detail::owns_window(ctx, win))
+        return false;
+    auto *painter = dynamic_cast<vk_detail::native_painter *>(ctx->painter);
+    auto *surface = dynamic_cast<vk_detail::surface *>(win.surface);
+    if (!painter || !surface || surface->dirty || surface->dev != painter->dev ||
+        !surface->extent.width || !surface->extent.height)
+        return false;
+    const auto &dev = *surface->dev;
+    // Initial uploads may have a utility recording. Preparing scratch can
+    // coexist with it, and window recordings keep their own paint boundaries.
+    if (dev.result != VK_SUCCESS || dev.paint_depth || dev.cache_active ||
+        (dev.frame && dev.frame->recording && dev.frame != &dev.utility))
+        return false;
+    return painter->prepare(surface, win.blur, win.scale, capacity, true);
 }
 #endif

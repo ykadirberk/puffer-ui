@@ -520,10 +520,12 @@ rect ui::animate_rect(uiid key, rect target, const rect_motion &m)
         PUFFERUI_CHECK(VIOL_INVALID_RECT, false, "animate_rect with an invalid target");
         return rect{};
     }
-    auto &map = c->st->rects.map;
+    auto &store = c->st->rects;
     const uiid k = detail::anim_scoped_id(c, key, false);
-    const auto [it, fresh] = map.try_emplace(k);
+    const auto [it, fresh] = store.map.try_emplace(k);
     rect_store::entry &e = it->second;
+    store.last_lookup = &e;
+    store.last_key = k;
     const f32 t[4] = {target.x - m.origin.x, target.y - m.origin.y, target.w, target.h};
     if (fresh)
     {
@@ -585,10 +587,16 @@ rect ui::animate_rect(uiid key, rect target, const rect_motion &m)
 rect_motion_info ui::motion_info(uiid key) const
 {
     rect_motion_info out;
-    const auto &map = ctx->st->rects.map;
-    const auto it = map.find(detail::anim_scoped_id(ctx, key, false));
-    if (it == map.end()) return out;
-    const rect_store::entry &e = it->second;
+    const auto &store = ctx->st->rects;
+    const uiid scoped = detail::anim_scoped_id(ctx, key, false);
+    const auto *found = store.last_lookup;
+    if (!found || store.last_key != scoped)
+    {
+        const auto it = store.map.find(scoped);
+        if (it == store.map.end()) return out;
+        found = &it->second;
+    }
+    const rect_store::entry &e = *found;
     out.known = true;
     out.settled = e.settled;
     out.current = detail::rect_from_axes(e.x, e.origin);

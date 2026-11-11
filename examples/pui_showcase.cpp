@@ -4226,6 +4226,9 @@ struct showcase_program
             };
         }
         showcase_prepare_scene(app);
+#if defined(PUFFERUI_ENABLE_VULKAN)
+        if (app.win) (void)vulkan_prepare_window_blur(app.ctx, *app.win);
+#endif
     }
     void operator()(ui &u, example_app &app) const { showcase_frame(u, app); }
 };

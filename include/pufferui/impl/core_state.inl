@@ -855,6 +855,8 @@ struct rect_store
     };
     pooled_state_map<entry> map;
     sweep_clock gc;
+    const entry *last_lookup = nullptr;
+    uiid last_key = 0;
 };
 
 // Scroll offsets + content extents, keyed by scroll view id.

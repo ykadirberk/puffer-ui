@@ -157,6 +157,22 @@ bool surface::rebuild()
     dirty = false;
     return scene != nullptr;
 }
+u32 surface::next_frame_slot(u64 completed) const
+{
+    const u32 count = static_cast<u32>(slots.size());
+    const u32 next = (slot + 1) % count;
+    if (count <= 2 || slots[next].group_serial <= completed) return next;
+    // A continuation can leave logical frames with out-of-order completion
+    // values. Wider queues reuse a completed owner or wait for the oldest one.
+    u32 oldest = next;
+    for (u32 offset = 1; offset < count; ++offset)
+    {
+        const u32 candidate = (next + offset) % count;
+        if (slots[candidate].group_serial <= completed) return candidate;
+        if (slots[candidate].group_serial < slots[oldest].group_serial) oldest = candidate;
+    }
+    return oldest;
+}
 void surface::make_current(render_device &)
 {
     suspended = true;
@@ -171,7 +187,7 @@ void surface::make_current(render_device &)
     if (dirty && !rebuild()) return;
     if (!extent.width || !extent.height || !scene) return;
     if (dev->frame && dev->frame->recording) dev->submit();
-    slot = (slot + 1) % static_cast<u32>(slots.size());
+    slot = next_frame_slot(dev->known_completed);
     auto &owner = slots[slot];
     if (!dev->wait(owner.group_serial)) return;
     // Acquire semaphores belong to logical frames; command pools and upload

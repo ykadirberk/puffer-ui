@@ -2,6 +2,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 #include <cstdio>
+#include <cstring>
 using namespace pui;
 static i32 errors = 0;
 static void diagnostic(i32 code, const char *message, void *)
@@ -47,7 +48,7 @@ struct zero_size_host : vulkan_host
             SDL_GetWindowSizeInPixels(static_cast<SDL_Window *>(window), &w, &h);
     }
 };
-static int zero_size_frames()
+static int zero_size_frames(u32 slots)
 {
     REQUIRE(SDL_Init(SDL_INIT_VIDEO));
     SDL_Window *window =
@@ -58,6 +59,7 @@ static int zero_size_frames()
     opts.host = &host;
     opts.validation = true;
     opts.error_callback = diagnostic;
+    opts.frames_in_flight = slots;
     render_device *d = create_vulkan_device(opts);
     REQUIRE(d);
     render_surface *offscreen = create_vulkan_surface(d, {.width = 8, .height = 8});
@@ -105,8 +107,10 @@ static int zero_size_frames()
     REQUIRE(errors == 0);
     return 0;
 }
-int main()
+int main(int argc, char **argv)
 {
+    const bool three_slots = argc == 2 && std::strcmp(argv[1], "--three-slots") == 0;
+    if (argc != 1 && !three_slots) return 2;
     sdl3_app app;
     app.hidden = true;
     sdl3_vulkan_app_opts opts;
@@ -114,6 +118,7 @@ int main()
     opts.height = 240;
     opts.device.validation = true;
     opts.device.error_callback = diagnostic;
+    if (three_slots) opts.device.frames_in_flight = 3;
     REQUIRE(sdl3_vulkan_app_init(app, opts));
     REQUIRE(app.sdl_renderer == nullptr && is_vulkan_device(app.device));
     app.device->set_vsync(false);
@@ -154,7 +159,7 @@ int main()
     sdl3_app_close_window(app, *extra);
     sdl3_app_shutdown(app);
     REQUIRE(errors == 0);
-    REQUIRE(zero_size_frames() == 0);
+    REQUIRE(zero_size_frames(opts.device.frames_in_flight) == 0);
     std::puts("all Vulkan SDL WSI tests passed");
     return 0;
 }

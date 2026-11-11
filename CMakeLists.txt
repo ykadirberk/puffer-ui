@@ -221,7 +221,7 @@ if(PUFFERUI_WITH_VULKAN)
     pui_vulkan_case(pui_tut_vulkan_manual false --selftest --frames 8 --resize 760x520)
     set_property(GLOBAL APPEND PROPERTY PUFFERUI_VULKAN_TARGETS pui_tut_vector_manual)
     pui_vulkan_case(pui_tut_vector_manual false --selftest --frames 8 --resize 800x560)
-    pui_add_vulkan_test(pui_vulkan_wsi_tests SOURCES tests/test_vulkan_wsi.cpp)
+    pui_add_vulkan_test(pui_vulkan_wsi_tests SOURCES tests/test_vulkan_wsi.cpp RUNS "--three-slots")
     pui_add_vulkan_test(pui_vulkan_showcase_tests SOURCES tests/test_vulkan_showcase.cpp)
     pui_add_vulkan_test(pui_vulkan_rounded_showcase_tests FULL_ONLY
         SOURCES tests/test_vulkan_rounded_showcase.cpp)

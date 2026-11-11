@@ -118,20 +118,23 @@ Each window retains two RGBA8 scratch targets for the affected region, including
 the sampling margin. They grow lazily in 32-pixel steps and are reused across
 blur calls and frames. The first target's capacity is tracked independently:
 a small Gaussian after a large Kawase does not promote it to the full size of
-the retained second target. Applications that know their blur needs can prepare
-both images once, before their first draw in a window's frame:
+the retained second target. Applications that know their blur needs can allocate
+both images after registering the window and before its first frame.
 
 ```cpp
-// Include <pufferui/vulkan.h>; call after begin_frame and before painting.
-// The default covers any Kawase region; this hint also bounds Gaussian masks.
-pui::vulkan_prepare_blur(ctx, {.gaussian_area = {0, 0, 160, 100}});
+// Include <pufferui/vulkan.h>. win is a registered pui::window.
+pui::vulkan_prepare_window_blur(ctx, win, {.gaussian_area = {0, 0, 160, 100}});
 ```
 
-The hint reserves at most scene-sized images, coalesces growth and preserves
-ordinary lazy fallback for unknown regions. The native showcase calls it before
-painting. The first target can remain half-size when the hinted Gaussian fits
-that capacity. A viewport shrink retires oversized targets at a frame boundary, using
-the normal GPU completion lifetime. Every filter pass clamps reads to the
+The call allocates the window's scratch without recording commands, submitting
+or waiting for the GPU. The regular paint path clears fresh images before it
+uses them. Call `vulkan_prepare_blur(ctx, capacity)` after `begin_frame` for
+in-frame requirements such as a changed viewport or Gaussian area. The default
+capacity covers any Kawase region and an explicit area also covers the Gaussian
+mask. Both calls reserve at most scene-sized images and coalesce growth.
+Unknown regions use lazy growth. The first target can stay half-size when the
+hinted Gaussian fits. A viewport shrink retires oversized targets at a frame
+boundary, using the normal GPU completion lifetime. Every filter pass clamps reads to the
 written source region, so odd extents and smaller subsequent blurs cannot sample
 old padding. Gaussian bounds include pixel centers in the rounded mask's outer
 half-logical-pixel AA fringe before adding kernel support, including high DPI.
@@ -353,6 +356,14 @@ use the slot's existing pool/completion serial; bounded continuations retain the
 own slot ownership. GPU timestamps include the upload command buffer. Buffer
 budgets, arena counts and the DIRECT representation are unchanged. See
 [the lossless batch qualification](perf_vulkan_batches.md).
+
+Vulkan defaults to two frames in flight. Set `vulkan_device_opts::frames_in_flight`
+to `3` to opt into an additional slot and its upload storage. When a wider queue's
+next logical slot is busy, it can use a completed slot or wait for the oldest
+pending completion. Each acquire semaphore still follows its logical frame's
+submission, and each present semaphore follows its swapchain image. The
+[Spiral measurements](perf_vulkan_frame_preflight.md) cover both depths and
+upload modes.
 
 Native index planning uses four independent signed min/max accumulator chains
 when the compilation target guarantees SSE2. Their merged bounds preserve the

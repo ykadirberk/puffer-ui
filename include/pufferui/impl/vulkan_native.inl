@@ -75,6 +75,10 @@ struct vulkan_blur_capacity
     rect gaussian_area{};
 };
 bool vulkan_prepare_blur(context *ctx, const vulkan_blur_capacity &capacity = {});
+// Allocate a registered window's scratch before its frame. The first paint
+// records the ordinary clear; preparation itself records no GPU commands.
+bool vulkan_prepare_window_blur(context *ctx, window &win,
+                                const vulkan_blur_capacity &capacity = {});
 vulkan_native_device vulkan_handles(render_device *device);
 VkResult vulkan_last_result(render_device *device);
 const char *vulkan_last_error(render_device *device);

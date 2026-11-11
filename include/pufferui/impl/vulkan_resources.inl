@@ -133,18 +133,12 @@ texture *device::allocate_texture(i32 w, i32 h, const texture_creation &creation
     if (creation.internal) return t;
     textures.push_back(t);
     ++stats.live_textures;
-    if (!commands())
+    if (creation.defer_clear && !creation.rgba) return t;
+    if (!initialize_texture(t))
     {
         destroy_texture(t);
         return nullptr;
     }
-    end_rendering();
-    transition(t, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    const VkClearColorValue zero{};
-    VkImageSubresourceRange range{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
-    vkCmdClearColorImage(frame->command, t->image, t->layout, &zero, 1, &range);
-    t->last_use = next_serial;
-    ++t->revision;
     if (creation.rgba) update_texture(t, 0, 0, w, h, creation.rgba);
     if (result != VK_SUCCESS)
     {
@@ -152,6 +146,20 @@ texture *device::allocate_texture(i32 w, i32 h, const texture_creation &creation
         return nullptr;
     }
     return t;
+}
+bool device::initialize_texture(texture *t)
+{
+    if (t->layout != VK_IMAGE_LAYOUT_UNDEFINED) return true;
+    if (cache_active) cache_flush(false);
+    if (!commands()) return false;
+    end_rendering();
+    transition(t, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    const VkClearColorValue zero{};
+    VkImageSubresourceRange range{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+    vkCmdClearColorImage(frame->command, t->image, t->layout, &zero, 1, &range);
+    t->last_use = next_serial;
+    ++t->revision;
+    return result == VK_SUCCESS;
 }
 void device::free_texture(texture *t)
 {

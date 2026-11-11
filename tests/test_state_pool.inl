@@ -192,3 +192,39 @@ PUI_TEST(state_pool_rect_nodes_keep_values_addresses_and_context_isolation)
     }
     CHECK(upstream.live_bytes == 0);
 }
+
+PUI_TEST(rect_motion_lookup_keeps_scope_and_expires_before_sweeping)
+{
+    perf_env env;
+    ui u(env.c);
+    auto &store = env.c->st->rects;
+    constexpr uiid key = "motion"_id;
+    env.begin();
+    CHECK(!u.motion_info(key).known);
+    u.animate_rect(key, {3, 4, 16, 12}, {.snap = true});
+    const auto *unscoped = store.last_lookup;
+    CHECK(unscoped && u.motion_info(key).current.x == 3);
+    {
+        auto scoped = u.scope("other"_id);
+        CHECK(!u.motion_info(key).known);
+        u.animate_rect(key, {27, 5, 19, 14}, {.snap = true});
+        CHECK(store.last_lookup && store.last_lookup != unscoped);
+        CHECK(u.motion_info(key).current.x == 27);
+    }
+    CHECK(u.motion_info(key).current.x == 3);
+    for (uiid i = 1; i < 1200; ++i) u.animate_rect(id_child(key, i), {2, 3, 4, 5}, {.snap = true});
+    CHECK(u.motion_info(key).current.x == 3);
+    end_frame(env.c);
+
+    env.begin(1);
+    CHECK(!store.last_lookup && u.motion_info(key).known);
+    u.animate_rect(key, {5, 4, 16, 12}, {.snap = true});
+    CHECK(store.last_lookup == unscoped && u.motion_info(key).target.x == 5);
+    end_frame(env.c);
+
+    env.begin(8 * 60);
+    CHECK(!store.last_lookup && !u.motion_info(key).known);
+    u.animate_rect(key, {41, 4, 16, 12}, {.snap = true});
+    CHECK(u.motion_info(key).current.x == 41);
+    end_frame(env.c);
+}
